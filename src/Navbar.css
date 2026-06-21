@@ -1,0 +1,180 @@
+/* ===== NAVBAR ===== */
+.navbar {
+  background: #0b2a3b;
+  color: #fff;
+  padding: 10px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* ✅ fixed alignment */
+}
+
+/* ===== LOGO ===== */
+.logo {
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* ===== LEFT SECTION ===== */
+.nav-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* row below logo */
+.nav-filters {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+/* ===== SEARCH DROPDOWN (Institution) ===== */
+.search-dropdown {
+  position: relative;
+  width: 180px;
+}
+
+/* ===== INPUT STYLE ===== */
+.search-dropdown input,
+.nav-dropdown {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+  padding: 6px 4px;
+  color: #fff;
+  font-size: 14px;
+  transition: border-color 0.25s ease;
+}
+
+/* placeholder */
+.search-dropdown input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* focus */
+.search-dropdown input:focus,
+.nav-dropdown:focus {
+  outline: none;
+  border-bottom: 2px solid #ffffff;
+}
+
+/* hover */
+.search-dropdown input:hover,
+.nav-dropdown:hover {
+  border-bottom: 2px solid #ffffff;
+}
+
+/* ===== DROPDOWN LIST ===== */
+.dropdown-list {
+  position: absolute;
+  top: 38px;
+  left: 0;
+  width: 100%;
+  background: white;
+  color: black;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 9999;
+}
+
+.dropdown-item {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background: #f1f1f1;
+}
+
+/* ===== RIGHT SECTION ===== */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 18px; /* ✅ keeps items together nicely */
+}
+
+/* nav items */
+.nav-right span {
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.nav-right span:hover {
+  text-decoration: underline;
+}
+
+/* active link */
+.active-link {
+  font-weight: bold;
+  border-bottom: 2px solid #fff;
+}
+
+/* ===== SEARCH ICON (NEW) ===== */
+.search-container {
+  position: relative;
+}
+
+.search-icon {
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* dropdown search box */
+.search-dropdown-box {
+  position: absolute;
+  top: 30px;
+  right: 0;
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  width: 200px;
+  z-index: 999;
+}
+
+.search-dropdown-box input {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.search-pill {
+  display: flex;
+  align-items: center;
+  background: #eef1f4;
+  border-radius: 30px;
+  padding: 8px 14px;
+  width: 260px;
+  gap: 8px;
+  position: relative;
+}
+
+/* ICON */
+.search-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  background: url("https://cdn-icons-png.flaticon.com/512/622/622669.png") no-repeat center;
+  background-size: contain;
+  opacity: 0.6;
+}
+
+/* INPUT */
+.search-pill input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font-size: 14px;
+}
+
+/* FOCUS EFFECT */
+.search-pill:focus-within {
+  background: #ffffff;
+  box-shadow: 0 0 0 2px #2563eb33;
+}

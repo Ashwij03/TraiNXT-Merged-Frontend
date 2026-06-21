@@ -1,0 +1,22 @@
+.queries-page {
+  padding: 24px;
+}
+
+.queries-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.queries-table th {
+  background: #f8fafc;
+  text-align: left;
+  padding: 14px;
+}
+
+.queries-table td {
+  padding: 14px;
+  border-top: 1px solid #e5e7eb;
+}

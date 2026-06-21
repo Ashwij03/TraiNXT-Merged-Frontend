@@ -1,0 +1,166 @@
+/* PAGE */
+.visit-container {
+  padding: 25px;
+  background: #f4f6f8;
+}
+
+/* CARD */
+.card {
+  background: #ffffff;
+  border: 1px solid #dcdcdc;
+  margin-bottom: 25px;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* ORANGE HEADER */
+.procedure-header {
+  background: #e6a760;
+  color: white;
+  padding: 14px 18px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* LEFT HEADER */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* TICK */
+.tick {
+  font-size: 16px;
+}
+
+/* QUESTION ROW */
+.question-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 20px;
+  background: #f8f9fb;
+
+  border-top: 1px solid #e5e5e5;
+}
+
+/* LEFT SIDE */
+.question-left {
+  font-size: 17px;
+  color: #333;
+}
+
+/* RIGHT SIDE */
+.question-right {
+  text-align: right;
+}
+
+/* VALUE */
+.question-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111;
+}
+
+/* USER */
+.question-user {
+  margin-top: 5px;
+  color: #777;
+  font-size: 13px;
+}
+
+/* AUDIT */
+.audit-link {
+  margin-top: 5px;
+  color: #2a6db0;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* PROGRESS */
+.progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 20px;
+  background: #fff;
+}
+
+/* PLUS BUTTON */
+.plus-btn {
+  width: 32px;
+  height: 32px;
+
+  border-radius: 50%;
+  border: none;
+
+  background: #f1f1f1;
+  color: #555;
+
+  font-size: 20px;
+  font-weight: bold;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: 0.2s;
+}
+
+.plus-btn:hover {
+  background: #ddd;
+}
+
+/* COMMENT BOX */
+.comment-box {
+  padding: 20px;
+  background: #fafafa;
+  border-top: 1px solid #ddd;
+}
+
+/* TEXTAREA */
+.comment-box textarea {
+  width: 100%;
+  min-height: 90px;
+
+  padding: 12px;
+
+  border-radius: 6px;
+  border: 1px solid #ccc;
+
+  resize: vertical;
+  font-size: 15px;
+}
+
+/* SAVE BUTTON */
+.save-btn {
+  margin-top: 12px;
+
+  background: #e6a760;
+  color: white;
+
+  border: none;
+  border-radius: 6px;
+
+  padding: 10px 20px;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.save-btn:hover {
+  opacity: 0.9;
+}

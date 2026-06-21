@@ -1,0 +1,94 @@
+.upcoming-visits-widget {
+  width: 100%;
+}
+
+.upcoming-visits-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.upcoming-visits-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #012f4a;
+}
+
+.upcoming-visits-view-all {
+  background: none;
+  border: 1px solid #2563eb;
+  color: #2563eb;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.upcoming-visits-view-all:hover {
+  background: #2563eb;
+  color: #fff;
+}
+
+.upcoming-visits-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  min-height: 460px;
+  max-height: 620px;
+  overflow-y: auto;
+}
+
+.upcoming-visits-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.upcoming-visits-table th {
+  background: #003049;
+  color: #fff;
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.upcoming-visits-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.875rem;
+  color: #334155;
+}
+
+.upcoming-visits-table tbody tr {
+  transition: background 0.2s;
+}
+
+.upcoming-visits-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.upcoming-visits-action-btn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.upcoming-visits-action-btn:hover {
+  background: #1d4ed8;
+}
+
+@media (max-width: 768px) {
+  .upcoming-visits-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}

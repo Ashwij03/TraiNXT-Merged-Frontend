@@ -1,0 +1,153 @@
+/* UPDATED: PI Sidebar — fixed layout, mobile drawer, active states */
+
+/* UPDATED: Text-only sidebar brand header */
+.pi-sidebar-brand {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  padding: 12px 14px 16px;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  margin-bottom: 8px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: 0.2s ease;
+  color: white;
+}
+
+.menu-item:hover {
+  background: rgba(37, 99, 235, 0.6);
+}
+
+.menu-item.active-menu {
+  background: rgba(37, 99, 235, 0.22);
+  color: #ffffff;
+  font-weight: 600;
+  border-left: 4px solid #2563eb;
+  padding-left: 10px;
+}
+
+.menu-item.active-menu svg {
+  color: #60a5fa;
+}
+
+.sidebar {
+  position: fixed;
+  top: 72px;
+  left: 0;
+  width: 220px;
+  min-width: 220px;
+  height: calc(100vh - 72px);
+  background: #082b3d;
+  color: white;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  z-index: 1000;
+  border-right: 1px solid rgba(147, 197, 253, 0.3);
+  padding: 12px 8px;
+  box-sizing: border-box;
+}
+
+.pi-sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  top: 72px;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+}
+
+.submenu-container {
+  padding-left: 12px;
+  margin-bottom: 4px;
+}
+
+.submenu-title {
+  padding: 6px 10px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  border-radius: 6px;
+}
+
+.submenu-title:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.submenu-level2 {
+  padding-left: 12px;
+}
+
+.submenu-item {
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 4px;
+}
+
+.submenu-item:hover {
+  background: rgba(37, 99, 235, 0.4);
+}
+
+.subject-item {
+  padding: 6px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.subject-item:hover {
+  color: white;
+}
+
+@media (max-width: 992px) {
+  .sidebar.pi-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar.pi-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .pi-sidebar-overlay.visible {
+    display: block;
+  }
+}
+
+@media (min-width: 993px) {
+  .sidebar.pi-sidebar {
+    transform: translateX(0) !important;
+  }
+
+  .pi-sidebar-overlay {
+    display: none !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .sidebar {
+    width: 100%;
+    max-width: 280px;
+  }
+  .menu-item {
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+}
+.menu-item:hover,
+.menu-item:focus,
+.menu-item:active {
+  background: rgba(19, 68, 246, 0.899) !important;
+  color: white !important;
+  box-shadow: none !important;
+}

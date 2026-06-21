@@ -1,0 +1,248 @@
+.study-detail-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 25px;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+}
+
+.study-detail-header h3 {
+  margin: 0;
+}
+
+.study-tabs {
+  display: flex;
+
+  gap: 18px;
+
+  background: #062b3d;
+
+  padding: 16px 20px;
+
+  border-radius: 4px;
+}
+
+
+
+.tab.active {
+  background: #0d6efd;
+
+  color: white;
+
+  border-bottom: 3px solid orange;
+
+  font-weight: bold;
+}
+
+.subjects-title {
+  padding: 20px 25px 10px;
+}
+
+.legend {
+  display: flex;
+  gap: 15px;
+  padding: 0 25px 15px;
+  font-size: 13px;
+}
+
+.legend span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.subjects-table {
+  padding: 0 25px 30px;
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+  font-size: 13px;
+}
+
+
+
+.fail-text {
+  color: red;
+}
+
+.progress-text {
+  color: #007bff;
+}
+
+.study-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.study-id {
+  font-size: 13px;
+  font-weight: 600;
+  color: #000;
+}
+
+.study-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #000;
+}
+
+/* ===================================== */
+/* YOUR EXTRA CSS (SAFE MERGE) */
+/* ===================================== */
+
+.study-org-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.study-dropdown-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: 10px;
+  margin-top: 2px;
+}
+.study-detail-header {
+  background: white;
+
+  border: 1px solid #dcdcdc;
+
+  padding: 18px 24px;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 20px;
+}
+.study-detail-header {
+  background-color: white !important;
+
+  border: 1px solid #d9d9d9 !important;
+
+  padding: 20px !important;
+
+  display: flex !important;
+
+  justify-content: space-between !important;
+
+  align-items: center !important;
+
+  margin-bottom: 20px !important;
+}
+
+.study-title {
+  display: flex !important;
+
+  flex-direction: column !important;
+
+  gap: 5px !important;
+}
+
+.study-id {
+  font-size: 18px !important;
+
+  font-weight: bold !important;
+
+  color: black !important;
+}
+
+.study-name {
+  font-size: 16px !important;
+
+  color: black !important;
+}
+.study-detail-header {
+  width: 95%;
+  margin: 20px auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.study-title {
+  padding-left: 20px;
+}
+table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  background: white;
+}
+
+th {
+  background: #062b3d;
+
+  color: white;
+
+  padding: 12px;
+
+  border: 1px solid #dcdcdc;
+}
+
+td {
+  padding: 12px;
+
+  border: 1px solid #dcdcdc;
+
+  text-align: center;
+}
+table thead th {
+  background: #062b3d !important;
+
+  color: white !important;
+
+  padding: 12px !important;
+
+  border: 1px solid #dcdcdc !important;
+}
+
+table {
+  border-collapse: collapse;
+
+  width: 100%;
+}
+.study-tabs {
+  background: #062b3d !important;
+}
+
+.tab {
+  background: #f2f2f2 !important;
+
+  color: #062b3d !important;
+
+  border-radius: 8px !important;
+
+  padding: 12px 20px !important;
+}
+
+.tab.active {
+  background: #0d6efd !important;
+
+  color: white !important;
+
+  border-bottom: 3px solid orange !important;
+}
+
+.subjects-table th,
+table th {
+  background: #062b3d !important;
+
+  color: white !important;
+}

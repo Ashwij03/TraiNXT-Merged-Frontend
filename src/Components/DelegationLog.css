@@ -1,0 +1,182 @@
+.delegation-container{
+  padding:20px;
+  background:#f5f7fa;
+}
+
+.delegation-title{
+  margin-bottom:25px;
+  font-size:32px;
+  color:#222;
+}
+
+/* CARD */
+
+.delegate-card{
+  width:420px;
+  background:white;
+  border-radius:14px;
+  padding:22px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  box-shadow:0px 3px 12px rgba(0,0,0,0.12);
+}
+
+/* USER */
+
+.delegate-user{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.delegate-image img{
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  object-fit:cover;
+}
+
+.delegate-info h3{
+  margin:0;
+  font-size:28px;
+}
+
+.delegate-info p{
+  margin-top:5px;
+  color:gray;
+  font-size:20px;
+}
+
+/* RIGHT */
+
+.delegate-actions{
+  display:flex;
+  align-items:center;
+  gap:18px;
+}
+
+/* DUTY */
+
+.duty-box{
+  background:#e8f4ff;
+  color:#2196f3;
+  font-weight:bold;
+  padding:12px 18px;
+  border-radius:8px;
+  cursor:pointer;
+  position:relative;
+}
+
+/* TOOLTIP */
+
+.tooltip-box{
+  display:none;
+  position:absolute;
+  top:-95px;
+  left:-30px;
+  width:250px;
+  background:white;
+  padding:15px;
+  border-radius:12px;
+  box-shadow:0px 4px 14px rgba(0,0,0,0.2);
+  z-index:999;
+}
+
+.duty-box:hover .tooltip-box{
+  display:block;
+}
+
+/* SEARCH */
+
+.search-icon{
+  font-size:24px;
+  cursor:pointer;
+}
+
+/* MODAL */
+
+.modal-overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.5);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+
+.modal-box{
+  width:1000px;
+  background:white;
+  border-radius:16px;
+  padding:30px;
+}
+
+/* HEADER */
+
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.modal-user{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.modal-user img{
+  width:65px;
+  height:65px;
+  border-radius:50%;
+}
+
+.close-btn{
+  font-size:28px;
+  cursor:pointer;
+}
+
+/* TABS */
+
+.modal-tabs{
+  margin-top:25px;
+  margin-bottom:25px;
+}
+
+.tab{
+  padding:12px 24px;
+  border:none;
+  background:#eee;
+  margin-right:10px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.active{
+  background:#2196f3;
+  color:white;
+}
+
+/* TABLE */
+
+.delegation-table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+.delegation-table th{
+  background:#f3f3f3;
+  padding:16px;
+  border:1px solid #ddd;
+  text-align:left;
+}
+
+.delegation-table td{
+  padding:16px;
+  border:1px solid #ddd;
+}

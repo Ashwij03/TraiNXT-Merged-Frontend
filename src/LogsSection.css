@@ -1,0 +1,81 @@
+.logs-container {
+  display: flex;
+  margin-top: 20px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* 🔵 SIDEBAR */
+.sidebar {
+  width: 260px;
+  background: #4e6a85;
+  color: white;
+  padding-top: 10px;
+}
+
+.menu {
+  padding: 14px 16px;
+  cursor: pointer;
+  border-left: 4px solid transparent;
+  font-size: 14px;
+}
+
+.menu:hover {
+  background: #3c566e;
+}
+
+.menu.active {
+  background: #3c566e;
+  border-left: 4px solid #2ecc71;
+  font-weight: bold;
+}
+
+/* 🟠 RIGHT CONTENT */
+.content {
+  flex: 1;
+  background: white;
+}
+
+/* ORANGE HEADER */
+.content-header {
+  background: #f39c12;
+  color: white;
+  padding: 12px 16px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* INSTRUCTIONS */
+.instructions {
+  background: #f5f5f5;
+  padding: 12px 16px;
+  border-bottom: 1px solid #ddd;
+}
+
+.instructions b {
+  display: block;
+  margin-bottom: 5px;
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: #f0f0f0;
+}
+
+th {
+  text-align: left;
+  padding: 12px;
+  font-size: 13px;
+}
+
+td {
+  padding: 12px;
+  border-top: 1px solid #eee;
+  font-size: 13px;
+}

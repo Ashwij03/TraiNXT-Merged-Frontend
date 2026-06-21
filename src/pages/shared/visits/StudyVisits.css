@@ -1,0 +1,84 @@
+/* newly added */
+
+.visits-page {
+  padding: 25px;
+}
+
+.visits-page h2 {
+  margin-top: 15px;
+  margin-bottom: 20px;
+}
+
+.visit-table-wrapper {
+  background: white;
+
+  border-radius: 14px;
+
+  padding: 20px;
+
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.08);
+}
+
+.visit-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.visit-table th {
+  background: #0b3558;
+  color: white;
+
+  padding: 14px;
+  text-align: left;
+}
+
+.visit-table td {
+  padding: 14px;
+  border-bottom: 1px solid #eee;
+}
+
+.status-badge {
+  padding: 6px 12px;
+
+  border-radius: 20px;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.completed {
+  background: #d4edda;
+  color: #155724;
+}
+
+.scheduled {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.pending {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.visit-kpis {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.visit-kpi {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  text-align: center;
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.08);
+}
+
+.visit-kpi h3 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}

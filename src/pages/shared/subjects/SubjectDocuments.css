@@ -1,0 +1,138 @@
+.subject-documents {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.subject-upload-box {
+  align-items: center;
+  background: #ffffff;
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  min-height: 220px;
+  padding: 32px 24px;
+  text-align: center;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.subject-upload-box:hover,
+.subject-upload-box.dragging {
+  background: #f0f9ff;
+  border-color: #2563eb;
+  transform: translateY(-1px);
+}
+
+.subject-upload-box.uploading {
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.subject-upload-content h3 {
+  color: #1f2937;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 8px 0;
+}
+
+.subject-upload-content p {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0;
+}
+
+.subject-upload-icon {
+  font-size: 42px;
+  opacity: 0.75;
+}
+
+.subject-upload-browse {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.subject-upload-input {
+  display: none;
+}
+
+.subject-documents-list {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.subject-documents-list h4 {
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 14px;
+}
+
+.subject-documents-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.subject-documents-list li {
+  align-items: center;
+  border-bottom: 1px solid #f3f4f6;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 12px 0;
+}
+
+.subject-documents-list li:last-child {
+  border-bottom: none;
+}
+
+.subject-doc-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.subject-doc-name {
+  color: #111827;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subject-doc-meta {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.subject-doc-remove {
+  background: transparent;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 13px;
+  padding: 6px 12px;
+}
+
+.subject-doc-remove:hover {
+  background: #fef2f2;
+}
+
+@media screen and (max-width: 768px) {
+  .subject-upload-box {
+    min-height: 180px;
+    padding: 24px 16px;
+  }
+
+  .subject-documents-list li {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,315 @@
+/* ==========================================
+   SUBJECT VISITS
+========================================== */
+
+.subject-tab-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  margin-top: 20px;
+}
+
+.visits-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.visits-header h2 {
+  font-size: 48px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+/* ==========================================
+   ADD VISIT BUTTON
+========================================== */
+
+.add-visit-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.add-visit-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+/* ==========================================
+   TABLE
+========================================== */
+
+.subject-tab-card table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.subject-tab-card thead {
+  background: #042c40;
+}
+
+.subject-tab-card th {
+  color: white;
+  padding: 18px;
+  text-align: left;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.subject-tab-card td {
+  padding: 18px;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;
+}
+
+.subject-tab-card tbody tr {
+  transition: all 0.2s ease;
+}
+
+.subject-tab-card tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* ==========================================
+   ACTION BUTTONS
+========================================== */
+
+.visit-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.view-visit-btn,
+.edit-visit-btn,
+.delete-visit-btn {
+  min-width: 90px;
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+/* View */
+
+.view-visit-btn {
+  background: #2563eb;
+  color: white;
+}
+
+.view-visit-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+/* Edit */
+
+.edit-visit-btn {
+  min-height: 36px;
+}
+
+/* Delete */
+
+.delete-visit-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.delete-visit-btn:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+}
+
+/* ==========================================
+   EMPTY STATE
+========================================== */
+
+.no-visits {
+  text-align: center;
+  padding: 40px;
+  color: #64748b;
+  font-size: 15px;
+}
+
+/* ==========================================
+   MODAL OVERLAY
+========================================== */
+
+.visit-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* ==========================================
+   MODAL
+========================================== */
+
+.visit-modal {
+  background: white;
+  width: 550px;
+  max-width: 95%;
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+}
+
+.visit-modal h3 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 15px;
+}
+
+.visit-modal p {
+  color: #475569;
+  margin-bottom: 20px;
+}
+
+/* Inputs */
+
+.visit-modal input,
+.visit-modal select,
+.visit-modal textarea {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #dbe2ea;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.visit-modal textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.visit-modal input:focus,
+.visit-modal select:focus,
+.visit-modal textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+}
+
+/* ==========================================
+   MODAL ACTION BUTTONS
+========================================== */
+
+.visit-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 25px;
+}
+
+.visit-modal-actions button {
+  min-width: 120px;
+  height: 46px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+/* Cancel */
+
+.visit-cancel-btn {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.visit-cancel-btn:hover {
+  background: #cbd5e1;
+}
+
+/* Save */
+
+.visit-save-btn {
+  background: #16a34a;
+  color: white;
+}
+
+.visit-save-btn:hover {
+  background: #15803d;
+}
+
+/* Delete */
+
+.visit-delete-btn {
+  background: #dc2626;
+  color: white;
+}
+
+.visit-delete-btn:hover {
+  background: #b91c1c;
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width: 768px) {
+
+  .subject-tab-card {
+    padding: 20px;
+  }
+
+  .visits-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .visits-header h2 {
+    font-size: 34px;
+  }
+
+  .subject-tab-card table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .visit-modal {
+    width: 95%;
+    padding: 24px;
+  }
+
+  .visit-modal h3 {
+    font-size: 26px;
+  }
+
+  .visit-actions {
+    flex-direction: column;
+  }
+
+  .view-visit-btn,
+  .edit-visit-btn,
+  .delete-visit-btn {
+    width: 100%;
+  }
+}

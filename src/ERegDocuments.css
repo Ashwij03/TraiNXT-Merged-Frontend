@@ -1,0 +1,58 @@
+.docs-container {
+  display: flex;
+  margin-top: 20px;
+  border-top: 1px solid #ddd;
+  padding-top: 15px;
+}
+
+/* LEFT */
+.study-workspace-left-panel {
+  width: 35%;
+  border-right: 1px solid #ddd;
+}
+
+.folder-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.folder {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.folder.active {
+  background: #f5f5f5;
+  border-left: 3px solid orange;
+}
+
+/* RIGHT */
+.right-panel {
+  width: 65%;
+  padding-left: 20px;
+}
+
+.docs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.docs-header input {
+  padding: 5px;
+}
+
+.count {
+  color: gray;
+  margin: 10px 0;
+}
+
+.doc-item {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.doc-item:hover {
+  background: #f9f9f9;
+}

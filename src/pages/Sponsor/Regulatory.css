@@ -1,0 +1,53 @@
+.regulatory-page {
+  padding: 24px;
+}
+
+.regulatory-table {
+  width: 100%;
+  background: white;
+  border-collapse: collapse;
+}
+
+.regulatory-table th,
+.regulatory-table td {
+  padding: 14px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.active {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.review {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.attention {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.action-buttons{
+  display:flex;
+  gap:12px;
+  margin-top:15px;
+}
+
+.action-buttons button{
+  background:#2563eb;
+  color:white;
+  border:none;
+  padding:10px 18px;
+  border-radius:8px;
+  cursor:pointer;
+}

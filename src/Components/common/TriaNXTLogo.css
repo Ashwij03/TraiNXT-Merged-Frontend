@@ -1,0 +1,31 @@
+.trianxt-logo {
+  color: inherit;
+  cursor: default;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  user-select: none;
+}
+
+.trianxt-logo[role="button"] {
+  cursor: pointer;
+}
+
+.trianxt-logo--sidebar {
+  color: var(--tnxt-text-inverse);
+  padding: 10px 12px 22px;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+}
+
+.trianxt-logo--auth {
+  color: var(--tnxt-navy);
+  font-size: 28px;
+  margin: 0 auto 15px;
+  text-align: center;
+}
+
+.trianxt-logo--auth[role="button"] {
+  cursor: pointer;
+}

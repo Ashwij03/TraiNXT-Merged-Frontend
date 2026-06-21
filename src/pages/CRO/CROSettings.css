@@ -1,0 +1,63 @@
+.cro-settings-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.cro-settings-tab {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #374151;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  font-family: inherit;
+}
+
+.cro-settings-tab:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.cro-settings-tab--active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.cro-settings-tab:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.cro-settings-panel {
+  margin-top: 0;
+}
+
+.cro-settings-section-title {
+  margin: 0 0 16px;
+  font-size: 1.125rem;
+  color: #0f172a;
+}
+
+.cro-settings-info {
+  margin-bottom: 18px;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 576px) {
+  .cro-settings-tabs {
+    flex-direction: column;
+  }
+
+  .cro-settings-tab {
+    width: 100%;
+    text-align: left;
+  }
+}

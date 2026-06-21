@@ -1,0 +1,154 @@
+.cro-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 4px 0 24px;
+}
+
+.cro-page-header h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  color: #111827;
+}
+
+.cro-page-header p {
+  color: #6b7280;
+  margin: 8px 0 0;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.kpi-card,
+.metric-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  text-align: center;
+}
+
+.kpi-card h2,
+.metric-card h2 {
+  color: #2563eb;
+  font-size: 2rem;
+  margin: 0 0 8px;
+}
+
+.kpi-card p,
+.metric-card p {
+  color: #6b7280;
+  margin: 0;
+}
+
+.table-section {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  margin-bottom: 0;
+  padding: 20px;
+}
+
+.table-section h2 {
+  color: #082c3c;
+  margin: 0 0 16px;
+}
+
+.cro-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.cro-table th {
+  background: #003049;
+  color: white;
+  padding: 12px;
+  text-align: center;
+}
+
+.cro-table td {
+  border-bottom: 1px solid #ddd;
+  padding: 12px;
+  text-align: center;
+}
+
+.action-btn {
+  background: #2563eb;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 8px 18px;
+}
+
+.action-btn:hover {
+  background: #1d4ed8;
+}
+
+.metrics-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.quick-actions {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  margin-top: 0;
+  padding: 24px;
+}
+
+.quick-actions h2 {
+  margin-bottom: 20px;
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-start;
+}
+
+.action-buttons button {
+  background: #2563eb;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 10px 18px;
+}
+
+.action-buttons button:hover {
+  background: #1d4ed8;
+}
+
+.cro-detail-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.cro-detail-grid div {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.cro-detail-grid label {
+  color: #6b7280;
+  display: block;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.cro-detail-grid span {
+  color: #111827;
+  font-weight: 600;
+}

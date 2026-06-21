@@ -1,0 +1,147 @@
+.cro-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  padding: 16px;
+}
+
+.cro-modal {
+  background: #ffffff;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.cro-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 0;
+}
+
+.cro-modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.cro-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: #64748b;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.cro-modal-close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.cro-modal-body {
+  padding: 16px 24px 24px;
+}
+
+.cro-modal-body p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #334155;
+  white-space: pre-line;
+}
+
+.cro-modal-footer {
+  padding: 0 24px 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cro-modal-btn-primary {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cro-modal-btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.cro-modal-btn-secondary {
+  background: #fff;
+  color: #334155;
+  border: 1px solid #d1d5db;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.cro-modal-btn-secondary:hover {
+  background: #f8fafc;
+}
+
+.cro-modal--large {
+  max-width: 640px;
+}
+
+.cro-modal--form .cro-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cro-modal--form .cro-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  box-sizing: border-box;
+}
+
+.cro-modal--form .cro-modal-footer {
+  gap: 10px;
+}
+
+.cro-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cro-btn-primary {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+}
+
+.cro-btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.cro-btn-secondary {
+  background: #fff;
+  color: #334155;
+  border: 1px solid #d1d5db;
+}
+
+.cro-btn-secondary:hover {
+  background: #f8fafc;
+}

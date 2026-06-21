@@ -1,0 +1,152 @@
+.top-navbar{
+  height:60px;
+  background:#001b5c;
+  color:white;
+  display:flex;
+  align-items:center;
+  padding:0 15px;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+  overflow:hidden;
+}
+
+/* Hide left side completely */
+.navbar-left{
+  display:none;
+}
+
+/* Right side controls */
+.navbar-right{
+  display:flex;
+  align-items:center;
+  gap:6px;
+
+  justify-content:flex-start;
+
+  /* CHANGE THIS VALUE IF NEEDED */
+  margin-left:260px;
+
+  overflow-x:auto;
+  overflow-y:hidden;
+}
+
+/* All dropdowns same size */
+.navbar-right select{
+  width:110px;
+  min-width:110px;
+  max-width:110px;
+  height:34px;
+  border:none;
+  border-radius:6px;
+  padding:0 8px;
+  background:white;
+  color:#111827;
+  cursor:pointer;
+  font-size:12px;
+  box-sizing:border-box;
+}
+
+/* Live chat button */
+.live-chat-btn{
+  height:34px;
+  border:none;
+  border-radius:6px;
+  padding:0 12px;
+  cursor:pointer;
+  white-space:nowrap;
+  font-size:12px;
+}
+
+/* Notification */
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  cursor:pointer;
+  white-space:nowrap;
+  font-size:13px;
+}
+
+/* Username */
+.user-name{
+  font-size:13px;
+  font-weight:600;
+  background:rgba(255,255,255,0.15);
+  padding:7px 12px;
+  border-radius:20px;
+  white-space:nowrap;
+}
+
+/* Logout */
+.logout-btn-top{
+  height:34px;
+  padding:0 12px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+
+/* Large screens */
+@media(max-width:1400px){
+
+  .navbar-right{
+    margin-left:220px;
+    gap:4px;
+  }
+
+  .navbar-right select{
+    width:95px;
+    min-width:95px;
+    font-size:11px;
+  }
+}
+
+/* Mobile */
+@media(max-width:1024px){
+
+  .top-navbar{
+    flex-direction:column;
+    height:auto;
+    padding:10px;
+    gap:10px;
+  }
+
+  .navbar-right{
+    margin-left:0;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+
+  .navbar-right select{
+    width:120px;
+    min-width:120px;
+  }
+}
+
+.navbar-filters{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-left:260px;
+}
+
+.navbar-actions{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  cursor:pointer;
+  white-space:nowrap;
+  font-size:13px;
+  transition:0.2s;
+}
+
+.nav-item:hover{
+  color:#93c5fd;
+}

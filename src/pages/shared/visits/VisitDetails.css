@@ -1,0 +1,696 @@
+.visit-details-wrapper {
+  background: #fff;
+}
+
+.visit-tabs {
+  display: flex;
+  border-bottom: 1px solid #ddd;
+  margin-top: 10px;
+}
+
+.visit-tab {
+  padding: 10px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #555;
+}
+
+.visit-tab.active {
+  color: #1a73e8;
+  border-bottom: 2px solid #1a73e8;
+  font-weight: 600;
+}
+
+.visit-tab-content {
+  padding: 16px;
+}
+
+/* =============================== */
+/* PRINT ONLY VISIT AREA */
+/* =============================== */
+@media print {
+
+  body * {
+    visibility: hidden;
+  }
+
+  #print-area,
+  #print-area * {
+    visibility: visible;
+  }
+
+  #print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white;
+    padding: 20px;
+  }
+
+  html,
+  body {
+    background: white !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  button {
+    display: none !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+/* ===================================================== */
+/* FRIEND CSS MERGED BELOW */
+/* ===================================================== */
+
+/* ===== PROCEDURE LEVEL ===== */
+.procedure-bar {
+  display: flex;
+  align-items: center;
+  background-color: #f2b36a;
+  color: #fff;
+  padding: 14px 16px;
+  border-radius: 4px;
+  margin-top: 20px;
+}
+
+.check-icon {
+  margin-right: 12px;
+  font-weight: bold;
+}
+
+.procedure-title {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.procedure-plus {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px dotted #fff;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.procedure-bar:hover .procedure-plus {
+  display: flex;
+}
+
+/* ===== QUESTION LEVEL ===== */
+.procedure-content {
+  border: 1px solid #ddd;
+  padding: 20px;
+  margin-top: 10px;
+  border-radius: 4px;
+}
+
+.question-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #eef1f5;
+  padding: 14px;
+  border-radius: 4px;
+  position: relative;
+}
+
+.question-value {
+  margin-top: 6px;
+}
+
+.audit {
+  font-size: 12px;
+  color: #666;
+}
+
+.audit-link {
+  color: #1a73e8;
+  font-size: 13px;
+  margin-top: 6px;
+  cursor: pointer;
+}
+
+.question-plus {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  background: white;
+}
+
+.question-row:hover .question-plus {
+  display: flex;
+}
+
+/* ===== BOX 3: PROGRESS NOTES ===== */
+.progress-notes-card {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-top: 20px;
+  overflow: hidden;
+}
+
+.progress-header {
+  background: #f2b36a;
+  color: white;
+  padding: 10px 14px;
+  font-weight: bold;
+}
+
+.progress-body {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  position: relative;
+}
+
+.progress-icon {
+  font-size: 24px;
+  margin-right: 12px;
+}
+
+.progress-text {
+  font-size: 14px;
+}
+
+.progress-plus {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: white;
+  font-size: 16px;
+}
+
+.progress-notes-card:hover .progress-plus {
+  display: flex;
+}
+
+/* ===== DOCUMENT HEADER ===== */
+.document-card {
+  border: 1px solid #ddd;
+  padding: 16px;
+  margin-top: 20px;
+  background: #fff;
+  border-radius: 4px;
+  position: relative;
+}
+
+.document-title {
+  color: #f57c00;
+  font-weight: bold;
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.document-meta {
+  display: block;
+  color: #000;
+  font-size: 14px;
+  margin: 12px 0;
+}
+
+.document-meta div {
+  margin-bottom: 6px;
+}
+
+.document-comments {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.document-plus {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: white;
+  font-size: 16px;
+}
+
+.document-card:hover .document-plus {
+  display: flex;
+}
+
+/* ===== INLINE COMMENTS ===== */
+.inline-comment,
+.comment-inline {
+  display: flex;
+  gap: 12px;
+  cursor: pointer;
+  padding: 10px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  background: #ccc;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.blue-tick {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: #1a73e8;
+  color: white;
+  font-size: 10px;
+  border-radius: 50%;
+  padding: 2px;
+}
+
+.comment-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.comment-body small {
+  color: #777;
+  font-size: 12px;
+}
+
+/* ===================================================== */
+/* CTMS VISIT WORKSPACE
+/* ===================================================== */
+
+.visit-workspace-tabs {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.visit-workspace-tabs button {
+  border: none;
+  background: #e5e7eb;
+  color: #374151;
+  padding: 12px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all .25s ease;
+}
+
+.visit-workspace-tabs button:hover {
+  transform: translateY(-2px);
+}
+
+.visit-workspace-tabs button.active {
+  background: #2563eb;
+  color: white;
+}
+
+.visit-tab-content {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+
+.visit-tab-content h3 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 20px;
+}
+
+/* ===================================================== */
+/* DOCUMENTS
+/* ===================================================== */
+
+.add-doc-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 20px;
+  transition: .25s;
+}
+
+.add-doc-btn:hover {
+  background: #1d4ed8;
+}
+
+.visit-tab-content table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.visit-tab-content thead {
+  background: #042c40;
+}
+
+.visit-tab-content th {
+  color: white;
+  padding: 14px;
+  text-align: left;
+}
+
+.visit-tab-content td {
+  padding: 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.visit-tab-content tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* ===================================================== */
+/* QUERY TABLE
+/* ===================================================== */
+
+.query-status-open {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.query-status-closed {
+  background: #dcfce7;
+  color: #166534;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.respond-btn {
+  background: #7c3aed;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.respond-btn:hover {
+  background: #6d28d9;
+}
+
+/* ===================================================== */
+/* AUDIT TRAIL
+/* ===================================================== */
+
+.audit-table {
+  width: 100%;
+}
+
+.audit-table th {
+  background: #042c40;
+  color: white;
+}
+
+.audit-table td {
+  padding: 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.audit-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* ===================================================== */
+/* ACTION BUTTONS
+/* ===================================================== */
+
+.table-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.view-btn,
+.edit-btn,
+.delete-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.view-btn {
+  background: #2563eb;
+  color: white;
+}
+
+.view-btn:hover {
+  background: #1d4ed8;
+}
+
+.edit-btn {
+  min-height: 36px;
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+}
+
+/* ===================================================== */
+/* MODALS
+/* ===================================================== */
+
+.ctms-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.ctms-modal {
+  background: white;
+  width: 550px;
+  max-width: 95%;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.25);
+}
+
+.ctms-modal h3 {
+  font-size: 26px;
+  margin-bottom: 20px;
+}
+
+.ctms-modal input,
+.ctms-modal textarea,
+.ctms-modal select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dbe2ea;
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+
+.ctms-modal textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.ctms-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.ctms-modal-actions button {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.cancel-btn {
+  background: #e5e7eb;
+}
+
+.save-btn {
+  background: #16a34a;
+  color: white;
+}
+
+.delete-confirm-btn {
+  background: #dc2626;
+  color: white;
+}
+
+.visit-procedures-wrapper {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+
+.procedures-left {
+  background: #294766;
+}
+
+.procedure-item {
+  transition: all .2s ease;
+}
+
+.procedure-item:hover {
+  background: rgba(255,255,255,.1);
+}
+
+.procedure-item.active {
+  background: #1f3850;
+}
+
+.procedure-header {
+  background: #f6b26b;
+  font-size: 15px;
+}
+
+.procedure-body {
+  background: #fff;
+}
+
+.add-doc-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.visit-tab-content table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.visit-tab-content thead {
+  background: #042c40;
+}
+
+.visit-tab-content th {
+  color: white;
+  padding: 14px;
+  text-align: left;
+}
+
+.visit-tab-content td {
+  padding: 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.visit-tab-content tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* ===================================================== */
+/* RESPONSIVE
+/* ===================================================== */
+
+@media(max-width:768px){
+
+  .visit-workspace-tabs{
+    flex-direction: column;
+  }
+
+  .visit-tab-content{
+    padding: 18px;
+  }
+
+  .visit-tab-content table{
+    display:block;
+    overflow-x:auto;
+    white-space:nowrap;
+  }
+
+  .table-actions{
+    flex-direction:column;
+  }
+
+  .view-btn,
+  .edit-btn,
+  .delete-btn{
+    width:100%;
+  }
+
+}
+
+@media print {
+
+  html,
+  body {
+    background: white !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  body {
+    zoom: 80%;
+  }
+
+  button {
+    display: none !important;
+  }
+
+  .visit-header,
+  .visit-procedures,
+  .procedure-bar,
+  .comment-inline {
+    overflow: visible !important;
+    height: auto !important;
+    display: block !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

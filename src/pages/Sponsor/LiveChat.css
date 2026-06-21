@@ -1,0 +1,63 @@
+.chat-layout{
+  display:flex;
+  gap:20px;
+  margin-top:20px;
+}
+
+.contacts-panel{
+  width:250px;
+  background:white;
+  border-radius:10px;
+  padding:15px;
+  border:1px solid #ddd;
+}
+
+.chat-panel{
+  flex:1;
+  background:white;
+  border-radius:10px;
+  border:1px solid #ddd;
+}
+
+.contact-item{
+  padding:12px;
+  cursor:pointer;
+  border-radius:8px;
+  margin-bottom:8px;
+}
+
+.contact-item:hover{
+  background:#f3f4f6;
+}
+
+.active-contact{
+  background:#2563eb;
+  color:white;
+}
+
+.chat-header{
+  display:flex;
+  justify-content:space-between;
+  padding:15px;
+  border-bottom:1px solid #ddd;
+}
+
+.online-status{
+  color:green;
+}
+
+.messages-box{
+  height:400px;
+  overflow-y:auto;
+  padding:15px;
+}
+
+.my-message{
+  text-align:right;
+  margin-bottom:15px;
+}
+
+.other-message{
+  text-align:left;
+  margin-bottom:15px;
+}

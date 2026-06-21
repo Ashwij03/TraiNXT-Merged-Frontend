@@ -1,0 +1,258 @@
+.access-permissions-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 4px 0 24px;
+}
+
+.access-permissions-header h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  color: #111827;
+}
+
+.access-permissions-header p {
+  margin: 8px 0 0;
+  color: #6b7280;
+}
+
+.access-permissions-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0;
+}
+
+.access-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 16px;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.access-tab:hover {
+  color: #2563eb;
+}
+
+.access-tab.active {
+  border-bottom-color: #2563eb;
+  color: black;
+}
+
+.access-tab-badge {
+  background: #e5e7eb;
+  border-radius: 999px;
+  color: #374151;
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 8px;
+  padding: 2px 8px;
+}
+
+.access-tab.active .access-tab-badge {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.access-actions-cell {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.access-action-link {
+  background: none;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0;
+  text-decoration: none;
+}
+
+.access-action-link:hover {
+  text-decoration: underline;
+}
+
+.access-action-link.revoke {
+  color: #dc2626;
+}
+
+.permission-remove-btn,
+.remove-permission-btn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0;
+}
+
+.permission-remove-btn:hover,
+.remove-permission-btn:hover {
+  text-decoration: underline;
+}
+
+.status-pill {
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+}
+
+.status-pill.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-pill.inactive {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.status-pill.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-pill.accepted {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-pill.revoked {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.request-permission-btn {
+  background: #2563eb;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+}
+
+.request-permission-btn:hover {
+  background: #1d4ed8;
+}
+
+.subject-status-kpi-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  margin-bottom: 20px;
+}
+
+.subject-status-kpi {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.subject-status-kpi strong {
+  color: #2563eb;
+  display: block;
+  font-size: 28px;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+
+.subject-status-kpi span {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.study-reports-toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.study-reports-toolbar button {
+  background: #2563eb;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 16px;
+}
+
+.study-reports-toolbar button.secondary {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+}
+
+.study-reports-overview-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom: 24px;
+}
+
+.study-reports-overview-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.study-reports-overview-card label {
+  color: #64748b;
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.study-reports-overview-card p {
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.access-request-form {
+  display: grid;
+  gap: 16px;
+  max-width: 560px;
+}
+
+.access-request-form label {
+  color: #374151;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  font-weight: 600;
+  gap: 8px;
+}
+
+.access-request-form input,
+.access-request-form select,
+.access-request-form textarea {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  padding: 10px 12px;
+}

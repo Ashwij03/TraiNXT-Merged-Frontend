@@ -1,0 +1,243 @@
+/* newly added */
+
+/* ==========================================
+   VISIT DETAILS PAGE
+========================================== */
+
+.visit-details-page {
+  padding: 24px;
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.visit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.back-btn {
+  background: #0f3b66;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all .25s ease;
+}
+
+.back-btn:hover {
+  background: #0b2d4d;
+  transform: translateY(-2px);
+}
+
+.visit-status {
+  background: #dcfce7;
+  color: #166534;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+/* ==========================================
+   TITLE
+========================================== */
+
+.visit-title {
+  margin-bottom: 24px;
+}
+
+.visit-title h1 {
+  font-size: 42px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.visit-title p {
+  color: #64748b;
+  font-size: 16px;
+}
+
+/* ==========================================
+   KPI CARDS
+========================================== */
+
+.visit-kpis {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.visit-kpi-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.08);
+  transition: all .25s ease;
+}
+
+.visit-kpi-card:hover {
+  transform: translateY(-4px);
+}
+
+.visit-kpi-card h3 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.visit-kpi-card p {
+  color: #64748b;
+}
+
+/* ==========================================
+   TABS
+========================================== */
+
+.visit-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.visit-tabs button {
+  border: none;
+  background: white;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all .25s ease;
+}
+
+.visit-tabs button:hover {
+  transform: translateY(-2px);
+}
+
+.visit-tabs button.active {
+  background: #2563eb;
+  color: white;
+}
+
+/* ==========================================
+   CONTENT CARD
+========================================== */
+
+.visit-card {
+  background: white;
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+
+.visit-card h2 {
+  font-size: 28px;
+  margin-bottom: 24px;
+  color: #0f172a;
+}
+
+/* ==========================================
+   GRID
+========================================== */
+
+.visit-grid {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 20px;
+}
+
+.visit-grid div {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.visit-grid label {
+  display: block;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.visit-grid p {
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* ==========================================
+   TABLE
+========================================== */
+
+.visit-card table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.visit-card thead {
+  background: #042c40;
+}
+
+.visit-card th {
+  color: white;
+  padding: 16px;
+  text-align: left;
+}
+
+.visit-card td {
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.visit-card tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media(max-width:1024px) {
+
+  .visit-kpis {
+    grid-template-columns: repeat(2,1fr);
+  }
+
+}
+
+@media(max-width:768px) {
+
+  .visit-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  .visit-kpis {
+    grid-template-columns: 1fr;
+  }
+
+  .visit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .visit-title h1 {
+    font-size: 30px;
+  }
+
+  .visit-tabs {
+    flex-direction: column;
+  }
+
+}

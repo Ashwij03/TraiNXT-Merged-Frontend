@@ -1,0 +1,82 @@
+.workspace-header{
+  margin:20px 0;
+}
+
+.study-kpi-container{
+  display:grid !important;
+  grid-template-columns:repeat(4,1fr) !important;
+  gap:20px;
+  margin-bottom:20px;
+}
+
+.study-kpi-card{
+  width:220px !important;
+  height:120px !important;
+  min-height:120px !important;
+  max-height:120px !important;
+
+  background:#fff;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.1);
+
+  flex:none !important;
+}
+.workspace-tabs{
+  display:flex !important;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.workspace-tabs button{
+  background:#2563eb !important;
+  color:white !important;
+  border:none !important;
+  border-radius:8px !important;
+
+  width:120px !important;
+  height:40px !important;
+
+  min-height:40px !important;
+  max-height:40px !important;
+
+  flex:none !important;
+
+  cursor:pointer;
+}
+.performance-cards{
+  display:grid !important;
+  grid-template-columns:repeat(4,1fr) !important;
+  gap:20px;
+  margin-bottom:20px;
+}
+
+.workspace-content{
+  margin-top:20px;
+}
+
+.workspace-header,
+.study-kpi-container,
+.workspace-tabs,
+.workspace-content {
+  width: 100%;
+  clear: both;
+}
+
+.study-kpi-container,
+.performance-cards {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: flex-start !important;
+}
+
+.workspace-tabs {
+  display: flex !important;
+  flex-wrap: wrap !important;
+}
+
+.study-kpi-card {
+  height: auto !important;
+  min-height: 120px !important;
+}

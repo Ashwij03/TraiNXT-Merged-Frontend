@@ -1,0 +1,61 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: white;
+  width: 420px;
+  padding: 20px;
+  border-radius: 6px;
+}
+
+.modal-box h3 {
+  margin-top: 0;
+}
+
+.modal-box textarea {
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px;
+}
+
+.mention-box {
+  border: 1px solid #ddd;
+  margin-top: 6px;
+}
+
+.mention-user {
+  padding: 6px;
+  cursor: pointer;
+}
+
+.mention-user:hover {
+  background: #f2f2f2;
+}
+
+.mention-user span {
+  color: #666;
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.submit-btn {
+  background: #1a73e8;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  cursor: pointer;
+}

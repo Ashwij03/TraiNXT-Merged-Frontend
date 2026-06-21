@@ -1,0 +1,58 @@
+.doc-viewer {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* HEADER */
+.doc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.doc-header h2 {
+  color: #f57c00;
+}
+
+/* ACTIONS */
+.doc-actions span {
+  margin-left: 20px;
+  cursor: pointer;
+  color: #007bff;
+}
+
+/* LOCATION */
+.location {
+  margin: 15px 0;
+  color: #555;
+}
+
+/* DETAILS */
+.doc-details {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.doc-details p {
+  margin: 10px 0;
+}
+
+/* DOWNLOAD BUTTON */
+.download-box {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 30px;
+}
+
+.download-btn {
+  background: #3b5b7a;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}

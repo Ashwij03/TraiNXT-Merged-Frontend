@@ -1,0 +1,195 @@
+.delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+
+.delete-modal-box {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 90%;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.delete-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.delete-modal-header h2 {
+  margin: 0;
+  color: #d32f2f;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.delete-modal-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.delete-modal-close:hover {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.delete-modal-content {
+  padding: 24px;
+}
+
+.delete-message {
+  margin: 0 0 24px 0;
+  color: #333;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.delete-form-group {
+  margin-bottom: 20px;
+}
+
+.delete-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+.required {
+  color: #d32f2f;
+  font-weight: bold;
+}
+
+.delete-textarea,
+.delete-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.delete-textarea:focus,
+.delete-input:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.delete-textarea.error,
+.delete-input.error {
+  border-color: #d32f2f;
+}
+
+.delete-textarea.error:focus,
+.delete-input.error:focus {
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+}
+
+.delete-checkbox-group {
+  margin-bottom: 24px;
+}
+
+.delete-checkbox-group label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.delete-checkbox-group input[type="checkbox"] {
+  margin-right: 8px;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  accent-color: #d32f2f;
+}
+
+.error-message {
+  display: block;
+  color: #d32f2f;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.delete-modal-actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #e0e0e0;
+  justify-content: flex-end;
+}
+
+.delete-cancel-btn,
+.delete-confirm-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-cancel-btn {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.delete-cancel-btn:hover {
+  background-color: #d0d0d0;
+}
+
+.delete-confirm-btn {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.delete-confirm-btn:hover:not(:disabled) {
+  background-color: #b71c1c;
+}
+
+.delete-confirm-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}

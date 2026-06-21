@@ -1,0 +1,154 @@
+/* =============================== */
+/* LAYOUT */
+/* =============================== */
+.visit-procedures-wrapper {
+  display: flex;
+  border: 1px solid #ddd;
+  margin-top: 12px;
+  font-family: Arial, sans-serif;
+  background: #fff;
+}
+
+/* =============================== */
+/* LEFT BLUE COLUMN */
+/* =============================== */
+.procedures-left {
+  width: 260px;
+  background: #3f5f7f;
+  color: #fff;
+}
+
+.procedure-item {
+  padding: 12px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.procedure-item.active {
+  background: #2f4f6f;
+  font-weight: 600;
+}
+
+/* ICON STATES */
+.procedure-item.complete .icon {
+  color: #2ecc71;
+}
+
+.procedure-item.partial .icon {
+  color: #f1c40f;
+  font-weight: bold;
+}
+
+/* =============================== */
+/* RIGHT PANEL */
+/* =============================== */
+.procedures-right {
+  flex: 1;
+  background: #fff;
+}
+/* =============================== */
+/* PROCEDURE HEADER (ORANGE BAR) */
+/* =============================== */
+.procedure-header {
+  background: #f6b26b;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+}
+
+.external-icon {
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* =============================== */
+/* BODY */
+/* =============================== */
+.procedure-body {
+  padding: 16px;
+  font-size: 13px;
+}
+
+.instructions {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+/* =============================== */
+/* QUESTION ROWS */
+/* =============================== */
+.question-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #f7f7f7;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.answer-yes {
+  color: #2e7d32;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.meta {
+  color: #777;
+  font-size: 11px;
+}
+
+/* =============================== */
+/* ANSWER TOTALS (EXACT CRIO) */
+/* =============================== */
+.answer-totals {
+  margin-top: 16px;
+  background: #f3f6f9;
+  padding: 14px;
+  border-radius: 4px;
+}
+
+.totals-title {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #6b7280;
+  letter-spacing: 0.4px;
+}
+
+.totals-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  text-align: center;
+}
+
+.totals-grid .label {
+  font-size: 12px;
+  color: #555;
+}
+
+.totals-grid .value {
+  font-size: 14px;
+  font-weight: 600;
+}
+.question-label.error {
+  color: #d32f2f;
+  font-weight: 600;
+}
+
+.answer {
+  font-weight: 700;
+}
+
+.meta {
+  font-size: 11px;
+  color: #777;
+}
+
+.empty {
+  color: #999;
+}
