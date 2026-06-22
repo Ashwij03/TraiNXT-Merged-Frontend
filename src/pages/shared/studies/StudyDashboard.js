@@ -25,6 +25,7 @@ import RecentSubjectsWidget from "../../../Components/dashboard/RecentSubjectsWi
 import UpcomingVisitsWidget from "../../../Components/dashboard/UpcomingVisitsWidget";
 import PendingCommentsWidget from "../../../Components/dashboard/PendingCommentsWidget";
 import QuickActionsWidget from "../../../Components/dashboard/QuickActionsWidget";
+import DocumentFolderManager from "../../../Components/common/DocumentFolderManager";
 
 import {
   FiUsers,
@@ -57,7 +58,9 @@ function StudyDashboard() {
     const tabFromUrl = searchParams.get("tab");
 
     if (tabFromUrl) {
-      setActiveTab(tabFromUrl);
+      setActiveTab((currentTab) =>
+        currentTab === tabFromUrl ? currentTab : tabFromUrl
+      );
     }
   }, [searchParams]);
 
@@ -318,19 +321,13 @@ function StudyDashboard() {
     }
   };
 
-  if (!data) {
-    return (
-      <DashboardLayout>
-        <div className="dashboard-loading">
-          Loading Dashboard...
-        </div>
-      </DashboardLayout>
-    );
-  }
-
   return (
     <DashboardLayout>
-      <div className="study-dashboard-page">
+      {!data ? (
+        <div className="dashboard-loading">Loading Dashboard...</div>
+      ) : (
+        <>
+          <div className="study-dashboard-page">
         <div className="study-dashboard-topbar">
           <button
             className="back-to-studies-btn"
@@ -494,9 +491,35 @@ function StudyDashboard() {
         {activeTab === "Reports" && (
           <StudyReports />
         )}
-      </div>
 
-      {showEditModal && (
+        {activeTab === "eISF" && (
+          <div className="module-card">
+            <h2>eISF</h2>
+            <DocumentFolderManager
+              sectionId="eISF"
+              contextKey={id || "default"}
+              title="eISF"
+              studyCode={id}
+              layout="vertical"
+            />
+          </div>
+        )}
+
+        {activeTab === "Others" && (
+          <div className="module-card">
+            <h2>Others</h2>
+            <DocumentFolderManager
+              sectionId="others"
+              contextKey={id || "default"}
+              title="Others"
+              studyCode={id}
+              layout="vertical"
+            />
+          </div>
+        )}
+          </div>
+
+          {showEditModal && (
         <div className="study-modal-overlay">
           <form className="study-modal" onSubmit={handleSaveStudyEdit}>
             <div className="study-modal-header">
@@ -679,6 +702,8 @@ function StudyDashboard() {
           message={`Are you sure you want to delete the study "${currentStudy.name}" (${currentStudy.code})? This action cannot be undone.`}
           itemType="study"
         />
+          )}
+        </>
       )}
     </DashboardLayout>
   );

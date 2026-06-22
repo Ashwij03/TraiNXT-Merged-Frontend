@@ -176,9 +176,7 @@ const AppLayout = ({ children }) => {
                   role="button"
                   tabIndex={0}
                 >
-                  <span className="sponsor-studies-expander" aria-hidden="true">
-                    +
-                  </span>
+                  <span className="sponsor-studies-expander" aria-hidden="true" />
                   <span>Comments</span>
                 </div>
               </div>

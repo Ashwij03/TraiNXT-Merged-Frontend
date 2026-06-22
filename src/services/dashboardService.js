@@ -10,7 +10,7 @@ import {
 } from "./adminService";
 import { getUpcomingVisitsWindow } from "./visitScheduleService";
 
-export const getStudiesDashboard = async () => {
+export function getStudiesDashboard() {
   initializeAdminData();
 
   const studies = getStudies();
@@ -124,7 +124,7 @@ export const getStudiesDashboard = async () => {
       status: study.status
     }))
   };
-};
+}
 
 export const getRecentActivities = () => {
   initializeAdminData();

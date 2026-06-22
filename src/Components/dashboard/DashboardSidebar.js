@@ -6,19 +6,18 @@ import {
   getDashboardPath,
   getEffectiveRole,
   getEffectiveUser,
-  getSidebarMenuItems
+  getSidebarMenuItems,
 } from "../../services/roleService";
 import { ADMIN_PREVIEW_ROLE_EVENT } from "../../constants/headerFilters";
 import {
   FOLDER_TREE_EVENT,
   getFirstLevelFolders,
-  getFolderTree
+  getFolderTree,
 } from "../../services/folderService";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   FiBell,
-  FiClipboard,
   FiFolder,
   FiGrid,
   FiSettings,
@@ -29,7 +28,7 @@ import {
   FiUser,
   FiBarChart2,
   FiFileText,
-  FiLayers
+  FiLayers,
 } from "react-icons/fi";
 import { getRoleExtraMenuItems } from "../../config/roleMenus";
 
@@ -49,10 +48,12 @@ function readStoredJson(key, fallback) {
 const STUDY_SECTIONS = [
   { key: "overview", label: "Overview" },
   { key: "subjects", label: "Subjects", expandable: true },
+  { key: "eisf", label: "eISF" },
   { key: "regulatory", label: "Regulatory" },
   { key: "reports", label: "Reports" },
-  { key: "studyFolder", label: "Study Folder", expandable: true },
-  { key: "logs", label: "Logs" }
+  { key: "studyFiles", label: "Study Files" },
+  { key: "logs", label: "Logs" },
+  { key: "others", label: "Others" },
 ];
 
 function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
@@ -65,7 +66,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   const currentUser = getCurrentUser();
   const userEmail = currentUser?.email || "";
   const [effectiveRole, setEffectiveRole] = useState(() =>
-    getEffectiveRole(currentUser)
+    getEffectiveRole(currentUser),
   );
   const effectiveUser = getEffectiveUser(currentUser);
 
@@ -88,11 +89,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
 
   const getStudyKey = (study) =>
     String(
-      study?.code ??
-        study?.id ??
-        study?.studyId ??
-        study?.title ??
-        study?.name
+      study?.code ?? study?.id ?? study?.studyId ?? study?.title ?? study?.name,
     );
 
   const getStudyDisplayName = (study) =>
@@ -127,7 +124,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   };
 
   const [studyBinderOpen, setStudyBinderOpen] = useState(() =>
-    readStoredJson(SIDEBAR_STUDY_BINDER_OPEN_KEY, false)
+    readStoredJson(SIDEBAR_STUDY_BINDER_OPEN_KEY, false),
   );
   const [studiesOpen, setStudiesOpen] = useState(() => {
     const path = pathname;
@@ -140,10 +137,10 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     );
   });
   const [expandedStudies, setExpandedStudies] = useState(() =>
-    readStoredJson(SIDEBAR_EXPANDED_STUDIES_KEY, {})
+    readStoredJson(SIDEBAR_EXPANDED_STUDIES_KEY, {}),
   );
   const [expandedStudySections, setExpandedStudySections] = useState(() =>
-    readStoredJson(SIDEBAR_EXPANDED_SECTIONS_KEY, {})
+    readStoredJson(SIDEBAR_EXPANDED_SECTIONS_KEY, {}),
   );
   const [folderTreeVersion, setFolderTreeVersion] = useState(0);
   const [sidebarWidth, setSidebarWidth] = useState(() => {
@@ -170,7 +167,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
 
   const sidebarClassName = [
     "enterprise-sidebar",
-    collapsed || compact ? "is-collapsed" : ""
+    collapsed || compact ? "is-collapsed" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -178,16 +175,17 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   const isStudiesOverviewRoute = pathname === "/studies";
   const isStudyInternalRoute =
     pathname.startsWith("/study-dashboard") || pathname.startsWith("/study/");
-  const isEisfRoute = pathname === "/ereg-comments";
   const isCommentsRoute =
     pathname.includes("/comments") || pathname === "/comments";
 
-  const isStudiesActive =
-    isStudiesOverviewRoute || isStudyInternalRoute;
+  const isStudiesActive = isStudiesOverviewRoute || isStudyInternalRoute;
 
   useEffect(() => {
     const handlePreviewRoleChange = () => {
-      setEffectiveRole(getEffectiveRole(getCurrentUser()));
+      const nextRole = getEffectiveRole(getCurrentUser());
+      setEffectiveRole((currentRole) =>
+        currentRole === nextRole ? currentRole : nextRole,
+      );
     };
 
     window.addEventListener(ADMIN_PREVIEW_ROLE_EVENT, handlePreviewRoleChange);
@@ -195,7 +193,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     return () => {
       window.removeEventListener(
         ADMIN_PREVIEW_ROLE_EVENT,
-        handlePreviewRoleChange
+        handlePreviewRoleChange,
       );
     };
   }, [userEmail]);
@@ -212,21 +210,21 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   useEffect(() => {
     localStorage.setItem(
       SIDEBAR_EXPANDED_STUDIES_KEY,
-      JSON.stringify(expandedStudies)
+      JSON.stringify(expandedStudies),
     );
   }, [expandedStudies]);
 
   useEffect(() => {
     localStorage.setItem(
       SIDEBAR_EXPANDED_SECTIONS_KEY,
-      JSON.stringify(expandedStudySections)
+      JSON.stringify(expandedStudySections),
     );
   }, [expandedStudySections]);
 
   useEffect(() => {
     localStorage.setItem(
       SIDEBAR_STUDY_BINDER_OPEN_KEY,
-      JSON.stringify(studyBinderOpen)
+      JSON.stringify(studyBinderOpen),
     );
   }, [studyBinderOpen]);
 
@@ -236,9 +234,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       return;
     }
 
-    const studyMatch = pathname.match(
-      /^\/study-dashboard\/([^/?]+)/
-    );
+    const studyMatch = pathname.match(/^\/study-dashboard\/([^/?]+)/);
     const activeStudyKey = studyMatch?.[1];
 
     if (!activeStudyKey) {
@@ -249,7 +245,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       setStudyBinderOpen(true);
       setExpandedStudies((prev) => ({
         ...prev,
-        [activeStudyKey]: true
+        [activeStudyKey]: true,
       }));
       prevActiveStudyKeyRef.current = activeStudyKey;
     }
@@ -304,12 +300,6 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   const getLinkClass = (isActive) =>
     isActive ? "sidebar-link active" : "sidebar-link";
 
-  const getSubmenuClass = (isOpen) =>
-    isOpen ? "submenu-item submenu-open" : "submenu-item";
-
-  const getSubmenuParentClass = (isOpen) =>
-    isOpen ? "submenu-parent submenu-open" : "submenu-parent";
-
   const handleNav = (path) => {
     navigate(path);
     onNavigate?.();
@@ -352,7 +342,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
 
     setExpandedStudies((prev) => ({
       ...prev,
-      [studyKey]: !Boolean(prev[studyKey])
+      [studyKey]: !Boolean(prev[studyKey]),
     }));
   };
 
@@ -362,7 +352,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
 
     setExpandedStudySections((prev) => ({
       ...prev,
-      [compositeKey]: !Boolean(prev[compositeKey])
+      [compositeKey]: !Boolean(prev[compositeKey]),
     }));
   };
 
@@ -370,14 +360,16 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     studyKey,
     sectionKey,
     isSectionOpen,
-    event
+    event,
   ) => {
     event?.stopPropagation();
 
-    if (isSectionOpen) {
-      toggleStudySection(studyKey, sectionKey, event);
-      return;
-    }
+    const compositeKey = `${studyKey}__${sectionKey}`;
+
+    setExpandedStudySections((prev) => ({
+      ...prev,
+      [compositeKey]: !Boolean(prev[compositeKey]),
+    }));
 
     navigateToStudySection(studyKey, sectionKey);
   };
@@ -392,10 +384,12 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     const tabMap = {
       overview: "Overview",
       subjects: "Subjects",
+      eisf: "eISF",
       regulatory: "Regulatory",
       reports: "Reports",
-      studyFolder: "Study Folder",
-      logs: "Logs"
+      studyFiles: "Study Files",
+      logs: "Logs",
+      others: "Others",
     };
 
     const tab = tabMap[section] || "Overview";
@@ -429,15 +423,15 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     void folderTreeVersion;
 
     const subjectId = subject.subjectId || subject.id;
-    const contextKey = `${studyKey}::${subjectId}`;
-    return getFirstLevelFolders("subjects", contextKey);
+    const folderName = `${studyKey}::${subjectId}`;
+    return getFirstLevelFolders("subjects", folderName);
   };
 
   const handleFolderNavigate = (studyKey, sectionKey, node) => {
     const name = String(node?.name || "").toLowerCase();
 
     if (
-      sectionKey === "studyFolder" &&
+      sectionKey === "studyFiles" &&
       (name.includes("regulatory") || name.includes("reg"))
     ) {
       navigateToStudySection(studyKey, "regulatory");
@@ -450,23 +444,22 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   const renderDynamicFolderNodes = (nodes, studyKey, sectionKey, depth = 0) =>
     nodes.map((node) => {
       const compositeKey = `${studyKey}__${sectionKey}__folder__${node.id}`;
-      const depthClass =
-        depth > 0 ? ` sidebar-tree-depth-${Math.min(depth, 2)}` : "";
 
       return (
         <div key={compositeKey}>
           <div
-            className={`submenu-item subject-child${depthClass}`}
+            className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-tree-row--folder-leaf"
             onClick={() => handleFolderNavigate(studyKey, sectionKey, node)}
           >
-            {node.name}
+            <span className="sidebar-tree-spacer" aria-hidden="true" />
+            <span className="sidebar-tree-label">{node.name}</span>
           </div>
           {node.children?.length
             ? renderDynamicFolderNodes(
                 node.children,
                 studyKey,
                 sectionKey,
-                depth + 1
+                depth + 1,
               )
             : null}
         </div>
@@ -482,7 +475,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
           : {
               width: sidebarWidth,
               minWidth: sidebarWidth,
-              flexBasis: sidebarWidth
+              flexBasis: sidebarWidth,
             }
       }
     >
@@ -507,16 +500,30 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       </div>
 
       {studiesOpen && (
-        <div className="sidebar-submenu">
-          <div
-            className={getSubmenuParentClass(studyBinderOpen)}
-            onClick={handleStudyBinderClick}
-          >
-            Study Binder
+        <div className="sidebar-submenu sidebar-studies-tree">
+          <div className="sidebar-tree-row sidebar-tree-row--branch">
+            <button
+              type="button"
+              className="sidebar-expander"
+              aria-label={
+                studyBinderOpen
+                  ? "Collapse Study Binder"
+                  : "Expand Study Binder"
+              }
+              onClick={handleStudyBinderClick}
+            >
+              {studyBinderOpen ? "−" : "+"}
+            </button>
+            <span
+              className="sidebar-tree-label sidebar-tree-label--strong"
+              onClick={handleStudyBinderClick}
+            >
+              Study Binder
+            </span>
           </div>
 
           {studyBinderOpen && (
-            <div className="nested-submenu studies-subfolder-tree">
+            <div className="sidebar-tree-group">
               {studies.map((study) => {
                 const studyKey = getStudyKey(study);
                 const studyName = getStudyDisplayName(study);
@@ -526,12 +533,8 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                 const isStudyOpen = !!expandedStudies[studyKey];
 
                 return (
-                  <div key={studyKey} className="subject-node">
-                    <div
-                      className={`submenu-item subject-folder${
-                        isStudyOpen ? " submenu-open" : ""
-                      }`}
-                    >
+                  <div key={studyKey} className="sidebar-tree-study">
+                    <div className="sidebar-tree-row sidebar-tree-row--branch">
                       <button
                         type="button"
                         className="sidebar-expander"
@@ -552,13 +555,15 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                       >
                         <span className="study-label-name">{studyName}</span>
                         {studyMeta && (
-                          <small className="study-label-meta">{studyMeta}</small>
+                          <small className="study-label-meta">
+                            {studyMeta}
+                          </small>
                         )}
                       </div>
                     </div>
 
                     {isStudyOpen && (
-                      <div className="nested-submenu">
+                      <div className="sidebar-tree-group sidebar-tree-group--sections">
                         {STUDY_SECTIONS.map((section) => {
                           const sectionKey = section.key;
                           const compositeKey = `${studyKey}__${sectionKey}`;
@@ -573,35 +578,29 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
 
                             return (
                               <div key={compositeKey}>
-                                <div
-                                  className={`${getSubmenuClass(isSectionOpen)} submenu-item-with-toggle`}
-                                >
+                                <div className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-tree-row--expandable">
                                   <button
                                     type="button"
                                     className="sidebar-expander"
-                                    aria-label={
-                                      isSectionOpen
-                                        ? "Collapse section"
-                                        : "Expand section"
-                                    }
                                     onClick={(event) =>
                                       toggleStudySection(
                                         studyKey,
                                         sectionKey,
-                                        event
+                                        event,
                                       )
                                     }
                                   >
                                     {isSectionOpen ? "−" : "+"}
                                   </button>
+
                                   <span
-                                    className="submenu-item-label"
+                                    className="sidebar-tree-label"
                                     onClick={(event) =>
                                       handleExpandableSectionLabelClick(
                                         studyKey,
                                         sectionKey,
                                         isSectionOpen,
-                                        event
+                                        event,
                                       )
                                     }
                                   >
@@ -610,68 +609,67 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                                 </div>
 
                                 {isSectionOpen && sectionKey === "subjects" && (
-                                  <div className="nested-submenu">
+                                  <div className="sidebar-tree-group sidebar-tree-group--nested">
                                     {studySubjects.map((subject) => {
                                       const subjectKey = String(
-                                        subject.subjectId || subject.id
+                                        subject.subjectId || subject.id,
                                       );
+
                                       const subjectFolders =
                                         getSubjectSidebarFolders(
                                           studyKey,
-                                          subject
+                                          subject,
                                         );
 
                                       return (
-                                        <div key={`${studyKey}-${subjectKey}`}>
+                                        <div
+                                          key={`${studyKey}-${subjectKey}`}
+                                          className="sidebar-subject-group"
+                                        >
                                           <div
-                                            className="submenu-item subject-leaf"
+                                            className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-subject-row"
                                             onClick={() =>
                                               handleSubjectClick(
                                                 studyKey,
-                                                subject
+                                                subject,
                                               )
                                             }
                                           >
-                                            {subject.subjectId || subject.id}
+                                            <span className="sidebar-tree-label">
+                                              {subjectKey}
+                                            </span>
                                           </div>
-                                          {subjectFolders.map((folder) => (
-                                            <div
-                                              key={`${subjectKey}-${folder.id}`}
-                                              className="submenu-item subject-child"
-                                              onClick={() => {
-                                                localStorage.setItem(
-                                                  "selectedSubject",
-                                                  JSON.stringify({
-                                                    ...subject,
-                                                    studyId: studyKey
-                                                  })
-                                                );
-                                                handleNav(
-                                                  `/study-dashboard/${studyKey}?tab=${encodeURIComponent("Subjects")}&subject=${encodeURIComponent(subjectKey)}&folder=${encodeURIComponent(folder.id)}`
-                                                );
-                                              }}
-                                            >
-                                              {folder.name}
-                                            </div>
-                                          ))}
+
+                                          <div className="sidebar-subject-folders">
+                                            {subjectFolders?.map((folder) => (
+                                              <div
+                                                key={`${subjectKey}-${folder.id}`}
+                                                className="sidebar-tree-row sidebar-tree-row--folder-leaf"
+                                                onClick={() => {
+                                                  localStorage.setItem(
+                                                    "selectedSubject",
+                                                    JSON.stringify({
+                                                      ...subject,
+                                                      studyId: studyKey,
+                                                    }),
+                                                  );
+
+                                                  handleNav(
+                                                    `/study-dashboard/${studyKey}?tab=Subjects&subject=${subjectKey}&folder=${folder.id}`,
+                                                  );
+                                                }}
+                                              >
+                                                <span className="sidebar-tree-label">
+                                                  {folder.name}
+                                                </span>
+                                              </div>
+                                            ))}
+                                          </div>
                                         </div>
                                       );
                                     })}
                                   </div>
                                 )}
-
-                                {isSectionOpen && sectionKey === "studyFolder" && (
-                                    <div className="nested-submenu">
-                                      {renderDynamicFolderNodes(
-                                        getSectionFolderNodes(
-                                          "studyFolder",
-                                          studyKey
-                                        ),
-                                        studyKey,
-                                        "studyFolder"
-                                      )}
-                                    </div>
-                                  )}
                               </div>
                             );
                           }
@@ -679,12 +677,18 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                           return (
                             <div
                               key={compositeKey}
-                              className="submenu-item"
+                              className="sidebar-tree-row sidebar-tree-row--section-leaf"
                               onClick={() =>
                                 navigateToStudySection(studyKey, sectionKey)
                               }
                             >
-                              {section.label}
+                              <span
+                                className="sidebar-tree-spacer"
+                                aria-hidden="true"
+                              />
+                              <span className="sidebar-tree-label">
+                                {section.label}
+                              </span>
                             </div>
                           );
                         })}
@@ -697,23 +701,16 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
           )}
 
           <div
-            className={`submenu-item studies-subfolder-row${
+            className={`sidebar-tree-row sidebar-tree-row--comments${
               isCommentsRoute ? " active" : ""
             }`}
             onClick={handleStudiesCommentsClick}
           >
-            Comments
+            <span className="sidebar-tree-spacer" aria-hidden="true" />
+            <span className="sidebar-tree-label">Comments</span>
           </div>
         </div>
       )}
-
-      <div
-        className={getLinkClass(isEisfRoute)}
-        onClick={() => handleNav("/ereg-comments")}
-      >
-        <FiClipboard size={16} />
-        <span>eISF</span>
-      </div>
 
       {sidebarItems.some((item) => item.key === "site-performance") && (
         <div
@@ -759,7 +756,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         <div
           className={getLinkClass(
             pathname.includes("access-permission") ||
-              pathname.includes("permission-approval")
+              pathname.includes("permission-approval"),
           )}
           onClick={() => handleNav("/access-permission")}
         >
@@ -790,7 +787,9 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
 
       {canViewAuditLogs && (
         <div
-          className={getLinkClass(pathname === "/logs" || pathname.startsWith("/logs/"))}
+          className={getLinkClass(
+            pathname === "/logs" || pathname.startsWith("/logs/"),
+          )}
           onClick={() => handleNav("/logs")}
         >
           <FiFileText size={16} />
