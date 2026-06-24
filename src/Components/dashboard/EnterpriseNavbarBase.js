@@ -120,18 +120,18 @@ function EnterpriseNavbarBase({
   const indicationOptions = useMemo(() => {
     void filterVersion;
     return getIndicationOptions(currentUser);
-  }, [currentUser, filterVersion]);
+  }, [userEmail, filterVersion]);
   const sponsorOptions = useMemo(() => {
     void filterVersion;
     return getSponsorOptions(currentUser);
-  }, [currentUser, filterVersion]);
+  }, [userEmail, filterVersion]);
   const croOptions = useMemo(() => {
     void filterVersion;
     if (effectiveRole === ROLES.SPONSOR) {
       return getRecruitedCROOptions(currentUser);
     }
     return getCROOptions(currentUser);
-  }, [currentUser, effectiveRole, filterVersion]);
+  }, [userEmail, effectiveRole, filterVersion]);
   const filterOrder = useMemo(() => {
     let base;
 
@@ -158,19 +158,19 @@ function EnterpriseNavbarBase({
   const institutionOptions = useMemo(() => {
     void filterVersion;
     return getInstitutionOptions(currentUser);
-  }, [currentUser, filterVersion]);
+  }, [userEmail, filterVersion]);
   const siteNumberOptions = useMemo(() => {
     void filterVersion;
     return getSiteNumberOptions(currentUser);
-  }, [currentUser, filterVersion]);
+  }, [userEmail, filterVersion]);
   const studyOptions = useMemo(() => {
     void filterVersion;
     return getStudyOptions(currentUser);
-  }, [currentUser, filterVersion]);
+  }, [userEmail, filterVersion]);
   const subjectOptions = useMemo(() => {
     void filterVersion;
     return getSubjectOptions(currentUser);
-  }, [currentUser, filterVersion]);
+  }, [userEmail, filterVersion]);
 
   useEffect(() => {
     touchUserSession(getCurrentUser());
@@ -202,7 +202,10 @@ function EnterpriseNavbarBase({
 
   useEffect(() => {
     const handlePreviewRoleChange = () => {
-      setPreviewRoleState(getEffectiveRole(getCurrentUser()) || ROLES.ADMIN);
+      setPreviewRoleState((current) => {
+        const next = getEffectiveRole(getCurrentUser()) || ROLES.ADMIN;
+        return current === next ? current : next;
+      });
     };
 
     window.addEventListener(ADMIN_PREVIEW_ROLE_EVENT, handlePreviewRoleChange);
@@ -497,7 +500,7 @@ function EnterpriseNavbarBase({
 
           <div
             className="profile-section"
-            onClick={() => setProfileOpen(!profileOpen)}
+            onClick={() => setProfileOpen((prev) => !prev)}
           >
             <div className="profile-avatar">
               {profilePhoto ? (

@@ -228,6 +228,7 @@ function DocumentFolderManager({
 }) {
   const isExplorerLayout = layout === "explorer";
   const fileInputRef = useRef(null);
+  const selectedFolderIdRef = useRef("");
   const initialTree = getFolderTree(sectionId, contextKey);
   const initialRootId = initialTree[0]?.id || "";
   const [tree, setTree] = useState(() => initialTree);
@@ -245,34 +246,59 @@ function DocumentFolderManager({
   const [dragOverEmpty, setDragOverEmpty] = useState(false);
   const [viewDoc, setViewDoc] = useState(null);
 
+  selectedFolderIdRef.current = selectedFolderId;
+
+  const navigationTailId =
+    navigationPath.length > 0
+      ? navigationPath[navigationPath.length - 1]
+      : "";
+
   const refreshTree = useCallback(() => {
     const nextTree = getFolderTree(sectionId, contextKey);
     setTree(nextTree);
     const nextRootId = nextTree[0]?.id || "";
+    const currentSelectedId = selectedFolderIdRef.current;
+    const selectedStillExists = Boolean(
+      currentSelectedId && findNodeById(nextTree, currentSelectedId)
+    );
 
-    if (!nextTree.some((node) => node.id === selectedFolderId)) {
+    if (!selectedStillExists) {
       setSelectedFolderId(nextRootId);
       if (isExplorerLayout) {
-        setNavigationPath(nextRootId ? [nextRootId] : []);
+        setNavigationPath((prev) => {
+          const next = nextRootId ? [nextRootId] : [];
+
+          if (
+            prev.length === next.length &&
+            prev.every((id, index) => id === next[index])
+          ) {
+            return prev;
+          }
+
+          return next;
+        });
       }
     }
-  }, [sectionId, contextKey, selectedFolderId, isExplorerLayout]);
+  }, [sectionId, contextKey, isExplorerLayout]);
 
   const refreshDocuments = useCallback(() => {
-    if (!selectedFolderId) {
+    const folderId = selectedFolderIdRef.current;
+
+    if (!folderId) {
       setDocuments([]);
       return;
     }
 
-    setDocuments(
-      getDocumentsForFolder(sectionId, contextKey, selectedFolderId)
-    );
-  }, [sectionId, contextKey, selectedFolderId]);
+    setDocuments(getDocumentsForFolder(sectionId, contextKey, folderId));
+  }, [sectionId, contextKey]);
 
   useEffect(() => {
     refreshTree();
+  }, [refreshTree]);
+
+  useEffect(() => {
     refreshDocuments();
-  }, [refreshTree, refreshDocuments]);
+  }, [refreshDocuments, selectedFolderId]);
 
   useEffect(() => {
     const handleTreeUpdate = (event) => {
@@ -292,16 +318,14 @@ function DocumentFolderManager({
   }, [sectionId, contextKey, refreshTree]);
 
   useEffect(() => {
-    refreshDocuments();
-  }, [refreshDocuments]);
-
-  useEffect(() => {
-    if (!isExplorerLayout || navigationPath.length === 0) {
+    if (!isExplorerLayout || !navigationTailId) {
       return;
     }
 
-    setSelectedFolderId(navigationPath[navigationPath.length - 1]);
-  }, [isExplorerLayout, navigationPath]);
+    setSelectedFolderId((currentId) =>
+      currentId === navigationTailId ? currentId : navigationTailId
+    );
+  }, [isExplorerLayout, navigationTailId]);
 
   const selectedFolderNode = useMemo(() => {
     const findNode = (nodes) => {
@@ -343,6 +367,7 @@ function DocumentFolderManager({
   const currentFolderChildren = selectedFolderNode?.children || [];
 
   const enterFolder = (folderId) => {
+    setSelectedFolderId(folderId);
     setNavigationPath((prev) => [...prev, folderId]);
   };
 

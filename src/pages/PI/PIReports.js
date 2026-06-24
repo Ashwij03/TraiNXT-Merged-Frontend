@@ -9,6 +9,7 @@ import {
   FaEye,
 } from "react-icons/fa";
 import PIKpiCard from "./PIKpiCard";
+import { downloadCsvReport } from "../../utils/exportReport";
 import {
   getReportsData,
   saveReportsData,
@@ -69,7 +70,25 @@ function PIReports({ selectedStudy: studyProp }) {
   };
 
   const handleDownload = (report) => {
-    setDownloadMsg(`Download queued: ${report.name} (${report.format || "PDF"})`);
+    const rows = [
+      ["Report Name", report.name],
+      ["Category", report.category || report.type],
+      ["Type", report.type],
+      ["Study", report.study || "—"],
+      ["Date", report.date],
+      ["Status", report.status],
+      ["Format", "CSV (Excel-compatible)"],
+      [],
+      ["Field", "Value"],
+      ["Report ID", report.id],
+      ["Generated For", selectedStudy],
+    ];
+
+    downloadCsvReport(
+      `${report.name.replace(/\s+/g, "-")}-${Date.now()}.csv`,
+      rows
+    );
+    setDownloadMsg(`Downloaded: ${report.name} (CSV)`);
     setTimeout(() => setDownloadMsg(""), 3000);
   };
 
@@ -155,7 +174,7 @@ function PIReports({ selectedStudy: studyProp }) {
                   <td>{report.type}</td>
                   <td>{report.study || "—"}</td>
                   <td>{report.date}</td>
-                  <td>{report.format || "PDF"}</td>
+                  <td>{report.format === "XLSX" ? "CSV" : report.format || "PDF"}</td>
                   <td>
                     <span className={report.status === "Generated" ? "status-success" : "status-danger"}>
                       {report.status}

@@ -208,11 +208,26 @@ export function touchUserSession(user = getCurrentUser()) {
     return initializeUserSession(user);
   }
 
+  const now = Date.now();
+  const lastTouchedAt = new Date(
+    session.lastActivityAt || session.startedAt || 0
+  ).getTime();
+
+  const nextUserName = user?.name || session.userName;
+  const nextRole = user?.role || session.role;
+
+  const identityChanged =
+    nextUserName !== session.userName || nextRole !== session.role;
+
+  if (!identityChanged && now - lastTouchedAt < 30000) {
+    return session;
+  }
+
   const updated = {
     ...session,
-    userName: user?.name || session.userName,
-    role: user?.role || session.role,
-    lastActivityAt: new Date().toISOString(),
+    userName: nextUserName,
+    role: nextRole,
+    lastActivityAt: new Date(now).toISOString(),
     active: true
   };
 

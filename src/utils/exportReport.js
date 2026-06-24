@@ -10,7 +10,7 @@ export function rowsToCsv(rows) {
 }
 
 export function downloadCsvReport(filename, rows) {
-  const csv = rowsToCsv(rows);
+  const csv = `\uFEFF${rowsToCsv(rows)}`;
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");

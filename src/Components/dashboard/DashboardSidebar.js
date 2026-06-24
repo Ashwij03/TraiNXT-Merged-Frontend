@@ -12,7 +12,6 @@ import { ADMIN_PREVIEW_ROLE_EVENT } from "../../constants/headerFilters";
 import {
   FOLDER_TREE_EVENT,
   getFirstLevelFolders,
-  getFolderTree,
 } from "../../services/folderService";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -31,19 +30,6 @@ import {
   FiLayers,
 } from "react-icons/fi";
 import { getRoleExtraMenuItems } from "../../config/roleMenus";
-
-const SIDEBAR_EXPANDED_STUDIES_KEY = "sidebarExpandedStudies";
-const SIDEBAR_EXPANDED_SECTIONS_KEY = "sidebarExpandedStudySections";
-const SIDEBAR_STUDY_BINDER_OPEN_KEY = "sidebarStudyBinderOpen";
-
-function readStoredJson(key, fallback) {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-}
 
 const STUDY_SECTIONS = [
   { key: "overview", label: "Overview" },
@@ -123,9 +109,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     return Array.isArray(subjects) ? subjects : [];
   };
 
-  const [studyBinderOpen, setStudyBinderOpen] = useState(() =>
-    readStoredJson(SIDEBAR_STUDY_BINDER_OPEN_KEY, false),
-  );
+  const [studyBinderOpen, setStudyBinderOpen] = useState(false);
   const [studiesOpen, setStudiesOpen] = useState(() => {
     const path = pathname;
     return (
@@ -136,12 +120,10 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       path === "/comments"
     );
   });
-  const [expandedStudies, setExpandedStudies] = useState(() =>
-    readStoredJson(SIDEBAR_EXPANDED_STUDIES_KEY, {}),
-  );
-  const [expandedStudySections, setExpandedStudySections] = useState(() =>
-    readStoredJson(SIDEBAR_EXPANDED_SECTIONS_KEY, {}),
-  );
+  const [expandedStudies, setExpandedStudies] = useState({});
+
+  const [expandedStudySections, setExpandedStudySections] = useState({});
+
   const [folderTreeVersion, setFolderTreeVersion] = useState(0);
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const storedWidth = Number(localStorage.getItem("dashboardSidebarWidth"));
@@ -208,27 +190,6 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   }, [isStudiesOverviewRoute, isStudyInternalRoute, isCommentsRoute, pathname]);
 
   useEffect(() => {
-    localStorage.setItem(
-      SIDEBAR_EXPANDED_STUDIES_KEY,
-      JSON.stringify(expandedStudies),
-    );
-  }, [expandedStudies]);
-
-  useEffect(() => {
-    localStorage.setItem(
-      SIDEBAR_EXPANDED_SECTIONS_KEY,
-      JSON.stringify(expandedStudySections),
-    );
-  }, [expandedStudySections]);
-
-  useEffect(() => {
-    localStorage.setItem(
-      SIDEBAR_STUDY_BINDER_OPEN_KEY,
-      JSON.stringify(studyBinderOpen),
-    );
-  }, [studyBinderOpen]);
-
-  useEffect(() => {
     if (!isStudyInternalRoute) {
       prevActiveStudyKeyRef.current = null;
       return;
@@ -242,7 +203,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     }
 
     if (prevActiveStudyKeyRef.current !== activeStudyKey) {
-      setStudyBinderOpen(true);
+      setStudyBinderOpen((open) => (open ? open : true));
       setExpandedStudies((prev) => ({
         ...prev,
         [activeStudyKey]: true,
@@ -315,7 +276,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       return;
     }
 
-    setStudiesOpen(true);
+    setStudiesOpen((open) => (open ? open : true));
 
     if (pathname !== "/studies") {
       handleNav("/studies");
@@ -325,11 +286,6 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   const handleStudyBinderClick = (event) => {
     event.stopPropagation();
     setStudyBinderOpen((prev) => !prev);
-  };
-
-  const handleStudyNameClick = (studyKey, event) => {
-    event.stopPropagation();
-    navigateToStudySection(studyKey, "overview");
   };
 
   const handleStudiesCommentsClick = (event) => {
@@ -351,8 +307,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     const compositeKey = `${studyKey}__${sectionKey}`;
 
     setExpandedStudySections((prev) => ({
-      ...prev,
-      [compositeKey]: !Boolean(prev[compositeKey]),
+      [compositeKey]: !prev[compositeKey],
     }));
   };
 
@@ -364,12 +319,10 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   ) => {
     event?.stopPropagation();
 
-    const compositeKey = `${studyKey}__${sectionKey}`;
-
-    setExpandedStudySections((prev) => ({
-      ...prev,
-      [compositeKey]: !Boolean(prev[compositeKey]),
-    }));
+    if (isSectionOpen) {
+      toggleStudySection(studyKey, sectionKey, event);
+      return;
+    }
 
     navigateToStudySection(studyKey, sectionKey);
   };
@@ -402,70 +355,29 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     handleNav(`/subject/${subjectId}`);
   };
 
-  const getSectionFolderNodes = (sectionKey, studyKey) => {
-    void folderTreeVersion;
-
-    if (sectionKey === "subjects") {
-      return [];
-    }
-
-    const tree = getFolderTree(sectionKey, studyKey);
-    const root = tree[0];
-
-    if (!root?.children?.length) {
-      return [];
-    }
-
-    return root.children;
-  };
 
   const getSubjectSidebarFolders = (studyKey, subject) => {
     void folderTreeVersion;
 
     const subjectId = subject.subjectId || subject.id;
-    const folderName = `${studyKey}::${subjectId}`;
-    return getFirstLevelFolders("subjects", folderName);
+    const contextKey = `${studyKey}::${subjectId}`;
+
+    return getFirstLevelFolders("subjects", contextKey);
   };
 
-  const handleFolderNavigate = (studyKey, sectionKey, node) => {
-    const name = String(node?.name || "").toLowerCase();
+  // const handleFolderNavigate = (studyKey, sectionKey, node) => {
+  //   const name = String(node?.name || "").toLowerCase();
 
-    if (
-      sectionKey === "studyFiles" &&
-      (name.includes("regulatory") || name.includes("reg"))
-    ) {
-      navigateToStudySection(studyKey, "regulatory");
-      return;
-    }
+  //   if (
+  //     sectionKey === "studyFiles" &&
+  //     (name.includes("regulatory") || name.includes("reg"))
+  //   ) {
+  //     navigateToStudySection(studyKey, "regulatory");
+  //     return;
+  //   }
 
-    navigateToStudySection(studyKey, sectionKey);
-  };
-
-  const renderDynamicFolderNodes = (nodes, studyKey, sectionKey, depth = 0) =>
-    nodes.map((node) => {
-      const compositeKey = `${studyKey}__${sectionKey}__folder__${node.id}`;
-
-      return (
-        <div key={compositeKey}>
-          <div
-            className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-tree-row--folder-leaf"
-            onClick={() => handleFolderNavigate(studyKey, sectionKey, node)}
-          >
-            <span className="sidebar-tree-spacer" aria-hidden="true" />
-            <span className="sidebar-tree-label">{node.name}</span>
-          </div>
-          {node.children?.length
-            ? renderDynamicFolderNodes(
-                node.children,
-                studyKey,
-                sectionKey,
-                depth + 1,
-              )
-            : null}
-        </div>
-      );
-    });
-
+  //   navigateToStudySection(studyKey, sectionKey);
+  // };
   return (
     <div
       className={sidebarClassName}
@@ -549,9 +461,10 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                       </button>
                       <div
                         className="study-label-block"
-                        onClick={(event) =>
-                          handleStudyNameClick(studyKey, event)
-                        }
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          navigateToStudySection(studyKey, "overview");
+                        }}
                       >
                         <span className="study-label-name">{studyName}</span>
                         {studyMeta && (

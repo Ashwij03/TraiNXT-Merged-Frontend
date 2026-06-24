@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./CalendarWidget.css";
 
 function CalendarWidget({
@@ -6,29 +6,29 @@ function CalendarWidget({
   selectedDate,
   onDateSelect,
 }) {
-  const initialDate = selectedDate
-    ? new Date(selectedDate)
-    : new Date();
-
-  const [currentMonth, setCurrentMonth] = useState(
-    initialDate.getMonth()
-  );
-
-  const [currentYear, setCurrentYear] = useState(
-    initialDate.getFullYear()
-  );
-
-  const [internalSelectedDate, setInternalSelectedDate] =
-    useState(
-      selectedDate ??
-      new Date().toISOString().split("T")[0]
-    );
-
   const isControlled = typeof onDateSelect === "function";
 
-  const activeDate = isControlled
-    ? selectedDate
-    : selectedDate || internalSelectedDate;
+  const [internalSelectedDate, setInternalSelectedDate] = useState(null);
+
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    const baseDate = selectedDate ? new Date(selectedDate) : new Date();
+    return baseDate.getMonth();
+  });
+
+  const [currentYear, setCurrentYear] = useState(() => {
+    const baseDate = selectedDate ? new Date(selectedDate) : new Date();
+    return baseDate.getFullYear();
+  });
+
+  const activeDate = isControlled ? selectedDate : internalSelectedDate;
+
+  useEffect(() => {
+    if (isControlled && selectedDate) {
+      const d = new Date(selectedDate);
+      setCurrentMonth(d.getMonth());
+      setCurrentYear(d.getFullYear());
+    }
+  }, [isControlled, selectedDate]);
 
   const weekDays = [
     "Sun",
@@ -68,7 +68,7 @@ function CalendarWidget({
   ).getDay();
 
   const handleDateSelect = (date) => {
-    if (onDateSelect) {
+    if (isControlled) {
       onDateSelect(date);
     } else {
       setInternalSelectedDate(date);
@@ -113,14 +113,11 @@ function CalendarWidget({
     calendarCells.push(day);
   }
 
-  const selectedSchedules =
-    getSchedulesForDate(activeDate);
+  const selectedSchedules = getSchedulesForDate(activeDate);
 
   return (
     <div className="calendar-widget">
-
       <div className="calendar-header">
-
         <button
           className="calendar-nav-btn"
           onClick={() => changeMonth("prev")}
@@ -144,7 +141,6 @@ function CalendarWidget({
         >
           →
         </button>
-
       </div>
 
       <div className="calendar-weekdays">
@@ -154,9 +150,7 @@ function CalendarWidget({
       </div>
 
       <div className="calendar-grid">
-
         {calendarCells.map((day, index) => {
-
           if (!day) {
             return (
               <div
@@ -175,14 +169,9 @@ function CalendarWidget({
               "0"
             )}`;
 
-          const daySchedules =
-            getSchedulesForDate(date);
-
-          const hasSchedule =
-            daySchedules.length > 0;
-
-          const isSelected =
-            activeDate === date;
+          const daySchedules = getSchedulesForDate(date);
+          const hasSchedule = daySchedules.length > 0;
+          const isSelected = activeDate === date;
 
           return (
             <button
@@ -190,18 +179,12 @@ function CalendarWidget({
               type="button"
               className={[
                 "calendar-day",
-                hasSchedule
-                  ? "has-schedule"
-                  : "",
-                isSelected
-                  ? "selected"
-                  : "",
+                hasSchedule ? "has-schedule" : "",
+                isSelected ? "selected" : "",
               ]
                 .filter(Boolean)
                 .join(" ")}
-              onClick={() =>
-                handleDateSelect(date)
-              }
+              onClick={() => handleDateSelect(date)}
             >
               <span>{day}</span>
 
@@ -216,28 +199,21 @@ function CalendarWidget({
       </div>
 
       <div className="calendar-details">
-
         <div className="calendar-details-title">
-
           <div>
             <span>
               Schedule Details
             </span>
 
             <p>
-              {selectedSchedules.length}
-              {" "}
-              item
-              {selectedSchedules.length !== 1
-                ? "s"
-                : ""}
+              {selectedSchedules.length} item
+              {selectedSchedules.length !== 1 ? "s" : ""}
             </p>
           </div>
 
           <strong>
             {activeDate || "Select a date"}
           </strong>
-
         </div>
 
         {!activeDate ? (
@@ -245,62 +221,50 @@ function CalendarWidget({
             Select a date to view schedule details
           </div>
         ) : selectedSchedules.length > 0 ? (
+          selectedSchedules.map((schedule, index) => (
+            <div
+              key={index}
+              className="schedule-card"
+            >
+              <div className="schedule-card-top">
+                <div>
+                  <strong>
+                    {schedule.visit}
+                  </strong>
 
-          selectedSchedules.map(
-            (schedule, index) => (
-              <div
-                key={index}
-                className="schedule-card"
-              >
-                <div className="schedule-card-top">
-
-                  <div>
-                    <strong>
-                      {schedule.visit}
-                    </strong>
-
-                    <small>
-                      {schedule.time}
-                    </small>
-                  </div>
-
-                  <span>
-                    {schedule.status}
-                  </span>
-
+                  <small>
+                    {schedule.time}
+                  </small>
                 </div>
 
-                <div className="schedule-meta">
-
-                  <p>
-                    <b>Subject:</b>
-                    {" "}
-                    {schedule.subjectId}
-                  </p>
-
-                  <p>
-                    <b>Study:</b>
-                    {" "}
-                    {schedule.study}
-                  </p>
-
-                  <p>
-                    <b>Site:</b>
-                    {" "}
-                    {schedule.site}
-                  </p>
-
-                </div>
+                <span>
+                  {schedule.status}
+                </span>
               </div>
-            )
-          )
 
+              <div className="schedule-meta">
+                <p>
+                  <b>Subject:</b>{" "}
+                  {schedule.subjectId}
+                </p>
+
+                <p>
+                  <b>Study:</b>{" "}
+                  {schedule.study}
+                </p>
+
+                <p>
+                  <b>Site:</b>{" "}
+                  {schedule.site}
+                </p>
+              </div>
+            </div>
+          ))
         ) : (
           <div className="calendar-empty">
             No schedules on this date
           </div>
         )}
-
       </div>
     </div>
   );

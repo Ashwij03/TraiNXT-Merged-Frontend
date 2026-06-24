@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useMemo } from "react";
 import ROLES from "../../../constants/roles";
 import PERMISSIONS from "../../../constants/permissions";
 import {
@@ -211,11 +211,38 @@ function SubjectFolderWorkspace({ subject, studyId, onBack }) {
   const [showNextVisitPrompt, setShowNextVisitPrompt] = useState(false);
   const canModify = canModifySubjects();
 
+  const subjectScheduleKey = useMemo(
+    () =>
+      JSON.stringify({
+        initials: subject?.initials || "",
+        status: subject?.status || "",
+        screeningDate: subject?.screeningDate || "",
+        enrollmentDate: subject?.enrollmentDate || "",
+        pi: subject?.pi || "",
+        site: subject?.site || ""
+      }),
+    [
+      subject?.initials,
+      subject?.status,
+      subject?.screeningDate,
+      subject?.enrollmentDate,
+      subject?.pi,
+      subject?.site
+    ]
+  );
+
   useEffect(() => {
     ensureSubjectFolderWithICF("subjects", contextKey);
+  }, [contextKey]);
+
+  useEffect(() => {
+    if (!studyId || !subjectId) {
+      return;
+    }
+
     syncSubjectSchedules(studyId, subjectId, subject);
     setShowNextVisitPrompt(shouldPromptNextVisit(studyId, subjectId));
-  }, [contextKey, studyId, subjectId, subject]);
+  }, [studyId, subjectId, subjectScheduleKey, subject]);
 
   useEffect(() => {
     const refreshPrompt = () => {
@@ -239,7 +266,7 @@ function SubjectFolderWorkspace({ subject, studyId, onBack }) {
       syncSubjectSchedules(studyId, subjectId, subject);
       setShowNextVisitPrompt(shouldPromptNextVisit(studyId, subjectId));
     },
-    [studyId, subjectId, subject]
+    [studyId, subjectId, subjectScheduleKey, subject]
   );
 
   useEffect(() => {
