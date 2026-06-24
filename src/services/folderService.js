@@ -82,7 +82,7 @@ export function ensureSubjectFolderWithICF(sectionId, contextKey) {
 
   const subjectFolder = {
     id: createId("folder"),
-    name: contextKey,
+    name: "Subject",
     children: [createICFFolder()]
   };
 
@@ -141,7 +141,19 @@ export function getFolderTree(sectionId, contextKey = "default") {
     return defaultTree(sectionId);
   }
 
-  return trees[key];
+  const tree = trees[key];
+
+  if (sectionId === "subjects") {
+    const root = tree[0];
+
+    if (root?.children?.length) {
+      root.children = root.children.filter(
+        (child) => child.name !== contextKey
+      );
+    }
+  }
+
+  return tree;
 }
 
 export function saveFolderTree(sectionId, contextKey, tree) {

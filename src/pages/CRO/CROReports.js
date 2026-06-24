@@ -4,6 +4,7 @@ import { useCROData } from "./CRODATAContext";
 import CROStatusBadge from "./CROStatusBadge";
 import EmptyState from "./EmptyState";
 import CROModal from "./CROModal";
+import { downloadCsvReport } from "../../utils/exportReport";
 
 function CROReports() {
   const { reports, addReport, showModal } = useCROData();
@@ -47,16 +48,18 @@ function CROReports() {
   };
 
   const handleDownloadReport = (report) => {
-    const content = `Report ID: ${report.id}\nReport Name: ${report.name}\nType: ${report.type}\nGenerated On: ${report.generatedOn}\nStatus: ${report.status}`;
-    const blob = new Blob([content], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${report.name}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    const rows = [
+      ["Report ID", report.id],
+      ["Report Name", report.name],
+      ["Type", report.type],
+      ["Generated On", report.generatedOn],
+      ["Status", report.status],
+    ];
+
+    downloadCsvReport(
+      `${report.name.replace(/\s+/g, "-")}-${Date.now()}.csv`,
+      rows
+    );
   };
 
   return (
