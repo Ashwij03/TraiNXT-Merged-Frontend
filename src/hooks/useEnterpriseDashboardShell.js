@@ -65,7 +65,7 @@ export function useEnterpriseDashboardShell() {
   const viewportMode = useViewportMode();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [headerHidden, setHeaderHidden] = useState(false);
+
 
   useEffect(() => {
     const currentUser = getCurrentUser();
@@ -108,40 +108,8 @@ export function useEnterpriseDashboardShell() {
     setSidebarOpen((prev) => !prev);
   }, [viewportMode]);
 
-  const handleContentScroll = useCallback(() => {
-    const node = contentRef.current;
+  
 
-    if (!node) {
-      return;
-    }
-
-    const currentTop = node.scrollTop;
-    const delta = currentTop - lastScrollTop.current;
-
-    if (currentTop <= 8) {
-      setHeaderHidden(false);
-    } else if (delta > 6) {
-      setHeaderHidden(true);
-    } else if (delta < -6) {
-      setHeaderHidden(false);
-    }
-
-    lastScrollTop.current = currentTop;
-  }, []);
-
-  useEffect(() => {
-    const node = contentRef.current;
-
-    if (!node) {
-      return undefined;
-    }
-
-    node.addEventListener("scroll", handleContentScroll, { passive: true });
-
-    return () => {
-      node.removeEventListener("scroll", handleContentScroll);
-    };
-  }, [handleContentScroll]);
 
   const sidebarWrapClass = [
     "dashboard-sidebar-wrap",
@@ -154,9 +122,7 @@ export function useEnterpriseDashboardShell() {
   const sidebarIsOpen =
     viewportMode === "desktop" ? !sidebarCollapsed : sidebarOpen;
 
-  const headerWrapClass = `dashboard-header-wrap${
-    headerHidden ? " header-hidden" : ""
-  }`;
+  const headerWrapClass = "dashboard-header-wrap";
 
   return {
     contentRef,

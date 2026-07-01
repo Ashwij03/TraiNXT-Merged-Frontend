@@ -1,0 +1,35 @@
+.status-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:100px;
+    padding:6px 14px;
+    border-radius:30px;
+    font-size:13px;
+    font-weight:600;
+}
+
+.status-badge.approved{
+    background:#d8f5df;
+    color:#1b8f3c;
+}
+
+.status-badge.pending{
+    background:#fde6d3;
+    color:#d97706;
+}
+
+.status-badge.expired{
+    background:#fde2e2;
+    color:#dc2626;
+}
+
+.status-badge.draft{
+    background:#e8ecf3;
+    color:#475569;
+}
+
+.status-badge.pending-review{
+    background:#fff4d6;
+    color:#ca8a04;
+}

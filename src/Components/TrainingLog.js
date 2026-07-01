@@ -78,7 +78,7 @@ const TrainingLog = () => {
                       alt=""
                     />
 
-                    <span className="warning">▲</span>
+                    <span className="training-warning">▲</span>
 
                   </div>
 

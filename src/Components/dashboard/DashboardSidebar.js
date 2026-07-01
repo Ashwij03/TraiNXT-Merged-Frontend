@@ -30,18 +30,18 @@ import {
   FiLayers,
 } from "react-icons/fi";
 import { getRoleExtraMenuItems } from "../../config/roleMenus";
-
+import { FiChevronRight, FiChevronDown } from "react-icons/fi";
+import EISFMenuConfig from "../../pages/shared/EISF/Constants/EISFMenuConfig";
 const STUDY_SECTIONS = [
   { key: "overview", label: "Overview" },
   { key: "subjects", label: "Subjects", expandable: true },
-  { key: "eisf", label: "eISF" },
+  { key: "eisf", label: "eISF", expandable: true },
   { key: "regulatory", label: "Regulatory" },
   { key: "reports", label: "Reports" },
   { key: "studyFiles", label: "Study Files" },
   { key: "logs", label: "Logs" },
   { key: "others", label: "Others" },
 ];
-
 function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -123,7 +123,6 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   const [expandedStudies, setExpandedStudies] = useState({});
 
   const [expandedStudySections, setExpandedStudySections] = useState({});
-
   const [folderTreeVersion, setFolderTreeVersion] = useState(0);
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const storedWidth = Number(localStorage.getItem("dashboardSidebarWidth"));
@@ -265,6 +264,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     navigate(path);
     onNavigate?.();
   };
+  
 
   const handleDashboardClick = () => {
     handleNav(dashboardPath);
@@ -584,6 +584,39 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                                     })}
                                   </div>
                                 )}
+       {isSectionOpen && sectionKey === "eisf" && (
+  <div className="sidebar-tree-group sidebar-tree-group--nested">
+    {EISFMenuConfig.map((module) => (
+      <div key={module.id}>
+        <div
+          className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-tree-row--expandable"
+          onClick={() =>
+            setExpandedStudySections((prev) => ({
+              ...prev,
+              [`${studyKey}-${module.id}`]:
+                !prev[`${studyKey}-${module.id}`],
+            }))
+          }
+        >
+          <span>{module.id} {module.title}</span>
+        </div>
+
+        {expandedStudySections[`${studyKey}-${module.id}`] && (
+          <div className="sidebar-tree-group sidebar-tree-group--nested">
+            {module.children.map((child) => (
+              <div
+                key={child.id}
+className="sidebar-tree-row sidebar-tree-row--folder-leaf eisf-module"                onClick={() => handleNav(child.path)}
+              >
+                <span>{child.id} {child.title}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+)}
                               </div>
                             );
                           }
@@ -625,6 +658,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
           </div>
         </div>
       )}
+    
 
       {sidebarItems.some((item) => item.key === "site-performance") && (
         <div

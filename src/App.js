@@ -41,7 +41,7 @@ import LogsPage from "./pages/shared/logs/LogsPage";
 import TrainingLogPage from "./pages/shared/logs/TrainingLogPage";
 import DelegationLogPage from "./pages/shared/logs/DelegationLogPage";
 import { getDashboardPath, getCurrentUser } from "./services/roleService";
-
+import EISFDashboard from "./pages/shared/EISF/EDashboard/EISFDashboard";
 import {
   RoleAwareComments,
   RoleAwareNotifications,
@@ -330,7 +330,14 @@ function App() {
         }
       />
 
-      <Route path="/eisf" element={<Navigate to="/ereg-comments" replace />} />
+     <Route
+  path="/eisf"
+  element={
+    <ProtectedRoute>
+      <EISFDashboard />
+    </ProtectedRoute>
+  }
+/>
       <Route path="/icf" element={<Navigate to="/ereg-comments" replace />} />
       <Route path="/study-folder" element={<Navigate to="/studies" replace />} />
 

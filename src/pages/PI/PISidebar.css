@@ -10,6 +10,31 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   margin-bottom: 8px;
 }
+.pi-sidebar-brand {
+  padding: 20px;
+  margin: 0 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+.pi-sidebar-brand {
+  height: 72px;      /* Navbar height */
+  display: flex;
+  align-items: center;
+}
+.pi-sidebar-brand::after {
+  content: "";
+  display: block;
+  width: 100%;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  margin-top: 14px;
+}
+.pi-sidebar-brand {
+  border-bottom: none;
+}
+.pi-sidebar-brand::after,
+.trianxt-logo::after {
+    display: none !important;
+    content: none !important;
+}
 
 .menu-item {
   display: flex;
@@ -22,7 +47,13 @@
   transition: 0.2s ease;
   color: white;
 }
-
+.pi-sidebar,
+.sidebar {
+    width: 250px !important;
+    min-width: 250px !important;
+    max-width: 250px !important;
+    flex: 0 0 250px !important;
+}
 .menu-item:hover {
   background: rgba(37, 99, 235, 0.6);
 }
@@ -150,4 +181,38 @@
   background: rgba(19, 68, 246, 0.899) !important;
   color: white !important;
   box-shadow: none !important;
+}
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+}
+
+.menu-item span {
+  font-size: 16px !important;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.menu-item svg {
+  font-size: 18px !important;
+  min-width: 18px;
+}
+/* Force sidebar logo size */
+.pi-sidebar-brand,
+.pi-sidebar-brand *,
+.pi-sidebar-brand span,
+.pi-sidebar-brand h1,
+.pi-sidebar-brand h2,
+.pi-sidebar-brand h3 {
+    font-size: 30px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+}
+
+.pi-sidebar-brand svg,
+.pi-sidebar-brand img {
+    width: 42px !important;
+    height: 42px !important;
 }
