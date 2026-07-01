@@ -94,7 +94,7 @@ function CROReports() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="cro-input"
           />
-          <h2>Reports</h2>
+          <h2></h2>
           <button
             type="button"
             className="cro-btn-primary"

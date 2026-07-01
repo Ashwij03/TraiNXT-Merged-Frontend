@@ -1,22 +1,35 @@
-.trianxt-logo {
-  color: inherit;
-  cursor: default;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  line-height: 1.2;
-  user-select: none;
+.trianxt-logo{
+    font-size: 30px;
+    font-weight: 800;
+    color:#fff;
+    line-height:1;
+    letter-spacing:-1px;
+
+    background:none;
+    box-shadow:none;
+    border:none;
+
+    padding:0;
+    margin:0;
 }
 
 .trianxt-logo[role="button"] {
   cursor: pointer;
 }
 
-.trianxt-logo--sidebar {
-  color: var(--tnxt-text-inverse);
-  padding: 10px 12px 22px;
-  font-size: 20px;
-  letter-spacing: 0.04em;
+/* Sidebar Logo */
+.trianxt-logo--sidebar{
+    font-size: 30px;      /* was ~40px */
+    font-weight: 800;
+    line-height: 1;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+
+    display: flex;
+    align-items: center;
+
+    margin: 0;
+    padding: 0;
 }
 
 .trianxt-logo--auth {

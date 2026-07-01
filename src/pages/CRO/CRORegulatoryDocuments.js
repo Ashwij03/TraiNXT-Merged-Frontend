@@ -23,6 +23,16 @@ function CRORegulatoryDocuments() {
 
   const approvedCount = documents.filter((d) => d.status === "Approved").length;
   const pendingCount = documents.filter((d) => d.status === "Pending").length;
+  const expiringCount = documents.filter(doc => {
+  const expiry = new Date(doc.expiry);
+  const today = new Date();
+
+  const diffDays = Math.ceil(
+    (expiry - today) / (1000 * 60 * 60 * 24)
+  );
+
+  return diffDays >= 0 && diffDays <= 30;
+}).length;
   const expiringSoon = documents.filter((d) => {
     const expiry = new Date(d.expiry);
     const in90Days = new Date();
@@ -61,12 +71,27 @@ function CRORegulatoryDocuments() {
     <CROLayout>
       <h1>Regulatory Documents</h1>
 
-      <div className="cro-stats-grid">
-        <div className="dashboard-card"><h3>Total Documents</h3><h1>{documents.length}</h1></div>
-        <div className="dashboard-card"><h3>Approved</h3><h1>{approvedCount}</h1></div>
-        <div className="dashboard-card"><h3>Pending Review</h3><h1>{pendingCount}</h1></div>
-        <div className="dashboard-card"><h3>Expiring Soon</h3><h1>{expiringSoon}</h1></div>
-      </div>
+    <div className="cro-stats-grid">
+  <div className="cro-card">
+    <h3>Total Documents</h3>
+    <h2>{documents.length}</h2>
+  </div>
+
+  <div className="cro-card">
+    <h3>Approved</h3>
+    <h2>{approvedCount}</h2>
+  </div>
+
+  <div className="cro-card">
+    <h3>Pending Review</h3>
+    <h2>{pendingCount}</h2>
+  </div>
+
+  <div className="cro-card">
+    <h3>Expiring Soon</h3>
+    <h2>{expiringCount}</h2>
+  </div>
+</div>
 
       <div className="cro-panel">
         <div className="cro-panel-header">
@@ -79,7 +104,7 @@ function CRORegulatoryDocuments() {
               <option value="Expired">Expired</option>
             </select>
           </div>
-          <h2>Regulatory Documents</h2>
+          <h2></h2>
           <button type="button" className="cro-btn-primary-inline" onClick={() => setShowUploadModal(true)}>+ Upload Document</button>
         </div>
 
