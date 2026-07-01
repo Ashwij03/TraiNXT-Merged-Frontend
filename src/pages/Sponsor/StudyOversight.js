@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from "react-router-dom";
 import AppLayout from './AppLayout';
 import './StudyOversight.css';
 import './SponsorShared.css';
@@ -9,6 +10,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { getOversightStudies, getOversightKPIs } from './data/sponsorDataStore';
 
 const StudyOversight = () => {
+  const navigate = useNavigate();
   const [studies, setStudies] = useState(getOversightStudies());
   const [kpis, setKpis] = useState(getOversightKPIs());
   const [searchTerm, setSearchTerm] = useState('');
@@ -46,7 +48,15 @@ const StudyOversight = () => {
           <KpiCard title="Total Studies" value={kpis.total} subtitle="Under oversight" icon={<FiActivity size={24} />} iconBg="#eff6ff" iconColor="#2563eb" onClick={() => setStatusFilter('All')} />
           <KpiCard title="On Track" value={kpis.onTrack} subtitle="Meeting targets" icon={<FiCheckCircle size={24} />} iconBg="#ecfdf5" iconColor="#16a34a" onClick={() => setStatusFilter('On Track')} />
           <KpiCard title="Delayed" value={kpis.delayed} subtitle="Needs attention" icon={<FiAlertTriangle size={24} />} iconBg="#fee2e2" iconColor="#dc2626" onClick={() => setStatusFilter('Delayed')} />
-          <KpiCard title="Completed" value={kpis.completed} subtitle="Finished" icon={<FiClock size={24} />} iconBg="#e0e7ff" iconColor="#3730a3" onClick={() => setStatusFilter('Completed')} />
+          <KpiCard
+  title="High Risk"
+  value={kpis.highRisk}
+  subtitle="Needs immediate attention"
+  icon={<FiAlertTriangle size={24} />}
+  iconBg="#fee2e2"
+  iconColor="#dc2626"
+/>
+          
         </div>
 
         <div className="sponsor-chart-grid">
@@ -76,48 +86,203 @@ const StudyOversight = () => {
 
         <div className="sponsor-table-wrap">
           <table className="sponsor-table oversight-table">
-            <thead>
-              <tr>
-                <th>Study ID</th>
-                <th>Study Name</th>
-                <th>Status</th>
-                <th>Progress</th>
-                <th>Enrollment</th>
-                <th>Milestone</th>
-                <th>Next Review</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredStudies.map((study) => (
-                <tr key={study.studyId} onClick={() => setViewStudy(study)}>
-                  <td>{study.studyId}</td>
-                  <td>{study.studyName}</td>
-                  <td><span className={`status-badge ${study.status === 'Delayed' ? 'open' : 'active'}`}>{study.status}</span></td>
-                  <td>{study.progress}%</td>
-                  <td>{study.enrollment}</td>
-                  <td>{study.milestone}</td>
-                  <td>{study.nextReview}</td>
-                  <td onClick={(e) => e.stopPropagation()}>
-                    <button type="button" className="view-btn" onClick={() => setViewStudy(study)}>View</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+  <thead>
+    <tr>
+      <th>Study ID</th>
+      <th>Study Name</th>
+      <th>Status</th>
+      <th>Progress</th>
+      <th>Enrollment</th>
+      <th>Milestone</th>
+      <th>Next Review</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {filteredStudies.map((study) => (
+      <tr key={study.studyId}>
+        <td>{study.studyId}</td>
+
+        <td>{study.studyName}</td>
+
+        <td>
+          <span
+            className={`status-badge ${
+              study.status === "Delayed" ? "open" : "active"
+            }`}
+          >
+            {study.status}
+          </span>
+        </td>
+
+        <td>{study.progress}%</td>
+
+        <td>{study.enrollment}</td>
+
+        <td>{study.milestone}</td>
+
+        <td>{study.nextReview}</td>
+
+        <td>
+          <button
+  className="view-btn"
+  onClick={() =>
+    navigate(`/study-dashboard/${study.studyId}?tab=Overview`)
+  }
+>
+  View
+</button>
+        </td>
+
+      </tr>
+    ))}
+  </tbody>
+
+</table>
         </div>
       </div>
+       {viewStudy && (
+  <EnterpriseModal
+    title="Study Oversight Details"
+    onClose={() => setViewStudy(null)}
+  >
+    <div className="study-oversight-details">
 
-      {viewStudy && (
-        <EnterpriseModal title={`Study: ${viewStudy.studyName}`} onClose={() => setViewStudy(null)}>
-          <p><strong>ID:</strong> {viewStudy.studyId}</p>
-          <p><strong>Status:</strong> {viewStudy.status}</p>
-          <p><strong>Progress:</strong> {viewStudy.progress}%</p>
-          <p><strong>Enrollment:</strong> {viewStudy.enrollment}</p>
-          <p><strong>Current Milestone:</strong> {viewStudy.milestone}</p>
-          <p><strong>Next Review:</strong> {viewStudy.nextReview}</p>
-        </EnterpriseModal>
-      )}
+      <h2 className="study-modal-title">
+        {viewStudy.studyName}
+      </h2>
+
+      <p className="study-modal-subtitle">
+        Comprehensive monitoring information for this study.
+      </p>
+
+      {/* Study Information */}
+
+      <div className="oversight-section">
+
+        <h3>Study Information</h3>
+
+        <div className="oversight-grid">
+
+          <div className="oversight-item">
+            <label>Study ID</label>
+            <p>{viewStudy.studyId}</p>
+          </div>
+
+          <div className="oversight-item">
+            <label>Status</label>
+            <p>{viewStudy.status}</p>
+          </div>
+
+          <div className="oversight-item">
+            <label>Progress</label>
+            <p>{viewStudy.progress}%</p>
+          </div>
+
+          <div className="oversight-item">
+            <label>Enrollment</label>
+            <p>{viewStudy.enrollment}</p>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* Operational Metrics */}
+
+      <div className="oversight-section">
+
+        <h3>Operational Metrics</h3>
+
+        <div className="oversight-grid">
+
+          <div className="oversight-item">
+            <label>Current Milestone</label>
+            <p>{viewStudy.milestone}</p>
+          </div>
+
+          <div className="oversight-item">
+            <label>Next Review</label>
+            <p>{viewStudy.nextReview}</p>
+          </div>
+
+          <div className="oversight-item">
+            <label>Recruitment</label>
+            <p className="metric-success">On Track</p>
+          </div>
+
+          <div className="oversight-item">
+            <label>Site Productivity</label>
+            <p>32 / 35 Active Sites</p>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* Oversight Metrics */}
+
+      <div className="oversight-section">
+
+        <h3>Oversight Metrics</h3>
+
+        <div className="oversight-grid">
+
+          <div className="oversight-item">
+            <label>Open Risks</label>
+            <p className="metric-warning">4</p>
+          </div>
+
+          <div className="oversight-item">
+            <label>Open Queries</label>
+            <p className="metric-warning">18</p>
+          </div>
+
+          <div className="oversight-item">
+            <label>Protocol Deviations</label>
+            <p className="metric-danger">2</p>
+          </div>
+
+          <div className="oversight-item">
+            <label>Regulatory Status</label>
+            <p className="metric-success">Compliant</p>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div className="oversight-footer">
+
+        <button className="site-btn">
+          View Site Performance
+        </button>
+
+        <button className="cro-btn">
+          View CRO Performance
+        </button>
+
+        <button className="report-btn">
+          Generate Report
+        </button>
+
+        <button
+          className="close-btn"
+          onClick={() => setViewStudy(null)}
+        >
+          Close
+        </button>
+
+      </div>
+
+    </div>
+
+  </EnterpriseModal>
+)}
+
+      
     </AppLayout>
   );
 };

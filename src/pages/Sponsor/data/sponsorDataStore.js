@@ -2,19 +2,55 @@ const STORAGE_PREFIX = 'sponsor_data_';
 
 const defaultData = {
   portfolioStudies: [
-    { studyId: 'TRIA-001', studyName: 'COVID-19 Phase III', phase: 'Phase III', status: 'Active', cro: 'IQVIA', sites: 35, enrolled: 2200, target: 3000, startDate: '2026-01-01', therapeuticArea: 'Infectious Disease' },
-    { studyId: 'TRIA-002', studyName: 'Diabetes Efficacy Study', phase: 'Phase II', status: 'Active', cro: 'PPD', sites: 20, enrolled: 900, target: 1500, startDate: '2026-02-10', therapeuticArea: 'Endocrinology' },
-    { studyId: 'TRIA-003', studyName: 'Oncology Treatment Trial', phase: 'Phase I', status: 'Recruiting', cro: 'Syneos', sites: 15, enrolled: 420, target: 600, startDate: '2026-03-05', therapeuticArea: 'Oncology' },
-    { studyId: 'TRIA-004', studyName: 'Cardiovascular Safety Study', phase: 'Phase IV', status: 'Active', cro: 'ICON', sites: 30, enrolled: 3100, target: 4000, startDate: '2026-01-15', therapeuticArea: 'Cardiology' },
-    { studyId: 'TRIA-005', studyName: 'Neurology Phase II', phase: 'Phase II', status: 'Planning', cro: 'Parexel', sites: 12, enrolled: 0, target: 800, startDate: '2026-06-01', therapeuticArea: 'Neurology' },
-    { studyId: 'TRIA-006', studyName: 'Rheumatology Trial', phase: 'Phase III', status: 'Completed', cro: 'IQVIA', sites: 22, enrolled: 1800, target: 1800, startDate: '2025-03-01', therapeuticArea: 'Rheumatology' },
-  ],
+  {
+    studyId: "747-303",
+    studyName: "OBETICHOLIC ACID (OCA)",
+    phase: "Phase III",
+    status: "Active",
+    cro: "IQVIA",
+    sites: 1,
+    enrolled: 1,
+    target: 50,
+    startDate: "2026-06-01",
+    therapeuticArea: "Hepatology"
+  },
+
+  {
+    studyId: "05151",
+    studyName: "SeptiTest",
+    phase: "Screening",
+    status: "Screening",
+    cro: "PPD",
+    sites: 1,
+    enrolled: 8,
+    target: 80,
+    startDate: "2026-06-03",
+    therapeuticArea: "Critical Care"
+  }
+],
   oversightStudies: [
-    { studyId: 'TRIA-001', studyName: 'COVID-19 Phase III', status: 'On Track', progress: 73, enrollment: '2200/3000', milestone: 'Interim Analysis', nextReview: '2026-07-01' },
-    { studyId: 'TRIA-002', studyName: 'Diabetes Efficacy Study', status: 'Delayed', progress: 60, enrollment: '900/1500', milestone: 'Site Activation', nextReview: '2026-06-20' },
-    { studyId: 'TRIA-003', studyName: 'Oncology Treatment Trial', status: 'On Track', progress: 70, enrollment: '420/600', milestone: 'First Patient In', nextReview: '2026-06-25' },
-    { studyId: 'TRIA-004', studyName: 'Cardiovascular Safety Study', status: 'On Track', progress: 78, enrollment: '3100/4000', milestone: 'Database Lock Prep', nextReview: '2026-07-10' },
-  ],
+
+{
+  studyId:"747-303",
+  studyName:"OBETICHOLIC ACID (OCA)",
+  status:"On Track",
+  progress:73,
+  enrollment:"1/50",
+  milestone:"Interim Analysis",
+  nextReview:"2026-07-01"
+},
+
+{
+  studyId:"05151",
+  studyName:"SeptiTest",
+  status:"Delayed",
+  progress:40,
+  enrollment:"8/80",
+  milestone:"Site Activation",
+  nextReview:"2026-06-20"
+}
+
+],
   cros: [
     { id: 'CRO-001', name: 'IQVIA', studies: 12, sites: 45, performance: 95, status: 'Active', contact: 'Sarah Chen' },
     { id: 'CRO-002', name: 'Parexel', studies: 8, sites: 32, performance: 90, status: 'Active', contact: 'James Wilson' },
@@ -76,26 +112,54 @@ const defaultData = {
     { id: 'QA-005', label: 'CRO Dashboard', value: '5', subtitle: 'Active CROs', icon: 'cro', color: '#d97706', bg: '#fef3c7', route: '/cro-oversight' },
   ],
   settings: {
-    name: 'Sponsor Admin',
-    email: 'sponsor@trianxt.com',
-    jobTitle: 'Clinical Operations Director',
-    organization: 'TriaNXT Pharmaceuticals',
-    emailAlerts: true,
-    smsAlerts: false,
-    criticalOnly: false,
-    enrollmentAlerts: true,
-    regulatoryAlerts: true,
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-    twoFactorEnabled: false,
-    sessionTimeout: true,
-    defaultStudyView: 'grid',
-    dashboardRefresh: '5',
-    preferredTherapeuticArea: 'All',
-    showCompletedStudies: true,
-    theme: 'light',
-  },
+  // Profile
+  firstName: "Sponsor",
+  lastName: "Admin",
+  fullName: "Sponsor Admin",
+
+  employeeId: "EMP-1001",
+
+  email: "sponsor@trianxt.com",
+
+  phone: "+91 9876543210",
+
+  jobTitle: "Clinical Operations Director",
+
+  department: "Clinical Operations",
+
+  organization: "TriaNXT Pharmaceuticals",
+
+  country: "India",
+
+  timeZone: "Asia/Kolkata",
+
+  language: "English",
+
+  profilePhoto: "",
+
+  digitalSignature: "",
+
+  // Notifications
+  emailAlerts: true,
+  smsAlerts: false,
+  criticalOnly: false,
+  enrollmentAlerts: true,
+  regulatoryAlerts: true,
+
+  // Security
+  currentPassword: "",
+  newPassword: "",
+  confirmPassword: "",
+  twoFactorEnabled: false,
+  sessionTimeout: true,
+
+  // Preferences
+  defaultStudyView: "grid",
+  dashboardRefresh: "5",
+  preferredTherapeuticArea: "All",
+  showCompletedStudies: true,
+  theme: "light",
+},
   enrollmentTrend: [
     { month: 'Jan', enrolled: 320 },
     { month: 'Feb', enrolled: 410 },
