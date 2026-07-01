@@ -35,9 +35,10 @@
 }
 
 .ctms-table {
-  width: 100%;
+  width: 85%;
+  margin: 0 auto;
   border-collapse: collapse;
-  table-layout: auto;
+  table-layout: fixed;
 }
 
 .ctms-table thead {
@@ -67,9 +68,8 @@
   padding: 12px;
   font-size: var(--tnxt-font-size-sm);
   color: var(--tnxt-text);
-  border-bottom: 1px solid var(--tnxt-border-light);
+  border-bottom: none;
 }
-
 .ctms-table tbody tr:hover {
   background: var(--tnxt-bg-alt);
 }
@@ -80,16 +80,16 @@
 
 .empty-row {
   text-align: center;
-  padding: 30px;
+  padding: 12px;
   color: var(--tnxt-text-secondary);
 }
 
 .empty-row-inner {
-  align-items: center;
   display: flex;
-  flex: 1 1 auto;
+  align-items: center;
   justify-content: center;
-  min-height: 200px;
+  min-height: 50px;
+  padding: 8px 0;
 }
 
 .ctms-table-wrapper .ctms-table {
@@ -104,10 +104,10 @@
 .upcoming-visits-table .ctms-table-wrapper {
   display: block;
   flex: 1 1 auto;
-  min-height: 460px;
-  max-height: none;
-  overflow-x: auto;
+  min-height: auto;
+  max-height: 250px;
   overflow-y: auto;
+  overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -125,7 +125,8 @@
   display: table;
   height: auto !important;
   table-layout: fixed;
-  width: 100%;
+  width: 85%;
+  margin: 0 auto;
 }
 
 .upcoming-visits-table .ctms-table tbody tr {
@@ -166,8 +167,52 @@
   .ctms-table {
     min-width: 520px;
   }
+}
+.upcoming-visits-table tbody tr {
+  height: auto !important;
+}
 
-  .empty-row-inner {
-    min-height: 110px;
-  }
+.upcoming-visits-table tbody td.empty-row {
+  padding: 12px !important;
+}
+.ctms-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #d9dee7;
+}
+
+.ctms-table th,
+.ctms-table td {
+  border: 1px solid #d9dee7;
+  padding: 12px;
+}
+
+.ctms-table th {
+  background: #0b2f45;
+  color: #fff;
+  font-weight: 600;
+  text-align: left;
+}
+
+.ctms-table td {
+  background: #fff;
+}
+.ctms-table th:first-child {
+  border-top-left-radius: 8px;
+}
+
+.ctms-table th:last-child {
+  border-top-right-radius: 8px;
+}
+/* Remove line between title and table */
+.upcoming-visits-full-width .ctms-table-header {
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.upcoming-visits-full-width .ctms-table-card {
+    border: none !important;
+    box-shadow: none !important;
+    padding-top: 0 !important;
 }

@@ -1,0 +1,44 @@
+.edit-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.35);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+}
+
+.edit-modal{
+    width:600px;
+    background:#fff;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.edit-header{
+    background:#082b3d;
+    color:#fff;
+    padding:18px 24px;
+    font-size:18px;
+    font-weight:600;
+}
+
+.edit-body{
+    padding:24px;
+    display:grid;
+    gap:14px;
+}
+
+.edit-body input,
+.edit-body select{
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+}
+
+.edit-footer{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    padding:18px 24px;
+}

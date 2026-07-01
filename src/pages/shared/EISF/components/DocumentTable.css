@@ -1,0 +1,74 @@
+.document-table-card{
+    background:#fff;
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.document-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.document-table thead{
+    background:#082b3d;
+}
+
+.document-table th{
+    color:#fff;
+    padding:14px;
+    text-align:left;
+    font-size:14px;
+}
+
+.document-table td{
+    padding:14px;
+    border-bottom:1px solid #ececec;
+    font-size:14px;
+}
+
+.document-table tbody tr:hover{
+    background:#f8fbff;
+}
+
+.no-records{
+    text-align:center;
+    padding:50px;
+    color:#888;
+}
+
+.action-btn{
+    border:none;
+    padding:7px 12px;
+    border-radius:5px;
+    cursor:pointer;
+    margin-right:8px;
+    font-size:13px;
+}
+
+.view-btn{
+    background:#0d6efd;
+    color:#fff;
+}
+
+.download-btn{
+    background:#198754;
+    color:#fff;
+}
+.edit-btn{
+    background:#f59e0b;
+    color:#fff;
+}
+
+.delete-btn{
+    background:#dc2626;
+    color:#fff;
+}
+.history-btn{
+    background:#7c3aed;
+    color:#fff;
+}
+.audit-btn{
+    background:#0891b2;
+    color:#fff;
+}

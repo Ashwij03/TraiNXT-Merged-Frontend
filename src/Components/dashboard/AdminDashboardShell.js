@@ -23,6 +23,7 @@ const DASHBOARD_ROUTE_ROLES = {
 };
 
 function useViewportMode() {
+
   const [mode, setMode] = useState(() => {
     if (typeof window === "undefined") {
       return "desktop";

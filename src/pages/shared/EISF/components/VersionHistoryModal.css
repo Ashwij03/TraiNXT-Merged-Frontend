@@ -1,0 +1,49 @@
+.history-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.4);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+}
+
+.history-modal{
+    width:700px;
+    background:#fff;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.history-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:#082b3d;
+    color:#fff;
+    padding:18px 24px;
+}
+
+.history-header button{
+    border:none;
+    background:none;
+    color:#fff;
+    cursor:pointer;
+    font-size:20px;
+}
+
+.history-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.history-table th{
+    background:#f5f5f5;
+    padding:14px;
+    text-align:left;
+}
+
+.history-table td{
+    padding:14px;
+    border-bottom:1px solid #ececec;
+}

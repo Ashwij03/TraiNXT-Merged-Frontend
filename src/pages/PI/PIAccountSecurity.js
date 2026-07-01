@@ -3,7 +3,6 @@ import {
   FaLock,
   FaShieldAlt,
   FaHistory,
-  FaDesktop,
   FaKey,
   FaCheckCircle,
   FaExclamationCircle,
@@ -200,58 +199,6 @@ function PIAccountSecurity() {
                       <span className={entry.status === "Success" ? "status-success" : "status-danger"}>
                         {entry.status}
                       </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="table-container pi-security-card pi-security-full">
-          <h3>
-            <FaDesktop /> Session Information
-          </h3>
-          <div className="pi-table-responsive">
-            <table className="pi-table">
-              <thead>
-                <tr>
-                  <th>Device</th>
-                  <th>Browser</th>
-                  <th>IP Address</th>
-                  <th>Last Active</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.sessions.map((session) => (
-                  <tr key={session.id}>
-                    <td>
-                      {session.device}
-                      {session.current && <span className="pi-session-current"> Current</span>}
-                    </td>
-                    <td>{session.browser}</td>
-                    <td>{session.ip}</td>
-                    <td>{session.lastActive}</td>
-                    <td>
-                      {!session.current && session.active && (
-                        <button
-                          type="button"
-                          className="view-all-btn"
-                          onClick={() =>
-                            persist({
-                              ...data,
-                              sessions: data.sessions.map((s) =>
-                                s.id === session.id ? { ...s, active: false } : s
-                              ),
-                            })
-                          }
-                        >
-                          Revoke
-                        </button>
-                      )}
-                      {session.current && <span className="status-success">Active</span>}
-                      {!session.active && <span className="status-danger">Revoked</span>}
                     </td>
                   </tr>
                 ))}

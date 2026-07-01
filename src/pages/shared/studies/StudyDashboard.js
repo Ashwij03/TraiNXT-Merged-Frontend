@@ -322,7 +322,7 @@ function StudyDashboard() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       {!data ? (
         <div className="dashboard-loading">Loading Dashboard...</div>
       ) : (
@@ -705,7 +705,7 @@ function StudyDashboard() {
           )}
         </>
       )}
-    </DashboardLayout>
+    </>
   );
 }
 

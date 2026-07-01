@@ -548,3 +548,19 @@
   min-width: 180px !important;
   max-width: 180px !important;
 }
+.pi-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 72px;
+    z-index: 99999;
+
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform;
+}
+.pi-dashboard-wrapper {
+    padding-top: 72px;
+}

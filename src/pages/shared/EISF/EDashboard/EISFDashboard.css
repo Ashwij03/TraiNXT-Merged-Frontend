@@ -1,0 +1,74 @@
+.eisf-layout {
+  display: flex;
+  height: calc(100vh - 72px);
+  background: #f5f7fb;
+}
+
+.eisf-sidebar {
+  width: 300px;
+  background: #fff;
+  border-right: 1px solid #dcdfe6;
+  overflow-y: auto;
+}
+
+.eisf-sidebar-title {
+  padding: 18px 20px;
+  font-size: 20px;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+  background: #082b3d;
+  color: #fff;
+}
+
+.eisf-menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.eisf-menu-item:hover {
+  background: #eef5ff;
+}
+
+.eisf-menu-item.active {
+  background: #dbeafe;
+  color: #0b5ed7;
+  font-weight: 600;
+}
+
+.eisf-menu-label {
+  flex: 1;
+}
+
+.eisf-expand-btn {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.eisf-child-item {
+  padding: 10px 40px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #555;
+}
+
+.eisf-child-item:hover {
+  background: #f5f7fb;
+}
+
+.eisf-content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  background: #f8fafc;
+}
+.eisf-content{
+    flex:1;
+    padding:24px;
+    overflow:auto;
+}
