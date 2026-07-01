@@ -97,9 +97,11 @@ function EnterpriseNavbarBase({
   const [previewRole, setPreviewRoleState] = useState(
     () => effectiveRole || ROLES.ADMIN
   );
-  const [profilePhoto, setProfilePhoto] = useState(
-    () => getUserProfile(currentUser).profilePhoto || ""
-  );
+ const current = JSON.parse(localStorage.getItem("currentUser"));
+
+const [profilePhoto, setProfilePhoto] = useState(
+  current?.profilePhoto || localStorage.getItem("profilePhoto") || ""
+);
 
   const [selectedIndication, setSelectedIndication] = useState(
     getStoredIndicationFilter
@@ -177,16 +179,20 @@ function EnterpriseNavbarBase({
   }, [userEmail]);
 
   useEffect(() => {
-    const refreshProfilePhoto = () => {
-      setProfilePhoto(getUserProfile(getCurrentUser()).profilePhoto || "");
-    };
+  const refreshProfilePhoto = () => {
+    const current = JSON.parse(localStorage.getItem("currentUser"));
 
-    window.addEventListener(PROFILE_PHOTO_EVENT, refreshProfilePhoto);
+    setProfilePhoto(
+      current?.profilePhoto || localStorage.getItem("profilePhoto") || ""
+    );
+  };
 
-    return () => {
-      window.removeEventListener(PROFILE_PHOTO_EVENT, refreshProfilePhoto);
-    };
-  }, [userEmail]);
+  window.addEventListener(PROFILE_PHOTO_EVENT, refreshProfilePhoto);
+
+  return () => {
+    window.removeEventListener(PROFILE_PHOTO_EVENT, refreshProfilePhoto);
+  };
+}, []);
 
   useEffect(() => {
     const bumpFilters = () => setFilterVersion((value) => value + 1);
@@ -217,16 +223,55 @@ function EnterpriseNavbarBase({
       );
     };
   }, [userEmail]);
+const handleLogout = () => {
+  terminateCurrentSession();
 
-  const handleLogout = () => {
-    terminateCurrentSession();
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("adminPreviewRole");
-    localStorage.removeItem("currentUser");
-    setAdminPreviewRole(null);
-    navigate("/login");
-  };
+  localStorage.removeItem("isLoggedIn");
+  localStorage.removeItem("adminPreviewRole");
+  localStorage.removeItem("currentUser");
 
+  setAdminPreviewRole(null);
+
+  navigate("/login");
+};
+ const handleProfileNavigation = () => {
+  const role = getEffectiveRole(getCurrentUser());
+
+  let path = "/settings";
+
+  switch (role) {
+    case ROLES.ADMIN:
+      path = "/settings";
+      break;
+
+    case ROLES.SPONSOR:
+      path = "/settings";
+      break;
+
+    case ROLES.CRO:
+      path = "/cro-settings";
+      break;
+
+    case ROLES.PI:
+      path = "/pi-settings";
+      break;
+
+    case ROLES.SITE_STAFF:
+      path = "/settings";
+      break;
+
+    default:
+      path = "/settings";
+  }
+
+  navigate(path, {
+    state: {
+      openModal: "profile",
+    },
+  });
+
+  setProfileOpen(false);
+};
   const openStudy = (study) => {
     if (!study) {
       return;
@@ -521,7 +566,7 @@ function EnterpriseNavbarBase({
 
             {profileOpen && (
               <div className="profile-dropdown">
-                <div onClick={() => navigate("/profile")}>Profile</div>
+                <div onClick={handleProfileNavigation}>Profile</div>
                 <div onClick={() => navigate("/settings")}>
                   Account Settings
                 </div>

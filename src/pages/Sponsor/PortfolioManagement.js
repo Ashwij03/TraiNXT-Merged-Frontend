@@ -29,6 +29,7 @@ const PortfolioManagement = () => {
   const [statusFilter, setStatusFilter] = useState('All Studies');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editStudy, setEditStudy] = useState(null);
+  const [selectedStudy, setSelectedStudy] = useState(null);
   const [form, setForm] = useState({ studyId: '', studyName: '', phase: 'Phase II', status: 'Planning', cro: '', sites: 0, startDate: '', therapeuticArea: '' });
 
   useEffect(() => {
@@ -167,7 +168,14 @@ const PortfolioManagement = () => {
                   <td>{study.sites}</td>
                   <td>{study.enrolled || 0} / {study.target || 0}</td>
                   <td className="action-btn-group" onClick={(e) => e.stopPropagation()}>
-                    <button type="button" className="view-btn" onClick={() => navigate(`/portfolio/${study.studyId}`)}>View</button>
+                  <button
+  className="view-btn"
+  onClick={() =>
+  navigate(`/study-dashboard/${study.studyId}?tab=Overview`)
+}
+>
+  View
+</button>
                     <button type="button" className="edit-btn" onClick={() => openEdit(study)}>Edit</button>
                   </td>
                 </tr>
@@ -176,6 +184,80 @@ const PortfolioManagement = () => {
           </table>
         </div>
       </div>
+      {selectedStudy && (
+  <div className="study-details-card">
+
+    <div className="study-details-header">
+      <h2>Study Details</h2>
+
+      <button
+        className="close-btn"
+        onClick={() => setSelectedStudy(null)}
+      >
+        ✕
+      </button>
+    </div>
+
+    <div className="study-details-grid">
+
+      <div>
+        <h4>Study ID</h4>
+        <p>{selectedStudy.studyId}</p>
+      </div>
+
+      <div>
+        <h4>Study Name</h4>
+        <p>{selectedStudy.studyName}</p>
+      </div>
+
+      <div>
+        <h4>Phase</h4>
+        <p>{selectedStudy.phase}</p>
+      </div>
+
+      <div>
+        <h4>Status</h4>
+        <p>{selectedStudy.status}</p>
+      </div>
+
+      <div>
+        <h4>CRO</h4>
+        <p>{selectedStudy.cro}</p>
+      </div>
+
+      <div>
+        <h4>Sites</h4>
+        <p>{selectedStudy.sites}</p>
+      </div>
+
+      <div>
+        <h4>Enrollment</h4>
+        <p>
+          {selectedStudy.enrolled} / {selectedStudy.target}
+        </p>
+      </div>
+
+      <div>
+        <h4>Start Date</h4>
+        <p>{selectedStudy.startDate || "-"}</p>
+      </div>
+
+    </div>
+
+    <div className="study-action-buttons">
+
+
+      <button
+        className="edit-btn"
+        onClick={() => openEdit(selectedStudy)}
+      >
+        Edit Study
+      </button>
+
+    </div>
+
+  </div>
+)}
 
       {showCreateModal && (
         <EnterpriseModal title={editStudy ? 'Edit Study' : 'Create Study'} onClose={() => setShowCreateModal(false)} onSave={handleSave} saveLabel={editStudy ? 'Update' : 'Create'}>

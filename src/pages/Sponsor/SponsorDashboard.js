@@ -167,10 +167,7 @@ const SponsorDashboard = () => {
           />
         </div>
 
-        <SubjectAnalyticsSection
-          subjects={analyticsSubjects}
-          studies={portfolioStudiesForAnalytics}
-        />
+        
 
         <div className="chart-grid">
           <StatusPieChart />
@@ -219,62 +216,7 @@ const SponsorDashboard = () => {
           <QuickActions />
         </div>
 
-        <div className="table-grid">
-          <div className="table-card">
-            <div className="card-header">
-              <h3>Top Performing Sites</h3>
-            </div>
-            <table>
-              <thead>
-                <tr>
-                  <th>Site</th>
-                  <th>Enrolled</th>
-                  <th>Target</th>
-                  <th>Performance</th>
-                </tr>
-              </thead>
-              <tbody>
-                {topSites.map((site) => (
-                  <tr key={site.id} onClick={() => navigate('/site-performance')} style={{ cursor: 'pointer' }}>
-                    <td>{site.name}</td>
-                    <td>{site.enrolled}</td>
-                    <td>{site.target}</td>
-                    <td>{site.performance}%</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="view-all-link">
-              <span onClick={() => navigate('/site-performance')}>View All Sites →</span>
-            </div>
-          </div>
-
-          <div className="table-card">
-            <h3>CRO Performance</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>CRO</th>
-                  <th>Studies</th>
-                  <th>Score</th>
-                </tr>
-              </thead>
-              <tbody>
-                {topCros.map((cro) => (
-                  <tr key={cro.id} onClick={() => navigate('/cro-oversight')} style={{ cursor: 'pointer' }}>
-                    <td>{cro.name}</td>
-                    <td>{cro.studies}</td>
-                    <td>{cro.performance}%</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="view-all-link">
-              <span onClick={() => navigate('/cro-oversight')}>View All CROs →</span>
-            </div>
-          </div>
-        </div>
-
+      
         <div className="bottom-grid bottom-grid-single">
           <div className="regulatory-card">
             <h3>Regulatory Status Overview</h3>

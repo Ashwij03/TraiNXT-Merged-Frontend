@@ -5,6 +5,9 @@ import './Settings.css';
 import './SponsorShared.css';
 import { MdPerson, MdNotifications, MdSecurity, MdScience, MdChevronRight } from 'react-icons/md';
 import { loadSettings, saveSettings } from './data/sponsorDataStore';
+import { useLocation, useNavigate } from "react-router-dom";
+import { PROFILE_PHOTO_EVENT } from "../../constants/profileEvents";
+import { getCurrentUser } from "../../services/roleService";
 
 const SECTIONS = [
   {
@@ -42,10 +45,49 @@ const SECTIONS = [
 ];
 
 const Settings = () => {
+  const location = useLocation();
+  console.log(location.state);
+  const navigate = useNavigate();
   const [settings, setSettings] = useState(loadSettings());
   const [activeSection, setActiveSection] = useState(null);
   const [saved, setSaved] = useState(false);
+  useEffect(() => {
+  if (location.state?.openModal === "profile") {
+    setActiveSection("profile");
+  }
+}, [location]);
+const [profilePhoto, setProfilePhoto] = useState(() => {
+  const currentUser = getCurrentUser();
+  return currentUser?.profilePhoto || "";
+});
+const handlePhotoChange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
+  const reader = new FileReader();
+
+  reader.onloadend = () => {
+    const image = reader.result;
+
+    setProfilePhoto(image);
+
+    // save separately
+    localStorage.setItem("profilePhoto", image);
+
+    // update current user also
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+    if (currentUser) {
+      currentUser.profilePhoto = image;
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+    }
+
+    // notify navbar
+    window.dispatchEvent(new Event(PROFILE_PHOTO_EVENT));
+  };
+
+  reader.readAsDataURL(file);
+};
   useEffect(() => {
     const refresh = () => setSettings(loadSettings());
     window.addEventListener('sponsor-data-updated', refresh);
@@ -66,10 +108,44 @@ const Settings = () => {
       case 'profile':
         return (
           <>
+          <div className="profile-photo-section">
+  <div className="profile-photo-wrapper">
+    <img
+      src={profilePhoto || "https://ui-avatars.com/api/?name=User&background=0D6EFD&color=fff"}
+      alt="Profile"
+      className="profile-photo"
+    />
+
+    <label className="photo-upload-btn">
+      📷
+      <input
+        type="file"
+        accept="image/*"
+        hidden
+        onChange={handlePhotoChange}
+      />
+    </label>
+  </div>
+
+  <p className="photo-text">Change Profile Photo</p>
+</div>
             <div className="form-group">
-              <label>Full Name</label>
-              <input type="text" value={settings.name} onChange={(e) => update('name', e.target.value)} />
-            </div>
+  <label>First Name</label>
+  <input
+    type="text"
+    value={settings.firstName}
+    onChange={(e) => update("firstName", e.target.value)}
+  />
+</div>
+
+<div className="form-group">
+  <label>Last Name</label>
+  <input
+    type="text"
+    value={settings.lastName}
+    onChange={(e) => update("lastName", e.target.value)}
+  />
+</div>
             <div className="form-group">
               <label>Email Address</label>
               <input type="email" value={settings.email} onChange={(e) => update('email', e.target.value)} />
@@ -82,6 +158,65 @@ const Settings = () => {
               <label>Organization</label>
               <input type="text" value={settings.organization} onChange={(e) => update('organization', e.target.value)} />
             </div>
+            <div className="form-group">
+  <label>Phone Number</label>
+  <input
+    type="tel"
+    value={settings.phone}
+    onChange={(e) => update("phone", e.target.value)}
+  />
+</div>
+
+<div className="form-group">
+  <label>Department</label>
+  <input
+    type="text"
+    value={settings.department}
+    onChange={(e) => update("department", e.target.value)}
+  />
+</div>
+
+<div className="form-group">
+  <label>Employee ID</label>
+  <input
+    type="text"
+    value={settings.employeeId}
+    onChange={(e) => update("employeeId", e.target.value)}
+  />
+</div>
+
+<div className="form-group">
+  <label>Office Location</label>
+  <input
+    type="text"
+    value={settings.location}
+    onChange={(e) => update("location", e.target.value)}
+  />
+</div>
+
+<div className="form-group">
+  <label>Language</label>
+  <select
+    value={settings.language}
+    onChange={(e) => update("language", e.target.value)}
+  >
+    <option>English</option>
+    <option>French</option>
+    <option>German</option>
+  </select>
+</div>
+
+<div className="form-group">
+  <label>Time Zone</label>
+  <select
+    value={settings.timezone}
+    onChange={(e) => update("timezone", e.target.value)}
+  >
+    <option>Asia/Kolkata</option>
+    <option>UTC</option>
+    <option>US/Eastern</option>
+  </select>
+</div>
           </>
         );
       case 'notifications':
