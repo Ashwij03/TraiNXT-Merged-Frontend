@@ -21,11 +21,9 @@ function VisitCalendarSection({
   calendarClassName = "calendar-card-compact",
   tableClassName = "upcoming-visits-full-width"
 }) {
-  const { schedules, upcomingWindow, getVisitsForDate } = useVisitSchedules({
-    institutionFilter,
-    studyCode,
-    daysAhead
-  });
+  const schedules = [];
+const upcomingWindow = [];
+const getVisitsForDate = () => [];
 
   const [selectedScheduleDate, setSelectedScheduleDate] = useState(null);
 

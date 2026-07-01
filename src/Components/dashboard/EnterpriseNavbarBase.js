@@ -77,6 +77,7 @@ function EnterpriseNavbarBase({
   layoutRole,
   liveChatPath,
   navbarClassName = "",
+  setSelectedPage,
 }) {
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
@@ -173,10 +174,11 @@ function EnterpriseNavbarBase({
   }, [userEmail, filterVersion]);
 
   useEffect(() => {
-    touchUserSession(getCurrentUser());
-  }, [userEmail]);
+  touchUserSession(getCurrentUser());
+}, [userEmail]);
 
   useEffect(() => {
+    
     const refreshProfilePhoto = () => {
       setProfilePhoto(getUserProfile(getCurrentUser()).profilePhoto || "");
     };
@@ -189,6 +191,7 @@ function EnterpriseNavbarBase({
   }, [userEmail]);
 
   useEffect(() => {
+    
     const bumpFilters = () => setFilterVersion((value) => value + 1);
 
     window.addEventListener(HEADER_FILTERS_EVENT, bumpFilters);
@@ -462,13 +465,17 @@ function EnterpriseNavbarBase({
         <div className="header-right">
           <div className="header-menu">
             <button
-              type="button"
-              className="header-action-btn header-action-btn--outline"
-              onClick={() => navigate(dashboardPath)}
-            >
-              <FiHome />
-              <span>Home</span>
-            </button>
+  type="button"
+  className="header-action-btn header-action-btn--outline"
+  onClick={() => {
+  console.log("HOME CLICKED");
+  setSelectedPage("dashboard");
+}}
+>
+  <FiHome />
+  <span>Home</span>
+
+</button>
 
             <button
               type="button"

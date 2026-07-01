@@ -53,7 +53,7 @@ import {
   buildDynamicAlerts
 } from "./piDashboardService";
 import "./PIDashboard.css";
-import "../Admin/Dashboard.css";
+//import "../Admin/Dashboard.css";
 
 function PIDashboard({ embeddedInLayout = false }) {
   const navigate = useNavigate();
@@ -116,7 +116,22 @@ function PIDashboard({ embeddedInLayout = false }) {
 
   const COLORS = ["#22c55e", "#f59e0b", "#ef4444"];
 
-  const navigateToPage = (page) => setSelectedPage(page);
+  const navigateToPage = (page) => {
+  const routes = {
+    recruitment: "/pi-recruitment",
+    reports: "/pi-reports",
+    regulatory: "/pi-regulatory",
+    "site-performance": "/pi-site-performance",
+    notifications: "/pi-notifications",
+    comments: "/comments",
+    eisf: "/pi-eisf-dashboard",
+    icf: "/pi-icf-dashboard",
+    "study-folder": "/pi-study-folder-dashboard",
+    dashboard: "/pi-dashboard",
+  };
+
+  navigate(routes[page] || "/pi-dashboard");
+};
 
 const getAlertIcon = (type) => {
   if (type === "critical")
@@ -208,6 +223,12 @@ const getAlertIcon = (type) => {
       ).length
     }
   ];
+  const subjectStatusChartData = [
+  { name: "Screened", value: 45 },
+  { name: "Enrolled", value: 32 },
+  { name: "Completed", value: 18 },
+  { name: "Withdrawn", value: 5 }
+];
 
   const updateDashboard = (updatedDashboard) => {
     const synced = syncKpisFromData(updatedDashboard);
@@ -284,7 +305,12 @@ const getAlertIcon = (type) => {
   };
 
   const renderPageContent = (forcedPage) => {
-    const page = forcedPage || selectedPage;
+    const page =
+        forcedPage && selectedPage === "dashboard"
+            ? forcedPage
+            : selectedPage;
+    console.log("Rendering page:", page);
+
 
     // UPDATED: Route all sidebar/navbar pages — remount on page change via key
     if (page === "livechat") {
@@ -331,11 +357,14 @@ const getAlertIcon = (type) => {
 
         <div className="pi-kpi-grid">
           <div
-            className="pi-card pi-kpi-clickable"
-            onClick={() => navigateToPage("recruitment")}
-            role="button"
-            tabIndex={0}
-          >
+  className="pi-card pi-kpi-clickable"
+  onClick={() => {
+  console.log("Card Click");
+  navigateToPage("recruitment");
+}}
+  role="button"
+  tabIndex={0}
+>
             <div className="card-header">
               <div className="icon-circle blue">
                 <FaUsers />
@@ -477,15 +506,15 @@ const getAlertIcon = (type) => {
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
-                      data={consentChartData}
-                      dataKey="value"
-                      outerRadius={90}
-                      paddingAngle={2}
-                      label={({ name, value }) =>
-                        value > 0 ? `${name}: ${value}` : ""
-                      }
-                    >
-                      {consentChartData.map((entry, index) => (
+  data={consentChartData}
+  dataKey="value"
+  outerRadius={90}
+  paddingAngle={2}
+  label={({ name, value }) =>
+    value > 0 ? `${name}: ${value}` : ""
+  }
+>
+                     {consentChartData.map((entry, index) => (
                         <Cell key={index} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -496,22 +525,51 @@ const getAlertIcon = (type) => {
               </div>
             </div>
           </div>
-
-          <SubjectAnalyticsSection
-            subjects={dashboardData.recentSubjects || []}
-            studies={(dashboardData.studies || []).map((study) => ({
-              code: study.study || study.code,
-              enrolled: Number(study.enrolled) || 0
-            }))}
-            studyCode={
-              selectedStudy && selectedStudy !== "All Studies"
-                ? selectedStudy
-                : null
-            }
-          />
-
-          <div className="pi-chart-pair-section">
+                    <div className="pi-chart-pair-section">
             <div className="pi-chart-pair-grid">
+              <div className="chart-card">
+                <h4>Subject Status Overview</h4>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={subjectStatusChartData}
+                      dataKey="value"
+                      innerRadius={75}
+                      outerRadius={120}
+                      cx="52%"
+                      cy="50%"
+                      paddingAngle={2}
+                    >
+                      <Cell fill="#22c55e" />
+                      <Cell fill="#3b82f6" />
+                      <Cell fill="#a855f7" />
+                      <Cell fill="#ef4444" />
+                    </Pie>
+                    <Tooltip />
+                    <Legend layout="vertical" align="right" verticalAlign="middle" />
+                    <text
+  x="45%"
+  y="50%"
+  textAnchor="middle"
+  dominantBaseline="middle"
+  fontSize="28"
+  fontWeight="700"
+>
+  {dashboardData.recentSubjects.length}
+</text>
+
+<text
+  x="45%"
+  y="58%"
+  textAnchor="middle"
+  dominantBaseline="middle"
+  fontSize="13"
+>
+  Total
+</text>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
               <div className="chart-card">
   <h4>Visit Completion Trend</h4>
 
@@ -531,7 +589,6 @@ const getAlertIcon = (type) => {
             </div>
           </div>
         </div>
-
         <div className="alerts-actions-grid">
           <div className="pi-section alerts-card">
             <h3>
@@ -812,9 +869,9 @@ const getAlertIcon = (type) => {
   };
 
   if (embeddedInLayout) {
-    return renderPageContent("dashboard");
-  }
-
+  return renderPageContent(selectedPage);
+}
+console.log("PIDashboard setSelectedPage =", setSelectedPage);
   return (
     <div className="pi-dashboard-wrapper">
       <PINavbar

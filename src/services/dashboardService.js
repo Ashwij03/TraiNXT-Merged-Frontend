@@ -11,7 +11,7 @@ import {
 import { getUpcomingVisitsWindow } from "./visitScheduleService";
 
 export function getStudiesDashboard() {
-  initializeAdminData();
+  //initializeAdminData();
 
   const studies = getStudies();
   const comments = getComments();
