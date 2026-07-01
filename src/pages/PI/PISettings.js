@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { FaUser, FaBell, FaLock, FaCog } from "react-icons/fa";
 import PIKpiCard from "./PIKpiCard";
 import PIAccountSecurity from "./PIAccountSecurity";
@@ -15,6 +16,9 @@ function PISettings({ activeView = "security" }) {
   const [profileForm, setProfileForm] = useState(data.profile);
   const [notifPrefs, setNotifPrefs] = useState(data.notificationPreferences);
   const [studyPrefs, setStudyPrefs] = useState(data.studyPreferences);
+  const location = useLocation();
+
+console.log("STATE =", location.state);
 
   useEffect(() => {
     const fresh = getSettingsData();
@@ -27,6 +31,12 @@ function PISettings({ activeView = "security" }) {
   useEffect(() => {
     setView(activeView);
   }, [activeView]);
+
+  useEffect(() => {
+  if (location.state?.openModal === "profile") {
+    setView("profile");
+  }
+}, [location]);
 
   const persist = (updated) => {
     const saved = saveSettingsData(updated);

@@ -182,3 +182,192 @@
 .milestone-card.pending {
   border-left: 5px solid #60a5fa;
 }
+
+/* ===========================
+   Study Oversight Modal
+=========================== */
+
+.study-modal{
+    width:900px;
+    max-width:90vw;
+}
+
+.study-modal-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #082b3d;
+  margin-bottom: 8px;
+}
+
+.study-modal-subtitle {
+  color: #64748b;
+  margin-bottom: 25px;
+}
+
+.oversight-section {
+  margin-bottom: 28px;
+}
+
+.oversight-section h3 {
+  margin-bottom: 15px;
+  color: #082b3d;
+  font-size: 18px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 8px;
+}
+
+.oversight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 18px;
+}
+
+.oversight-item {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.oversight-item label {
+  display: block;
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.oversight-item p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* Status badges */
+
+.metric-success {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.metric-warning {
+  color: #d97706;
+  font-weight: 700;
+}
+
+.metric-danger {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+/* Buttons */
+
+.oversight-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.site-btn,
+.cro-btn,
+.report-btn,
+.close-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.site-btn {
+  background: #2563eb;
+  color: #fff;
+}
+
+.site-btn:hover {
+  background: #1d4ed8;
+}
+
+.cro-btn {
+  background: #0f766e;
+  color: #fff;
+}
+
+.cro-btn:hover {
+  background: #115e59;
+}
+
+.report-btn {
+  background: #7c3aed;
+  color: #fff;
+}
+
+.report-btn:hover {
+  background: #6d28d9;
+}
+
+.close-btn {
+  background: #ef4444;
+  color: #fff;
+}
+
+.close-btn:hover {
+  background: #dc2626;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+
+  .oversight-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .oversight-footer {
+    flex-direction: column;
+  }
+
+  .oversight-footer button {
+    width: 100%;
+  }
+
+}
+.study-oversight-details{
+    width:100%;
+    max-width:900px;
+    margin:0 auto;
+}
+
+.study-oversight-details h2{
+    margin-bottom:8px;
+}
+
+.study-modal-subtitle{
+    margin-bottom:24px;
+    color:#64748b;
+}
+
+.oversight-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:16px;
+}
+
+.oversight-item{
+    background:#f8fafc;
+    border:1px solid #e5e7eb;
+    border-radius:8px;
+    padding:16px;
+}
+
+.oversight-footer{
+    display:flex;
+    justify-content:flex-end;
+    gap:12px;
+    margin-top:30px;
+}

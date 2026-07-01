@@ -123,14 +123,19 @@ SIDEBAR
 }
 
 .sidebar-logo {
-padding: 20px 18px;
-border-bottom: 1px solid rgba(255,255,255,0.12);
+    height: 72px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    border-bottom: none;
 }
 
 .sidebar-logo h1 {
-margin: 0;
-font-size: 24px;
-color: white;
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 1;
+    margin: 0;
+    color: #fff;
 }
 
 .sidebar-subtitle {
@@ -145,10 +150,10 @@ MENU
 ========================= */
 
 .sidebar-menu {
-flex: 1;
-overflow-y: auto;
-overflow-x: hidden;
-padding: 12px 0;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 2px 0 0;
 }
 
 .sidebar-item {
@@ -157,7 +162,7 @@ align-items: center;
 gap: 14px;
 
 padding: 14px 18px;
-margin: 6px 12px;
+margin:2px 12px;
 
 border-radius: 12px;
 cursor: pointer;
@@ -171,8 +176,9 @@ background: rgba(255,255,255,0.1);
 }
 
 .sidebar-item.active {
-background: rgba(56,189,248,0.18);
-border-left: 4px solid #38bdf8;
+  background: rgba(56,189,248,0.18);
+  border-left: 4px solid #38bdf8;
+  color: #ffffff;
 }
 
 .sidebar-icon {
@@ -180,7 +186,7 @@ flex-shrink: 0;
 }
 
 .sidebar-item.active .sidebar-icon {
-color: #38bdf8;
+  color: #ffffff;
 }
 
 /* =========================
@@ -229,18 +235,14 @@ color: white;
 MAIN CONTENT
 ========================= */
 
-.main-layout {
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-
-  display: block;
-
-  overflow-y: auto;
-  overflow-x: hidden;
-
-  padding: 20px;
-  background: #f8fafc;
+.main-layout{
+    flex:1;
+    min-width:0;
+    min-height:0;
+    overflow-y:auto;
+    overflow-x:hidden;
+    padding:16px 20px;
+    background:#f8fafc;
 }
 
 /* =========================
@@ -262,4 +264,53 @@ display: none;
 .sidebar-logo h1 {
 font-size: 18px;
 }
+}
+.study-menu{
+  margin-left:22px;
+  padding-left:12px;
+  border-left:1px solid rgba(255,255,255,.15);
+}
+
+.study-menu div{
+  padding:7px 10px;
+  cursor:pointer;
+  color:#fff;
+  border-radius:8px;
+  font-size:13px;
+}
+
+.study-menu div:hover{
+  background:rgba(255,255,255,.1);
+}
+
+.study-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 12px;
+    cursor:pointer;
+    color:#fff;
+    border-radius:8px;
+    margin:4px 0;
+}
+
+.study-item:hover{
+    background:rgba(255,255,255,.08);
+}
+
+.study-children{
+    margin-left:24px;
+    border-left:1px solid rgba(255,255,255,.15);
+    padding-left:12px;
+}
+
+.study-children div{
+    padding:7px 0;
+    cursor:pointer;
+    color:#dbeafe;
+    font-size:13px;
+}
+
+.study-children div:hover{
+    color:#fff;
 }

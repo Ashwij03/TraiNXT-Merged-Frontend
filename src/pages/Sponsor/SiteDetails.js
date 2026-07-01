@@ -30,7 +30,7 @@ const SiteDetails = () => {
 
   return (
     <AppLayout>
-      <div className="page-container">
+      <div className="site-details-page">
 
         <div style={{ marginBottom: "20px" }}>
   <button
