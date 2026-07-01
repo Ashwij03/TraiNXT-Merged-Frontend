@@ -121,14 +121,18 @@ function CRODashboard() {
     <CROLayout>
       <div className="cro-dashboard">
         <div className="cro-header">
-          <div className="dashboard-header">
-            <h1>CRO Dashboard</h1>
-            <p>Clinical Research Operations Overview</p>
+
+           <div className="dashboard-header">
+
+              <h1>CRO Dashboard</h1>
+
+            <div className="dashboard-subtitle">
+             Clinical Research Operations Overview
+            </div>
+
+           </div>
+
           </div>
-          <div className="welcome-box">
-            CRO Dashboard | Welcome, {user?.name || "User"}
-          </div>
-        </div>
 
         {loading ? (
           <SkeletonLoader rows={5} type="cards" />
@@ -153,11 +157,7 @@ function CRODashboard() {
                 ))}
               </div>
 
-              <SubjectAnalyticsSection
-                subjects={analyticsSubjects}
-                studies={croStudies}
-              />
-
+          
               <div className="charts-grid">
                 <div
                   className="dashboard-card clickable-card"
@@ -274,6 +274,11 @@ function CRODashboard() {
                 )}
               </div>
 
+              <div className="dashboard-card">
+                  <UpcomingMonitoringVisits />
+                </div>
+
+
               <div className="info-grid">
                 <div
                   className="dashboard-card clickable-card"
@@ -343,10 +348,6 @@ function CRODashboard() {
                   )}
                 </div>
 
-                <div className="dashboard-card">
-                  <UpcomingMonitoringVisits />
-                </div>
-
                 <div
   className="dashboard-card clickable-card"
   onClick={() => navigate("/cro-notifications")}
@@ -358,21 +359,24 @@ function CRODashboard() {
   <div className="alerts-list">
     {unreadNotifications.map((alert) => (
       <div
-        key={alert.id}
-        className={`alert-card ${alert.severity?.toLowerCase()}`}
-      >
-        <div className="alert-card-header">
-          <h4>{alert.title}</h4>
-          <span>{alert.severity}</span>
-        </div>
+  key={alert.id}
+  className={`alert-card ${alert.severity?.toLowerCase()}`}
+>
+  <div className="alert-card-header">
+    <h4>{alert.title}</h4>
 
-        <p>{alert.message}</p>
+    <span className={`status-${alert.severity?.toLowerCase()}`}>
+      {alert.severity}
+    </span>
+  </div>
 
-        <div className="alert-card-footer">
-          <span>{alert.type}</span>
-          <span>{alert.date}</span>
-        </div>
-      </div>
+  <p>{alert.message}</p>
+
+  <div className="alert-card-footer">
+    <span>{alert.type}</span>
+    <span>{alert.date}</span>
+  </div>
+</div>
     ))}
   </div>
 </div>

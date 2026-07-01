@@ -40,24 +40,30 @@ function CROSitePerformance() {
     <CROLayout>
       <h1 style={{ marginBottom: "25px" }}>Site Performance</h1>
 
-      <div className="cro-summary-cards">
-        <div className="dashboard-card">
-          <h3>Total Sites</h3>
-          <h1>{sitePerformanceData.length}</h1>
-        </div>
-        <div className="dashboard-card">
-          <h3>Top Performing</h3>
-          <h1>{excellentCount}</h1>
-        </div>
-        <div className="dashboard-card">
-          <h3>Average Enrollment</h3>
-          <h1>{avgEnrollment}%</h1>
-        </div>
-        <div className="dashboard-card">
-          <h3>At Risk Sites</h3>
-          <h1>{atRiskCount}</h1>
-        </div>
-      </div>
+      <div className="cro-stats-grid">
+
+  <div className="dashboard-card">
+    <h3>Total Sites</h3>
+    <h1>{sitePerformanceData.length}</h1>
+  </div>
+
+  <div className="dashboard-card">
+    <h3>Top Performing</h3>
+    <h1>{excellentCount}</h1>
+  </div>
+
+  <div className="dashboard-card">
+    <h3>Average Enrollment</h3>
+    <h1>{avgEnrollment}%</h1>
+  </div>
+
+  <div className="dashboard-card">
+    <h3>At Risk Sites</h3>
+    <h1>{atRiskCount}</h1>
+  </div>
+
+</div>
+   
 
       <div className="cro-panel">
         <div className="cro-panel-header">
@@ -80,7 +86,7 @@ function CROSitePerformance() {
               <option value="At Risk">At Risk</option>
             </select>
           </div>
-          <h2>Site Performance</h2>
+          <h2></h2>
         </div>
 
         {filteredSites.length === 0 ? (

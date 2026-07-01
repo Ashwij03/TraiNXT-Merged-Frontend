@@ -105,6 +105,7 @@ function CROSubjectManagement() {
 
   return (
     <CROLayout>
+      <div className="cro-subject-page"></div>
       <h1>Subject Management</h1>
 
       <div className="cro-stats-grid">
@@ -127,30 +128,36 @@ function CROSubjectManagement() {
       </div>
 
       <div className="cro-panel">
-        <div className="cro-panel-header">
-          <div className="cro-panel-filters">
-            <input
-              type="text"
-              placeholder="Search Subject ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="cro-input"
-            />
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="cro-input"
-            >
-              <option value="All">All</option>
-              <option value="Active">Active</option>
-              <option value="Completed">Completed</option>
-              <option value="Withdrawn">Withdrawn</option>
-              <option value="Screening">Screening</option>
-            </select>
-          </div>
-          <h2>Subjects List</h2>
 
-        </div>
+  <h2 className="cro-section-title">Subjects List</h2>
+
+  <div className="cro-panel-header">
+
+    <div className="cro-panel-filters">
+
+      <input
+        type="text"
+        placeholder="Search Subject ID..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="cro-input"
+      />
+
+      <select
+        value={statusFilter}
+        onChange={(e) => setStatusFilter(e.target.value)}
+        className="cro-input"
+      >
+        <option value="All">All</option>
+        <option value="Active">Active</option>
+        <option value="Completed">Completed</option>
+        <option value="Withdrawn">Withdrawn</option>
+        <option value="Screening">Screening</option>
+      </select>
+
+    </div>
+
+  </div>
 
         {filteredSubjects.length === 0 ? (
           <EmptyState title="No Subjects Found" message="Add a subject to get started." />
