@@ -307,6 +307,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     const compositeKey = `${studyKey}__${sectionKey}`;
 
     setExpandedStudySections((prev) => ({
+      ...prev,
       [compositeKey]: !prev[compositeKey],
     }));
   };
