@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import DashboardCard from "./DashboardCard";
 import CalendarWidget from "./CalendarWidget";
 import DataTable from "./DataTable";
-import useVisitSchedules from "../../hooks/useVisitSchedules";
 import { mapScheduleToTableRow } from "../../services/visitScheduleService";
 
 const UPCOMING_COLUMNS = [
@@ -21,9 +20,9 @@ function VisitCalendarSection({
   calendarClassName = "calendar-card-compact",
   tableClassName = "upcoming-visits-full-width"
 }) {
-  const schedules = [];
-const upcomingWindow = [];
-const getVisitsForDate = () => [];
+  const schedules = useMemo(() => [], []);
+  const upcomingWindow = useMemo(() => [], []);
+  const getVisitsForDate = useCallback(() => [], []);
 
   const [selectedScheduleDate, setSelectedScheduleDate] = useState(null);
 

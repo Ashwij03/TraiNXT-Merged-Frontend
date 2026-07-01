@@ -61,7 +61,6 @@ function useViewportMode() {
 export function useEnterpriseDashboardShell() {
   const location = useLocation();
   const contentRef = useRef(null);
-  const lastScrollTop = useRef(0);
   const viewportMode = useViewportMode();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);

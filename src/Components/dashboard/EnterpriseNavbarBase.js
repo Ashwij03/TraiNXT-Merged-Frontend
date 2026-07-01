@@ -22,9 +22,7 @@ import { getStudyByCode } from "../../services/studyService";
 import ROLES from "../../constants/roles";
 import {
   getCurrentUser,
-  getDashboardPath,
   getEffectiveRole,
-  getUserProfile,
   isAdmin,
   ROLE_LABELS,
   setAdminPreviewRole
@@ -123,18 +121,18 @@ const [profilePhoto, setProfilePhoto] = useState(
   const indicationOptions = useMemo(() => {
     void filterVersion;
     return getIndicationOptions(currentUser);
-  }, [userEmail, filterVersion]);
+  }, [filterVersion, currentUser]);
   const sponsorOptions = useMemo(() => {
     void filterVersion;
     return getSponsorOptions(currentUser);
-  }, [userEmail, filterVersion]);
+  }, [filterVersion, currentUser]);
   const croOptions = useMemo(() => {
     void filterVersion;
     if (effectiveRole === ROLES.SPONSOR) {
       return getRecruitedCROOptions(currentUser);
     }
     return getCROOptions(currentUser);
-  }, [userEmail, effectiveRole, filterVersion]);
+  }, [effectiveRole, filterVersion, currentUser]);
   const filterOrder = useMemo(() => {
     let base;
 
@@ -161,19 +159,19 @@ const [profilePhoto, setProfilePhoto] = useState(
   const institutionOptions = useMemo(() => {
     void filterVersion;
     return getInstitutionOptions(currentUser);
-  }, [userEmail, filterVersion]);
+  }, [filterVersion, currentUser]);
   const siteNumberOptions = useMemo(() => {
     void filterVersion;
     return getSiteNumberOptions(currentUser);
-  }, [userEmail, filterVersion]);
+  }, [filterVersion, currentUser]);
   const studyOptions = useMemo(() => {
     void filterVersion;
     return getStudyOptions(currentUser);
-  }, [userEmail, filterVersion]);
+  }, [filterVersion, currentUser]);
   const subjectOptions = useMemo(() => {
     void filterVersion;
     return getSubjectOptions(currentUser);
-  }, [userEmail, filterVersion]);
+  }, [filterVersion, currentUser]);
 
   useEffect(() => {
   touchUserSession(getCurrentUser());
@@ -453,7 +451,6 @@ const handleLogout = () => {
     }
   };
 
-  const dashboardPath = getDashboardPath(effectiveRole);
   const badgeRole = userIsAdmin ? ROLES.ADMIN : currentUser?.role;
   const badgeLabel = ROLE_LABELS[badgeRole] || badgeRole || "User";
   const badgeClass = ROLE_BADGE_CLASSES[badgeRole] || "role-badge--default";

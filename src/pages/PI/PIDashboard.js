@@ -43,7 +43,6 @@ import PIEISFDashboard from "./PIEISFDashboard";
 import PIICFDashboard from "./PIICFDashboard";
 import StudyFolderDashboard from "./PIStudyFolderDashboard";
 import VisitCalendarSection from "../../Components/dashboard/VisitCalendarSection";
-import SubjectAnalyticsSection from "../../Components/dashboard/SubjectAnalyticsSection";
 import {
   getDashboardData,
   saveDashboardData,
