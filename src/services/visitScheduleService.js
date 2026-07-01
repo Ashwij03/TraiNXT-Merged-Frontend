@@ -459,7 +459,6 @@ function matchesHeaderFilters(schedule, filters, studyMap) {
 }
 
 export function getMergedSchedules(user = getCurrentUser()) {
-  rebuildSchedulesFromSubjects();
   const schedules = filterCalendarSchedules(readJson(SCHEDULES_STORAGE_KEY, []));
   return isAdmin(user)
     ? schedules

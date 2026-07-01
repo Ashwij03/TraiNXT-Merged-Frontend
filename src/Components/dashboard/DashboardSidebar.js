@@ -30,7 +30,6 @@ import {
   FiLayers,
 } from "react-icons/fi";
 import { getRoleExtraMenuItems } from "../../config/roleMenus";
-import { FiChevronRight, FiChevronDown } from "react-icons/fi";
 import EISFMenuConfig from "../../pages/shared/EISF/Constants/EISFMenuConfig";
 const STUDY_SECTIONS = [
   { key: "overview", label: "Overview" },
@@ -307,6 +306,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     const compositeKey = `${studyKey}__${sectionKey}`;
 
     setExpandedStudySections((prev) => ({
+      ...prev,
       [compositeKey]: !prev[compositeKey],
     }));
   };
