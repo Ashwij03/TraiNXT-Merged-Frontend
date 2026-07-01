@@ -378,7 +378,13 @@ export function canAccessRoute(path, user = getCurrentUser()) {
       ROLES.CRO,
       ROLES.SPONSOR
     ],
-    "/recruitment": [ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.PI],
+   "/recruitment": [
+  ROLES.ADMIN,
+  ROLES.SITE_STAFF,
+  ROLES.PI,
+  ROLES.CRO,
+  ROLES.SPONSOR
+],
     "/regulatory": [
       ROLES.ADMIN,
       ROLES.SITE_STAFF,
@@ -603,7 +609,16 @@ export function getSidebarMenuItems(user = getCurrentUser()) {
     { key: "studies", roles: Object.values(ROLES) },
     { key: "comments", roles: Object.values(ROLES) },
     { key: "site-performance", roles: Object.values(ROLES) },
-    { key: "recruitment", roles: [ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.PI] },
+    {
+  key: "recruitment",
+  roles: [
+    ROLES.ADMIN,
+    ROLES.SITE_STAFF,
+    ROLES.PI,
+    ROLES.CRO,
+    ROLES.SPONSOR
+  ]
+},
     { key: "regulatory", roles: Object.values(ROLES) },
     { key: "reports", roles: Object.values(ROLES) },
     { key: "user-management", roles: [ROLES.ADMIN, ROLES.SITE_STAFF] },

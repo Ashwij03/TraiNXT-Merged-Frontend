@@ -24,42 +24,62 @@ import {
   MdNotifications,
   MdSettings,
 } from "react-icons/md";
-
 import "./AppLayout.css";
 import SponsorNavbar from "../../Components/dashboard/SponsorNavbar";
 import TriaNXTLogo from "../../Components/common/TriaNXTLogo";
 import { useEnterpriseDashboardShell } from "../../hooks/useEnterpriseDashboardShell";
 import LiveChatFab from "../../Components/common/LiveChatFab";
 import "../../Components/dashboard/DashboardLayout.css";
+import { getPortfolioStudies } from "./data/sponsorDataStore";
 
 const MENU_ITEMS = [
   { name: "Dashboard", path: "/sponsor-dashboard", icon: MdDashboard },
-  { name: "Subjects", path: "/subjects", icon: MdPeople },
-  { name: "Screening", path: "/screening", icon: MdPersonSearch },
-  { name: "Enrollment", path: "/enrollment", icon: MdHowToReg },
-  { name: "Visits", path: "/visits", icon: MdEvent },
-  { name: "Progress Notes", path: "/progress-notes", icon: MdDescription },
-  { name: "Files", path: "/files", icon: MdFolder },
-  { name: "Logs", path: "/logs", icon: MdListAlt },
-  { name: "eISF", path: "/eisf", icon: MdStorage },
-  { name: "ICF", path: "/icf", icon: MdAssignment },
-  { name: "Study Folder", path: "/study-folder", icon: MdFolderShared },
   { name: "Portfolio Management", path: "/portfolio", icon: MdWorkspaces },
   { name: "Study Oversight", path: "/study-oversight", icon: MdMonitorHeart },
   { name: "CRO Oversight", path: "/cro-oversight", icon: MdBusiness },
   { name: "Site Performance", path: "/site-performance", icon: MdAnalytics },
   { name: "Recruitment", path: "/recruitment", icon: MdGroups },
-  { name: "Regulatory", path: "/regulatory", icon: MdGavel },
+  // { name: "Regulatory", path: "/regulatory", icon: MdGavel },
   { name: "Risk Management", path: "/risk-management", icon: MdWarning },
   { name: "Reports", path: "/reports", icon: MdAssessment },
   { name: "Notifications", path: "/notifications", icon: MdNotifications },
   { name: "Settings", path: "/settings", icon: MdSettings },
 ];
 
+const STUDY_SECTIONS = [
+  { key: "overview", label: "Overview" },
+  { key: "subjects", label: "Subjects", expandable: true },
+  { key: "eisf", label: "eISF" },
+  { key: "regulatory", label: "Regulatory" },
+  { key: "reports", label: "Reports" },
+  { key: "studyFiles", label: "Study Files" },
+  { key: "logs", label: "Logs" },
+  { key: "others", label: "Others" },
+];
+
+
 const AppLayout = ({ children }) => {
+  const toggleStudyNode = (studyId) => {
+  setExpandedStudies((prev) => ({
+    ...prev,
+    [studyId]: !prev[studyId],
+  }));
+};
+
+const toggleStudySection = (studyId, section) => {
+  const key = `${studyId}_${section}`;
+  setExpandedStudySections((prev) => ({
+    ...prev,
+    [key]: !prev[key],
+  }));
+};
   const navigate = useNavigate();
   const location = useLocation();
+  const studies = getPortfolioStudies();
   const [studiesOpen, setStudiesOpen] = useState(true);
+
+const [expandedStudies, setExpandedStudies] = useState({});
+const [expandedStudySections, setExpandedStudySections] = useState({});
   const [studyBinderOpen, setStudyBinderOpen] = useState(true);
   const {
     contentRef,
@@ -122,7 +142,6 @@ const AppLayout = ({ children }) => {
               size="sidebar"
               onClick={() => handleNav("/sponsor-dashboard")}
             />
-            <span className="sidebar-subtitle">Sponsor Portal</span>
           </div>
 
           <nav className="sidebar-menu">
@@ -168,19 +187,85 @@ const AppLayout = ({ children }) => {
                   <span>Study Binder</span>
                 </div>
 
-                <div
-                  className={`sponsor-studies-subitem${
-                    isCommentsRoute ? " active" : ""
-                  }`}
-                  onClick={() => handleNav("/comments")}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <span className="sponsor-studies-expander" aria-hidden="true" />
-                  <span>Comments</span>
+                {studyBinderOpen && (
+  <div className="study-binder-submenu">
+    {studies.map((study) => (
+      <div key={study.studyId}>
+        {/* Study Name */}
+        <div
+          className="study-binder-item"
+          onClick={() => {
+            toggleStudyNode(study.studyId);
+            navigate(`/study-dashboard/${study.studyId}?tab=Overview`);
+          }}
+        >
+          <span className="sponsor-studies-expander">
+            {expandedStudies[study.studyId] ? "−" : "+"}
+          </span>
+
+          <span>{study.studyName}</span>
+        </div>
+
+        {/* Sections */}
+        {expandedStudies[study.studyId] && (
+          <div className="study-menu">
+            {STUDY_SECTIONS.map((section) => {
+              const sectionKey = `${study.studyId}_${section.key}`;
+
+              return (
+                <div key={section.key}>
+                  {section.expandable ? (
+                    <>
+                      <div
+                        className="study-section-item"
+                        onClick={() =>
+                          toggleStudySection(study.studyId, section.key)
+                        }
+                      >
+                        {expandedStudySections[sectionKey] ? "−" : "+"}{" "}
+                        {section.label}
+                      </div>
+
+                      {expandedStudySections[sectionKey] && (
+                        <div className="subject-submenu">
+                          {/* Subject list */}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div
+                      className="study-section-item"
+                      onClick={() =>
+                        navigate(
+                          `/study-dashboard/${study.studyId}?tab=${section.label}`
+                        )
+                      }
+                    >
+                      {section.label}
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })}
+          </div>
+        )}
+      </div>
+    ))}
+
+    {/* Comments */}
+    <div
+      className={`sponsor-studies-subitem${
+        isCommentsRoute ? " active" : ""
+      }`}
+      onClick={() => handleNav("/comments")}
+    >
+      <span className="sponsor-studies-expander"></span>
+      <span>Comments</span>
+    </div>
+  </div>
+)}
+</div>
+)}
 
             {MENU_ITEMS.slice(1).map((item) => {
               const Icon = item.icon;
