@@ -79,24 +79,27 @@ function CROMonitoring() {
     <CROLayout>
       <h1>Monitoring</h1>
 
-      <div className="cro-stats-grid">
-        <div className="dashboard-card">
-          <h3>Total Visits</h3>
-          <h1>{visits.length}</h1>
-        </div>
-        <div className="dashboard-card">
-          <h3>Completed</h3>
-          <h1>{completedCount}</h1>
-        </div>
-        <div className="dashboard-card">
-          <h3>Pending</h3>
-          <h1>{pendingCount}</h1>
-        </div>
-        <div className="dashboard-card">
-          <h3>Overdue</h3>
-          <h1>{overdueCount}</h1>
-        </div>
-      </div>
+<div className="cro-stats-grid">
+  <div className="cro-card">
+    <h3>Total Visits</h3>
+    <h2>{visits.length}</h2>
+  </div>
+
+  <div className="cro-card">
+    <h3>Completed</h3>
+    <h2>{completedCount}</h2>
+  </div>
+
+  <div className="cro-card">
+    <h3>Pending</h3>
+    <h2>{pendingCount}</h2>
+  </div>
+
+  <div className="cro-card">
+    <h3>Overdue</h3>
+    <h2>{overdueCount}</h2>
+  </div>
+</div>
 
       <div className="cro-panel">
         <div className="cro-panel-header">
@@ -119,7 +122,7 @@ function CROMonitoring() {
               <option value="Scheduled">Scheduled</option>
             </select>
           </div>
-          <h2>Monitoring List</h2>
+          <h2></h2>
           <button
             type="button"
             className="cro-btn-primary-inline"

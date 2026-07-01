@@ -3,6 +3,7 @@
   align-items: stretch;
   height: 100vh;
   background: var(--tnxt-bg);
+  justify-content:flex-start;
   overflow: hidden;
   margin: 0;
   padding: 0;
@@ -20,7 +21,8 @@
   flex-direction: column;
   min-width: 0;
   height: 100vh;
-  overflow: hidden;
+  overflow:auto;
+  align-items:stretch;
   margin: 0;
   padding: 0;
 }
@@ -34,14 +36,19 @@
   min-width: 0;
   width: 100%;
   height: 100%;
+  overflow:visible;
 }
 
-.dashboard-content {
-  padding: var(--tnxt-space-xl);
-  flex: 1;
-  min-width: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+.dashboard-content{
+    flex:1;
+    overflow-y:auto;
+    overflow-x:hidden;
+
+    padding:32px;
+
+    display:flex;
+    flex-direction:column;
+    gap:24px;
 }
 
 .dashboard-header-wrap {
@@ -100,11 +107,10 @@
     overflow: hidden;
   }
 
-  .dashboard-sidebar-wrap.is-collapsed {
-    min-width: 72px !important;
-    overflow: hidden;
-    width: 72px !important;
-  }
+  .dashboard-sidebar-wrap.is-collapsed{
+    width:72px !important;
+    flex:0 0 72px !important;
+}
 
   .dashboard-sidebar-wrap.is-collapsed .enterprise-sidebar {
     width: 72px !important;

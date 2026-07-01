@@ -56,7 +56,7 @@ function CRONotifications() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <h2>Notifications</h2>
+          <h2></h2>
           <button
             type="button"
             className="cro-btn-primary"

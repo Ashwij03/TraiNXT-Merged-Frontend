@@ -6,21 +6,23 @@
 }
 
 .cro-settings-tab {
-  border: 1px solid #d1d5db;
+  border:1px solid #d8dee9;
   background: #ffffff;
   color: #374151;
-  padding: 10px 16px;
+  padding: 10px 18px;
   border-radius: 10px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   font-family: inherit;
+    
 }
 
-.cro-settings-tab:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
+.settings-tab:hover{
+    background:#f8fafc;
+    border-color:#cbd5e1;
+    color:#1f2937;
 }
 
 .cro-settings-tab--active {
