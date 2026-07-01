@@ -4,6 +4,7 @@ function StudyWorkspaceTabs({ activeTab, setActiveTab }) {
   const tabs = [
     "Overview",
     "Subjects",
+    "eISF",
     "Regulatory",
     "Reports",
     "Study Files",
