@@ -8,6 +8,7 @@ import FileDetails from "../documents/FileDetails";
 import StudyLogs from "../operations/StudyLogs";
 import "./StudyDetails.css";
 import ERegSection from "../../../ERegSection.jsx";
+import StudyFinancials from "../../Sponsor/Financials/StudyFinancials";
 import DashboardLayout from "../../../Components/dashboard/DashboardLayout";
 
 function StudyDetails() {
@@ -16,7 +17,7 @@ function StudyDetails() {
 
   const [showSubjects, setShowSubjects] = useState(false);
 
-  const [activeTab, setActiveTab] = useState("");
+  const [activeTab, setActiveTab] = useState("financials");
 
   // Dynamic study data
   const studyData = {
@@ -288,6 +289,28 @@ function StudyDetails() {
         </div>
 
       </div>
+      {/* FINANCIALS */}
+<div
+  onClick={() => setActiveTab("financials")}
+  style={{
+    background:
+      activeTab === "financials"
+        ? "#0d6efd"
+        : "#f2f2f2",
+
+    color:
+      activeTab === "financials"
+        ? "white"
+        : "#062b3d",
+
+    padding: "12px 20px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold"
+  }}
+>
+  Financials
+</div>
 
       {/* SUBJECTS */}
       {/* {activeTab === "subjects" && (
@@ -320,6 +343,10 @@ function StudyDetails() {
       {activeTab === "ereg" && (
         <ERegSection />
       )}
+      {/* FINANCIALS */}
+{activeTab === "financials" && (
+  <StudyFinancials />
+)}
 
     </div>
 

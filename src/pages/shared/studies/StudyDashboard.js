@@ -15,6 +15,7 @@ import StudyComments from "./StudyComments";
 import StudyLogsTab from "./StudyLogsTab";
 import StudyRegulatory from "./StudyRegulatory";
 import StudyReports from "./StudyReports";
+import StudyFinancials from "../../Sponsor/Financials/StudyFinancials";
 import AlertsPanel from "../../../Components/dashboard/AlertsPanel";
 import SubjectProfile from "../subjects/SubjectProfile";
 import useStudiesDashboard from "../../../hooks/useStudiesDashboard";
@@ -504,7 +505,9 @@ function StudyDashboard() {
             />
           </div>
         )}
-
+{activeTab === "Financials" && (
+  <StudyFinancials />
+)}
         {activeTab === "Others" && (
           <div className="module-card">
             <h2>Others</h2>
