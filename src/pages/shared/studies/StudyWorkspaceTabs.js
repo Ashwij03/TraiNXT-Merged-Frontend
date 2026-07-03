@@ -9,7 +9,8 @@ function StudyWorkspaceTabs({ activeTab, setActiveTab }) {
     "Reports",
     "Study Files",
     "Logs",
-    "Others"
+    "Others",
+    "Financials"
   ];
 
   return (

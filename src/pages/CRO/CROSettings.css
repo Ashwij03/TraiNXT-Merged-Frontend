@@ -63,3 +63,18 @@
     text-align: left;
   }
 }
+.cro-profile-form{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+}
+
+.cro-profile-form label{
+    font-size:14px;
+    font-weight:600;
+    color:#475569;
+}
+
+.cro-profile-form .cro-input{
+    width:100%;
+}

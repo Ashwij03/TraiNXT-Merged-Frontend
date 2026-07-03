@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import AppLayout from "./AppLayout";
 import "./StudyWorkspace.css";
 import "./SponsorShared.css";
+import StudyFinancials from "./Financials/StudyFinancials";
 import { getPortfolioStudies, getRisks } from "./data/sponsorDataStore";
 
 function StudyWorkspace() {
@@ -71,17 +72,79 @@ function StudyWorkspace() {
           </div>
         </div>
 
-        <div className="workspace-tabs">
-          <button type="button" className={activeTab === "overview" ? "active-tab" : ""} onClick={() => setActiveTab("overview")}>
-            Overview
-          </button>
-          <button type="button" className={activeTab === "details" ? "active-tab" : ""} onClick={() => setActiveTab("details")}>
-            Study Details
-          </button>
-          <button type="button" className={activeTab === "enrollment" ? "active-tab" : ""} onClick={() => setActiveTab("enrollment")}>
-            Enrollment
-          </button>
-        </div>
+   <div className="workspace-tabs">
+  <button
+    type="button"
+    className={activeTab === "overview" ? "active-tab" : ""}
+    onClick={() => setActiveTab("overview")}
+  >
+    Overview
+  </button>
+
+  <button
+    type="button"
+    className={activeTab === "details" ? "active-tab" : ""}
+    onClick={() => setActiveTab("details")}
+  >
+    Details
+  </button>
+
+  <button
+    type="button"
+    className={activeTab === "planning" ? "active-tab" : ""}
+    onClick={() => setActiveTab("planning")}
+  >
+    Planning
+  </button>
+
+  <button
+    type="button"
+    className={activeTab === "visitplan" ? "active-tab" : ""}
+    onClick={() => setActiveTab("visitplan")}
+  >
+    Visit Plan
+  </button>
+
+  <button
+    type="button"
+    className={activeTab === "financials" ? "active-tab" : ""}
+    onClick={() => setActiveTab("financials")}
+  >
+    Financials
+  </button>
+
+  <button
+    type="button"
+    className={activeTab === "sites" ? "active-tab" : ""}
+    onClick={() => setActiveTab("sites")}
+  >
+    Clinical Sites
+  </button>
+
+  <button
+    type="button"
+    className={activeTab === "monitoring" ? "active-tab" : ""}
+    onClick={() => setActiveTab("monitoring")}
+  >
+    Monitoring
+  </button>
+
+  <button
+    type="button"
+    className={activeTab === "files" ? "active-tab" : ""}
+    onClick={() => setActiveTab("files")}
+  >
+    Files
+  </button>
+
+  <button
+    type="button"
+    className={activeTab === "activity" ? "active-tab" : ""}
+    onClick={() => setActiveTab("activity")}
+  >
+    Activity
+  </button>
+</div>
 
         {activeTab === "overview" && (
           <div className="workspace-content workspace-card">
@@ -123,6 +186,9 @@ function StudyWorkspace() {
             <p><strong>Progress:</strong> {enrollmentRate}%</p>
           </div>
         )}
+        {activeTab === "financials" && (
+  <StudyFinancials />
+)}
       </div>
     </AppLayout>
   );
