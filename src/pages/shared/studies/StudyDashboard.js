@@ -21,6 +21,7 @@ import SiteActivationStatus from "../../../Components/studies/SiteActivationStat
 import GCPCertificationStatus from "../../../Components/studies/GCPCertificationStatus";
 import StudyHealthSummary from "../../../Components/studies/StudyHealthSummary";
 import useStudyOverview from "../../../hooks/useStudyOverview";
+import StudyFinancials from "../../Sponsor/Financials/StudyFinancials";
 import AlertsPanel from "../../../Components/dashboard/AlertsPanel";
 import SubjectProfile from "../subjects/SubjectProfile";
 import useStudiesDashboard from "../../../hooks/useStudiesDashboard";
@@ -518,6 +519,20 @@ function StudyDashboard() {
                   sectionId="eISF"
                   contextKey={id || "default"}
                   title="eISF"
+                  studyCode={id}
+                  layout="vertical"
+                />
+              </div>
+            )}
+
+            {activeTab === "Financials" && <StudyFinancials />}
+            {activeTab === "Others" && (
+              <div className="module-card">
+                <h2>Others</h2>
+                <DocumentFolderManager
+                  sectionId="others"
+                  contextKey={id || "default"}
+                  title="Others"
                   studyCode={id}
                   layout="vertical"
                 />
