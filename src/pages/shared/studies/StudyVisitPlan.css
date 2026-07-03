@@ -1,0 +1,216 @@
+.study-visit-plan-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.visit-plan-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.visit-plan-subtitle {
+  color: #64748b;
+  margin: 4px 0 0;
+}
+
+.visit-plan-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.visit-plan-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.visit-plan-filters input,
+.visit-plan-filters select {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  min-width: 220px;
+}
+
+.visit-plan-empty {
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+}
+
+.visit-plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.visit-plan-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+}
+
+.visit-plan-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.visit-plan-meta {
+  display: flex;
+  gap: 12px;
+  color: #64748b;
+  font-size: 13px;
+  margin: 8px 0 12px;
+}
+
+.visit-plan-card-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.status-pill {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.status-pill.status-active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.visit-plan-wizard-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 16px;
+}
+
+.visit-plan-wizard {
+  background: #fff;
+  border-radius: 14px;
+  width: min(920px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
+}
+
+.visit-plan-wizard-header,
+.visit-plan-wizard-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.visit-plan-wizard-footer {
+  border-bottom: none;
+  border-top: 1px solid #e2e8f0;
+}
+
+.visit-plan-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #f8fafc;
+}
+
+.visit-plan-step {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.visit-plan-step.active {
+  background: #0d6efd;
+  color: #fff;
+}
+
+.visit-plan-step.done {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.visit-plan-wizard-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.visit-plan-wizard-body label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.visit-plan-wizard-body input,
+.visit-plan-wizard-body textarea,
+.visit-plan-wizard-body select {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+}
+
+.sync-checkbox {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px !important;
+}
+
+.schedule-matrix-wrap {
+  overflow-x: auto;
+}
+
+.schedule-matrix {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.schedule-matrix th,
+.schedule-matrix td {
+  border: 1px solid #e2e8f0;
+  padding: 8px;
+  text-align: center;
+}
+
+.schedule-matrix-actions {
+  margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+  .visit-plan-toolbar {
+    flex-direction: column;
+  }
+}
+
+@media print {
+  .visit-plan-wizard-overlay {
+    position: static;
+    background: none;
+  }
+
+  .visit-plan-wizard-header,
+  .visit-plan-wizard-footer,
+  .visit-plan-steps,
+  .schedule-matrix-actions {
+    display: none;
+  }
+}

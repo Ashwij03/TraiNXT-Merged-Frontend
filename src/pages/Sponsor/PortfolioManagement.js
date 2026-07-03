@@ -9,12 +9,12 @@ import { FiBriefcase, FiActivity, FiCheckCircle, FiClock } from 'react-icons/fi'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, Legend } from 'recharts';
 import {
   getPortfolioStudies,
-  savePortfolioStudies,
   getPortfolioKPIs,
   getPhaseDistribution,
   getStudyStatusData,
   getEnrollmentByStudy,
 } from './data/sponsorDataStore';
+import { createStudy, updateStudy } from '../../services/studyService';
 
 const STATUS_COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6', '#94a3b8'];
 
@@ -54,14 +54,38 @@ const PortfolioManagement = () => {
 
   const handleSave = () => {
     if (!form.studyId || !form.studyName) return;
-    let updated;
-    if (editStudy) {
-      updated = studies.map(s => s.studyId === editStudy.studyId ? { ...s, ...form, sites: Number(form.sites) } : s);
-    } else {
-      updated = [...studies, { ...form, sites: Number(form.sites), enrolled: 0, target: 0 }];
+
+    try {
+      if (editStudy) {
+        updateStudy(editStudy.studyId, {
+          name: form.studyName,
+          phase: form.phase,
+          status: form.status,
+          cro: form.cro,
+          sites: Number(form.sites) || 0,
+          indication: form.therapeuticArea,
+          startDate: form.startDate,
+        });
+      } else {
+        createStudy({
+          code: form.studyId,
+          name: form.studyName,
+          phase: form.phase,
+          status: form.status,
+          cro: form.cro,
+          sites: Number(form.sites) || 0,
+          indication: form.therapeuticArea,
+          startDate: form.startDate,
+          enrolled: 0,
+          targetSubjects: 0,
+        });
+      }
+    } catch (err) {
+      alert(err.message || 'Unable to save study.');
+      return;
     }
-    savePortfolioStudies(updated);
-    setStudies(updated);
+
+    setStudies(getPortfolioStudies());
     setKpis(getPortfolioKPIs());
     setShowCreateModal(false);
     setEditStudy(null);

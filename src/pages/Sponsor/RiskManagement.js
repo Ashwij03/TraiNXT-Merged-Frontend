@@ -4,18 +4,16 @@ import AppLayout from './AppLayout';
 import './RiskManagement.css';
 import './SponsorShared.css';
 import KpiCard from './KpiCard';
-import EnterpriseModal from './EnterpriseModal';
 import { FiAlertTriangle, FiShield, FiCheckCircle, FiActivity } from 'react-icons/fi';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { getRisks, saveRisks, getRiskKPIs, SEVERITY_COLORS } from './data/sponsorDataStore';
+import { getRisks, getRiskKPIs, SEVERITY_COLORS } from './data/sponsorDataStore';
+import RequestPermissionButton from '../../Components/common/RequestPermissionButton';
 
 const RiskManagement = () => {
   const navigate = useNavigate();
   const [risks, setRisks] = useState(getRisks());
   const [kpis, setKpis] = useState(getRiskKPIs());
-  const [showCreate, setShowCreate] = useState(false);
   const [statusFilter, setStatusFilter] = useState('All');
-  const [form, setForm] = useState({ study: '', title: '', category: 'Enrollment', severity: 'Medium', status: 'Open', owner: '' });
 
   useEffect(() => {
     const refresh = () => { setRisks(getRisks()); setKpis(getRiskKPIs()); };
@@ -37,15 +35,6 @@ const RiskManagement = () => {
     { severity: 'Low', count: kpis.low },
   ].filter(d => d.count > 0);
 
-  const handleCreate = () => {
-    if (!form.title || !form.study) return;
-    const updated = [...risks, { id: `RISK-${Date.now()}`, ...form }];
-    saveRisks(updated);
-    setRisks(updated);
-    setKpis(getRiskKPIs());
-    setShowCreate(false);
-  };
-
   return (
     <AppLayout>
       <div className="risk-page">
@@ -65,6 +54,9 @@ const RiskManagement = () => {
           <div className="sponsor-chart-card">
             <h3>Risks by Severity</h3>
             <ResponsiveContainer width="100%" height={260}>
+              {severityChart.length === 0 ? (
+                <p className="chart-empty-state">No data available yet</p>
+              ) : (
               <BarChart data={severityChart}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="severity" />
@@ -72,12 +64,13 @@ const RiskManagement = () => {
                 <Tooltip />
                 <Bar dataKey="count" fill="#082b3d" radius={[6, 6, 0, 0]} />
               </BarChart>
+              )}
             </ResponsiveContainer>
           </div>
         </div>
 
         <div className="sponsor-toolbar">
-          <button type="button" className="sponsor-btn-primary" onClick={() => setShowCreate(true)}>+ Add Risk</button>
+          <RequestPermissionButton action="Add Risk" module="Risk Management" label="+ Add Risk" className="sponsor-btn-primary" />
         </div>
 
         <div className="sponsor-table-wrap">
@@ -96,7 +89,11 @@ const RiskManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredRisks.map((risk) => (
+              {filteredRisks.length === 0 ? (
+                <tr>
+                  <td colSpan="8" style={{ textAlign: 'center' }}>No data available yet</td>
+                </tr>
+              ) : filteredRisks.map((risk) => (
                 <tr key={risk.id} onClick={() => navigate('/risk-details', { state: risk })}>
                   <td>{risk.id}</td>
                   <td>{risk.title}</td>
@@ -114,20 +111,6 @@ const RiskManagement = () => {
           </table>
         </div>
       </div>
-
-      {showCreate && (
-        <EnterpriseModal title="Add Risk" onClose={() => setShowCreate(false)} onSave={handleCreate} saveLabel="Add">
-          <input placeholder="Study ID" value={form.study} onChange={(e) => setForm({ ...form, study: e.target.value })} />
-          <input placeholder="Risk Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-          <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
-            <option>Enrollment</option><option>Protocol</option><option>Regulatory</option><option>Operations</option><option>Data</option>
-          </select>
-          <select value={form.severity} onChange={(e) => setForm({ ...form, severity: e.target.value })}>
-            <option>Critical</option><option>High</option><option>Medium</option><option>Low</option>
-          </select>
-          <input placeholder="Owner" value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} />
-        </EnterpriseModal>
-      )}
     </AppLayout>
   );
 };

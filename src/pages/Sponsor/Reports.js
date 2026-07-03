@@ -4,50 +4,41 @@ import AppLayout from './AppLayout';
 import './Reports.css';
 import './SponsorShared.css';
 import KpiCard from './KpiCard';
-import EnterpriseModal from './EnterpriseModal';
+import RequestPermissionButton from '../../Components/common/RequestPermissionButton';
 import { FiFileText, FiCheckCircle, FiClock, FiDownload } from 'react-icons/fi';
-import { getReports, saveReports, getReportKPIs } from './data/sponsorDataStore';
+import { getReports, getReportKPIs } from './data/sponsorDataStore';
+
+const reportTemplates = [
+  { title: 'Study Reports', description: 'Study performance and milestone reports', type: 'Study' },
+  { title: 'Enrollment Reports', description: 'Enrollment progress across studies', type: 'Enrollment' },
+  { title: 'Compliance Reports', description: 'Regulatory and eTMF compliance reports', type: 'Compliance' },
+  { title: 'Executive Reports', description: 'Executive level KPIs and portfolio summary', type: 'Executive' },
+  { title: 'Operational Reports', description: 'Site, CRO and PI operational performance', type: 'Operations' },
+  { title: 'Export Dashboard', description: 'Download dashboard metrics and charts', type: 'Export' },
+];
 
 const Reports = () => {
   const navigate = useNavigate();
   const [reports, setReports] = useState(getReports());
   const [kpis, setKpis] = useState(getReportKPIs());
   const [statusFilter, setStatusFilter] = useState('All');
-  const [showCreate, setShowCreate] = useState(false);
-  const [form, setForm] = useState({ name: '', type: 'Enrollment', study: 'All' });
 
   useEffect(() => {
-    const refresh = () => { setReports(getReports()); setKpis(getReportKPIs()); };
+    const refresh = () => {
+      setReports(getReports());
+      setKpis(getReportKPIs());
+    };
     window.addEventListener('sponsor-data-updated', refresh);
-    return () => window.removeEventListener('sponsor-data-updated', refresh);
+    window.addEventListener('reports-updated', refresh);
+    return () => {
+      window.removeEventListener('sponsor-data-updated', refresh);
+      window.removeEventListener('reports-updated', refresh);
+    };
   }, []);
 
   const filteredReports = reports.filter((report) =>
     statusFilter === 'All' || report.status === statusFilter
   );
-
-  const handleCreate = () => {
-    if (!form.name) return;
-    const updated = [...reports, {
-      id: `RPT-${Date.now()}`,
-      ...form,
-      generatedDate: new Date().toISOString().split('T')[0],
-      status: 'Pending',
-    }];
-    saveReports(updated);
-    setReports(updated);
-    setKpis(getReportKPIs());
-    setShowCreate(false);
-  };
-
-  const reportTemplates = [
-    { title: 'Study Reports', description: 'Study performance and milestone reports', type: 'Study' },
-    { title: 'Enrollment Reports', description: 'Enrollment progress across studies', type: 'Enrollment' },
-    { title: 'Compliance Reports', description: 'Regulatory and eTMF compliance reports', type: 'Compliance' },
-    { title: 'Executive Reports', description: 'Executive level KPIs and portfolio summary', type: 'Executive' },
-    { title: 'Operational Reports', description: 'Site, CRO and PI operational performance', type: 'Operations' },
-    { title: 'Export Dashboard', description: 'Download dashboard metrics and charts', type: 'Export' },
-  ];
 
   return (
     <AppLayout>
@@ -65,7 +56,7 @@ const Reports = () => {
         </div>
 
         <div className="sponsor-toolbar">
-          <button type="button" className="sponsor-btn-primary" onClick={() => setShowCreate(true)}>+ Generate Report</button>
+          <RequestPermissionButton action="Generate Report" module="Reports" label="+ Generate Report" className="sponsor-btn-primary" />
         </div>
 
         <div className="reports-grid">
@@ -95,16 +86,20 @@ const Reports = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredReports.map((r) => (
-                <tr key={r.id} onClick={() => navigate('/report-details', { state: { report: r } })}>
-                  <td>{r.id}</td>
-                  <td>{r.name}</td>
-                  <td>{r.type}</td>
-                  <td>{r.study}</td>
-                  <td>{r.generatedDate}</td>
-                  <td><span className={`status-badge ${r.status === 'Ready' ? 'active' : 'planning'}`}>{r.status}</span></td>
+              {filteredReports.length === 0 ? (
+                <tr>
+                  <td colSpan="7" style={{ textAlign: 'center' }}>No data available yet</td>
+                </tr>
+              ) : filteredReports.map((report) => (
+                <tr key={report.id} onClick={() => navigate('/report-details', { state: { report } })}>
+                  <td>{report.id}</td>
+                  <td>{report.name}</td>
+                  <td>{report.type}</td>
+                  <td>{report.study}</td>
+                  <td>{report.generatedDate}</td>
+                  <td><span className={`status-badge ${report.status === 'Ready' ? 'active' : 'planning'}`}>{report.status}</span></td>
                   <td onClick={(e) => e.stopPropagation()}>
-                    <button type="button" className="view-btn" onClick={() => navigate('/report-details', { state: { report: r } })}>View</button>
+                    <button type="button" className="view-btn" onClick={() => navigate('/report-details', { state: { report } })}>View</button>
                   </td>
                 </tr>
               ))}
@@ -112,16 +107,6 @@ const Reports = () => {
           </table>
         </div>
       </div>
-
-      {showCreate && (
-        <EnterpriseModal title="Generate Report" onClose={() => setShowCreate(false)} onSave={handleCreate} saveLabel="Generate">
-          <input placeholder="Report Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-            <option>Enrollment</option><option>Safety</option><option>CRO</option><option>Operations</option><option>Compliance</option>
-          </select>
-          <input placeholder="Study (or All)" value={form.study} onChange={(e) => setForm({ ...form, study: e.target.value })} />
-        </EnterpriseModal>
-      )}
     </AppLayout>
   );
 };

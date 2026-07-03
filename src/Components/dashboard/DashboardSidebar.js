@@ -34,6 +34,8 @@ import EISFMenuConfig from "../../pages/shared/EISF/Constants/EISFMenuConfig";
 const STUDY_SECTIONS = [
   { key: "overview", label: "Overview" },
   { key: "subjects", label: "Subjects", expandable: true },
+  { key: "planning", label: "Planning" },
+  { key: "visitPlan", label: "Visit Plan" },
   { key: "eisf", label: "eISF", expandable: true },
   { key: "regulatory", label: "Regulatory" },
   { key: "reports", label: "Reports" },
@@ -263,6 +265,14 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     navigate(path);
     onNavigate?.();
   };
+
+  const usesUnifiedSettings =
+    effectiveUser?.role === "Admin" || effectiveUser?.role === "SiteStaff";
+
+  const handleSettingsNav = (section = "profile") => {
+    navigate("/settings", { state: { section } });
+    onNavigate?.();
+  };
   
 
   const handleDashboardClick = () => {
@@ -337,6 +347,8 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     const tabMap = {
       overview: "Overview",
       subjects: "Subjects",
+      planning: "Planning",
+      visitPlan: "Visit Plan",
       eisf: "eISF",
       regulatory: "Regulatory",
       reports: "Reports",
@@ -754,18 +766,24 @@ className="sidebar-tree-row sidebar-tree-row--folder-leaf eisf-module"          
         </div>
       )}
 
-      <div
-        className={getLinkClass(pathname.includes("/profile"))}
-        onClick={() => handleNav("/profile")}
-      >
-        <FiUser size={16} />
-        <span>Profile</span>
-      </div>
+      {!usesUnifiedSettings && (
+        <div
+          className={getLinkClass(pathname.includes("/profile"))}
+          onClick={() => handleNav("/profile")}
+        >
+          <FiUser size={16} />
+          <span>Profile</span>
+        </div>
+      )}
 
       {sidebarItems.some((item) => item.key === "settings") && (
         <div
           className={getLinkClass(pathname.includes("settings"))}
-          onClick={() => handleNav("/settings")}
+          onClick={() =>
+            usesUnifiedSettings
+              ? handleSettingsNav("profile")
+              : handleNav("/settings")
+          }
         >
           <FiSettings size={16} />
           <span>Settings</span>

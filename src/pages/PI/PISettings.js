@@ -3,12 +3,15 @@ import { useLocation } from "react-router-dom";
 import { FaUser, FaBell, FaLock, FaCog } from "react-icons/fa";
 import PIKpiCard from "./PIKpiCard";
 import PIAccountSecurity from "./PIAccountSecurity";
+import ProfilePhotoCard from "../shared/profile/ProfilePhotoCard";
+import { getUserProfile } from "../../services/roleService";
 import {
   getSettingsData,
   saveSettingsData,
   getDashboardData,
   collectAllStudies,
 } from "./piDashboardService";
+import "../Admin/AdminPage.css";
 
 function PISettings({ activeView = "security" }) {
   const [data, setData] = useState(getSettingsData);
@@ -16,6 +19,9 @@ function PISettings({ activeView = "security" }) {
   const [profileForm, setProfileForm] = useState(data.profile);
   const [notifPrefs, setNotifPrefs] = useState(data.notificationPreferences);
   const [studyPrefs, setStudyPrefs] = useState(data.studyPreferences);
+  const [profilePhoto, setProfilePhoto] = useState(
+    () => getUserProfile().profilePhoto || ""
+  );
   const location = useLocation();
 
 console.log("STATE =", location.state);
@@ -85,6 +91,10 @@ console.log("STATE =", location.state);
   const renderProfileView = () => (
     <div className="table-container">
       <h2>PI Profile Information</h2>
+      <ProfilePhotoCard
+        photo={profilePhoto}
+        onPhotoChange={setProfilePhoto}
+      />
       <div className="pi-settings-form">
         <label>
           PI Name

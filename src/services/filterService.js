@@ -39,7 +39,8 @@ function normalizeStudy(study) {
     indication: study.indication || "General",
     sponsor: study.sponsor || "TriaNXT Research",
     cro: study.cro || "TriaNXT CRO",
-    site: study.site || study.location || ""
+    site: study.site || study.location || "",
+    country: study.country || ""
   };
 }
 
@@ -260,4 +261,11 @@ export function getSubjectOptions(user = getCurrentUser()) {
 
 export function getDefaultInstitution(user = getCurrentUser()) {
   return getStoredInstitutionFilter() || getAssignedSite(user) || "";
+}
+
+export function getFilteredStudies(user = getCurrentUser()) {
+    return filterStudies(
+        getBaseStudies(user),
+        getFilterState()
+    );
 }

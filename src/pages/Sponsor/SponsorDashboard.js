@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { HEADER_FILTERS_EVENT } from "../../constants/headerFilters";
 import { useNavigate } from 'react-router-dom';
 import {
   MdWorkspaces,
@@ -25,11 +26,10 @@ import {
 } from 'recharts';
 
 import './SponsorDashboard.css';
+import "../shared/studies/StudyDashboard.css";
 import AppLayout from './AppLayout.js';
 import EnrollmentChart from './EnrollmentChart';
 import StatusPieChart from './StatusPieChart';
-import SubjectAnalyticsSection from '../../Components/dashboard/SubjectAnalyticsSection';
-import { getAllSubjectsFromStorage } from '../../utils/contentAccess';
 import KpiCard from './KpiCard';
 import AlertsPanel from './AlertsPanel';
 import QuickActions from './QuickActions';
@@ -39,10 +39,7 @@ import {
   getStudyStatusData,
   getPhaseDistribution,
   getEnrollmentTrend,
-  getSites,
-  getCROs,
   getRegulatoryKPIs,
-  getPortfolioStudies,
 } from './data/sponsorDataStore';
 
 const CHART_COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
@@ -54,22 +51,7 @@ const SponsorDashboard = () => {
   const [statusData, setStatusData] = useState(getStudyStatusData());
   const [phaseData, setPhaseData] = useState(getPhaseDistribution());
   const [trendData, setTrendData] = useState(getEnrollmentTrend());
-  const [sites, setSites] = useState(getSites());
-  const [cros, setCros] = useState(getCROs());
   const [regKpis, setRegKpis] = useState(getRegulatoryKPIs());
-  const [analyticsSubjects, setAnalyticsSubjects] = useState(
-    getAllSubjectsFromStorage()
-  );
-
-  const portfolioStudiesForAnalytics = useMemo(
-    () =>
-      getPortfolioStudies().map((study) => ({
-        code: study.studyId,
-        name: study.studyName,
-        enrolled: study.enrolled
-      })),
-    []
-  );
 
   const refreshData = () => {
     setKpis(getDashboardKPIs());
@@ -77,21 +59,28 @@ const SponsorDashboard = () => {
     setStatusData(getStudyStatusData());
     setPhaseData(getPhaseDistribution());
     setTrendData(getEnrollmentTrend());
-    setSites(getSites());
-    setCros(getCROs());
     setRegKpis(getRegulatoryKPIs());
-    setAnalyticsSubjects(getAllSubjectsFromStorage());
   };
 
   useEffect(() => {
     refreshData();
-    const handler = () => refreshData();
-    window.addEventListener('sponsor-data-updated', handler);
-    return () => window.removeEventListener('sponsor-data-updated', handler);
-  }, []);
 
-  const topSites = [...sites].sort((a, b) => b.enrolled - a.enrolled).slice(0, 5);
-  const topCros = [...cros].sort((a, b) => b.performance - a.performance).slice(0, 5);
+    const handler = () => {
+      refreshData();
+    };
+
+    window.addEventListener("sponsor-data-updated", handler);
+    window.addEventListener(HEADER_FILTERS_EVENT, handler);
+    window.addEventListener("studies-updated", handler);
+    window.addEventListener("subjects-updated", handler);
+
+    return () => {
+      window.removeEventListener("sponsor-data-updated", handler);
+      window.removeEventListener(HEADER_FILTERS_EVENT, handler);
+      window.removeEventListener("studies-updated", handler);
+      window.removeEventListener("subjects-updated", handler);
+    };
+  }, []);
 
   return (
     <AppLayout>
@@ -118,7 +107,7 @@ const SponsorDashboard = () => {
             icon={<MdMonitorHeart size={28} />}
             iconBg="#ecfdf5"
             iconColor="#16a34a"
-            onClick={() => navigate('/study-oversight')}
+            onClick={() => navigate('/studies')}
           />
           <KpiCard
             title="Active CROs"
@@ -174,6 +163,9 @@ const SponsorDashboard = () => {
           <EnrollmentChart data={enrollmentData} />
           <div className="chart-card">
             <h3>Study Status Distribution</h3>
+            {statusData.length === 0 ? (
+              <p className="chart-empty-state">No data available yet</p>
+            ) : (
             <ResponsiveContainer width="100%" height={280}>
               <PieChart>
                 <Pie data={statusData} dataKey="value" cx="50%" cy="50%" outerRadius={90} label>
@@ -184,9 +176,13 @@ const SponsorDashboard = () => {
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
+            )}
           </div>
           <div className="chart-card">
             <h3>Study Phase Distribution</h3>
+            {phaseData.length === 0 ? (
+              <p className="chart-empty-state">No data available yet</p>
+            ) : (
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={phaseData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -196,9 +192,13 @@ const SponsorDashboard = () => {
                 <Bar dataKey="studies" fill="#082b3d" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
+            )}
           </div>
           <div className="chart-card chart-card-wide">
             <h3>Enrollment Trend</h3>
+            {trendData.length === 0 ? (
+              <p className="chart-empty-state">No data available yet</p>
+            ) : (
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={trendData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -208,6 +208,7 @@ const SponsorDashboard = () => {
                 <Line type="monotone" dataKey="enrolled" stroke="#2563eb" strokeWidth={3} dot={{ r: 5 }} />
               </LineChart>
             </ResponsiveContainer>
+            )}
           </div>
         </div>
 

@@ -317,47 +317,91 @@ export const saveSecurityData = (data) => {
   return data;
 };
 
-export const getDefaultComments = () => [
-  {
-    id: "COM-1567",
-    subjectId: "SUB-1025",
-    visit: "Visit 3",
-    type: "General",
-    comment: "Subject reported mild fatigue and headache after procedure.",
-    createdBy: "Dr. B. Nobitha",
-    date: "15-May-2025",
-    status: "unresolved",
-  },
-  {
-    id: "COM-1566",
-    subjectId: "SUB-1024",
-    visit: "Visit 2",
-    type: "Query",
-    comment: "Please confirm BP reading.",
-    createdBy: "Dr. K. Suzukaa",
-    date: "14-May-2025",
-    status: "resolved",
-  },
-  {
-    id: "COM-1565",
-    subjectId: "SUB-1023",
-    visit: "Screening",
-    type: "Safety",
-    comment: "Subject experienced dizziness.",
-    createdBy: "Dr. B. Doremon",
-    date: "13-May-2025",
-    status: "pending-review",
-  },
-];
+// ============================================================
+// COMMENTS DATA SERVICE
+// Dynamic-only comments: no hard-coded/sample default comments.
+// ============================================================
 
-export const getCommentsData = () =>
-  readStorage(STORAGE_KEYS.comments, getDefaultComments());
+export const getDefaultComments = () => [];
 
-export const saveCommentsData = (comments) => {
-  writeStorage(STORAGE_KEYS.comments, comments);
-  return comments;
+export const getCommentsData = () => {
+  const storedComments = readStorage(STORAGE_KEYS.comments, []);
+
+  return Array.isArray(storedComments) ? storedComments : [];
 };
 
+export const saveCommentsData = (comments) => {
+  const safeComments = Array.isArray(comments) ? comments : [];
+
+  writeStorage(STORAGE_KEYS.comments, safeComments);
+
+  return safeComments;
+};
+
+export const addComment = (comment = {}) => {
+  const existingComments = getCommentsData();
+
+  const newComment = {
+    id:
+      comment.id ||
+      `COM-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    subjectId: comment.subjectId || "",
+    visit: comment.visit || "",
+    type: comment.type || "General",
+    comment: comment.comment || "",
+    createdBy: comment.createdBy || "",
+    date:
+      comment.date ||
+      new Date().toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
+    status: comment.status || "unresolved",
+    ...comment,
+  };
+
+  const updatedComments = [newComment, ...existingComments];
+
+  saveCommentsData(updatedComments);
+
+  return updatedComments;
+};
+
+export const updateComment = (commentId, updates = {}) => {
+  const updatedComments = getCommentsData().map((comment) => {
+    if (comment.id !== commentId) {
+      return comment;
+    }
+
+    return {
+      ...comment,
+      ...updates,
+    };
+  });
+
+  saveCommentsData(updatedComments);
+
+  return updatedComments;
+};
+
+export const deleteComment = (commentId) => {
+  const updatedComments = getCommentsData().filter(
+    (comment) => comment.id !== commentId
+  );
+
+  saveCommentsData(updatedComments);
+
+  return updatedComments;
+};
+
+export const clearCommentsData = () => {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem(STORAGE_KEYS.comments);
+  }
+
+  return [];
+};
 export const getReportsData = () =>
   readStorage(STORAGE_KEYS.reports, {
     kpis: { total: 24, monthly: 6, study: 12, pending: 3, generated: 18 },
@@ -661,7 +705,6 @@ export const getSidebarMenuData = () =>
   readStorage(STORAGE_KEYS.sidebarMenu, {
     sections: [
       { id: "dashboard", label: "Dashboard", icon: "home", page: "dashboard" },
-      { id: "comments", label: "Comments", icon: "comments", page: "comments" },
       { id: "site-performance", label: "Site Performance", icon: "chart", page: "site-performance" },
       { id: "recruitment", label: "Recruitment", icon: "users", page: "recruitment" },
       { id: "regulatory", label: "Regulatory", icon: "university", page: "regulatory" },

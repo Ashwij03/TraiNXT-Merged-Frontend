@@ -10,7 +10,7 @@ import {
   FiChevronDown,
   FiMenu,
   FiSliders,
-  FiSettings
+  FiSettings,
 } from "react-icons/fi";
 import { useAdminNavbarNotifications } from "../../hooks/useAdminNavbarNotifications";
 import {
@@ -25,12 +25,12 @@ import {
   getEffectiveRole,
   isAdmin,
   ROLE_LABELS,
-  setAdminPreviewRole
+  setAdminPreviewRole,
 } from "../../services/roleService";
 import { PROFILE_PHOTO_EVENT } from "../../constants/profileEvents";
 import {
   terminateCurrentSession,
-  touchUserSession
+  touchUserSession,
 } from "../../services/sessionService";
 import {
   ADMIN_PREVIEW_ROLE_EVENT,
@@ -55,7 +55,7 @@ import {
   setStoredSiteNumberFilter,
   setStoredSponsorFilter,
   setStoredStudyFilter,
-  setStoredSubjectFilter
+  setStoredSubjectFilter,
 } from "../../constants/headerFilters";
 import {
   getCROOptions,
@@ -66,7 +66,7 @@ import {
   getSiteNumberOptions,
   getSponsorOptions,
   getStudyOptions,
-  getSubjectOptions
+  getSubjectOptions,
 } from "../../services/filterService";
 import useLiveChatNavigation from "../../hooks/useLiveChatNavigation";
 function EnterpriseNavbarBase({
@@ -87,36 +87,40 @@ function EnterpriseNavbarBase({
   const [profileOpen, setProfileOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filterVersion, setFilterVersion] = useState(0);
-  const {
-    notifications,
-    unreadCount,
-    handleToggleRead,
-    handleMarkAllRead,
-  } = useAdminNavbarNotifications();
+  const { notifications, unreadCount, handleToggleRead, handleMarkAllRead } =
+    useAdminNavbarNotifications();
   const [previewRole, setPreviewRoleState] = useState(
-    () => effectiveRole || ROLES.ADMIN
+    () => effectiveRole || ROLES.ADMIN,
   );
- const current = JSON.parse(localStorage.getItem("currentUser"));
 
-const [profilePhoto, setProfilePhoto] = useState(
-  current?.profilePhoto || localStorage.getItem("profilePhoto") || ""
-);
+  // Per-user profile photo only — never fall back to a flat, unscoped
+  // "profilePhoto" localStorage key, since that key is shared across every
+  // account and causes one user's photo to leak into every other user's
+  // header avatar. syncProfilePhoto() in roleService writes the photo onto
+  // currentUser.profilePhoto (scoped per user id/email), so that's the only
+  // source of truth here.
+  const [profilePhoto, setProfilePhoto] = useState(
+    currentUser?.profilePhoto || "",
+  );
 
   const [selectedIndication, setSelectedIndication] = useState(
-    getStoredIndicationFilter
+    getStoredIndicationFilter,
   );
-  const [selectedSponsor, setSelectedSponsor] = useState(getStoredSponsorFilter);
+  const [selectedSponsor, setSelectedSponsor] = useState(
+    getStoredSponsorFilter,
+  );
   const [selectedCRO, setSelectedCRO] = useState(getStoredCROFilter);
   const [selectedInstitution, setSelectedInstitution] = useState(
-    () => getStoredInstitutionFilter() || getDefaultInstitution(currentUser)
+    () => getStoredInstitutionFilter() || getDefaultInstitution(currentUser),
   );
   const [selectedSiteNumber, setSelectedSiteNumber] = useState(
-    getStoredSiteNumberFilter
+    getStoredSiteNumberFilter,
   );
-  const [selectedStudyCode, setSelectedStudyCode] = useState(
-    getStoredStudyFilter
+  const [selectedStudyCode, setSelectedStudyCode] =
+    useState(getStoredStudyFilter);
+  const [selectedSubject, setSelectedSubject] = useState(
+    getStoredSubjectFilter,
   );
-  const [selectedSubject, setSelectedSubject] = useState(getStoredSubjectFilter);
 
   const indicationOptions = useMemo(() => {
     void filterVersion;
@@ -141,10 +145,7 @@ const [profilePhoto, setProfilePhoto] = useState(
         base = FILTER_ORDERS[ROLES.ADMIN];
       } else {
         const previewFilters = FILTER_ORDERS[effectiveRole] || [];
-        base = [
-          "role",
-          ...previewFilters.filter((key) => key !== "role")
-        ];
+        base = ["role", ...previewFilters.filter((key) => key !== "role")];
       }
     } else {
       base = FILTER_ORDERS[effectiveRole] || FILTER_ORDERS[ROLES.ADMIN];
@@ -174,27 +175,23 @@ const [profilePhoto, setProfilePhoto] = useState(
   }, [filterVersion, currentUser]);
 
   useEffect(() => {
-  touchUserSession(getCurrentUser());
-}, [userEmail]);
+    touchUserSession(getCurrentUser());
+  }, [userEmail]);
 
   useEffect(() => {
-  const refreshProfilePhoto = () => {
-    const current = JSON.parse(localStorage.getItem("currentUser"));
+    const refreshProfilePhoto = () => {
+      const current = getCurrentUser();
+      setProfilePhoto(current?.profilePhoto || "");
+    };
 
-    setProfilePhoto(
-      current?.profilePhoto || localStorage.getItem("profilePhoto") || ""
-    );
-  };
+    window.addEventListener(PROFILE_PHOTO_EVENT, refreshProfilePhoto);
 
-  window.addEventListener(PROFILE_PHOTO_EVENT, refreshProfilePhoto);
-
-  return () => {
-    window.removeEventListener(PROFILE_PHOTO_EVENT, refreshProfilePhoto);
-  };
-}, []);
+    return () => {
+      window.removeEventListener(PROFILE_PHOTO_EVENT, refreshProfilePhoto);
+    };
+  }, []);
 
   useEffect(() => {
-    
     const bumpFilters = () => setFilterVersion((value) => value + 1);
 
     window.addEventListener(HEADER_FILTERS_EVENT, bumpFilters);
@@ -219,59 +216,43 @@ const [profilePhoto, setProfilePhoto] = useState(
     return () => {
       window.removeEventListener(
         ADMIN_PREVIEW_ROLE_EVENT,
-        handlePreviewRoleChange
+        handlePreviewRoleChange,
       );
     };
   }, [userEmail]);
-const handleLogout = () => {
-  terminateCurrentSession();
+  const handleLogout = () => {
+    terminateCurrentSession();
 
-  localStorage.removeItem("isLoggedIn");
-  localStorage.removeItem("adminPreviewRole");
-  localStorage.removeItem("currentUser");
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("adminPreviewRole");
+    localStorage.removeItem("currentUser");
 
-  setAdminPreviewRole(null);
+    setAdminPreviewRole(null);
 
-  navigate("/login");
-};
- const handleProfileNavigation = () => {
-  const role = getEffectiveRole(getCurrentUser());
+    navigate("/login");
+  };
+  const navigateToSettingsSection = (section) => {
+    const role = getEffectiveRole(getCurrentUser());
 
-  let path = "/settings";
+    let path = "/settings";
 
-  switch (role) {
-    case ROLES.ADMIN:
-      path = "/settings";
-      break;
+    switch (role) {
+      case ROLES.CRO:
+        path = "/cro-settings";
+        break;
+      case ROLES.PI:
+        path = "/pi-settings";
+        break;
+      default:
+        path = "/settings";
+    }
 
-    case ROLES.SPONSOR:
-      path = "/settings";
-      break;
+    navigate(path, {
+      state: { section },
+    });
 
-    case ROLES.CRO:
-      path = "/cro-settings";
-      break;
-
-    case ROLES.PI:
-      path = "/pi-settings";
-      break;
-
-    case ROLES.SITE_STAFF:
-      path = "/settings";
-      break;
-
-    default:
-      path = "/settings";
-  }
-
-  navigate(path, {
-    state: {
-      openModal: "profile",
-    },
-  });
-
-  setProfileOpen(false);
-};
+    setProfileOpen(false);
+  };
   const openStudy = (study) => {
     if (!study) {
       return;
@@ -306,7 +287,7 @@ const handleLogout = () => {
       sponsor: [SELECTED_SPONSOR_KEY, setStoredSponsorFilter],
       cro: [SELECTED_CRO_KEY, setStoredCROFilter],
       siteName: [SELECTED_INSTITUTION_KEY, setStoredInstitutionFilter],
-      siteNumber: [SELECTED_SITE_NUMBER_KEY, setStoredSiteNumberFilter]
+      siteNumber: [SELECTED_SITE_NUMBER_KEY, setStoredSiteNumberFilter],
     };
 
     const entry = storageMap[key];
@@ -356,7 +337,7 @@ const handleLogout = () => {
             }
             options={[
               { value: "", label: "All Indications" },
-              ...indicationOptions
+              ...indicationOptions,
             ]}
             placeholder="All Indications"
             searchPlaceholder="Search Indication"
@@ -370,10 +351,7 @@ const handleLogout = () => {
             onChange={(value) =>
               updateFilter("sponsor", value, setSelectedSponsor)
             }
-            options={[
-              { value: "", label: "All Sponsors" },
-              ...sponsorOptions
-            ]}
+            options={[{ value: "", label: "All Sponsors" }, ...sponsorOptions]}
             placeholder="All Sponsors"
             searchPlaceholder="Search Sponsor"
             className="header-dropdown"
@@ -506,17 +484,16 @@ const handleLogout = () => {
         <div className="header-right">
           <div className="header-menu">
             <button
-  type="button"
-  className="header-action-btn header-action-btn--outline"
-  onClick={() => {
-  console.log("HOME CLICKED");
-  setSelectedPage("dashboard");
-}}
->
-  <FiHome />
-  <span>Home</span>
-
-</button>
+              type="button"
+              className="header-action-btn header-action-btn--outline"
+              onClick={() => {
+                console.log("HOME CLICKED");
+                setSelectedPage("dashboard");
+              }}
+            >
+              <FiHome />
+              <span>Home</span>
+            </button>
 
             <button
               type="button"
@@ -540,7 +517,7 @@ const handleLogout = () => {
               type="button"
               className="header-icon-btn"
               aria-label="Settings"
-              onClick={() => navigate("/settings")}
+              onClick={() => navigateToSettingsSection("profile")}
             >
               <FiSettings />
             </button>
@@ -569,11 +546,15 @@ const handleLogout = () => {
 
             {profileOpen && (
               <div className="profile-dropdown">
-                <div onClick={handleProfileNavigation}>Profile</div>
-                <div onClick={() => navigate("/settings")}>
+                <div onClick={() => navigateToSettingsSection("profile")}>
+                  Profile
+                </div>
+                <div onClick={() => navigateToSettingsSection("account")}>
                   Account Settings
                 </div>
-                <div onClick={() => navigate("/security")}>Security</div>
+                <div onClick={() => navigateToSettingsSection("security")}>
+                  Security
+                </div>
                 <div onClick={handleLogout}>Logout</div>
               </div>
             )}

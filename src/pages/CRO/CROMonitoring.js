@@ -3,22 +3,12 @@ import CROLayout from "./CROLayout";
 import { useCROData } from "./CRODATAContext";
 import StatusBadge from "./StatusBadge";
 import EmptyState from "./EmptyState";
-import CROModal from "./CROModal";
 
 function CROMonitoring() {
-  const { visits, addVisit, updateVisit, deleteVisit, showAlert } = useCROData();
+  const { visits } = useCROData();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [showModal, setShowModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState("All");
-  const [editVisit, setEditVisit] = useState(null);
-  const [form, setForm] = useState({
-    site: "",
-    cra: "",
-    visitType: "",
-    visitDate: "",
-    status: "Scheduled",
-  });
 
   const filteredVisits = visits.filter((visit) => {
     const matchesSearch = visit.id.toLowerCase().includes(searchTerm.toLowerCase());
@@ -32,48 +22,6 @@ function CROMonitoring() {
     if (v.status === "Completed") return false;
     return new Date(v.date) < new Date();
   }).length;
-
-  const resetForm = () => {
-    setForm({ site: "", cra: "", visitType: "", visitDate: "", status: "Scheduled" });
-    setEditVisit(null);
-  };
-
-  const handleSave = () => {
-    if (editVisit) {
-      updateVisit(editVisit.id, {
-        site: form.site,
-        cra: form.cra,
-        visitType: form.visitType,
-        date: form.visitDate,
-        status: form.status,
-      });
-      showAlert("Success", "Visit updated successfully.");
-    } else {
-      addVisit({
-        id: `MON-${String(visits.length + 1).padStart(3, "0")}`,
-        site: form.site,
-        cra: form.cra,
-        visitType: form.visitType,
-        date: form.visitDate,
-        status: "Scheduled",
-      });
-      showAlert("Success", "Monitoring visit added successfully.");
-    }
-    setShowModal(false);
-    resetForm();
-  };
-
-  const openEdit = (visit) => {
-    setEditVisit(visit);
-    setForm({
-      site: visit.site,
-      cra: visit.cra,
-      visitType: visit.visitType,
-      visitDate: visit.date,
-      status: visit.status,
-    });
-    setShowModal(true);
-  };
 
   return (
     <CROLayout>
@@ -122,14 +70,6 @@ function CROMonitoring() {
               <option value="Scheduled">Scheduled</option>
             </select>
           </div>
-          <h2></h2>
-          <button
-            type="button"
-            className="cro-btn-primary-inline"
-            onClick={() => { resetForm(); setShowModal(true); }}
-          >
-            + Add Visit
-          </button>
         </div>
 
         {filteredVisits.length === 0 ? (
@@ -145,7 +85,6 @@ function CROMonitoring() {
                   <th>Visit Type</th>
                   <th>Date</th>
                   <th>Status</th>
-                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -157,19 +96,6 @@ function CROMonitoring() {
                     <td>{visit.visitType}</td>
                     <td>{visit.date}</td>
                     <td><StatusBadge status={visit.status} /></td>
-                    <td>
-                      <button type="button" className="cro-btn-primary-inline" onClick={() => openEdit(visit)}>Edit</button>
-                      <button
-                        type="button"
-                        className="cro-btn-danger-inline"
-                        onClick={() => {
-                          deleteVisit(visit.id);
-                          showAlert("Deleted", `Visit ${visit.id} removed.`);
-                        }}
-                      >
-                        Delete
-                      </button>
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -177,35 +103,6 @@ function CROMonitoring() {
           </div>
         )}
       </div>
-
-      <CROModal
-        isOpen={showModal}
-        onClose={() => { setShowModal(false); resetForm(); }}
-        title={editVisit ? "Edit Monitoring Visit" : "Add Monitoring Visit"}
-        footer={
-          <>
-            <button type="button" className="cro-btn cro-btn-secondary" onClick={() => { setShowModal(false); resetForm(); }}>Cancel</button>
-            <button type="button" className="cro-btn cro-btn-primary" onClick={handleSave}>Save</button>
-          </>
-        }
-      >
-        <input className="cro-input" placeholder="Site Name" value={form.site} onChange={(e) => setForm({ ...form, site: e.target.value })} />
-        <input className="cro-input" placeholder="CRA Name" value={form.cra} onChange={(e) => setForm({ ...form, cra: e.target.value })} />
-        <select className="cro-input" value={form.visitType} onChange={(e) => setForm({ ...form, visitType: e.target.value })}>
-          <option value="">Select Visit Type</option>
-          <option value="SIV">SIV</option>
-          <option value="IMV">IMV</option>
-          <option value="COV">COV</option>
-        </select>
-        <input type="date" className="cro-input" value={form.visitDate} onChange={(e) => setForm({ ...form, visitDate: e.target.value })} />
-        {editVisit && (
-          <select className="cro-input" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-            <option>Scheduled</option>
-            <option>Pending</option>
-            <option>Completed</option>
-          </select>
-        )}
-      </CROModal>
     </CROLayout>
   );
 }

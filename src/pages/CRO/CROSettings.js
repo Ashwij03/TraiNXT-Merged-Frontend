@@ -3,7 +3,10 @@ import { useSearchParams } from "react-router-dom";
 import CROLayout from "./CROLayout";
 import { useCROData } from "./CRODATAContext";
 import { CRO_STORAGE_KEYS, loadFromStorage } from "./croStorage";
+import ProfilePhotoCard from "../shared/profile/ProfilePhotoCard";
+import { getUserProfile } from "../../services/roleService";
 import "./CROSettings.css";
+import "../Admin/AdminPage.css";
 
 const DEFAULT_SETTINGS = {
   organization: "Clinical Research Org",
@@ -28,6 +31,9 @@ function CROSettings() {
   const [activeSection, setActiveSection] = useState("account");
   const [settings, setSettings] = useState(() =>
     loadFromStorage(CRO_STORAGE_KEYS.settings, DEFAULT_SETTINGS)
+  );
+  const [profilePhoto, setProfilePhoto] = useState(
+    () => getUserProfile().profilePhoto || ""
   );
 
   useEffect(() => {
@@ -83,6 +89,10 @@ function CROSettings() {
         {activeSection === "account" && (
           <div role="tabpanel" id="cro-settings-account">
             <h2 className="cro-settings-section-title">Account Settings</h2>
+            <ProfilePhotoCard
+              photo={profilePhoto}
+              onPhotoChange={setProfilePhoto}
+            />
             <div style={{ marginBottom: "15px" }}>
               <label>Organization Name</label>
               <input

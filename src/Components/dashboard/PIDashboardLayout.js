@@ -19,12 +19,9 @@ import "./dashboard.css";
 import React, { cloneElement, isValidElement } from "react";
 
 export const PI_PAGE_ROUTES = {
-
   dashboard: "/pi-dashboard",
 
   studies: "/studies",
-
-  comments: "/comments",
 
   recruitment: "/pi-recruitment",
 
@@ -45,65 +42,33 @@ export const PI_PAGE_ROUTES = {
   "study-folder": "/pi-study-folder-dashboard",
 
   livechat: "/pi-livechat",
-
 };
 
-
-
 const ROUTE_TO_PAGE = Object.entries(PI_PAGE_ROUTES).reduce(
-
   (accumulator, [page, path]) => {
-
     accumulator[path] = page;
 
     return accumulator;
-
   },
 
-  {}
-
+  {},
 );
 
-
-
 function getSelectedPageFromPath(pathname) {
-
   if (
-
     pathname === "/studies" ||
-
     pathname.startsWith("/study-dashboard") ||
-
     pathname.startsWith("/study/") ||
-
     pathname === "/subjects" ||
-
     pathname.startsWith("/subject/")
-
   ) {
-
     return "studies";
-
   }
-
-
-
-  if (pathname === "/comments" || pathname.includes("/comments")) {
-
-    return "comments";
-
-  }
-
-
-
+  
   return ROUTE_TO_PAGE[pathname] || "dashboard";
-
 }
 
-
-
 function PIDashboardLayout({ children }) {
-
   const navigate = useNavigate();
 
   const location = useLocation();
@@ -113,7 +78,6 @@ function PIDashboardLayout({ children }) {
   const selectedPage = getSelectedPageFromPath(location.pathname);
 
   const {
-
     contentRef,
 
     viewportMode,
@@ -127,103 +91,63 @@ function PIDashboardLayout({ children }) {
     handleToggleSidebar,
 
     closeSidebar,
-
   } = useEnterpriseDashboardShell();
 
-
-
   const setSelectedPage = (page) => {
-
     const path = PI_PAGE_ROUTES[page] || "/pi-dashboard";
 
     navigate(path);
 
     closeSidebar();
-
   };
 
-
-
   return (
-
     <div className="dashboard-shell dashboard-shell--pi pi-dashboard-wrapper">
-
       {viewportMode !== "desktop" && (
-
         <div
-
           className={`sidebar-backdrop${sidebarIsOpen ? " is-visible" : ""}`}
-
           onClick={closeSidebar}
-
           aria-hidden="true"
-
         />
-
       )}
 
-
-
       <div className={sidebarWrapClass}>
-
         <PISidebar
-
           selectedPage={selectedPage}
-
           setSelectedPage={setSelectedPage}
-
           subjects={dashboardData.recentSubjects || []}
-
           isOpen={sidebarIsOpen}
-
           onClose={closeSidebar}
-
         />
-
       </div>
-
-
 
       <div className="dashboard-main">
-
         <div className="dashboard-main-scaled">
-
           <div className={headerWrapClass}>
-
             <PINavbar
-  onToggleSidebar={handleToggleSidebar}
-  sidebarOpen={sidebarIsOpen}
-  setSelectedPage={setSelectedPage}
-/> 
-
+              onToggleSidebar={handleToggleSidebar}
+              sidebarOpen={sidebarIsOpen}
+              setSelectedPage={setSelectedPage}
+            />
           </div>
 
-
-
-          <div className="dashboard-content pi-dashboard-content" ref={contentRef}>
-  {isValidElement(children)
-    ? cloneElement(children, {
-        selectedPage,
-        setSelectedPage,
-      })
-    : children}
-</div>
-
+          <div
+            className="dashboard-content pi-dashboard-content"
+            ref={contentRef}
+          >
+            {isValidElement(children)
+              ? cloneElement(children, {
+                  selectedPage,
+                  setSelectedPage,
+                })
+              : children}
+          </div>
         </div>
-
       </div>
 
-
-
       <LiveChatFab liveChatPath="/pi-livechat" />
-
     </div>
-
   );
-
 }
 
-
-
 export default PIDashboardLayout;
-

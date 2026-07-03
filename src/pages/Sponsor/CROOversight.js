@@ -4,25 +4,28 @@ import { useNavigate } from 'react-router-dom';
 import './CROOversight.css';
 import './SponsorShared.css';
 import KpiCard from './KpiCard';
-import EnterpriseModal from './EnterpriseModal';
+import RequestPermissionButton from '../../Components/common/RequestPermissionButton';
 import { FiLayers, FiActivity, FiTrendingUp, FiBarChart2 } from 'react-icons/fi';
-import { getCROs, saveCROs, getCROKPIs } from './data/sponsorDataStore';
+import { getCROs, getCROKPIs } from './data/sponsorDataStore';
 
 const CROOversight = () => {
   const navigate = useNavigate();
   const [cros, setCros] = useState(getCROs());
   const [kpis, setKpis] = useState(getCROKPIs());
   const [viewCro, setViewCro] = useState(null);
-  const [showCreate, setShowCreate] = useState(false);
-  const [form, setForm] = useState({ name: '', studies: 0, sites: 0, performance: 90, contact: '' });
 
   useEffect(() => {
     const refresh = () => { setCros(getCROs()); setKpis(getCROKPIs()); };
     window.addEventListener('sponsor-data-updated', refresh);
-    return () => window.removeEventListener('sponsor-data-updated', refresh);
+    window.addEventListener('studies-updated', refresh);
+    return () => {
+      window.removeEventListener('sponsor-data-updated', refresh);
+      window.removeEventListener('studies-updated', refresh);
+    };
   }, []);
 
   const exportData = () => {
+    if (!cros.length) return;
     const csv = 'CRO,Studies,Sites,Performance\n' + cros.map(c => `${c.name},${c.studies},${c.sites},${c.performance}%`).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const a = document.createElement('a');
@@ -30,30 +33,6 @@ const CROOversight = () => {
     a.download = 'CRO_Data.csv';
     a.click();
   };
-
-  const handleCreate = () => {
-    if (!form.name) return;
-    const updated = [...cros, { id: `CRO-${Date.now()}`, ...form, studies: Number(form.studies), sites: Number(form.sites), performance: Number(form.performance), status: 'Active' }];
-    saveCROs(updated);
-    setCros(updated);
-    setKpis(getCROKPIs());
-    setShowCreate(false);
-  };
-  const handleDelete = (id) => {
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete this CRO?"
-  );
-
-  if (!confirmDelete) return;
-
-  const updated = cros.filter(
-    (cro) => cro.id !== id
-  );
-
-  saveCROs(updated);
-  setCros(updated);
-  setKpis(getCROKPIs());
-};
 
   return (
     <AppLayout>
@@ -73,7 +52,7 @@ const CROOversight = () => {
        
 
         <div className="sponsor-toolbar">
-          <button type="button" className="sponsor-btn-primary" onClick={() => setShowCreate(true)}>+ Add CRO</button>
+          <RequestPermissionButton action="Add CRO Partner" module="CRO Oversight" label="+ Add CRO" className="sponsor-btn-primary" />
           <button type="button" className="sponsor-btn-secondary" onClick={exportData}>Export Data</button>
           <button type="button" className="sponsor-btn-secondary" onClick={() => navigate('/cro-report')}>Performance Report</button>
         </div>
@@ -92,7 +71,11 @@ const CROOversight = () => {
               </tr>
             </thead>
             <tbody>
-              {cros.map((cro) => (
+              {cros.length === 0 ? (
+                <tr>
+                  <td colSpan="6" style={{ textAlign: 'center' }}>No data available yet</td>
+                </tr>
+              ) : cros.map((cro) => (
                 <tr key={cro.id} onClick={() => setViewCro(cro)}>
                   <td>{cro.name}</td>
                   <td>{cro.studies}</td>
@@ -112,14 +95,6 @@ const CROOversight = () => {
       View
     </button>
 
-    <button
-      type="button"
-      className="delete-btn"
-      onClick={() => handleDelete(cro.id)}
-    >
-      Delete
-    </button>
-
   </div>
 </td>
                 </tr>
@@ -130,22 +105,16 @@ const CROOversight = () => {
       </div>
 
       {viewCro && (
-        <EnterpriseModal title={viewCro.name} onClose={() => setViewCro(null)}>
-          <p><strong>Studies:</strong> {viewCro.studies}</p>
-          <p><strong>Sites:</strong> {viewCro.sites}</p>
-          <p><strong>Performance:</strong> {viewCro.performance}%</p>
-          <p><strong>Contact:</strong> {viewCro.contact}</p>
-        </EnterpriseModal>
-      )}
-
-      {showCreate && (
-        <EnterpriseModal title="Add CRO Partner" onClose={() => setShowCreate(false)} onSave={handleCreate} saveLabel="Add">
-          <input placeholder="CRO Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          <input type="number" placeholder="Studies" value={form.studies} onChange={(e) => setForm({ ...form, studies: e.target.value })} />
-          <input type="number" placeholder="Sites" value={form.sites} onChange={(e) => setForm({ ...form, sites: e.target.value })} />
-          <input type="number" placeholder="Performance %" value={form.performance} onChange={(e) => setForm({ ...form, performance: e.target.value })} />
-          <input placeholder="Contact Person" value={form.contact} onChange={(e) => setForm({ ...form, contact: e.target.value })} />
-        </EnterpriseModal>
+        <div className="sponsor-modal-backdrop" onClick={() => setViewCro(null)} role="presentation">
+          <div className="sponsor-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>{viewCro.name}</h3>
+            <p><strong>Studies:</strong> {viewCro.studies}</p>
+            <p><strong>Sites:</strong> {viewCro.sites}</p>
+            <p><strong>Performance:</strong> {viewCro.performance}%</p>
+            <p><strong>Contact:</strong> {viewCro.contact}</p>
+            <button type="button" onClick={() => setViewCro(null)}>Close</button>
+          </div>
+        </div>
       )}
     </AppLayout>
   );

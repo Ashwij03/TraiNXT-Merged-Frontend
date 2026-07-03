@@ -52,6 +52,7 @@ import {
   buildDynamicAlerts
 } from "./piDashboardService";
 import "./PIDashboard.css";
+import "../shared/studies/StudyDashboard.css";
 //import "../Admin/Dashboard.css";
 
 function PIDashboard({ embeddedInLayout = false }) {
