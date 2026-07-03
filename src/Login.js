@@ -2,7 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
 import { initializeUserSession } from "./services/sessionService";
-
+import {
+  setPIPreviewRole,
+  setAdminPreviewRole
+} from "./services/roleService";
 function Login() {
   const navigate = useNavigate();
 
@@ -101,6 +104,15 @@ function Login() {
 	  // ✅ ADD THIS LINE (THIS IS YOUR STEP-1 FIX)
 	  localStorage.setItem("currentUser", JSON.stringify(user));
     initializeUserSession(user);
+    setPIPreviewRole(null);
+setAdminPreviewRole(null);
+
+localStorage.removeItem("piPreviewRole");
+localStorage.removeItem("adminPreviewRole");
+    
+    
+  
+
 
     // newly added
 

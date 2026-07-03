@@ -5,7 +5,15 @@
   min-height: 360px;
   width: 100%;
 }
-
+.dfm-columns{
+    display:flex;
+    overflow-x:auto;
+    width:100%;
+    min-height:220px;
+    max-height:320px;
+    background:#fafafa;
+    border:1px solid #e5e7eb;
+}
 .dfm-layout-vertical {
   flex-direction: column;
 }
@@ -78,7 +86,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .dfm-sidebar-header {
@@ -120,7 +128,8 @@
 
 .dfm-folder-tree {
   flex: 1;
-  overflow-y: auto;
+  overflow-x: visible;
+  overflow-y: visible;
   padding: calc(8px * var(--dashboard-ui-scale, 0.6)) 0;
 }
 
@@ -693,8 +702,198 @@
   word-break: break-word;
 }
 
+.dfm-explorer-folder-wrap {
+  position: relative;
+}
+
+.dfm-explorer-folder-wrap .folder-options-menu {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+}
+
+.dfm-view-toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: calc(10px * var(--dashboard-ui-scale, 0.75));
+}
+
+.dfm-view-switcher {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.dfm-view-switcher button,
+.dfm-template-btn {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #374151;
+  cursor: pointer;
+  font-size: calc(12px * var(--dashboard-ui-scale, 0.75) + 1px);
+  font-weight: 600;
+  padding: 8px 12px;
+}
+
+.dfm-view-switcher button.active,
+.dfm-template-btn:hover,
+.dfm-view-switcher button:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #2563eb;
+}
+
+.dfm-layout-column .dfm-main-header,
+.dfm-layout-column .dfm-action-bar {
+  margin-top: 0;
+}
+
 @media screen and (max-width: 768px) {
   .dfm-container {
     grid-template-columns: 1fr;
   }
+}
+/* Folder Options Dropdown */
+
+.dfm-folder-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.dfm-folder-menu > button {
+  padding: 8px 14px;
+  border: 1px solid #dcdcdc;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dfm-folder-dropdown {
+  position: absolute;
+  top: 42px;
+  left: 0;
+  min-width: 200px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+}
+
+.dfm-folder-dropdown button {
+  background: none;
+  border: none;
+  padding: 10px 14px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dfm-folder-dropdown button:hover {
+  background: #f5f5f5;
+}
+.dfm-folder-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.dfm-folder-options {
+  position: relative;
+}
+
+.dfm-more-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.dfm-more-btn:hover {
+  background: #f3f4f6;
+}
+
+.dfm-folder-menu {
+  position: absolute;
+  top: 30px;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  min-width: 180px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+}
+
+.dfm-folder-menu button {
+  border: none;
+  background: transparent;
+  padding: 10px 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dfm-folder-menu button:hover {
+  background: #f3f4f6;
+}
+.dfm-folder-options{
+    margin-left:auto;
+    padding-right:8px;
+}
+.dfm-more-btn{
+    width:28px;
+    height:28px;
+    border-radius:6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.dfm-more-btn:hover{
+    background:#eef3ff;
+}
+.dfm-folder-row{
+    min-height:38px;
+    align-items:center;
+}
+.dfm-folder-icon{
+    color:#f4b400;
+    margin-right:8px;
+    font-size:18px;
+}
+.dfm-folder-options{
+    position: relative;
+}
+.dfm-folder-menu{
+    position: absolute;
+
+    background:#fff;
+    border:1px solid #dcdfe6;
+    border-radius:8px;
+
+    width:220px;
+
+    box-shadow:0 8px 24px rgba(0,0,0,.15);
+
+    z-index:99999;
+
+    display:flex;
+    flex-direction:column;
+}
+.dfm-folder-options{
+    position: relative;
+    margin-right: 16px;
 }
