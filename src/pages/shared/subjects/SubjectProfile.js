@@ -22,6 +22,7 @@ import "../AccessPermissions.css";
 
 import "./SubjectProfile.css";
 
+
 function SubjectProfile({ setActiveTab: setStudyTab, onBack }) {
 
   const navigate = useNavigate();
@@ -148,6 +149,7 @@ function SubjectProfile({ setActiveTab: setStudyTab, onBack }) {
       "auditLogs",
       JSON.stringify(logs)
     );
+    console.log("Audit Logs:", logs);
 
     alert(
       "Subject Updated Successfully"
@@ -662,9 +664,7 @@ function SubjectProfile({ setActiveTab: setStudyTab, onBack }) {
 
       <div className="journey-card">
 
-        <h3>
-          Subject Journey
-        </h3>
+          <h3>Subject Timeline</h3>
 
         <div className="journey-container">
 
@@ -717,32 +717,25 @@ function SubjectProfile({ setActiveTab: setStudyTab, onBack }) {
       {/* Tabs */}
 
       <div className="subject-tabs">
-
-        {[
-          "Overview",
-          "Visits",
-          "Documents",
-          "Comments",
-          "Audit Trail"
-        ].map(tab => (
-
-          <button
-            key={tab}
-            className={
-              activeTab === tab
-                ? "subject-tab active"
-                : "subject-tab"
-            }
-            onClick={() =>
-              setActiveTab(tab)
-            }
-          >
-            {tab}
-          </button>
-
-        ))}
-
-      </div>
+  {[
+    "Overview",
+    "Visits",
+    "Visit History",
+    "Documents",
+    "Comments",
+    "Activity Log"
+  ].map((tab) => (
+    <button
+      key={tab}
+      className={`subject-tab-btn ${
+        activeTab === tab ? "active" : ""
+      }`}
+      onClick={() => setActiveTab(tab)}
+    >
+      {tab}
+    </button>
+  ))}
+</div>
 
       {/* Dynamic Content */}
 
@@ -750,13 +743,14 @@ function SubjectProfile({ setActiveTab: setStudyTab, onBack }) {
 
         {
           activeTab === "Overview" && (
-
-            <SubjectOverview
-              subject={subject}
-            />
-
-          )
+   <SubjectOverview subject={subject} />
+)
         }
+        {
+  activeTab === "Activity Log" && (
+    <SubjectAuditTrail subject={subject} />
+  )
+}
 
         {
           activeTab === "Visits" && (
@@ -768,6 +762,7 @@ function SubjectProfile({ setActiveTab: setStudyTab, onBack }) {
 
           )
         }
+        
 
         {/* {activeTab === "VisitDetails" && (
           <VisitDetails
@@ -775,6 +770,36 @@ function SubjectProfile({ setActiveTab: setStudyTab, onBack }) {
             setActiveTab={setActiveTab}
           />
         )} */}
+
+       {activeTab === "Visit History" && (
+  <div className="subject-tab-card">
+    <h2>Visit History</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Visit</th>
+          <th>Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <td>Screening</td>
+          <td>{subjectData.screeningDate || "-"}</td>
+          <td>Completed</td>
+        </tr>
+
+        <tr>
+          <td>{subjectData.currentVisit || "Visit 1"}</td>
+          <td>{subjectData.enrollmentDate || "-"}</td>
+          <td>{subjectData.status || "-"}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+)}
 
         {
           activeTab === "Documents" && (
@@ -792,15 +817,7 @@ function SubjectProfile({ setActiveTab: setStudyTab, onBack }) {
           )
         }
 
-        {
-          activeTab === "Audit Trail" && (
-
-            <SubjectAuditTrail
-              subject={subject}
-            />
-
-          )
-        }
+       
 
       </div>
 

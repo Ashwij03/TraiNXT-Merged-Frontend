@@ -6,6 +6,7 @@ import Comments from "./pages/shared/operations/Comments";
 import ProgressNotes from "./pages/shared/operations/ProgressNotes";
 import FileDetails from "./pages/shared/documents/FileDetails";
 import StudyLogs from "./pages/shared/operations/StudyLogs";
+import { getSubscription, saveSubscription } from "./services/subscriptionService";
 function Dashboard() {
   const navigate = useNavigate();
   const [name, setName] = useState("Guest");
@@ -47,11 +48,19 @@ function Dashboard() {
   const [selectedPage, setSelectedPage] = useState("home");
  
   const [searchText, setSearchText] = useState("");
+  const [subscription, setSubscription] = useState(null);
+const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+const [subscriptionForm, setSubscriptionForm] = useState(null);
+const [subscriptionErrors, setSubscriptionErrors] = useState({});
+const [subscriptionSavedMessage, setSubscriptionSavedMessage] = useState("");
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("currentUser"));
 	
     if (user && user.name) setName(user.name);
+}, []);
+useEffect(() => {
+  setSubscription(getSubscription());
 }, []);
 
 const currentUser =
@@ -85,6 +94,7 @@ const canViewFiles =
   permissions.includes(
 	"document.view"
   );
+  
 const addSubject = () => {
 	
 	const newId = subjects.length + 1;
@@ -112,6 +122,80 @@ const addSubject = () => {
 	      )
 	    }));
 	  };
+	 const openSubscriptionModal = () => {
+  setSubscriptionForm({ ...subscription });
+  setSubscriptionErrors({});
+  setShowSubscriptionModal(true);
+};
+
+const closeSubscriptionModal = () => {
+  setShowSubscriptionModal(false);
+  setSubscriptionForm(null);
+  setSubscriptionErrors({});
+};
+
+const handleSubscriptionFieldChange = (field, value) => {
+  setSubscriptionForm((prev) => ({
+    ...prev,
+    [field]: value
+  }));
+};
+
+const validateSubscriptionForm = (form) => {
+  const errors = {};
+
+  if (!form.plan) errors.plan = "Subscription Plan is required";
+  if (!form.status) errors.status = "Subscription Status is required";
+  if (!form.startDate) errors.startDate = "Start Date is required";
+  if (!form.endDate) errors.endDate = "End Date is required";
+
+  if (form.startDate && form.endDate && form.endDate < form.startDate) {
+    errors.endDate = "End Date cannot be earlier than Start Date";
+  }
+
+  if (!(Number(form.maxUsers) > 0)) {
+    errors.maxUsers = "Maximum Users must be greater than 0";
+  }
+
+  if (!(Number(form.maxStudies) > 0)) {
+    errors.maxStudies = "Maximum Studies must be greater than 0";
+  }
+
+  if (!(Number(form.storageLimitGb) > 0)) {
+    errors.storageLimitGb = "Storage Limit must be greater than 0";
+  }
+
+  return errors;
+};
+
+const handleSaveSubscription = () => {
+  const errors = validateSubscriptionForm(subscriptionForm);
+
+  if (Object.keys(errors).length > 0) {
+    setSubscriptionErrors(errors);
+    return;
+  }
+
+  const updated = saveSubscription({
+    plan: subscriptionForm.plan,
+    status: subscriptionForm.status,
+    startDate: subscriptionForm.startDate,
+    endDate: subscriptionForm.endDate,
+    maxStudies: Number(subscriptionForm.maxStudies),
+    maxUsers: Number(subscriptionForm.maxUsers),
+    storageLimitGb: Number(subscriptionForm.storageLimitGb),
+    autoRenewal: subscriptionForm.autoRenewal,
+    notes: subscriptionForm.notes || ""
+  });
+
+  setSubscription(updated);
+  setShowSubscriptionModal(false);
+  setSubscriptionForm(null);
+  setSubscriptionSavedMessage("Subscription updated successfully");
+
+  setTimeout(() => setSubscriptionSavedMessage(""), 3000);
+};
+	  
   return (
     <div className="dashboard">
 	<Navbar
@@ -265,7 +349,88 @@ const addSubject = () => {
           {/* HOME */}
           {selectedPage === "home" && (
             <div className="home-container">
+				{subscription && (
+  <div className="subscription-overview">
+    <div className="subscription-overview-header">
+      <h2>Subscription</h2>
 
+      <button
+        type="button"
+        className="edit-subscription-btn"
+        onClick={openSubscriptionModal}
+      >
+        Edit Subscription
+      </button>
+    </div>
+
+    {subscriptionSavedMessage && (
+      <div className="subscription-success-msg">
+        {subscriptionSavedMessage}
+      </div>
+    )}
+
+    <div className="subscription-details-grid">
+
+      <div className="subscription-detail">
+        <span className="subscription-detail-label">
+          Current Plan
+        </span>
+        <span className="subscription-detail-value">
+          {subscription.plan}
+        </span>
+      </div>
+
+      <div className="subscription-detail">
+        <span className="subscription-detail-label">
+          Status
+        </span>
+        <span
+          className={`subscription-status-badge subscription-status-${subscription.status.toLowerCase()}`}
+        >
+          {subscription.status}
+        </span>
+      </div>
+
+      <div className="subscription-detail">
+        <span className="subscription-detail-label">
+          Expiry Date
+        </span>
+        <span className="subscription-detail-value">
+          {subscription.endDate}
+        </span>
+      </div>
+
+      <div className="subscription-detail">
+        <span className="subscription-detail-label">
+          Users
+        </span>
+        <span className="subscription-detail-value">
+          {subjects.length} / {subscription.maxUsers}
+        </span>
+      </div>
+
+      <div className="subscription-detail">
+        <span className="subscription-detail-label">
+          Studies
+        </span>
+        <span className="subscription-detail-value">
+          {studies.length} / {subscription.maxStudies}
+        </span>
+      </div>
+
+      <div className="subscription-detail">
+        <span className="subscription-detail-label">
+          Storage
+        </span>
+        <span className="subscription-detail-value">
+          {subscription.storageLimitGb} GB limit
+        </span>
+      </div>
+
+    </div>
+  </div>
+)}
+ 
               <h2>My Studies</h2>
 
               <div className="study-cards">
@@ -442,6 +607,15 @@ const addSubject = () => {
         </div>
 
       </div>
+	  {showSubscriptionModal && subscriptionForm && (
+  <div className="modal-overlay">
+    <div className="modal-box subscription-modal-box">
+
+      ... Claude ichina modal code motham ...
+
+    </div>
+  </div>
+)}
     </div>
   );
 }

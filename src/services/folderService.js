@@ -74,22 +74,22 @@ export function ensureSubjectFolderWithICF(sectionId, contextKey) {
     return null;
   }
 
-  const hasSubjectFolder = root.children?.length > 0;
+  // ICF already exists
+  const icfFolder = root.children?.find(
+    (child) => child.name === ICF_FOLDER_NAME
+  );
 
-  if (hasSubjectFolder) {
-    return root.children[0];
+  if (icfFolder) {
+    return icfFolder;
   }
 
-  const subjectFolder = {
-    id: createId("folder"),
-    name: "Subject",
-    children: [createICFFolder()]
-  };
+  const newICF = createICFFolder();
 
-  root.children = [subjectFolder];
+  root.children = [...(root.children || []), newICF];
+
   saveFolderTree(sectionId, contextKey, tree);
 
-  return subjectFolder;
+  return newICF;
 }
 
 function emitTreeUpdate(sectionId, contextKey) {
@@ -193,13 +193,7 @@ export function createFolder(
 
   parent.children = [...(parent.children || []), newFolder];
 
-  if (
-    sectionId === "subjects" &&
-    parent.id === tree[0]?.id &&
-    parent.children.length === 1
-  ) {
-    newFolder.children = [createICFFolder()];
-  }
+  
 
   saveFolderTree(sectionId, contextKey, tree);
 
