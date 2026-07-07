@@ -41,6 +41,7 @@ const STUDY_SECTIONS = [
   { key: "reports", label: "Reports" },
   { key: "studyFiles", label: "Study Files" },
   { key: "logs", label: "Logs" },
+  { key: "financials", label: "Financials" },
   { key: "others", label: "Others" },
 ];
 function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
@@ -273,7 +274,6 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     navigate("/settings", { state: { section } });
     onNavigate?.();
   };
-  
 
   const handleDashboardClick = () => {
     handleNav(dashboardPath);
@@ -354,6 +354,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       reports: "Reports",
       studyFiles: "Study Files",
       logs: "Logs",
+      financials: "Financials",
       others: "Others",
     };
 
@@ -367,7 +368,6 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     handleNav(`/subject/${subjectId}`);
   };
 
-
   const getSubjectSidebarFolders = (studyKey, subject) => {
     void folderTreeVersion;
 
@@ -377,19 +377,6 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     return getFirstLevelFolders("subjects", contextKey);
   };
 
-  // const handleFolderNavigate = (studyKey, sectionKey, node) => {
-  //   const name = String(node?.name || "").toLowerCase();
-
-  //   if (
-  //     sectionKey === "studyFiles" &&
-  //     (name.includes("regulatory") || name.includes("reg"))
-  //   ) {
-  //     navigateToStudySection(studyKey, "regulatory");
-  //     return;
-  //   }
-
-  //   navigateToStudySection(studyKey, sectionKey);
-  // };
   return (
     <div
       className={sidebarClassName}
@@ -595,39 +582,52 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                                     })}
                                   </div>
                                 )}
-       {isSectionOpen && sectionKey === "eisf" && (
-  <div className="sidebar-tree-group sidebar-tree-group--nested">
-    {EISFMenuConfig.map((module) => (
-      <div key={module.id}>
-        <div
-          className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-tree-row--expandable"
-          onClick={() =>
-            setExpandedStudySections((prev) => ({
-              ...prev,
-              [`${studyKey}-${module.id}`]:
-                !prev[`${studyKey}-${module.id}`],
-            }))
-          }
-        >
-          <span>{module.id} {module.title}</span>
-        </div>
+                                {isSectionOpen && sectionKey === "eisf" && (
+                                  <div className="sidebar-tree-group sidebar-tree-group--nested">
+                                    {EISFMenuConfig.map((module) => (
+                                      <div key={module.id}>
+                                        <div
+                                          className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-tree-row--expandable"
+                                          onClick={() =>
+                                            setExpandedStudySections(
+                                              (prev) => ({
+                                                ...prev,
+                                                [`${studyKey}-${module.id}`]:
+                                                  !prev[
+                                                    `${studyKey}-${module.id}`
+                                                  ],
+                                              }),
+                                            )
+                                          }
+                                        >
+                                          <span>
+                                            {module.id} {module.title}
+                                          </span>
+                                        </div>
 
-        {expandedStudySections[`${studyKey}-${module.id}`] && (
-          <div className="sidebar-tree-group sidebar-tree-group--nested">
-            {module.children.map((child) => (
-              <div
-                key={child.id}
-className="sidebar-tree-row sidebar-tree-row--folder-leaf eisf-module"                onClick={() => handleNav(child.path)}
-              >
-                <span>{child.id} {child.title}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    ))}
-  </div>
-)}
+                                        {expandedStudySections[
+                                          `${studyKey}-${module.id}`
+                                        ] && (
+                                          <div className="sidebar-tree-group sidebar-tree-group--nested">
+                                            {module.children.map((child) => (
+                                              <div
+                                                key={child.id}
+                                                className="sidebar-tree-row sidebar-tree-row--folder-leaf eisf-module"
+                                                onClick={() =>
+                                                  handleNav(child.path)
+                                                }
+                                              >
+                                                <span>
+                                                  {child.id} {child.title}
+                                                </span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             );
                           }
@@ -669,7 +669,6 @@ className="sidebar-tree-row sidebar-tree-row--folder-leaf eisf-module"          
           </div>
         </div>
       )}
-    
 
       {sidebarItems.some((item) => item.key === "site-performance") && (
         <div

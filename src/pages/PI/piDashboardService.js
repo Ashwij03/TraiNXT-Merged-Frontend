@@ -1,4 +1,4 @@
-// UPDATED: Central PI dashboard data layer (localStorage + service defaults)
+// UPDATED: Central PI dashboard data layer (localStorage + dynamic study synchronization)
 
 const STORAGE_KEYS = {
   dashboard: "piDashboardData",
@@ -32,76 +32,81 @@ const writeStorage = (key, data) => {
   localStorage.setItem(key, JSON.stringify(data));
 };
 
+/*
+  IMPORTANT:
+  Studies are intentionally empty here.
+  Actual studies must come from the Admin-created / saved PI dashboard data.
+*/
 export const getDefaultDashboardData = () => ({
   kpis: {
-    enrollmentCount: 125,
-    targetCount: 150,
-    activeSubjects: 85,
-    pendingTasks: 12,
-    overdueDocuments: 3,
-    visitCompletion: 92,
-    consentRate: 88,
+    enrollmentCount: 0,
+    targetCount: 0,
+    activeSubjects: 0,
+    pendingTasks: 0,
+    overdueDocuments: 0,
+    visitCompletion: 0,
+    consentRate: 0,
+    studiesCount: 0,
+    commentsCount: 0,
+    openComments: 0,
+    comments: 0,
   },
-  studies: [
-    { study: "747-303", target: 150, enrolled: 120, status: "On Track" },
-    { study: "05151", target: 100, enrolled: 85, status: "At Risk" },
-  ],
-  recentSubjects: [
-    { subject: "SUB-001", status: "Active", visit: "Visit 2" },
-    { subject: "SUB-002", status: "Screening", visit: "Visit 1" },
-    { subject: "SUB-003", status: "Completed", visit: "Visit 3" },
-  ],
-  upcomingVisits: [
-    { subject: "SUB-001", visit: "Visit 3", date: "2026-06-16" },
-    { subject: "SUB-004", visit: "Visit 2", date: "2026-06-16" },
-    { subject: "SUB-002", visit: "Visit 1", date: "2026-06-10" },
-    { subject: "SUB-005", visit: "Screening", date: "2026-06-20" },
-  ],
-  pendingQueries: [
-    { id: "Q-101", subject: "SUB-001", status: "Open" },
-    { id: "Q-102", subject: "SUB-002", status: "Open" },
-    { id: "Q-103", subject: "SUB-003", status: "Answered" },
-  ],
-  notifications: [
-    {
-      type: "danger",
-      title: "3 Documents are overdue",
-      message: "Please review and take action",
-      date: "10-Jun-2026",
-      read: false,
-    },
-    {
-      type: "warning",
-      title: "12 Tasks are pending",
-      message: "Click to view pending tasks",
-      date: "10-Jun-2026",
-      read: false,
-    },
-    {
-      type: "info",
-      title: "Upcoming visit for SUB-001 (Visit 3)",
-      message: "Scheduled on 10-Jun-2026",
-      date: "10-Jun-2026",
-      read: true,
-    },
-  ],
+  studies: [],
+  recentSubjects: [],
+  upcomingVisits: [],
+  pendingQueries: [],
+  notifications: [],
+  visitData: [],
   lastUpdated: new Date().toLocaleString(),
 });
 
 export const getDashboardData = () => {
   const defaults = getDefaultDashboardData();
   const saved = readStorage(STORAGE_KEYS.dashboard, {});
-  return {
+
+  const mergedData = {
     ...defaults,
     ...saved,
-    kpis: { ...defaults.kpis, ...(saved.kpis || {}) },
+    studies: Array.isArray(saved.studies) ? saved.studies : defaults.studies,
+    recentSubjects: Array.isArray(saved.recentSubjects)
+      ? saved.recentSubjects
+      : defaults.recentSubjects,
+    upcomingVisits: Array.isArray(saved.upcomingVisits)
+      ? saved.upcomingVisits
+      : defaults.upcomingVisits,
+    pendingQueries: Array.isArray(saved.pendingQueries)
+      ? saved.pendingQueries
+      : defaults.pendingQueries,
+    notifications: Array.isArray(saved.notifications)
+      ? saved.notifications
+      : defaults.notifications,
+    visitData: Array.isArray(saved.visitData)
+      ? saved.visitData
+      : defaults.visitData,
+    kpis: {
+      ...defaults.kpis,
+      ...(saved.kpis || {}),
+    },
   };
+
+  /*
+    Always overwrite old saved KPI count with the actual study array count.
+    This fixes cases where old localStorage still contains studiesCount: 2.
+  */
+  return syncKpisFromData(mergedData);
 };
 
 export const saveDashboardData = (data) => {
-  const payload = { ...data, lastUpdated: new Date().toLocaleString() };
+  const syncedData = syncKpisFromData(data);
+
+  const payload = {
+    ...syncedData,
+    lastUpdated: new Date().toLocaleString(),
+  };
+
   writeStorage(STORAGE_KEYS.dashboard, payload);
   dispatchNotificationsUpdated();
+
   return payload;
 };
 
@@ -115,26 +120,38 @@ export const getUnreadNotificationCount = () =>
 
 export const markNavbarNotificationRead = (index, read = true) => {
   const data = getDashboardData();
+
   const notifications = (data.notifications || []).map((n, i) =>
     i === index ? { ...n, read } : n
   );
-  return saveDashboardData({ ...data, notifications });
+
+  return saveDashboardData({
+    ...data,
+    notifications,
+  });
 };
 
 export const toggleNavbarNotificationRead = (index) => {
   const data = getDashboardData();
   const notification = data.notifications?.[index];
+
   if (!notification) return data;
+
   return markNavbarNotificationRead(index, !notification.read);
 };
 
 export const markAllNavbarNotificationsRead = () => {
   const data = getDashboardData();
+
   const notifications = (data.notifications || []).map((n) => ({
     ...n,
     read: true,
   }));
-  return saveDashboardData({ ...data, notifications });
+
+  return saveDashboardData({
+    ...data,
+    notifications,
+  });
 };
 
 const formatAlertDate = () =>
@@ -152,12 +169,18 @@ const PRIORITY_TO_TYPE = {
 };
 
 export const buildDynamicAlerts = (dashboardData, comments = []) => {
-  const openComments = comments.filter((c) => c.status === "unresolved").length;
-  const studiesCount = (dashboardData.studies || []).length;
-  const upcomingCount = (dashboardData.upcomingVisits || []).length;
-  const openQueries = (dashboardData.pendingQueries || []).filter(
-    (q) => q.status === "Open"
+  const openComments = comments.filter(
+    (comment) => comment.status === "unresolved"
   ).length;
+
+  const studiesCount = (dashboardData.studies || []).length;
+
+  const upcomingCount = (dashboardData.upcomingVisits || []).length;
+
+  const openQueries = (dashboardData.pendingQueries || []).filter(
+    (query) => query.status === "Open"
+  ).length;
+
   const overdueDocs = dashboardData.kpis?.overdueDocuments || 0;
   const dateStr = formatAlertDate();
 
@@ -167,54 +190,67 @@ export const buildDynamicAlerts = (dashboardData, comments = []) => {
           {
             type: "critical",
             priority: "Critical",
-            title: `${overdueDocs} overdue document${overdueDocs !== 1 ? "s" : ""}`,
+            title: `${overdueDocs} overdue document${
+              overdueDocs !== 1 ? "s" : ""
+            }`,
             message: "Regulatory documents require immediate PI review",
             date: dateStr,
             page: "regulatory",
           },
         ]
       : []),
+
     ...(openComments > 0
       ? [
           {
             type: "danger",
             priority: "High",
-            title: `${openComments} open comment${openComments !== 1 ? "s" : ""} require review`,
+            title: `${openComments} open comment${
+              openComments !== 1 ? "s" : ""
+            } require review`,
             message: "Review unresolved comments across active subjects",
             date: dateStr,
             page: "comments",
           },
         ]
       : []),
+
     ...(openQueries > 0
       ? [
           {
             type: "warning",
             priority: "High",
-            title: `${openQueries} open quer${openQueries !== 1 ? "ies" : "y"}`,
+            title: `${openQueries} open ${
+              openQueries !== 1 ? "queries" : "query"
+            }`,
             message: "Data queries awaiting PI response",
             date: dateStr,
             page: "dashboard",
           },
         ]
       : []),
-  {
-  type: "study-alert",
-  priority: "Medium",
-  title: `${studiesCount} active stud${studiesCount !== 1 ? "ies" : "y"} monitored`,
-  message: "Track enrollment and compliance across portfolio",
-  date: dateStr,
-  page: "site-performance",
-},
+
+    {
+      type: "study-alert",
+      priority: "Medium",
+      title: `${studiesCount} active ${
+        studiesCount !== 1 ? "studies" : "study"
+      } monitored`,
+      message: "Track enrollment and compliance across portfolio",
+      date: dateStr,
+      page: "site-performance",
+    },
 
     {
       type: "info",
       priority: "Low",
-      title: `${upcomingCount} upcoming visit${upcomingCount !== 1 ? "s" : ""} scheduled`,
+      title: `${upcomingCount} upcoming visit${
+        upcomingCount !== 1 ? "s" : ""
+      } scheduled`,
       message:
         upcomingCount > 0
-          ? `Next: ${dashboardData.upcomingVisits[0]?.subject || "—"} — ${
-              dashboardData.upcomingVisits[0]?.visit || "—"
+          ? `Next: ${dashboardData.upcomingVisits?.[0]?.subject || "—"} — ${
+              dashboardData.upcomingVisits?.[0]?.visit || "—"
             }`
           : "No visits scheduled",
       date: dateStr,
@@ -251,61 +287,8 @@ export const getDefaultSecurityData = () => ({
     autoLock: true,
     auditLog: true,
   },
-  loginActivity: [
-    {
-      id: "LA-1",
-      datetime: "16-Jun-2026 08:42 AM",
-      event: "Successful login",
-      location: "Hyderabad, IN",
-      device: "Windows Desktop",
-      status: "Success",
-    },
-    {
-      id: "LA-2",
-      datetime: "15-Jun-2026 06:15 PM",
-      event: "Successful login",
-      location: "Hyderabad, IN",
-      device: "iPhone 15",
-      status: "Success",
-    },
-    {
-      id: "LA-3",
-      datetime: "14-Jun-2026 09:03 AM",
-      event: "Failed login attempt",
-      location: "Unknown",
-      device: "Chrome / Linux",
-      status: "Blocked",
-    },
-  ],
-  sessions: [
-    {
-      id: "S-1",
-      device: "Windows Desktop",
-      browser: "Chrome 137",
-      ip: "192.168.1.42",
-      lastActive: "Just now",
-      current: true,
-      active: true,
-    },
-    {
-      id: "S-2",
-      device: "iPhone 15",
-      browser: "Safari Mobile",
-      ip: "192.168.1.88",
-      lastActive: "Yesterday 6:15 PM",
-      current: false,
-      active: true,
-    },
-    {
-      id: "S-3",
-      device: "MacBook Pro",
-      browser: "Firefox 139",
-      ip: "10.0.0.15",
-      lastActive: "3 days ago",
-      current: false,
-      active: false,
-    },
-  ],
+  loginActivity: [],
+  sessions: [],
   securityScore: 92,
 });
 
@@ -317,23 +300,18 @@ export const saveSecurityData = (data) => {
   return data;
 };
 
-// ============================================================
-// COMMENTS DATA SERVICE
-// Dynamic-only comments: no hard-coded/sample default comments.
-// ============================================================
-
 export const getDefaultComments = () => [];
 
 export const getCommentsData = () => {
   const storedComments = readStorage(STORAGE_KEYS.comments, []);
-
   return Array.isArray(storedComments) ? storedComments : [];
 };
 
 export const saveCommentsData = (comments) => {
   const safeComments = Array.isArray(comments) ? comments : [];
-
   writeStorage(STORAGE_KEYS.comments, safeComments);
+
+  window.dispatchEvent(new CustomEvent("pi-comments-updated"));
 
   return safeComments;
 };
@@ -363,26 +341,15 @@ export const addComment = (comment = {}) => {
 
   const updatedComments = [newComment, ...existingComments];
 
-  saveCommentsData(updatedComments);
-
-  return updatedComments;
+  return saveCommentsData(updatedComments);
 };
 
 export const updateComment = (commentId, updates = {}) => {
-  const updatedComments = getCommentsData().map((comment) => {
-    if (comment.id !== commentId) {
-      return comment;
-    }
+  const updatedComments = getCommentsData().map((comment) =>
+    comment.id === commentId ? { ...comment, ...updates } : comment
+  );
 
-    return {
-      ...comment,
-      ...updates,
-    };
-  });
-
-  saveCommentsData(updatedComments);
-
-  return updatedComments;
+  return saveCommentsData(updatedComments);
 };
 
 export const deleteComment = (commentId) => {
@@ -390,32 +357,21 @@ export const deleteComment = (commentId) => {
     (comment) => comment.id !== commentId
   );
 
-  saveCommentsData(updatedComments);
-
-  return updatedComments;
+  return saveCommentsData(updatedComments);
 };
 
 export const clearCommentsData = () => {
-  if (typeof window !== "undefined") {
-    localStorage.removeItem(STORAGE_KEYS.comments);
-  }
-
+  localStorage.removeItem(STORAGE_KEYS.comments);
+  window.dispatchEvent(new CustomEvent("pi-comments-updated"));
   return [];
 };
+
 export const getReportsData = () =>
   readStorage(STORAGE_KEYS.reports, {
-    kpis: { total: 24, monthly: 6, study: 12, pending: 3, generated: 18 },
-    reports: [
-      { id: "RPT-001", name: "Enrollment Report", category: "Enrollment", type: "Study", study: "747-303", date: "01-Jun-2026", status: "Generated", format: "PDF" },
-      { id: "RPT-002", name: "Compliance Report", category: "Compliance", type: "Regulatory", study: "All Studies", date: "15-Jun-2026", status: "Generated", format: "PDF" },
-      { id: "RPT-003", name: "Safety Report", category: "Safety", type: "Study", study: "05151", date: "20-May-2026", status: "Pending", format: "PDF" },
-      { id: "RPT-004", name: "Study Progress Report", category: "Study Progress", type: "Study", study: "747-303", date: "10-Jun-2026", status: "Generated", format: "XLSX" },
-      { id: "RPT-005", name: "Visit Completion Report", category: "Visit", type: "Study", study: "05151", date: "12-Jun-2026", status: "Generated", format: "PDF" },
-      { id: "RPT-006", name: "Regulatory Submission Report", category: "Regulatory", type: "Regulatory", study: "747-303", date: "08-Jun-2026", status: "Pending", format: "PDF" },
-    ],
+    kpis: { total: 0, monthly: 0, study: 0, pending: 0, generated: 0 },
+    reports: [],
   });
 
-// UPDATED: Save helpers for dynamic page data
 export const saveReportsData = (data) => {
   writeStorage(STORAGE_KEYS.reports, data);
   return data;
@@ -423,17 +379,8 @@ export const saveReportsData = (data) => {
 
 export const getNotificationsPageData = () =>
   readStorage(STORAGE_KEYS.notifications, {
-    kpis: { total: 18, unread: 7, tasksDue: 5, alerts: 4 },
-    items: [
-      { id: "N-1", category: "Upcoming Visits", message: "Visit 2 due for SUB-001", study: "747-303", priority: "High", date: "20-Jun-2026", status: "Unread" },
-      { id: "N-2", category: "Regulatory Deadlines", message: "Medical License expiring in 60 days", study: "All Studies", priority: "Critical", date: "18-Jun-2026", status: "Unread" },
-      { id: "N-3", category: "Safety Notifications", message: "SAE report pending PI signature", study: "05151", priority: "Critical", date: "17-Jun-2026", status: "Unread" },
-      { id: "N-4", category: "Study Updates", message: "Protocol amendment approved by IRB", study: "747-303", priority: "Medium", date: "16-Jun-2026", status: "Read" },
-      { id: "N-5", category: "Recruitment Updates", message: "Enrollment target 80% reached", study: "747-303", priority: "Low", date: "15-Jun-2026", status: "Read" },
-      { id: "N-6", category: "Compliance Alerts", message: "Training certificate renewal required", study: "All Studies", priority: "High", date: "14-Jun-2026", status: "Unread" },
-      { id: "N-7", category: "Upcoming Visits", message: "Screening visit scheduled for SUB-005", study: "05151", priority: "Medium", date: "20-Jun-2026", status: "Unread" },
-      { id: "N-8", category: "Regulatory Deadlines", message: "IRB continuing review due in 30 days", study: "747-303", priority: "High", date: "12-Jun-2026", status: "Read" },
-    ],
+    kpis: { total: 0, unread: 0, tasksDue: 0, alerts: 0 },
+    items: [],
   });
 
 export const saveNotificationsPageData = (data) => {
@@ -442,8 +389,9 @@ export const saveNotificationsPageData = (data) => {
   return data;
 };
 
-export const syncNotificationsPageToNavbar = (pageItems) => {
+export const syncNotificationsPageToNavbar = (pageItems = []) => {
   const data = getDashboardData();
+
   const notifications = pageItems.slice(0, 8).map((item) => ({
     type:
       item.priority === "Critical"
@@ -455,32 +403,42 @@ export const syncNotificationsPageToNavbar = (pageItems) => {
         : "info",
     priority: item.priority,
     title: item.message,
-    message: `${item.study || "All Studies"} · ${item.category || item.priority}`,
+    message: `${item.study || "All Studies"} · ${
+      item.category || item.priority
+    }`,
     date: item.date,
     read: item.status === "Read",
     pageId: item.id,
   }));
-  return saveDashboardData({ ...data, notifications });
+
+  return saveDashboardData({
+    ...data,
+    notifications,
+  });
 };
 
 export const getSettingsData = () => {
   const user = readStorage("currentUser", null);
   const dashboard = getDashboardData();
+
   const defaults = {
     profile: {
-      name: user?.name || localStorage.getItem("userFullName") || "Dr. Rajesh Kumar",
+      name:
+        user?.name ||
+        localStorage.getItem("userFullName") ||
+        "Principal Investigator",
       role: user?.role || "Principal Investigator",
-      department: "Cardiology",
-      email: user?.email || "pi@trainxt.com",
-      phone: "+91 98765 43210",
-      institute: "Apollo Hospital — Clinical Research Site",
-      siteName: "Apollo Hospital, Hyderabad",
+      department: "",
+      email: user?.email || "",
+      phone: "",
+      institute: "",
+      siteName: "",
       status: "Active",
-      studyAssignments: (dashboard.studies || []).map((s) => s.study),
+      studyAssignments: (dashboard.studies || []).map((study) => study.study),
       contactInfo: {
-        office: "+91 40 2345 6789",
-        mobile: "+91 98765 43210",
-        email: "pi@trainxt.com",
+        office: "",
+        mobile: "",
+        email: user?.email || "",
       },
     },
     notificationPreferences: {
@@ -494,7 +452,7 @@ export const getSettingsData = () => {
       digestFrequency: "Daily",
     },
     studyPreferences: {
-      preferredStudies: ["747-303", "05151"],
+      preferredStudies: (dashboard.studies || []).map((study) => study.study),
       defaultStudyView: "All Studies",
       dashboardLayout: "Standard",
       defaultReportFormat: "PDF",
@@ -502,18 +460,40 @@ export const getSettingsData = () => {
       compactTables: false,
     },
     cards: [
-      { id: "profile", title: "Profile Settings", description: "PI name, site, contact & assignments" },
-      { id: "notifications", title: "Notification Settings", description: "Email, SMS & alert preferences" },
-      { id: "security", title: "Account Security", description: "Password, MFA, sessions & activity" },
-      { id: "preferences", title: "Study Preferences", description: "Dashboard & reporting preferences" },
+      {
+        id: "profile",
+        title: "Profile Settings",
+        description: "PI name, site, contact & assignments",
+      },
+      {
+        id: "notifications",
+        title: "Notification Settings",
+        description: "Email, SMS & alert preferences",
+      },
+      {
+        id: "security",
+        title: "Account Security",
+        description: "Password, MFA, sessions & activity",
+      },
+      {
+        id: "preferences",
+        title: "Study Preferences",
+        description: "Dashboard & reporting preferences",
+      },
     ],
     lastUpdated: new Date().toLocaleString(),
   };
+
   const saved = readStorage(STORAGE_KEYS.settings, {});
+
   return {
     ...defaults,
     ...saved,
-    profile: { ...defaults.profile, ...(saved.profile || {}) },
+    profile: {
+      ...defaults.profile,
+      ...(saved.profile || {}),
+      studyAssignments: (dashboard.studies || []).map((study) => study.study),
+    },
     notificationPreferences: {
       ...defaults.notificationPreferences,
       ...(saved.notificationPreferences || {}),
@@ -521,41 +501,37 @@ export const getSettingsData = () => {
     studyPreferences: {
       ...defaults.studyPreferences,
       ...(saved.studyPreferences || {}),
+      preferredStudies: (dashboard.studies || []).map((study) => study.study),
     },
   };
 };
 
 export const saveSettingsData = (data) => {
   writeStorage(STORAGE_KEYS.settings, data);
+
   const navbar = getNavbarData();
+
   saveNavbarData({
     ...navbar,
     userName: data.profile?.name || navbar.userName,
     institute: data.profile?.institute || navbar.institute,
   });
+
   return data;
 };
 
 export const getRecruitmentData = () =>
   readStorage(STORAGE_KEYS.recruitment, {
     kpis: {
-      activeRecruitment: 2,
-      enrolledPatients: 205,
-      screeningFailures: 18,
-      recruitmentTarget: 250,
-      recruitmentProgress: 82,
-      pipelineCount: 34,
+      activeRecruitment: 0,
+      enrolledPatients: 0,
+      screeningFailures: 0,
+      recruitmentTarget: 0,
+      recruitmentProgress: 0,
+      pipelineCount: 0,
     },
-    studies: [
-      { study: "747-303", target: 150, enrolled: 120, screened: 145, screenFailures: 10, status: "On Track", progress: 80 },
-      { study: "05151", target: 100, enrolled: 85, screened: 98, screenFailures: 8, status: "At Risk", progress: 85 },
-    ],
-    pipeline: [
-      { id: "P-001", subject: "SUB-006", study: "747-303", stage: "Screening", status: "In Progress", date: "18-Jun-2026" },
-      { id: "P-002", subject: "SUB-007", study: "747-303", stage: "Pre-Screen", status: "Scheduled", date: "19-Jun-2026" },
-      { id: "P-003", subject: "SUB-008", study: "05151", stage: "Consent", status: "Pending", date: "20-Jun-2026" },
-      { id: "P-004", subject: "SUB-009", study: "05151", stage: "Enrollment", status: "Ready", date: "21-Jun-2026" },
-    ],
+    studies: [],
+    pipeline: [],
   });
 
 export const saveRecruitmentData = (data) => {
@@ -566,25 +542,15 @@ export const saveRecruitmentData = (data) => {
 export const getRegulatoryData = () =>
   readStorage(STORAGE_KEYS.regulatory, {
     kpis: {
-      irbApprovals: 4,
-      expiringDocuments: 3,
-      complianceReviews: 2,
-      regulatorySubmissions: 5,
-      auditReadiness: 94,
-      trainingCompliance: 97,
+      irbApprovals: 0,
+      expiringDocuments: 0,
+      complianceReviews: 0,
+      regulatorySubmissions: 0,
+      auditReadiness: 0,
+      trainingCompliance: 0,
     },
-    documents: [
-      { id: "DOC-001", document: "IRB Approval", study: "747-303", status: "Active", expiry: "31-Dec-2026", owner: "PI", category: "IRB" },
-      { id: "DOC-002", document: "Medical License", study: "All Studies", status: "Expiring Soon", expiry: "15-Aug-2026", owner: "Investigator", category: "License" },
-      { id: "DOC-003", document: "Protocol Approval", study: "05151", status: "Approved", expiry: "—", owner: "Sponsor", category: "Protocol" },
-      { id: "DOC-004", document: "GCP Training Certificate", study: "All Studies", status: "Active", expiry: "01-Jan-2027", owner: "PI", category: "Training" },
-      { id: "DOC-005", document: "IRB Continuing Review", study: "747-303", status: "Pending", expiry: "30-Jul-2026", owner: "Regulatory", category: "IRB" },
-      { id: "DOC-006", document: "FDA 1572 Form", study: "05151", status: "Active", expiry: "—", owner: "PI", category: "Regulatory" },
-    ],
-    submissions: [
-      { id: "SUB-001", title: "Annual Safety Report", study: "747-303", status: "Submitted", date: "01-Jun-2026" },
-      { id: "SUB-002", title: "Protocol Amendment v2.1", study: "05151", status: "Under Review", date: "10-Jun-2026" },
-    ],
+    documents: [],
+    submissions: [],
   });
 
 export const saveRegulatoryData = (data) => {
@@ -595,33 +561,17 @@ export const saveRegulatoryData = (data) => {
 export const getSitePerformanceData = () =>
   readStorage(STORAGE_KEYS.sitePerformance, {
     kpis: {
-      enrollmentPerformance: 82,
-      screeningSuccessRate: 88,
-      visitCompletionRate: 92,
-      protocolCompliance: 96,
-      queryResolutionRate: 89,
-      patientRetentionRate: 94,
-      dataEntryTimeliness: 91,
-      studyProgress: 78,
+      enrollmentPerformance: 0,
+      screeningSuccessRate: 0,
+      visitCompletionRate: 0,
+      protocolCompliance: 0,
+      queryResolutionRate: 0,
+      patientRetentionRate: 0,
+      dataEntryTimeliness: 0,
+      studyProgress: 0,
     },
-    metrics: [
-      { metric: "Enrollment Performance", study: "747-303", target: "150", actual: "120", status: "On Track", value: 80 },
-      { metric: "Screening Success Rate", study: "747-303", target: "90%", actual: "93%", status: "Good", value: 93 },
-      { metric: "Visit Completion Rate", study: "747-303", target: "90%", actual: "92%", status: "Good", value: 92 },
-      { metric: "Protocol Compliance", study: "747-303", target: "95%", actual: "97%", status: "Good", value: 97 },
-      { metric: "Query Resolution Rate", study: "05151", target: "85%", actual: "89%", status: "Good", value: 89 },
-      { metric: "Patient Retention Rate", study: "05151", target: "90%", actual: "94%", status: "Good", value: 94 },
-      { metric: "Data Entry Timeliness", study: "05151", target: "90%", actual: "91%", status: "Good", value: 91 },
-      { metric: "Study Progress", study: "05151", target: "100", actual: "85", status: "On Track", value: 85 },
-    ],
-    chartData: [
-      { name: "Enrollment", value: 82 },
-      { name: "Screening", value: 88 },
-      { name: "Visits", value: 92 },
-      { name: "Compliance", value: 96 },
-      { name: "Queries", value: 89 },
-      { name: "Retention", value: 94 },
-    ],
+    metrics: [],
+    chartData: [],
   });
 
 export const saveSitePerformanceData = (data) => {
@@ -629,9 +579,9 @@ export const saveSitePerformanceData = (data) => {
   return data;
 };
 
-// UPDATED: Filter page data by selected study from navbar
 export const filterByStudy = (items, selectedStudy, studyKey = "study") => {
-  if (!selectedStudy || selectedStudy === "All Studies") return items;
+  if (!selectedStudy || selectedStudy === "All Studies") return items || [];
+
   return (items || []).filter(
     (item) =>
       !item[studyKey] ||
@@ -643,6 +593,7 @@ export const filterByStudy = (items, selectedStudy, studyKey = "study") => {
 export const getProfileData = () => {
   const settings = getSettingsData();
   const navbar = getNavbarData();
+
   return {
     ...settings.profile,
     userName: navbar.userName,
@@ -651,7 +602,6 @@ export const getProfileData = () => {
   };
 };
 
-// UPDATED: Clear auth session on logout from PI navbar
 export const clearAuthSession = () => {
   [
     "isLoggedIn",
@@ -670,29 +620,7 @@ export const handleLogout = () => {
 
 export const getLiveChatData = () =>
   readStorage(STORAGE_KEYS.liveChat, {
-    conversations: [
-      {
-        id: 1,
-        name: "Site Coordinator",
-        unread: 2,
-        messages: [
-          { sender: "them", text: "Need help with Subject 101", time: "10:24 AM" },
-          { sender: "me", text: "Sure, what is the issue?", time: "10:25 AM" },
-        ],
-      },
-      {
-        id: 2,
-        name: "Clinical Monitor",
-        unread: 1,
-        messages: [{ sender: "them", text: "Visit completed successfully", time: "11:00 AM" }],
-      },
-      {
-        id: 3,
-        name: "Data Manager",
-        unread: 0,
-        messages: [{ sender: "them", text: "Database lock scheduled", time: "09:15 AM" }],
-      },
-    ],
+    conversations: [],
   });
 
 export const saveLiveChatData = (data) => {
@@ -700,40 +628,57 @@ export const saveLiveChatData = (data) => {
   return data;
 };
 
-// UPDATED: Dynamic sidebar sections (studies section excluded — kept static in PISidebar)
 export const getSidebarMenuData = () =>
   readStorage(STORAGE_KEYS.sidebarMenu, {
     sections: [
       { id: "dashboard", label: "Dashboard", icon: "home", page: "dashboard" },
-      { id: "site-performance", label: "Site Performance", icon: "chart", page: "site-performance" },
-      { id: "recruitment", label: "Recruitment", icon: "users", page: "recruitment" },
-      { id: "regulatory", label: "Regulatory", icon: "university", page: "regulatory" },
+      {
+        id: "site-performance",
+        label: "Site Performance",
+        icon: "chart",
+        page: "site-performance",
+      },
+      {
+        id: "recruitment",
+        label: "Recruitment",
+        icon: "users",
+        page: "recruitment",
+      },
+      {
+        id: "regulatory",
+        label: "Regulatory",
+        icon: "university",
+        page: "regulatory",
+      },
       { id: "reports", label: "Reports", icon: "pie", page: "reports" },
-      { id: "notifications", label: "Notifications", icon: "bell", page: "notifications" },
+      {
+        id: "notifications",
+        label: "Notifications",
+        icon: "bell",
+        page: "notifications",
+      },
       { id: "settings", label: "Settings", icon: "cog", page: "settings" },
     ],
   });
 
+/*
+  IMPORTANT:
+  The study dropdown now uses dashboard.studies only.
+  It will no longer pull old demo study IDs from reports, recruitment,
+  regulatory, notifications, or site-performance localStorage.
+*/
 export const collectAllStudies = () => {
-  const studySet = new Set();
-  const addStudies = (items, key = "study") => {
-    (items || []).forEach((item) => {
-      const val = typeof item === "string" ? item : item[key];
-      if (val && val !== "All Studies") studySet.add(val);
-    });
-  };
-
-
   const dashboard = getDashboardData();
-  addStudies(dashboard.studies);
-  addStudies(getRecruitmentData().studies);
-  addStudies(getRegulatoryData().documents);
-  addStudies(getReportsData().reports);
-  addStudies(getNotificationsPageData().items);
-  addStudies(getSitePerformanceData().metrics);
+
+  const studySet = new Set(
+    (dashboard.studies || [])
+      .map((study) => study?.study)
+      .filter(Boolean)
+  );
 
   return ["All Studies", ...Array.from(studySet).sort()];
 };
+
 export const collectAllDepartments = () => {
   const settings = getSettingsData();
 
@@ -743,11 +688,21 @@ export const collectAllDepartments = () => {
 };
 
 export const getNavbarData = () => {
-  const user = readStorage("currentUser", null) || readStorage("userProfile", null);
+  const user =
+    readStorage("currentUser", null) || readStorage("userProfile", null);
+
   const settings = getSettingsData();
   const allStudies = collectAllStudies();
   const allDepartments = collectAllDepartments();
   const saved = readStorage(STORAGE_KEYS.navbar, {});
+
+  const selectedStudy =
+    saved.selectedStudy &&
+    (saved.selectedStudy === "All Studies" ||
+      allStudies.includes(saved.selectedStudy))
+      ? saved.selectedStudy
+      : "All Studies";
+
   return {
     userName:
       user?.name ||
@@ -757,16 +712,13 @@ export const getNavbarData = () => {
       "PI User",
     role: saved.selectedRole || "Principal Investigator",
     selectedRole: saved.selectedRole || "Principal Investigator",
-    institute: settings.profile?.institute || "Apollo Hospital",
+    institute: settings.profile?.institute || "",
     allStudies,
-    studies: allStudies.filter((s) => s !== "All Studies"),
+    studies: allStudies.filter((study) => study !== "All Studies"),
     departments: allDepartments,
-
-selectedDepartment:
-  saved.selectedDepartment ||
-  allDepartments[0] ||
-  "",
-    selectedStudy: saved.selectedStudy || "All Studies",
+    selectedDepartment:
+      saved.selectedDepartment || allDepartments[0] || "",
+    selectedStudy,
     ...saved,
   };
 };
@@ -777,137 +729,210 @@ export const saveNavbarData = (data) => {
 };
 
 export const searchDashboard = (query, dashboardData) => {
-  const q = query.toLowerCase().trim();
-  if (!q) return [];
+  const normalizedQuery = query.toLowerCase().trim();
+
+  if (!normalizedQuery) return [];
 
   const results = [];
-  (dashboardData.recentSubjects || []).forEach((s) => {
-    if (s.subject.toLowerCase().includes(q)) {
-      results.push({ type: "Subject", label: s.subject, page: "dashboard" });
+
+  (dashboardData.recentSubjects || []).forEach((subject) => {
+    if (subject.subject?.toLowerCase().includes(normalizedQuery)) {
+      results.push({
+        type: "Subject",
+        label: subject.subject,
+        page: "dashboard",
+      });
     }
   });
-  (dashboardData.studies || []).forEach((s) => {
-    if (s.study.toLowerCase().includes(q)) {
-      results.push({ type: "Study", label: s.study, page: "dashboard" });
+
+  (dashboardData.studies || []).forEach((study) => {
+    if (study.study?.toLowerCase().includes(normalizedQuery)) {
+      results.push({
+        type: "Study",
+        label: study.study,
+        page: "dashboard",
+      });
     }
   });
-  getCommentsData().forEach((c) => {
+
+  getCommentsData().forEach((comment) => {
     if (
-      c.subjectId?.toLowerCase().includes(q) ||
-      c.comment?.toLowerCase().includes(q)
+      comment.subjectId?.toLowerCase().includes(normalizedQuery) ||
+      comment.comment?.toLowerCase().includes(normalizedQuery)
     ) {
-      results.push({ type: "Comment", label: c.subjectId, page: "comments" });
+      results.push({
+        type: "Comment",
+        label: comment.subjectId,
+        page: "comments",
+      });
     }
   });
+
   return results;
 };
 
-export const syncKpisFromData = (data) => {
-  const totalEnrolled = (data.studies || []).reduce(
-    (sum, s) => sum + Number(s.enrolled || 0),
+/*
+  This is the main permanent KPI synchronization function.
+  It never uses old saved studiesCount values.
+*/
+export const syncKpisFromData = (data = {}) => {
+  const studies = Array.isArray(data.studies) ? data.studies : [];
+  const recentSubjects = Array.isArray(data.recentSubjects)
+    ? data.recentSubjects
+    : [];
+  const upcomingVisits = Array.isArray(data.upcomingVisits)
+    ? data.upcomingVisits
+    : [];
+
+  const totalEnrolled = studies.reduce(
+    (sum, study) => sum + Number(study.enrolled || 0),
     0
   );
-  const totalTarget = (data.studies || []).reduce(
-    (sum, s) => sum + Number(s.target || 0),
+
+  const totalTarget = studies.reduce(
+    (sum, study) => sum + Number(study.target || 0),
     0
   );
-  const activeSubjects = (data.recentSubjects || []).filter(
-    (s) => s.status === "Active"
+
+  const activeSubjects = recentSubjects.filter(
+    (subject) => subject.status === "Active"
   ).length;
-  const studiesCount = (data.studies || []).length;
+
+  const studiesCount = studies.length;
+
   const comments = getCommentsData();
+
   const commentsCount = comments.length;
-  const openComments = comments.filter((c) => c.status === "unresolved").length;
-  const completedVisits = (data.upcomingVisits || []).length;
-  const visitCompletion =
-    completedVisits > 0
-      ? Math.min(
-          100,
-          Math.round(
-            ((data.recentSubjects || []).filter((s) => s.status === "Completed")
-              .length /
-              Math.max((data.recentSubjects || []).length, 1)) *
-              100
-          ) || data.kpis?.visitCompletion || 92
-        )
-      : data.kpis?.visitCompletion || 92;
-  const consented = (data.recentSubjects || []).filter(
-    (s) => s.status === "Active" || s.status === "Completed"
+
+  const openComments = comments.filter(
+    (comment) => comment.status === "unresolved"
   ).length;
+
+  const completedSubjects = recentSubjects.filter(
+    (subject) => subject.status === "Completed"
+  ).length;
+
+  const visitCompletion =
+    recentSubjects.length > 0
+      ? Math.round((completedSubjects / recentSubjects.length) * 100)
+      : 0;
+
+  const consentedSubjects = recentSubjects.filter(
+    (subject) =>
+      subject.status === "Active" || subject.status === "Completed"
+  ).length;
+
   const consentRate =
-    (data.recentSubjects || []).length > 0
-      ? Math.round(
-          (consented / (data.recentSubjects || []).length) * 100
-        )
-      : data.kpis?.consentRate || 88;
+    recentSubjects.length > 0
+      ? Math.round((consentedSubjects / recentSubjects.length) * 100)
+      : 0;
 
   return {
     ...data,
+    studies,
+    recentSubjects,
+    upcomingVisits,
+    pendingQueries: Array.isArray(data.pendingQueries)
+      ? data.pendingQueries
+      : [],
+    notifications: Array.isArray(data.notifications)
+      ? data.notifications
+      : [],
+    visitData: Array.isArray(data.visitData) ? data.visitData : [],
     kpis: {
-      ...data.kpis,
-      enrollmentCount: totalEnrolled || data.kpis?.enrollmentCount,
-      targetCount: totalTarget || data.kpis?.targetCount,
-      activeSubjects: activeSubjects || data.kpis?.activeSubjects,
-      studiesCount: studiesCount || data.kpis?.studiesCount || 0,
-      commentsCount: commentsCount || data.kpis?.commentsCount || 0,
-      openComments: openComments || data.kpis?.openComments || 0,
+      ...(data.kpis || {}),
+      enrollmentCount: totalEnrolled,
+      targetCount: totalTarget,
+      activeSubjects,
+      studiesCount,
+      commentsCount,
+      openComments,
+      comments: commentsCount,
+      pendingTasks: studiesCount,
       visitCompletion,
       consentRate,
-      pendingTasks: studiesCount,
-      comments: commentsCount,
     },
   };
 };
 
 export const filterVisitsByDate = (visits, selectedDate) => {
   if (!selectedDate) return visits || [];
-  const target = new Date(selectedDate).toDateString();
+
+  const targetDate = new Date(selectedDate).toDateString();
+
   return (visits || []).filter(
-    (visit) => new Date(visit.date).toDateString() === target
+    (visit) => new Date(visit.date).toDateString() === targetDate
   );
 };
 
 export const getVisitsForDate = (visits, date) => {
   if (!date) return [];
-  const target = new Date(date).toDateString();
+
+  const targetDate = new Date(date).toDateString();
+
   return (visits || []).filter(
-    (visit) => new Date(visit.date).toDateString() === target
+    (visit) => new Date(visit.date).toDateString() === targetDate
   );
 };
 
 export const recalculateSitePerformanceKpis = (data) => {
   const metrics = data.metrics || [];
-  const avg = (predicate) => {
-    const matched = metrics.filter(predicate);
-    if (!matched.length) return 0;
+
+  const averageMetric = (predicate) => {
+    const matchedMetrics = metrics.filter(predicate);
+
+    if (!matchedMetrics.length) return 0;
+
     return Math.round(
-      matched.reduce((sum, m) => sum + Number(m.value || 0), 0) / matched.length
+      matchedMetrics.reduce(
+        (sum, metric) => sum + Number(metric.value || 0),
+        0
+      ) / matchedMetrics.length
     );
   };
 
   const kpis = {
-    enrollmentPerformance: avg((m) => m.metric.includes("Enrollment")),
-    screeningSuccessRate: avg((m) => m.metric.includes("Screening")),
-    visitCompletionRate: avg((m) => m.metric.includes("Visit")),
-    protocolCompliance: avg((m) => m.metric.includes("Protocol")),
-    queryResolutionRate: avg((m) => m.metric.includes("Query")),
-    patientRetentionRate: avg((m) => m.metric.includes("Retention")),
-    dataEntryTimeliness: avg((m) => m.metric.includes("Data")),
-    studyProgress: avg((m) => m.metric.includes("Study Progress")),
+    enrollmentPerformance: averageMetric((metric) =>
+      metric.metric.includes("Enrollment")
+    ),
+    screeningSuccessRate: averageMetric((metric) =>
+      metric.metric.includes("Screening")
+    ),
+    visitCompletionRate: averageMetric((metric) =>
+      metric.metric.includes("Visit")
+    ),
+    protocolCompliance: averageMetric((metric) =>
+      metric.metric.includes("Protocol")
+    ),
+    queryResolutionRate: averageMetric((metric) =>
+      metric.metric.includes("Query")
+    ),
+    patientRetentionRate: averageMetric((metric) =>
+      metric.metric.includes("Retention")
+    ),
+    dataEntryTimeliness: averageMetric((metric) =>
+      metric.metric.includes("Data")
+    ),
+    studyProgress: averageMetric((metric) =>
+      metric.metric.includes("Study Progress")
+    ),
   };
 
   const chartData = [
-    { name: "Enrollment", value: kpis.enrollmentPerformance || data.kpis?.enrollmentPerformance || 82 },
-    { name: "Screening", value: kpis.screeningSuccessRate || data.kpis?.screeningSuccessRate || 88 },
-    { name: "Visits", value: kpis.visitCompletionRate || data.kpis?.visitCompletionRate || 92 },
-    { name: "Compliance", value: kpis.protocolCompliance || data.kpis?.protocolCompliance || 96 },
-    { name: "Queries", value: kpis.queryResolutionRate || data.kpis?.queryResolutionRate || 89 },
-    { name: "Retention", value: kpis.patientRetentionRate || data.kpis?.patientRetentionRate || 94 },
+    { name: "Enrollment", value: kpis.enrollmentPerformance },
+    { name: "Screening", value: kpis.screeningSuccessRate },
+    { name: "Visits", value: kpis.visitCompletionRate },
+    { name: "Compliance", value: kpis.protocolCompliance },
+    { name: "Queries", value: kpis.queryResolutionRate },
+    { name: "Retention", value: kpis.patientRetentionRate },
   ];
 
   return {
     ...data,
-    kpis: { ...data.kpis, ...kpis },
+    kpis: {
+      ...(data.kpis || {}),
+      ...kpis,
+    },
     chartData,
     lastUpdated: new Date().toLocaleString(),
   };
@@ -916,20 +941,40 @@ export const recalculateSitePerformanceKpis = (data) => {
 export const recalculateRecruitmentKpis = (data, dashboard) => {
   const studies = data.studies || [];
   const pipeline = data.pipeline || [];
-  const synced = dashboard ? syncKpisFromData(dashboard) : null;
+  const syncedDashboard = dashboard ? syncKpisFromData(dashboard) : null;
+
+  const enrolledPatients = syncedDashboard
+    ? syncedDashboard.kpis.enrollmentCount
+    : studies.reduce(
+        (sum, study) => sum + Number(study.enrolled || 0),
+        0
+      );
+
+  const recruitmentTarget = syncedDashboard
+    ? syncedDashboard.kpis.targetCount
+    : studies.reduce(
+        (sum, study) => sum + Number(study.target || 0),
+        0
+      );
+
   return {
     ...data,
     kpis: {
-      ...data.kpis,
-      activeRecruitment: studies.filter((s) => s.status !== "Completed").length,
-      enrolledPatients: synced?.kpis?.enrollmentCount ?? studies.reduce((s, st) => s + Number(st.enrolled || 0), 0),
-      screeningFailures: studies.reduce((s, st) => s + Number(st.screenFailures || 0), 0),
-      recruitmentTarget: synced?.kpis?.targetCount ?? studies.reduce((s, st) => s + Number(st.target || 0), 0),
-      recruitmentProgress: synced
-        ? Math.round((synced.kpis.enrollmentCount / Math.max(synced.kpis.targetCount, 1)) * 100)
-        : data.kpis?.recruitmentProgress || 0,
+      ...(data.kpis || {}),
+      activeRecruitment: studies.filter(
+        (study) => study.status !== "Completed"
+      ).length,
+      enrolledPatients,
+      screeningFailures: studies.reduce(
+        (sum, study) => sum + Number(study.screenFailures || 0),
+        0
+      ),
+      recruitmentTarget,
+      recruitmentProgress:
+        recruitmentTarget > 0
+          ? Math.round((enrolledPatients / recruitmentTarget) * 100)
+          : 0,
       pipelineCount: pipeline.length,
     },
   };
 };
-

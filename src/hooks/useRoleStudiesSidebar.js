@@ -16,6 +16,7 @@ export const STUDY_SECTIONS = [
   { key: "reports", label: "Reports" },
   { key: "studyFiles", label: "Study Files" },
   { key: "logs", label: "Logs" },
+  { key: "financials", label: "Financials" },
   { key: "others", label: "Others" },
 ];
 
@@ -223,6 +224,7 @@ export function useRoleStudiesSidebar({ onNavigate } = {}) {
       reports: "Reports",
       studyFiles: "Study Files",
       logs: "Logs",
+      financials: "Financials",
       others: "Others",
     };
 

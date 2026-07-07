@@ -6,6 +6,7 @@ import Comments from "./pages/shared/operations/Comments";
 import ProgressNotes from "./pages/shared/operations/ProgressNotes";
 import FileDetails from "./pages/shared/documents/FileDetails";
 import StudyLogs from "./pages/shared/operations/StudyLogs";
+
 function Dashboard() {
   const navigate = useNavigate();
   const [name, setName] = useState("Guest");
@@ -47,12 +48,15 @@ function Dashboard() {
   const [selectedPage, setSelectedPage] = useState("home");
  
   const [searchText, setSearchText] = useState("");
+  
+
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("currentUser"));
 	
     if (user && user.name) setName(user.name);
 }, []);
+
 
 const currentUser =
   JSON.parse(
@@ -85,6 +89,7 @@ const canViewFiles =
   permissions.includes(
 	"document.view"
   );
+  
 const addSubject = () => {
 	
 	const newId = subjects.length + 1;
@@ -112,6 +117,8 @@ const addSubject = () => {
 	      )
 	    }));
 	  };
+	 
+	  
   return (
     <div className="dashboard">
 	<Navbar
@@ -264,39 +271,39 @@ const addSubject = () => {
 
           {/* HOME */}
           {selectedPage === "home" && (
-            <div className="home-container">
+  <div className="home-container">
 
-              <h2>My Studies</h2>
+    <h2>My Studies</h2>
 
-              <div className="study-cards">
-                {studies.map((study) => (
-                  <div
-                    className="card"
-                    key={study.id}
-					onClick={() => navigate(`/study/${study.id}`)}
-                  >
-                    <div className="card-header">{study.id}</div>
+    <div className="study-cards">
+      {studies.map((study) => (
+        <div
+          className="card"
+          key={study.id}
+          onClick={() => navigate(`/study/${study.id}`)}
+        >
+          <div className="card-header">{study.id}</div>
 
-                    <div className="card-body">
-                      {study.image ? (
-                        <img src={study.image} alt="" />
-                      ) : (
-                        <div className="card-image">No Image</div>
-                      )}
-                      <h4>{study.title}</h4>
-                    </div>
+          <div className="card-body">
+            {study.image ? (
+              <img src={study.image} alt="" />
+            ) : (
+              <div className="card-image">No Image</div>
+            )}
+            <h4>{study.title}</h4>
+          </div>
 
-                    <div className="card-footer">
-                      <p>{study.org}</p>
-                      <p>{study.location}</p>
-                      <span>{study.enrolled} ENROLLED</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+          <div className="card-footer">
+            <p>{study.org}</p>
+            <p>{study.location}</p>
+            <span>{study.enrolled} ENROLLED</span>
+          </div>
+        </div>
+      ))}
+    </div>
 
-            </div>
-          )}
+  </div>
+)}
 
 		  {/* UPLOAD SECTION */}
 		  {(selectedPage === "dashboard" || selectedPage === "screening") 
@@ -442,6 +449,7 @@ const addSubject = () => {
         </div>
 
       </div>
+	  
     </div>
   );
 }

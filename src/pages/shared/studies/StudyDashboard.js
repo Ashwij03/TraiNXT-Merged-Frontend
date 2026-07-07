@@ -429,7 +429,14 @@ function StudyDashboard() {
 
             <StudyWorkspaceTabs
               activeTab={activeTab}
-              setActiveTab={setActiveTab}
+              setActiveTab={(tab) => {
+                setActiveTab(tab);
+
+                window.scrollTo({
+                  top: 0,
+                  behavior: "smooth",
+                });
+              }}
             />
 
             {activeTab === "Overview" && (
@@ -525,16 +532,12 @@ function StudyDashboard() {
               </div>
             )}
 
-            {activeTab === "Financials" && <StudyFinancials />}
-            {activeTab === "Others" && (
-              <div className="module-card">
-                <h2>Others</h2>
-                <DocumentFolderManager
-                  sectionId="others"
-                  contextKey={id || "default"}
-                  title="Others"
+            {activeTab === "Financials" && (
+              <div className="study-financials-tab">
+                <StudyFinancials
                   studyCode={id}
-                  layout="vertical"
+                  study={currentStudy}
+                  refreshKey={studyRefreshKey}
                 />
               </div>
             )}
