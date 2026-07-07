@@ -43,7 +43,12 @@ import {
   getCROs,
   getRegulatoryKPIs,
   getPortfolioStudies,
+  getSubscription,
+  saveSubscription,
 } from './data/sponsorDataStore';
+
+import SubscriptionEditModal from './SubscriptionEditModal';
+import { MdCheckCircle } from 'react-icons/md';
 
 const CHART_COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
@@ -57,6 +62,11 @@ const SponsorDashboard = () => {
   const [sites, setSites] = useState(getSites());
   const [cros, setCros] = useState(getCROs());
   const [regKpis, setRegKpis] = useState(getRegulatoryKPIs());
+  const [subscription, setSubscription] = useState(getSubscription());
+
+const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+
+const [subscriptionSuccess, setSubscriptionSuccess] = useState(false);
   const [analyticsSubjects, setAnalyticsSubjects] = useState(
     getAllSubjectsFromStorage()
   );
@@ -80,6 +90,7 @@ const SponsorDashboard = () => {
     setSites(getSites());
     setCros(getCROs());
     setRegKpis(getRegulatoryKPIs());
+    setSubscription(getSubscription());
     setAnalyticsSubjects(getAllSubjectsFromStorage());
   };
 
@@ -89,6 +100,22 @@ const SponsorDashboard = () => {
     window.addEventListener('sponsor-data-updated', handler);
     return () => window.removeEventListener('sponsor-data-updated', handler);
   }, []);
+  useEffect(() => {
+  if (!subscriptionSuccess) return;
+
+  const timer = setTimeout(() => {
+    setSubscriptionSuccess(false);
+  }, 3000);
+
+  return () => clearTimeout(timer);
+}, [subscriptionSuccess]);
+
+const handleSaveSubscription = (updatedSubscription) => {
+  saveSubscription(updatedSubscription);
+  setSubscription(updatedSubscription);
+  setShowSubscriptionModal(false);
+  setSubscriptionSuccess(true);
+};
 
   const topSites = [...sites].sort((a, b) => b.enrolled - a.enrolled).slice(0, 5);
   const topCros = [...cros].sort((a, b) => b.performance - a.performance).slice(0, 5);
@@ -98,7 +125,66 @@ const SponsorDashboard = () => {
       <div className="sponsor-dashboard">
         <div className="dashboard-header">
           <h1>Sponsor Dashboard</h1>
-          <p>Welcome back! Here&apos;s an overview of your clinical trial portfolio.</p>
+          
+          {subscriptionSuccess && (
+  <div className="subscription-success-banner">
+    <MdCheckCircle size={20} />
+    <span>Subscription updated successfully.</span>
+  </div>
+)}
+
+<div className="subscription-overview-card">
+
+  <div className="subscription-overview-header">
+
+    <h3>Subscription Overview</h3>
+
+    <button
+      className="subscription-edit-btn"
+      onClick={() => setShowSubscriptionModal(true)}
+    >
+      Edit Subscription
+    </button>
+
+  </div>
+
+  <div className="subscription-overview-grid">
+
+    <div className="subscription-overview-item">
+      <p>Current Plan</p>
+      <h4>{subscription.plan}</h4>
+    </div>
+
+    <div className="subscription-overview-item">
+      <p>Status</p>
+      <h4>{subscription.status}</h4>
+    </div>
+
+    <div className="subscription-overview-item">
+      <p>Expiry Date</p>
+      <h4>{subscription.endDate}</h4>
+    </div>
+
+    <div className="subscription-overview-item">
+      <p>Maximum Users</p>
+      <h4>{subscription.maxUsers}</h4>
+    </div>
+
+    <div className="subscription-overview-item">
+      <p>Maximum Studies</p>
+      <h4>{subscription.maxStudies}</h4>
+    </div>
+
+    <div className="subscription-overview-item">
+      <p>Storage</p>
+      <h4>{subscription.storageLimit} GB</h4>
+    </div>
+
+  </div>
+
+</div>
+          
+          
         </div>
 
         <div className="kpi-grid">
@@ -244,6 +330,13 @@ const SponsorDashboard = () => {
           </div>
         </div>
       </div>
+      {showSubscriptionModal && (
+  <SubscriptionEditModal
+    subscription={subscription}
+    onClose={() => setShowSubscriptionModal(false)}
+    onSave={handleSaveSubscription}
+  />
+)}
     </AppLayout>
   );
 };
