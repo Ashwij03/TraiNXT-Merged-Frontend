@@ -12,7 +12,9 @@ import "../../../Components/DelegationLog.css";
 function DelegationLogPage() {
   const logs = getDelegationLogs();
   const assignedSite = getAssignedSite();
-  const [selectedDelegate, setSelectedDelegate] = useState(logs[0] || null);
+  const [selectedDelegate, setSelectedDelegate] = useState(
+  logs.length ? logs[0] : null
+);
   const [tab, setTab] = useState("active");
 
   const activeDuties =

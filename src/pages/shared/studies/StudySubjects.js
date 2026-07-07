@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { FiFolder } from "react-icons/fi";
-import SubjectFolderWorkspace from "../subjects/SubjectFolderWorkspace";
+import SubjectProfile from "../subjects/SubjectProfile";
 import { canAddSubject } from "../../../utils/contentAccess";
 import { getCurrentUser } from "../../../services/roleService";
 import "./StudySubjects.css";
@@ -114,21 +114,23 @@ function StudySubjects({ setActiveTab, showTable = false, showBackButton = true 
     }
   }, [studyId]);
 
-  useEffect(() => {
-    const subjectParam = searchParams.get("subject");
+  /*
+useEffect(() => {
+  const subjectParam = searchParams.get("subject");
 
-    if (!subjectParam) {
-      return;
-    }
+  if (!subjectParam) {
+    return;
+  }
 
-    const matched = subjectsData.find(
-      (item) => String(item.id) === String(subjectParam)
-    );
+  const matched = subjectsData.find(
+    (item) => String(item.id) === String(subjectParam)
+  );
 
-    if (matched) {
-      setActiveSubject(matched);
-    }
-  }, [searchParams, subjectsData]);
+  if (matched) {
+    setActiveSubject(matched);
+  }
+}, [searchParams, subjectsData]);
+*/
 
   const handleBackFromSubject = () => {
     setActiveSubject(null);
@@ -171,15 +173,17 @@ function StudySubjects({ setActiveTab, showTable = false, showBackButton = true 
     });
   };
 
-  if (activeSubject) {
-    return (
-      <SubjectFolderWorkspace
-        subject={activeSubject}
-        studyId={studyId}
-        onBack={handleBackFromSubject}
-      />
-    );
-  }
+  /*
+if (activeSubject) {
+  return (
+    <SubjectProfile
+      subject={activeSubject}
+      studyId={studyId}
+      onBack={handleBackFromSubject}
+    />
+  );
+}
+*/
 
   return (
     <div className="subjects-module">

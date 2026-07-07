@@ -160,6 +160,17 @@ const defaultData = {
   showCompletedStudies: true,
   theme: "light",
 },
+subscription: {
+  plan: "Professional",
+  status: "Active",
+  startDate: "2026-01-01",
+  endDate: "2026-12-31",
+  maxUsers: 25,
+  maxStudies: 10,
+  storageLimit: 500,
+  autoRenewal: true,
+  notes: "",
+},
   enrollmentTrend: [
     { month: 'Jan', enrolled: 320 },
     { month: 'Feb', enrolled: 410 },
@@ -288,6 +299,37 @@ export function loadSettings() {
 export function saveSettings(data) {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(data));
   window.dispatchEvent(new CustomEvent('sponsor-data-updated', { detail: { key: 'settings' } }));
+}
+const SUBSCRIPTION_KEY = 'sponsor_subscription';
+
+export function getSubscription() {
+  try {
+    const stored = localStorage.getItem(SUBSCRIPTION_KEY);
+
+    if (stored) {
+      return {
+        ...defaultData.subscription,
+        ...JSON.parse(stored),
+      };
+    }
+  } catch (e) {
+    console.warn('Failed to load subscription', e);
+  }
+
+  return JSON.parse(JSON.stringify(defaultData.subscription));
+}
+
+export function saveSubscription(data) {
+  localStorage.setItem(
+    SUBSCRIPTION_KEY,
+    JSON.stringify(data)
+  );
+
+  window.dispatchEvent(
+    new CustomEvent('sponsor-data-updated', {
+      detail: { key: 'subscription' },
+    })
+  );
 }
 
 export function syncQuickActionValues() {
