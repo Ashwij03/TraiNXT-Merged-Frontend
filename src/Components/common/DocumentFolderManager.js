@@ -6,9 +6,10 @@ import {
   FiFile,
   FiFolder,
   FiFolderPlus,
+  FiLock,
   FiMessageSquare,
   FiTrash2,
-  FiUpload
+  FiUpload,
 } from "react-icons/fi";
 import {
   FOLDER_TREE_EVENT,
@@ -21,13 +22,13 @@ import {
   isICFFolder,
   isProtectedFolder,
   renameFolder,
-  saveDocumentsForFolder
+  saveDocumentsForFolder,
 } from "../../services/folderService";
 import {
   buildFolderZip,
   parseUploadedFolderFiles,
   triggerBlobDownload,
-  uploadedTreeToStructure
+  uploadedTreeToStructure,
 } from "../../utils/folderZipUtils";
 import FolderOptionsMenu from "./FolderOptionsMenu";
 import FolderTemplateModal from "./FolderTemplateModal";
@@ -37,14 +38,17 @@ import {
   canWriteComments,
   getVisibleComments,
   markCommentsDocumentDeleted,
-  resolveCommentRecord
+  resolveCommentRecord,
 } from "../../services/commentService";
 import { getStudyByCode } from "../../services/studyService";
 import { VISIT_STAGES } from "../../services/visitScheduleService";
 import "./DocumentFolderManager.css";
 import FolderColumnView from "./FolderColumnView";
+
+const SUBJECT_ICF_FOLDER_NAME = "ICF";
+
 function findNodeById(nodes, nodeId) {
-  for (const node of nodes) {
+  for (const node of nodes || []) {
     if (node.id === nodeId) {
       return node;
     }
@@ -67,6 +71,64 @@ function buildBreadcrumb(tree, pathIds) {
     .filter(Boolean);
 }
 
+function buildPathToNode(nodes, targetId, path = []) {
+  for (const node of nodes || []) {
+    const nextPath = [...path, node.id];
+
+    if (node.id === targetId) {
+      return nextPath;
+    }
+
+    if (node.children?.length) {
+      const nestedPath = buildPathToNode(
+        node.children,
+        targetId,
+        nextPath
+      );
+
+      if (nestedPath) {
+        return nestedPath;
+      }
+    }
+  }
+
+  return null;
+}
+
+function getFolderNameMatch(folder, name) {
+  return (
+    String(folder?.name || "").trim().toLowerCase() ===
+    String(name || "").trim().toLowerCase()
+  );
+}
+
+function ensureSubjectIcfFolder(sectionId, contextKey, tree) {
+  if (sectionId !== "subjects") {
+    return tree;
+  }
+
+  const rootFolder = tree?.[0];
+
+  if (!rootFolder?.id) {
+    return tree;
+  }
+
+  const icfAlreadyExists = (rootFolder.children || []).some((folder) =>
+    getFolderNameMatch(folder, SUBJECT_ICF_FOLDER_NAME)
+  );
+
+  if (!icfAlreadyExists) {
+    createFolder(
+      sectionId,
+      contextKey,
+      rootFolder.id,
+      SUBJECT_ICF_FOLDER_NAME
+    );
+  }
+
+  return getFolderTree(sectionId, contextKey);
+}
+
 function FolderTreeNode({
   node,
   depth,
@@ -79,11 +141,12 @@ function FolderTreeNode({
   onDeleteFolder,
   onUploadFolder,
   onDownloadFolder,
-  canModify
+  canModify,
 }) {
   const hasChildren = node.children?.length > 0;
   const isExpanded = expandedIds.has(node.id);
   const isSelected = selectedId === node.id;
+  const isProtected = isProtectedFolder(node) || isICFFolder(node);
 
   return (
     <div className="dfm-folder-node">
@@ -112,15 +175,16 @@ function FolderTreeNode({
             className="dfm-folder-label"
             onClick={() => onSelect(node.id)}
           >
-            <FiFolder />
+            <FiFolder className="dfm-folder-icon" />
             <span>{node.name}</span>
+            {isICFFolder(node) && <FiLock className="dfm-icf-lock" />}
           </button>
 
           <FolderOptionsMenu
             folderId={node.id}
             folderName={node.name}
             disabled={!canModify}
-            className="dfm-folder-options"
+            isProtected={isProtected}
             onCreate={onAddFolder}
             onRename={onRenameFolder}
             onDelete={onDeleteFolder}
@@ -134,20 +198,20 @@ function FolderTreeNode({
         <div className="dfm-folder-children">
           {node.children.map((child) => (
             <FolderTreeNode
-  key={child.id}
-  node={child}
-  depth={depth + 1}
-  selectedId={selectedId}
-  expandedIds={expandedIds}
-  onSelect={onSelect}
-  onToggle={onToggle}
-  canModify={canModify}
-  onAddFolder={onAddFolder}
-  onRenameFolder={onRenameFolder}
-  onDeleteFolder={onDeleteFolder}
-  onUploadFolder={onUploadFolder}
-  onDownloadFolder={onDownloadFolder}
-/>
+              key={child.id}
+              node={child}
+              depth={depth + 1}
+              selectedId={selectedId}
+              expandedIds={expandedIds}
+              onSelect={onSelect}
+              onToggle={onToggle}
+              canModify={canModify}
+              onAddFolder={onAddFolder}
+              onRenameFolder={onRenameFolder}
+              onDeleteFolder={onDeleteFolder}
+              onUploadFolder={onUploadFolder}
+              onDownloadFolder={onDownloadFolder}
+            />
           ))}
         </div>
       )}
@@ -159,7 +223,7 @@ function DocumentCommentsPanel({
   documentId,
   documentName,
   studyCode,
-  subjectId
+  subjectId,
 }) {
   const study = getStudyByCode(studyCode);
   const studyStage = study?.status || "Monitoring";
@@ -168,6 +232,7 @@ function DocumentCommentsPanel({
 
   const comments = useMemo(() => {
     void refreshKey;
+
     return getVisibleComments(
       { studyCode, subjectId, documentId, studyStage },
       undefined
@@ -189,7 +254,7 @@ function DocumentCommentsPanel({
       documentId,
       documentName,
       description: commentText.trim(),
-      stage: studyStage
+      stage: studyStage,
     });
 
     setCommentText("");
@@ -224,24 +289,36 @@ function DocumentCommentsPanel({
 
       <ul className="dfm-comment-list">
         {comments.length === 0 && (
-          <li className="dfm-comment-empty">No comments for this document.</li>
+          <li className="dfm-comment-empty">
+            No comments for this document.
+          </li>
         )}
+
         {comments.map((comment) => (
           <li key={comment.id} className="dfm-comment-item">
             <div>
               <strong>{comment.createdBy}</strong>
               <span>{comment.createdAt}</span>
+
               {comment.documentDeleted && (
                 <em className="dfm-doc-deleted-tag">Document deleted</em>
               )}
             </div>
+
             <p>{comment.description}</p>
+
             <div className="dfm-comment-meta">
-              <span className={`dfm-status dfm-status--${comment.status?.toLowerCase()}`}>
+              <span
+                className={`dfm-status dfm-status--${comment.status?.toLowerCase()}`}
+              >
                 {comment.status}
               </span>
+
               {comment.status === "Open" && canResolveComments() && (
-                <button type="button" onClick={() => handleResolve(comment.id)}>
+                <button
+                  type="button"
+                  onClick={() => handleResolve(comment.id)}
+                >
                   Resolve
                 </button>
               )}
@@ -261,22 +338,63 @@ function DocumentFolderManager({
   studyCode = "",
   subjectId = "",
   layout = "vertical",
-  onVisitStageComplete
+  onVisitStageComplete,
+  defaultFolders = [],
+  onBackToSubjects,
 }) {
   const [viewLayout, setViewLayout] = useState(layout);
   const isExplorerLayout = viewLayout === "explorer";
   const isColumnLayout = viewLayout === "column";
+
   const fileInputRef = useRef(null);
   const folderUploadInputRef = useRef(null);
   const uploadTargetFolderIdRef = useRef("");
   const selectedFolderIdRef = useRef("");
-  const initialTree = getFolderTree(sectionId, contextKey);
+
+  const getPreparedTree = useCallback(() => {
+    let nextTree = getFolderTree(sectionId, contextKey);
+
+    if (sectionId === "subjects") {
+      nextTree = ensureSubjectIcfFolder(sectionId, contextKey, nextTree);
+    }
+
+    if (
+      sectionId === "subjects" &&
+      Array.isArray(defaultFolders) &&
+      defaultFolders.length > 0
+    ) {
+      const rootFolder = nextTree?.[0];
+
+      if (rootFolder?.id) {
+        defaultFolders.forEach((folder) => {
+          const folderName = String(folder?.name || "").trim();
+
+          if (!folderName) {
+            return;
+          }
+
+          const exists = (rootFolder.children || []).some((child) =>
+            getFolderNameMatch(child, folderName)
+          );
+
+          if (!exists) {
+            createFolder(sectionId, contextKey, rootFolder.id, folderName);
+          }
+        });
+
+        nextTree = getFolderTree(sectionId, contextKey);
+      }
+    }
+
+    return nextTree;
+  }, [sectionId, contextKey, defaultFolders]);
+
+  const initialTree = getPreparedTree();
   const initialRootId = initialTree[0]?.id || "";
-  const [tree, setTree] = useState(() => initialTree);
-  const [selectedFolderId, setSelectedFolderId] = useState(
-    () => initialRootId
-  );
-  const [navigationPath, setNavigationPath] = useState(() =>
+
+  const [tree, setTree] = useState(initialTree);
+  const [selectedFolderId, setSelectedFolderId] = useState(initialRootId);
+  const [navigationPath, setNavigationPath] = useState(
     initialRootId ? [initialRootId] : []
   );
   const [expandedIds, setExpandedIds] = useState(new Set());
@@ -296,30 +414,29 @@ function DocumentFolderManager({
       : "";
 
   const refreshTree = useCallback(() => {
-    const nextTree = getFolderTree(sectionId, contextKey);
-    setTree(nextTree);
-    selectedFolderIdRef.current = nextTree[0]?.id || "";
-    const nextRootId = nextTree[0]?.id || "";
-    const latestSelected = selectedFolderIdRef.current;
-
-console.log("Old Selected =", latestSelected);
-console.log("New Root =", nextRootId);
+    const nextTree = getPreparedTree();
+    const rootId = nextTree[0]?.id || "";
     const currentSelectedId = selectedFolderIdRef.current;
+
     const selectedStillExists = Boolean(
       currentSelectedId && findNodeById(nextTree, currentSelectedId)
     );
 
-   if (!selectedStillExists) {
-  console.log("Resetting selected folder to root");
+    setTree(nextTree);
 
-  selectedFolderIdRef.current = nextRootId;
-  setSelectedFolderId(nextRootId);
+    if (!selectedStillExists) {
+      selectedFolderIdRef.current = rootId;
+      setSelectedFolderId(rootId);
+      setNavigationPath(rootId ? [rootId] : []);
+      return;
+    }
 
-  if (isExplorerLayout) {
-    setNavigationPath(nextRootId ? [nextRootId] : []);
-  }
-}
-  }, [sectionId, contextKey, isExplorerLayout]);
+    const selectedPath = buildPathToNode(nextTree, currentSelectedId);
+
+    if (selectedPath) {
+      setNavigationPath(selectedPath);
+    }
+  }, [getPreparedTree]);
 
   const refreshDocuments = useCallback(() => {
     const folderId = selectedFolderIdRef.current;
@@ -362,132 +479,91 @@ console.log("New Root =", nextRootId);
       return;
     }
 
+    selectedFolderIdRef.current = navigationTailId;
+
     setSelectedFolderId((currentId) =>
       currentId === navigationTailId ? currentId : navigationTailId
     );
   }, [isExplorerLayout, navigationTailId]);
 
-  useEffect(() => {
-    if (!isExplorerLayout && !isColumnLayout) {
-      return;
-    }
-
-    if (!selectedFolderId || navigationPath.includes(selectedFolderId)) {
-      return;
-    }
-
-    const latestTree = getFolderTree(sectionId, contextKey);
-    const buildPath = (nodes, targetId, path = []) => {
-      for (const item of nodes) {
-        const next = [...path, item.id];
-
-        if (item.id === targetId) {
-          return next;
-        }
-
-        if (item.children?.length) {
-          const result = buildPath(item.children, targetId, next);
-          if (result) {
-            return result;
-          }
-        }
-      }
-
-      return null;
-    };
-
-    const path = buildPath(latestTree, selectedFolderId);
-
-    if (path) {
-      setNavigationPath(path);
-    }
-  }, [
-    isExplorerLayout,
-    isColumnLayout,
-    selectedFolderId,
-    navigationPath,
-    sectionId,
-    contextKey
-  ]);
-
-  const selectedFolderNode = useMemo(() => {
-    const findNode = (nodes) => {
-      for (const node of nodes) {
-        if (node.id === selectedFolderId) {
-          return node;
-        }
-
-        if (node.children?.length) {
-          const nested = findNode(node.children);
-
-          if (nested) {
-            return nested;
-          }
-        }
-      }
-
-      return null;
-    };
-
-    return findNode(tree);
-  }, [tree, selectedFolderId]);
+  const selectedFolderNode = useMemo(
+    () => findNodeById(tree, selectedFolderId),
+    [tree, selectedFolderId]
+  );
 
   const selectedFolderName = selectedFolderNode?.name || title;
-  const isSelectedProtected = isProtectedFolder(selectedFolderNode);
+  const rootFolderId = tree[0]?.id || "";
+
+  const isSelectedRootFolder = selectedFolderId === rootFolderId;
+
+  const isSelectedICFFolder =
+    sectionId === "subjects" && isICFFolder(selectedFolderNode);
+
+  const isSelectedProtected =
+    isProtectedFolder(selectedFolderNode) || isICFFolder(selectedFolderNode);
+
   const canModify = !readOnly;
+
   const matchedVisitStage = VISIT_STAGES.find(
-    (stage) => stage.toLowerCase() === String(selectedFolderName).toLowerCase()
+    (stage) =>
+      stage.toLowerCase() === String(selectedFolderName).toLowerCase()
   );
+
   const canCompleteVisitStage =
     Boolean(matchedVisitStage) &&
     sectionId === "subjects" &&
     documents.length > 0 &&
     typeof onVisitStageComplete === "function";
+
   const breadcrumb = useMemo(
     () => buildBreadcrumb(tree, navigationPath),
     [tree, navigationPath]
   );
+
   const currentFolderChildren = selectedFolderNode?.children || [];
 
- const enterFolder = (folderId) => {
-  const latestTree = getFolderTree(sectionId, contextKey);
+  const enterFolder = (folderId) => {
+    const latestTree = getPreparedTree();
+    const path = buildPathToNode(latestTree, folderId);
 
-  const buildPath = (nodes, targetId, path = []) => {
-    for (const item of nodes) {
-      const next = [...path, item.id];
+    setTree(latestTree);
+    selectedFolderIdRef.current = folderId;
+    setSelectedFolderId(folderId);
 
-      if (item.id === targetId) {
-        return next;
-      }
-
-      if (item.children?.length) {
-        const result = buildPath(item.children, targetId, next);
-
-        if (result) return result;
-      }
+    if (path) {
+      setNavigationPath(path);
     }
-
-    return null;
   };
 
-  const path = buildPath(latestTree, folderId);
-
-  setTree(latestTree);
-  setSelectedFolderId(folderId);
-
-  if (path) {
-    setNavigationPath(path);
-  }
-};
-
   const goUpOneLevel = () => {
-    setNavigationPath((prev) =>
-      prev.length > 1 ? prev.slice(0, -1) : prev
-    );
+    if (navigationPath.length <= 1) {
+      return;
+    }
+
+    const nextPath = navigationPath.slice(0, -1);
+    const parentFolderId = nextPath[nextPath.length - 1] || "";
+
+    selectedFolderIdRef.current = parentFolderId;
+    setSelectedFolderId(parentFolderId);
+    setNavigationPath(nextPath);
   };
 
   const goToBreadcrumbIndex = (index) => {
-    setNavigationPath((prev) => prev.slice(0, index + 1));
+    const nextPath = navigationPath.slice(0, index + 1);
+    const targetFolderId = nextPath[nextPath.length - 1] || "";
+
+    selectedFolderIdRef.current = targetFolderId;
+    setSelectedFolderId(targetFolderId);
+    setNavigationPath(nextPath);
+  };
+
+  const handleBackToSubjects = () => {
+    if (typeof onBackToSubjects === "function") {
+      onBackToSubjects();
+      return;
+    }
+
+    window.history.back();
   };
 
   const persistDocuments = (nextDocuments) => {
@@ -497,14 +573,11 @@ console.log("New Root =", nextRootId);
       selectedFolderId,
       nextDocuments
     );
+
     setDocuments(nextDocuments);
   };
-//console.log("Selected Folder =", folderId);
 
   const handleAddFolder = (folderId = selectedFolderId) => {
-      console.log("Selected Folder Before Create =", folderId);
-  console.log("Current State Selected =", selectedFolderId);
-
     if (!canModify) {
       return;
     }
@@ -515,23 +588,26 @@ console.log("New Root =", nextRootId);
       return;
     }
 
-   const latestTree = getFolderTree(sectionId, contextKey);
-const latestRootId = latestTree[0]?.id || "";
+    const latestTree = getPreparedTree();
+    const rootId = latestTree[0]?.id || "";
+    const parentFolderId = folderId || rootId;
 
-const created = createFolder(
-  sectionId,
-  contextKey,
-  folderId || latestRootId,
-  name.trim()
-);
+    const created = createFolder(
+      sectionId,
+      contextKey,
+      parentFolderId,
+      name.trim()
+    );
 
     if (created) {
-      setExpandedIds((prev) => new Set([...prev, folderId]));
+      setExpandedIds((previousIds) => new Set([...previousIds, parentFolderId]));
       refreshTree();
-      setSelectedFolderId(created.id);
 
       if (isExplorerLayout || isColumnLayout) {
         enterFolder(created.id);
+      } else {
+        selectedFolderIdRef.current = created.id;
+        setSelectedFolderId(created.id);
       }
     }
   };
@@ -543,24 +619,17 @@ const created = createFolder(
 
     const node = findNodeById(tree, folderId);
 
-    if (!node || isProtectedFolder(node)) {
+    if (!node || isProtectedFolder(node) || isICFFolder(node)) {
       return;
     }
 
-    const name = window.prompt("Rename folder:", node?.name || "");
+    const name = window.prompt("Rename folder:", node.name || "");
 
     if (!name?.trim()) {
       return;
     }
 
-    const renamed = renameFolder(
-      sectionId,
-      contextKey,
-      folderId,
-      name.trim()
-    );
-
-    if (renamed) {
+    if (renameFolder(sectionId, contextKey, folderId, name.trim())) {
       refreshTree();
     }
   };
@@ -579,23 +648,17 @@ const created = createFolder(
 
     const node = findNodeById(tree, folderId);
 
-    if (!node || isProtectedFolder(node)) {
+    if (!node || isProtectedFolder(node) || isICFFolder(node)) {
       return;
     }
 
-    if (
-      window.confirm(
-        `Delete folder "${node?.name}" and its documents?`
-      )
-    ) {
-      const deleted = deleteFolder(
-        sectionId,
-        contextKey,
-        folderId
-      );
+    if (window.confirm(`Delete folder "${node.name}" and its documents?`)) {
+      const deleted = deleteFolder(sectionId, contextKey, folderId);
 
       if (deleted) {
+        selectedFolderIdRef.current = rootId;
         setSelectedFolderId(rootId);
+        setNavigationPath(rootId ? [rootId] : []);
         refreshTree();
         refreshDocuments();
       }
@@ -612,7 +675,8 @@ const created = createFolder(
   };
 
   const handleFolderUploadSelect = async (fileList) => {
-    const targetFolderId = uploadTargetFolderIdRef.current || selectedFolderId;
+    const targetFolderId =
+      uploadTargetFolderIdRef.current || selectedFolderId;
 
     if (!targetFolderId || !fileList?.length) {
       return;
@@ -633,7 +697,7 @@ const created = createFolder(
   };
 
   const handleDownloadFolder = async (folderId = selectedFolderId) => {
-    const latestTree = getFolderTree(sectionId, contextKey);
+    const latestTree = getPreparedTree();
     const subtree = collectFolderSubtree(latestTree, folderId);
 
     if (!subtree) {
@@ -646,7 +710,7 @@ const created = createFolder(
         rootName: subtree.name,
         rootNode: subtree,
         getDocumentsForFolder: (targetFolderId) =>
-          getDocumentsForFolder(sectionId, contextKey, targetFolderId)
+          getDocumentsForFolder(sectionId, contextKey, targetFolderId),
       });
 
       triggerBlobDownload(blob, `${subtree.name || "folder"}.zip`);
@@ -658,6 +722,7 @@ const created = createFolder(
   const readFileAsDataUrl = (file) =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
+
       reader.onload = () => resolve(reader.result);
       reader.onerror = reject;
       reader.readAsDataURL(file);
@@ -679,7 +744,11 @@ const created = createFolder(
     }
 
     setUploadProgress(0);
-    setPendingUpload({ file, name: file.name, size: file.size });
+    setPendingUpload({
+      file,
+      name: file.name,
+      size: file.size,
+    });
 
     const steps = [20, 45, 70, 90, 100];
 
@@ -695,15 +764,16 @@ const created = createFolder(
     }
 
     const dataUrl = await readFileAsDataUrl(pendingUpload.file);
-    const newDoc = {
+
+    const newDocument = {
       id: `doc-${Date.now()}`,
       name: pendingUpload.name,
       size: pendingUpload.size,
       uploadedAt: new Date().toISOString(),
-      dataUrl
+      dataUrl,
     };
 
-    persistDocuments([...documents, newDoc]);
+    persistDocuments([...documents, newDocument]);
     setPendingUpload(null);
     setUploadProgress(0);
   };
@@ -713,13 +783,13 @@ const created = createFolder(
       return;
     }
 
-    const doc = documents.find((item) => item.id === docId);
+    const document = documents.find((item) => item.id === docId);
 
-    if (!doc) {
+    if (!document) {
       return;
     }
 
-    const name = window.prompt("Rename document:", doc.name);
+    const name = window.prompt("Rename document:", document.name);
 
     if (!name?.trim()) {
       return;
@@ -766,7 +836,7 @@ const created = createFolder(
                 name: file.name,
                 size: file.size,
                 uploadedAt: new Date().toISOString(),
-                dataUrl
+                dataUrl,
               }
             : item
         )
@@ -781,22 +851,23 @@ const created = createFolder(
       return;
     }
 
-    const doc = documents.find((item) => item.id === docId);
+    const document = documents.find((item) => item.id === docId);
 
     if (window.confirm("Delete this document?")) {
-      markCommentsDocumentDeleted(docId, doc?.name);
+      markCommentsDocumentDeleted(docId, document?.name);
+
       persistDocuments(documents.filter((item) => item.id !== docId));
     }
   };
 
-  const handleDownloadDoc = (doc) => {
-    if (!doc.dataUrl) {
+  const handleDownloadDoc = (document) => {
+    if (!document.dataUrl) {
       return;
     }
 
     const link = document.createElement("a");
-    link.href = doc.dataUrl;
-    link.download = doc.name;
+    link.href = document.dataUrl;
+    link.download = document.name;
     link.click();
   };
 
@@ -810,10 +881,12 @@ const created = createFolder(
       return;
     }
 
-    const reordered = [...documents];
-    const [moved] = reordered.splice(dragDocIndex, 1);
-    reordered.splice(index, 0, moved);
-    persistDocuments(reordered);
+    const reorderedDocuments = [...documents];
+    const [movedDocument] = reorderedDocuments.splice(dragDocIndex, 1);
+
+    reorderedDocuments.splice(index, 0, movedDocument);
+
+    persistDocuments(reorderedDocuments);
     setDragDocIndex(null);
   };
 
@@ -833,52 +906,64 @@ const created = createFolder(
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-
   return (
     <div className={`dfm-container dfm-layout-${viewLayout}`}>
       {!isExplorerLayout && !isColumnLayout && (
-              <aside className="dfm-sidebar">
-        <div className="dfm-sidebar-header">
-          <h3>Folders</h3>
+        <aside className="dfm-sidebar">
+          <div className="dfm-sidebar-header">
+            <h3>Folders</h3>
           </div>
 
-        <div className="dfm-folder-tree">
-          {tree.map((node) => (
-            <FolderTreeNode
-    key={node.id}
-    node={node}
-    depth={0}
-    selectedId={selectedFolderId}
-    expandedIds={expandedIds}
-    onSelect={setSelectedFolderId}
-    onToggle={(folderId) => {
-        setExpandedIds((prev) => {
-            const next = new Set(prev);
+          <div className="dfm-folder-tree">
+            {tree.map((node) => (
+              <FolderTreeNode
+                key={node.id}
+                node={node}
+                depth={0}
+                selectedId={selectedFolderId}
+                expandedIds={expandedIds}
+                onSelect={(folderId) => {
+                  selectedFolderIdRef.current = folderId;
+                  setSelectedFolderId(folderId);
 
-            if (next.has(folderId)) {
-                next.delete(folderId);
-            } else {
-                next.add(folderId);
-            }
+                  const path = buildPathToNode(tree, folderId);
 
-            return next;
-        });
-    }}
-    canModify={canModify}
-    onAddFolder={handleAddFolder}
-    onRenameFolder={handleRenameFolder}
-    onDeleteFolder={handleDeleteFolder}
-    onUploadFolder={handleUploadFolder}
-    onDownloadFolder={handleDownloadFolder}
-/>
-          ))}
-        </div>
-      </aside>
+                  if (path) {
+                    setNavigationPath(path);
+                  }
+                }}
+                onToggle={(folderId) => {
+                  setExpandedIds((previousIds) => {
+                    const nextIds = new Set(previousIds);
+
+                    if (nextIds.has(folderId)) {
+                      nextIds.delete(folderId);
+                    } else {
+                      nextIds.add(folderId);
+                    }
+
+                    return nextIds;
+                  });
+                }}
+                canModify={canModify}
+                onAddFolder={handleAddFolder}
+                onRenameFolder={handleRenameFolder}
+                onDeleteFolder={handleDeleteFolder}
+                onUploadFolder={handleUploadFolder}
+                onDownloadFolder={handleDownloadFolder}
+              />
+            ))}
+          </div>
+        </aside>
       )}
 
       <section className="dfm-main">
         <div className="dfm-view-toolbar">
-          <div className="dfm-view-switcher" role="tablist" aria-label="Folder view">
+          <div
+            className="dfm-view-switcher"
+            role="tablist"
+            aria-label="Folder view"
+          >
             <button
               type="button"
               className={viewLayout === "vertical" ? "active" : ""}
@@ -886,6 +971,7 @@ const created = createFolder(
             >
               Tree View
             </button>
+
             <button
               type="button"
               className={viewLayout === "explorer" ? "active" : ""}
@@ -893,6 +979,7 @@ const created = createFolder(
             >
               Explorer View
             </button>
+
             <button
               type="button"
               className={viewLayout === "column" ? "active" : ""}
@@ -912,11 +999,21 @@ const created = createFolder(
             </button>
           )}
         </div>
-   
+
         {isExplorerLayout && (
           <div className="dfm-explorer-nav">
             <div className="dfm-explorer-nav-row">
-              {navigationPath.length > 1 && (
+              {isSelectedRootFolder && sectionId === "subjects" && (
+                <button
+                  type="button"
+                  className="dfm-back-btn"
+                  onClick={handleBackToSubjects}
+                >
+                  ← Back to Subjects
+                </button>
+              )}
+
+              {!isSelectedRootFolder && navigationPath.length > 1 && (
                 <button
                   type="button"
                   className="dfm-back-btn"
@@ -932,6 +1029,7 @@ const created = createFolder(
                     {index > 0 && (
                       <span className="dfm-breadcrumb-sep">›</span>
                     )}
+
                     <button
                       type="button"
                       className={
@@ -950,11 +1048,21 @@ const created = createFolder(
           </div>
         )}
 
+        {isSelectedICFFolder && (
+          <div className="dfm-icf-protected-notice">
+            <FiLock />
+            <span>
+              ICF is a protected default folder. It cannot be renamed or
+              deleted.
+            </span>
+          </div>
+        )}
+
         <div className="dfm-main-header">
           <h3>{selectedFolderName}</h3>
+
           <span>
-            {currentFolderChildren.length} folder(s) • {documents.length}{" "}
-            file(s)
+            {currentFolderChildren.length} folder(s) • {documents.length} file(s)
           </span>
         </div>
 
@@ -971,6 +1079,7 @@ const created = createFolder(
                   event.target.value = "";
                 }}
               />
+
               <input
                 ref={folderUploadInputRef}
                 type="file"
@@ -995,9 +1104,10 @@ const created = createFolder(
 
               {!isSelectedProtected && (
                 <button
-  className="dfm-add-folder-btn"
-  onClick={() => handleAddFolder()}
->
+                  type="button"
+                  className="dfm-add-folder-btn"
+                  onClick={() => handleAddFolder()}
+                >
                   <FiFolderPlus />
                   Add Folder
                 </button>
@@ -1024,9 +1134,11 @@ const created = createFolder(
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
+
             <span>
               {pendingUpload.name} — {uploadProgress}%
             </span>
+
             {uploadProgress >= 100 && (
               <button
                 type="button"
@@ -1041,55 +1153,67 @@ const created = createFolder(
 
         {isExplorerLayout && currentFolderChildren.length > 0 && (
           <div className="dfm-explorer-folder-grid">
-            {currentFolderChildren.map((folder) => (
-              <div
-                key={folder.id}
-                className={`dfm-explorer-folder-wrap${
-                  isICFFolder(folder) ? " is-icf" : ""
-                }`}
-              >
-                <button
-                  type="button"
-                  className="dfm-explorer-folder"
-                  onClick={() => enterFolder(folder.id)}
+            {currentFolderChildren.map((folder) => {
+              const isProtected =
+                isProtectedFolder(folder) || isICFFolder(folder);
+
+              return (
+                <div
+                  key={folder.id}
+                  className={`dfm-explorer-folder-wrap${
+                    isICFFolder(folder) ? " is-icf" : ""
+                  }`}
                 >
-                  <FiFolder className="dfm-explorer-folder-icon" />
-                  <span>{folder.name}</span>
-                </button>
-                <FolderOptionsMenu
-                  folderId={folder.id}
-                  folderName={folder.name}
-                  disabled={!canModify}
-                  onCreate={handleAddFolder}
-                  onRename={handleRenameFolder}
-                  onDelete={handleDeleteFolder}
-                  onUpload={handleUploadFolder}
-                  onDownload={handleDownloadFolder}
-                />
-              </div>
-            ))}
+                  <button
+                    type="button"
+                    className="dfm-explorer-folder"
+                    onClick={() => enterFolder(folder.id)}
+                  >
+                    <FiFolder className="dfm-explorer-folder-icon" />
+                    <span>{folder.name}</span>
+
+                    {isICFFolder(folder) && (
+                      <FiLock className="dfm-explorer-icf-lock" />
+                    )}
+                  </button>
+
+                  <FolderOptionsMenu
+                    folderId={folder.id}
+                    folderName={folder.name}
+                    disabled={!canModify}
+                    isProtected={isProtected}
+                    onCreate={handleAddFolder}
+                    onRename={handleRenameFolder}
+                    onDelete={handleDeleteFolder}
+                    onUpload={handleUploadFolder}
+                    onDownload={handleDownloadFolder}
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
+
         {isColumnLayout && (
-  <FolderColumnView
-    tree={tree}
-    navigationPath={navigationPath}
-    enterFolder={enterFolder}
-    goToBreadcrumbIndex={goToBreadcrumbIndex}
-    selectedFolderId={selectedFolderId}
-    canModify={canModify}
-    onAddFolder={handleAddFolder}
-    onRenameFolder={handleRenameFolder}
-    onDeleteFolder={handleDeleteFolder}
-    onUploadFolder={handleUploadFolder}
-    onDownloadFolder={handleDownloadFolder}
-  />
-)}
+          <FolderColumnView
+            tree={tree}
+            navigationPath={navigationPath}
+            enterFolder={enterFolder}
+            goToBreadcrumbIndex={goToBreadcrumbIndex}
+            selectedFolderId={selectedFolderId}
+            canModify={canModify}
+            onAddFolder={handleAddFolder}
+            onRenameFolder={handleRenameFolder}
+            onDeleteFolder={handleDeleteFolder}
+            onUploadFolder={handleUploadFolder}
+            onDownloadFolder={handleDownloadFolder}
+          />
+        )}
 
         <ul className="dfm-doc-list">
-          {documents.map((doc, index) => (
+          {documents.map((document, index) => (
             <li
-              key={doc.id}
+              key={document.id}
               className="dfm-doc-item"
               draggable={canModify}
               onDragStart={() => handleDragStart(index)}
@@ -1097,48 +1221,55 @@ const created = createFolder(
               onDrop={() => handleDrop(index)}
             >
               <FiFile className="dfm-doc-icon" />
+
               <div className="dfm-doc-info">
-                <strong>{doc.name}</strong>
+                <strong>{document.name}</strong>
+
                 <small>
-                  PDF • {formatSize(doc.size)} •{" "}
-                  {new Date(doc.uploadedAt).toLocaleString()}
+                  PDF • {formatSize(document.size)} •{" "}
+                  {new Date(document.uploadedAt).toLocaleString()}
                 </small>
               </div>
+
               <div className="dfm-doc-actions">
                 <button
                   type="button"
                   title="View"
-                  onClick={() => setViewDoc(doc)}
+                  onClick={() => setViewDoc(document)}
                 >
                   <FiEye />
                 </button>
+
                 <button
                   type="button"
                   title="Download"
-                  onClick={() => handleDownloadDoc(doc)}
+                  onClick={() => handleDownloadDoc(document)}
                 >
                   <FiDownload />
                 </button>
+
                 {canModify && (
                   <>
                     <button
                       type="button"
                       title="Rename"
-                      onClick={() => handleRenameDoc(doc.id)}
+                      onClick={() => handleRenameDoc(document.id)}
                     >
                       <FiEdit2 />
                     </button>
+
                     <button
                       type="button"
                       title="Replace"
-                      onClick={() => handleReplaceDoc(doc.id)}
+                      onClick={() => handleReplaceDoc(document.id)}
                     >
                       <FiUpload />
                     </button>
+
                     <button
                       type="button"
                       title="Delete"
-                      onClick={() => handleDeleteDoc(doc.id)}
+                      onClick={() => handleDeleteDoc(document.id)}
                     >
                       <FiTrash2 />
                     </button>
@@ -1152,7 +1283,9 @@ const created = createFolder(
         {documents.length === 0 && !pendingUpload && (
           canModify ? (
             <div
-              className={`dfm-drop-zone${dragOverEmpty ? " is-drag-over" : ""}`}
+              className={`dfm-drop-zone${
+                dragOverEmpty ? " is-drag-over" : ""
+              }`}
               onClick={() => fileInputRef.current?.click()}
               onDragOver={(event) => {
                 event.preventDefault();
@@ -1166,7 +1299,9 @@ const created = createFolder(
               }}
             >
               <FiUpload className="dfm-drop-zone-icon" />
-              <p className="dfm-drop-zone-title">Drag and drop PDF files here</p>
+              <p className="dfm-drop-zone-title">
+                Drag and drop PDF files here
+              </p>
               <p className="dfm-drop-zone-hint">or click to browse</p>
             </div>
           ) : (
@@ -1183,10 +1318,12 @@ const created = createFolder(
           >
             <div className="dfm-viewer-header">
               <h4>{viewDoc.name}</h4>
+
               <button type="button" onClick={() => setViewDoc(null)}>
                 Close
               </button>
             </div>
+
             {viewDoc.dataUrl ? (
               <iframe
                 title={viewDoc.name}
@@ -1196,6 +1333,7 @@ const created = createFolder(
             ) : (
               <p>Preview unavailable.</p>
             )}
+
             <DocumentCommentsPanel
               documentId={viewDoc.id}
               documentName={viewDoc.name}

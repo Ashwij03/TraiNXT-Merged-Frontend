@@ -11,6 +11,7 @@ function CRONotifications() {
     addNotification,
     showModal,
   } = useCROData();
+
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredNotifications = notifications.filter((item) =>
@@ -18,7 +19,9 @@ function CRONotifications() {
   );
 
   const criticalCount = notifications.filter(
-    (n) => n.type === "Performance" && n.status === "Unread"
+    (notification) =>
+      notification.type === "Performance" &&
+      notification.status === "Unread"
   ).length;
 
   return (
@@ -30,18 +33,25 @@ function CRONotifications() {
           <h3>Total Notifications</h3>
           <h1>{notifications.length}</h1>
         </div>
+
         <div className="dashboard-card">
           <h3>Unread</h3>
           <h1>
-            {notifications.filter((n) => n.status === "Unread").length}
+            {notifications.filter(
+              (notification) => notification.status === "Unread"
+            ).length}
           </h1>
         </div>
+
         <div className="dashboard-card">
           <h3>Read</h3>
           <h1>
-            {notifications.filter((n) => n.status === "Read").length}
+            {notifications.filter(
+              (notification) => notification.status === "Read"
+            ).length}
           </h1>
         </div>
+
         <div className="dashboard-card">
           <h3>Critical Alerts</h3>
           <h1>{criticalCount}</h1>
@@ -54,9 +64,11 @@ function CRONotifications() {
             type="text"
             placeholder="Search Notification..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(event) => setSearchTerm(event.target.value)}
           />
-          <h2></h2>
+
+          <h2 className="sr-only">Notification Actions</h2>
+
           <button
             type="button"
             className="cro-btn-primary"
@@ -86,6 +98,7 @@ function CRONotifications() {
                   <th>Actions</th>
                 </tr>
               </thead>
+
               <tbody>
                 {filteredNotifications.map((notification) => (
                   <tr key={notification.id}>
@@ -93,16 +106,21 @@ function CRONotifications() {
                     <td>{notification.message}</td>
                     <td>{notification.type}</td>
                     <td>{notification.date}</td>
+
                     <td>
                       <CROStatusBadge
                         status={
-                          notification.status === "Unread" ? "Pending" : "Completed"
+                          notification.status === "Unread"
+                            ? "Pending"
+                            : "Completed"
                         }
                       />
+
                       <span style={{ marginLeft: 8, fontSize: 12 }}>
                         {notification.status}
                       </span>
                     </td>
+
                     <td>
                       <button
                         type="button"
@@ -116,11 +134,14 @@ function CRONotifications() {
                       >
                         View
                       </button>
+
                       {notification.status === "Unread" && (
                         <button
                           type="button"
                           className="cro-btn-sm"
-                          onClick={() => markNotificationRead(notification.id)}
+                          onClick={() =>
+                            markNotificationRead(notification.id)
+                          }
                           style={{ marginLeft: 8 }}
                         >
                           Mark Read

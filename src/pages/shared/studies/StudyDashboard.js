@@ -37,7 +37,6 @@ import UpcomingVisitsWidget from "../../../Components/dashboard/UpcomingVisitsWi
 import PendingCommentsWidget from "../../../Components/dashboard/PendingCommentsWidget";
 import QuickActionsWidget from "../../../Components/dashboard/QuickActionsWidget";
 import DocumentFolderManager from "../../../Components/common/DocumentFolderManager";
-
 import {
   FiUsers,
   FiClipboard,
@@ -63,19 +62,8 @@ function StudyDashboard() {
   const [searchParams] = useSearchParams();
 
   const [activeTab, setActiveTab] = useState(
-    searchParams.get("tab") || "Overview",
+    searchParams.get("tab") || "Overview"
   );
-
-  useEffect(() => {
-    const tabFromUrl = searchParams.get("tab");
-
-    if (tabFromUrl) {
-      setActiveTab((currentTab) =>
-        currentTab === tabFromUrl ? currentTab : tabFromUrl,
-      );
-    }
-  }, [searchParams]);
-
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editForm, setEditForm] = useState({});
@@ -83,19 +71,27 @@ function StudyDashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    const currentStudy = getStudyByCode(id);
+    const tabFromUrl = searchParams.get("tab");
 
-    if (currentStudy) {
-      localStorage.setItem("selectedStudy", JSON.stringify(currentStudy));
+    if (tabFromUrl) {
+      setActiveTab((currentTab) =>
+        currentTab === tabFromUrl ? currentTab : tabFromUrl
+      );
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const selectedStudy = getStudyByCode(id);
+
+    if (selectedStudy) {
+      localStorage.setItem("selectedStudy", JSON.stringify(selectedStudy));
     }
 
     localStorage.setItem("sidebarStudiesOpen", JSON.stringify(true));
-
     localStorage.setItem("sidebarStudyBinderOpen", JSON.stringify(true));
   }, [id]);
 
   const { data } = useStudiesDashboard();
-
   const currentUser = getCurrentUser();
 
   const canEditStudy = canEditStudyContent(currentUser);
@@ -105,18 +101,16 @@ function StudyDashboard() {
   const currentStudy = getStudyByCode(id);
   const overview = useStudyOverview(id, studyRefreshKey);
 
-  const getStudyKey = useCallback(
-    (study) =>
-      String(
-        study?.code ??
-          study?.id ??
-          study?.studyId ??
-          study?.title ??
-          study?.name ??
-          "",
-      ),
-    [],
-  );
+  const getStudyKey = useCallback((study) => {
+    return String(
+      study?.code ??
+        study?.id ??
+        study?.studyId ??
+        study?.title ??
+        study?.name ??
+        ""
+    );
+  }, []);
 
   const currentStudyKey = getStudyKey(currentStudy);
 
@@ -126,7 +120,9 @@ function StudyDashboard() {
 
   const matchesCurrentStudy = useCallback(
     (item) => {
-      if (!item || !currentStudy) return false;
+      if (!item || !currentStudy) {
+        return false;
+      }
 
       const possibleKeys = [
         item.studyCode,
@@ -146,14 +142,16 @@ function StudyDashboard() {
 
       return possibleKeys.includes(currentStudyKey);
     },
-    [currentStudy, currentStudyKey],
+    [currentStudy, currentStudyKey]
   );
 
   const studySubjectsFromStorage = useMemo(() => {
     try {
       const allSubjectsByStudy =
         JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
+
       const studySubjects = allSubjectsByStudy[currentStudyKey];
+
       return Array.isArray(studySubjects) ? studySubjects : [];
     } catch {
       return [];
@@ -165,7 +163,7 @@ function StudyDashboard() {
   });
 
   const filteredUpcomingVisits = useMemo(() => {
-    if (upcomingWindow.length) {
+    if (upcomingWindow.length > 0) {
       return upcomingWindow.map((item) => ({
         subject: item.subjectid || item.subjectId || item.subject,
         subjectId: item.subjectid || item.subjectId || item.subject,
@@ -176,7 +174,9 @@ function StudyDashboard() {
 
     return studySchedules
       .filter((item) => item.status !== "Completed")
-      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .sort((firstItem, secondItem) => {
+        return new Date(firstItem.date) - new Date(secondItem.date);
+      })
       .slice(0, 12)
       .map((item) => ({
         subject: item.subjectId,
@@ -186,11 +186,9 @@ function StudyDashboard() {
       }));
   }, [studySchedules, upcomingWindow]);
 
-  const upcomingVisitsEmptyMessage = "No upcoming visits scheduled";
-
   const filteredPendingComments = useMemo(() => {
     return safeArray(data?.pendingComments || data?.pendingQueries).filter(
-      matchesCurrentStudy,
+      matchesCurrentStudy
     );
   }, [
     data?.pendingComments,
@@ -218,13 +216,11 @@ function StudyDashboard() {
 
   const studyKpis = useMemo(() => {
     return {
-      studies: currentStudy ? 1 : 0,
       subjects: filteredRecentSubjects.length,
       comments: filteredPendingComments.length,
       visits: filteredUpcomingVisits.length,
     };
   }, [
-    currentStudy,
     filteredRecentSubjects,
     filteredPendingComments,
     filteredUpcomingVisits,
@@ -234,7 +230,10 @@ function StudyDashboard() {
     setIsRefreshing(true);
     setStudyRefreshKey((value) => value + 1);
     overview.refresh();
-    window.setTimeout(() => setIsRefreshing(false), 400);
+
+    window.setTimeout(() => {
+      setIsRefreshing(false);
+    }, 400);
   };
 
   const handleNavigateToEisf = () => {
@@ -248,52 +247,57 @@ function StudyDashboard() {
         accessType: "Edit Access",
         notes: "Study overview edit request",
       },
-      currentUser,
+      currentUser
     );
+
     alert("Edit permission request submitted for admin review.");
   };
 
   const handleDeleteStudy = (deletionDetails) => {
-    if (currentStudy) {
-      try {
-        deleteStudy(currentStudy.code, deletionDetails);
-        setShowDeleteModal(false);
-        alert(`Study "${currentStudy.name}" has been deleted successfully.`);
-        navigate("/studies");
-      } catch (error) {
-        alert("Error deleting study: " + error.message);
-      }
+    if (!currentStudy) {
+      return;
+    }
+
+    try {
+      deleteStudy(currentStudy.code, deletionDetails);
+      setShowDeleteModal(false);
+      alert(`Study "${currentStudy.name}" has been deleted successfully.`);
+      navigate("/studies");
+    } catch (error) {
+      alert(`Error deleting study: ${error.message}`);
     }
   };
 
   const handleBackToStudies = () => {
     localStorage.setItem("sidebarStudiesOpen", JSON.stringify(true));
-
     localStorage.setItem("sidebarStudyBinderOpen", JSON.stringify(true));
-
     navigate("/studies");
   };
 
   const handleEditStudy = () => {
-    if (currentStudy) {
-      setEditForm({
-        code: currentStudy.code || "",
-        name: currentStudy.name || "",
-        protocol: currentStudy.protocol || "",
-        indication: currentStudy.indication || "",
-        location: currentStudy.location || currentStudy.site || "",
-        site: currentStudy.site || currentStudy.location || "",
-        enrolled: currentStudy.enrolled ?? "",
-        targetSubjects: currentStudy.targetSubjects ?? "",
-        status: currentStudy.status || "Active",
-        principalInvestigator: currentStudy.principalInvestigator || "",
-        sponsor: currentStudy.sponsor || "",
-        cro: currentStudy.cro || "",
-        startDate: currentStudy.startDate || "",
-        description: currentStudy.description || "",
-      });
-      setShowEditModal(true);
+    if (!currentStudy) {
+      return;
     }
+
+    setEditForm({
+      code: currentStudy.code || "",
+      name: currentStudy.name || "",
+      protocol: currentStudy.protocol || "",
+      indication: currentStudy.indication || "",
+      location: currentStudy.location || currentStudy.site || "",
+      site: currentStudy.site || currentStudy.location || "",
+      country: currentStudy.country || "",
+      enrolled: currentStudy.enrolled ?? "",
+      targetSubjects: currentStudy.targetSubjects ?? "",
+      status: currentStudy.status || "Active",
+      principalInvestigator: currentStudy.principalInvestigator || "",
+      sponsor: currentStudy.sponsor || "",
+      cro: currentStudy.cro || "",
+      startDate: currentStudy.startDate || "",
+      description: currentStudy.description || "",
+    });
+
+    setShowEditModal(true);
   };
 
   const handleEditFormChange = (event) => {
@@ -306,7 +310,7 @@ function StudyDashboard() {
   };
 
   const handleSaveStudyEdit = (event) => {
-    event?.preventDefault();
+    event.preventDefault();
 
     try {
       const updatedStudy = updateStudy(editForm.code, {
@@ -321,8 +325,17 @@ function StudyDashboard() {
       setShowEditModal(false);
       setStudyRefreshKey((value) => value + 1);
     } catch (error) {
-      alert("Error saving study: " + error.message);
+      alert(`Error saving study: ${error.message}`);
     }
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   return (
@@ -334,9 +347,9 @@ function StudyDashboard() {
           <div className="study-dashboard-page">
             <div className="study-dashboard-topbar">
               <button
+                type="button"
                 className="back-to-studies-btn"
                 onClick={handleBackToStudies}
-                type="button"
               >
                 <FiArrowLeft />
                 <span>Back to Studies</span>
@@ -368,13 +381,14 @@ function StudyDashboard() {
 
                 {canEditStudy && (
                   <button
+                    type="button"
                     className="btn-edit edit-study-btn"
                     onClick={handleEditStudy}
                     title="Edit study"
                     aria-label="Edit study"
-                    type="button"
                   >
-                    <FiEdit2 /> Edit Study
+                    <FiEdit2 />
+                    Edit Study
                   </button>
                 )}
 
@@ -390,53 +404,47 @@ function StudyDashboard() {
 
                 {canRemoveStudy && (
                   <button
+                    type="button"
                     className="delete-study-btn"
                     onClick={() => setShowDeleteModal(true)}
                     title="Delete study"
                     aria-label="Delete study"
-                    type="button"
                   >
-                    <FiTrash2 /> Delete Study
+                    <FiTrash2 />
+                    Delete Study
                   </button>
                 )}
               </div>
             </div>
 
-            {activeTab !== "Subjects" && activeTab !== "SubjectProfile" && (
-              <div className="studies-kpi-grid">
-                <KPICard
-                  title="Total Subjects"
-                  value={studyKpis.subjects}
-                  subtitle="In This Study"
-                  icon={<FiUsers />}
-                />
+            {/* KPI cards intentionally stay visible for every study tab,
+                including Subjects and SubjectProfile. */}
+            <div className="studies-kpi-grid">
+              <KPICard
+                title="Total Subjects"
+                value={studyKpis.subjects}
+                subtitle="In This Study"
+                icon={<FiUsers />}
+              />
 
-                <KPICard
-                  title="Open Comments"
-                  value={studyKpis.comments}
-                  subtitle="For This Study"
-                  icon={<FiMessageSquare />}
-                />
+              <KPICard
+                title="Open Comments"
+                value={studyKpis.comments}
+                subtitle="For This Study"
+                icon={<FiMessageSquare />}
+              />
 
-                <KPICard
-                  title="Site Visits"
-                  value={studyKpis.visits}
-                  subtitle="For This Study"
-                  icon={<FiClipboard />}
-                />
-              </div>
-            )}
+              <KPICard
+                title="Site Visits"
+                value={studyKpis.visits}
+                subtitle="For This Study"
+                icon={<FiClipboard />}
+              />
+            </div>
 
             <StudyWorkspaceTabs
               activeTab={activeTab}
-              setActiveTab={(tab) => {
-                setActiveTab(tab);
-
-                window.scrollTo({
-                  top: 0,
-                  behavior: "smooth",
-                });
-              }}
+              setActiveTab={handleTabChange}
             />
 
             {activeTab === "Overview" && (
@@ -446,10 +454,15 @@ function StudyDashboard() {
                     stats={overview.documents}
                     onNavigateToEisf={handleNavigateToEisf}
                   />
+
                   <StudyProgressSummary progress={overview.progress} />
+
                   <StudyHealthSummary health={overview.health} />
+
                   <SiteActivationStatus counts={overview.siteActivation} />
+
                   <GCPCertificationStatus counts={overview.gcpCertification} />
+
                   <SitePerformanceSummary records={overview.sitePerformance} />
                 </div>
 
@@ -473,13 +486,12 @@ function StudyDashboard() {
 
                   <UpcomingVisitsWidget
                     visits={filteredUpcomingVisits}
-                    emptyMessage={upcomingVisitsEmptyMessage}
+                    emptyMessage="No upcoming visits scheduled"
                   />
                 </div>
 
                 <div className="widget-grid">
                   <PendingCommentsWidget comments={filteredPendingComments} />
-
                   <QuickActionsWidget />
                 </div>
 
@@ -522,6 +534,7 @@ function StudyDashboard() {
             {activeTab === "eISF" && (
               <div className="module-card">
                 <h2>eISF</h2>
+
                 <DocumentFolderManager
                   sectionId="eISF"
                   contextKey={id || "default"}
@@ -545,6 +558,7 @@ function StudyDashboard() {
             {activeTab === "Others" && (
               <div className="module-card">
                 <h2>Others</h2>
+
                 <DocumentFolderManager
                   sectionId="others"
                   contextKey={id || "default"}
@@ -565,8 +579,12 @@ function StudyDashboard() {
                     <p>Update all study details and save changes.</p>
                   </div>
 
-                  <button type="button" onClick={() => setShowEditModal(false)}>
-                    x
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    aria-label="Close edit study modal"
+                  >
+                    ×
                   </button>
                 </div>
 
