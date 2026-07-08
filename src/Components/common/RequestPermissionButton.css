@@ -1,0 +1,121 @@
+.request-permission-btn {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.request-permission-btn:hover {
+  background: #fde68a;
+}
+
+.request-permission-link {
+  background: transparent;
+  border: none;
+  color: #2563eb;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.request-permission-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 16px;
+}
+
+.request-permission-modal {
+  background: #fff;
+  border-radius: 12px;
+  width: min(480px, 100%);
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+}
+
+.request-permission-modal h3 {
+  margin: 0 0 8px;
+}
+
+.request-permission-subtitle {
+  margin: 0 0 16px;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.request-permission-details {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.request-permission-details div {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 8px;
+}
+
+.request-permission-details dt {
+  font-weight: 600;
+  color: #475569;
+}
+
+.request-permission-details dd {
+  margin: 0;
+}
+
+.request-permission-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.request-permission-label textarea {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px;
+  font: inherit;
+  resize: vertical;
+}
+
+.request-permission-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.request-permission-cancel,
+.request-permission-submit {
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.request-permission-cancel {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+}
+
+.request-permission-submit {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+}
+
+.request-permission-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

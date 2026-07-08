@@ -61,7 +61,7 @@ function RecentSubjectsWidget({
 
                   <td>
                     {
-                      subject.study
+                      subject.studyCode
                     }
                   </td>
 

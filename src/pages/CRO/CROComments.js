@@ -14,13 +14,11 @@ import CROModal from "./CROModal";
 
 function CROComments() {
 
-  const { comments, addComment, replyToComment, showAlert } = useCROData();
+  const { comments, addComment, showAlert } = useCROData();
 
   const [searchTerm, setSearchTerm] = useState("");
 
   const [showAddModal, setShowAddModal] = useState(false);
-
-  const [replyModal, setReplyModal] = useState(null);
 
   const [newComment, setNewComment] = useState({
 
@@ -37,8 +35,6 @@ function CROComments() {
     date: new Date().toISOString().split("T")[0],
 
   });
-
-  const [replyText, setReplyText] = useState("");
 
 
 
@@ -85,34 +81,6 @@ function CROComments() {
     setShowAddModal(false);
 
     showAlert("Success", "Comment added successfully.");
-
-  };
-
-
-
-  const handleReply = () => {
-
-    if (replyModal && replyText.trim()) {
-
-      replyToComment(replyModal.id, {
-
-        id: `RPL-${Date.now()}`,
-
-        author: "CRO User",
-
-        message: replyText,
-
-        date: new Date().toISOString().split("T")[0],
-
-      });
-
-      setReplyText("");
-
-      setReplyModal(null);
-
-      showAlert("Success", "Reply posted successfully.");
-
-    }
 
   };
 
@@ -282,22 +250,6 @@ function CROComments() {
 
                       </button>
 
-                      <button
-
-                        type="button"
-
-                        className="cro-btn-sm"
-
-                        onClick={() => setReplyModal(comment)}
-
-                        style={{ marginLeft: 8 }}
-
-                      >
-
-                        Reply
-
-                      </button>
-
                     </td>
 
                   </tr>
@@ -398,54 +350,6 @@ function CROComments() {
 
       </CROModal>
 
-
-
-      <CROModal
-
-        isOpen={Boolean(replyModal)}
-
-        onClose={() => setReplyModal(null)}
-
-        title={replyModal ? `Reply to ${replyModal.id}` : "Reply"}
-
-        footer={
-
-          <>
-
-            <button type="button" className="cro-btn cro-btn-secondary" onClick={() => setReplyModal(null)}>
-
-              Cancel
-
-            </button>
-
-            <button type="button" className="cro-btn cro-btn-primary" onClick={handleReply}>
-
-              Send Reply
-
-            </button>
-
-          </>
-
-        }
-
-      >
-
-        <textarea
-
-          placeholder="Your reply..."
-
-          value={replyText}
-
-          onChange={(e) => setReplyText(e.target.value)}
-
-          rows={4}
-
-          style={{ width: "100%", padding: 12, borderRadius: 8, border: "1px solid #d1d5db" }}
-
-        />
-
-      </CROModal>
-
     </CROLayout>
 
   );
@@ -455,4 +359,3 @@ function CROComments() {
 
 
 export default CROComments;
-

@@ -1,37 +1,151 @@
+.studies-wrapper {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .study-detail-header {
+  width: 100%;
+  margin: 0 0 20px;
+  padding: 20px 24px;
   display: flex;
   justify-content: space-between;
-  padding: 15px 25px;
-  background: #fff;
-  border-bottom: 1px solid #ddd;
+  align-items: center;
+  gap: 20px;
+  background: #ffffff;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  box-sizing: border-box;
 }
 
 .study-detail-header h3 {
   margin: 0;
 }
 
-.study-tabs {
+.study-title {
   display: flex;
-
-  gap: 18px;
-
-  background: #062b3d;
-
-  padding: 16px 20px;
-
-  border-radius: 4px;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
 }
 
+.study-id {
+  font-size: 18px;
+  font-weight: 700;
+  color: #000000;
+  word-break: break-word;
+}
 
+.study-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #000000;
+  word-break: break-word;
+}
 
+.study-org-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.study-org {
+  text-align: right;
+}
+
+.study-org strong {
+  display: block;
+  color: #000000;
+  font-size: 14px;
+}
+
+.study-org p {
+  margin: 5px 0 0;
+  color: #475569;
+  font-size: 13px;
+}
+
+.study-dropdown-btn {
+  margin: 2px 0 0;
+  padding: 4px;
+  border: none;
+  background: transparent;
+  color: #062b3d;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.study-dropdown-btn:hover {
+  color: #0d6efd;
+}
+
+.study-dropdown-content {
+  margin: -8px 0 20px;
+  padding: 16px 20px;
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
+  border-radius: 8px;
+}
+
+.study-dropdown-content p {
+  margin: 7px 0;
+  color: #334155;
+  font-size: 14px;
+}
+
+.study-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  width: 100%;
+  margin: 0;
+  padding: 16px 20px;
+  background: #062b3d;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.study-tab-button,
+.tab {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #f2f2f2;
+  color: #062b3d;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.study-tab-button:hover,
+.tab:hover {
+  background: #e2e8f0;
+}
+
+.study-tab-button.active,
 .tab.active {
   background: #0d6efd;
-
-  color: white;
-
+  color: #ffffff;
   border-bottom: 3px solid orange;
+}
 
-  font-weight: bold;
+.study-tab-content {
+  width: 100%;
+  margin-top: 20px;
+  box-sizing: border-box;
+}
+
+.study-empty-state {
+  padding: 30px;
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
+  border-radius: 8px;
+  color: #64748b;
 }
 
 .subjects-title {
@@ -40,6 +154,7 @@
 
 .legend {
   display: flex;
+  flex-wrap: wrap;
   gap: 15px;
   padding: 0 25px 15px;
   font-size: 13px;
@@ -56,20 +171,24 @@
   overflow-x: auto;
 }
 
-table {
-  border-collapse: collapse;
+.subjects-table table {
   width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
 }
 
-th,
-td {
-  border: 1px solid #ddd;
-  padding: 8px;
+.subjects-table th,
+.subjects-table td {
+  padding: 12px;
+  border: 1px solid #dcdcdc;
   text-align: center;
   font-size: 13px;
 }
 
-
+.subjects-table th {
+  background: #062b3d;
+  color: #ffffff;
+}
 
 .fail-text {
   color: red;
@@ -79,170 +198,33 @@ td {
   color: #007bff;
 }
 
-.study-title {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
+@media (max-width: 768px) {
+  .study-detail-header {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 18px;
+  }
 
-.study-id {
-  font-size: 13px;
-  font-weight: 600;
-  color: #000;
-}
+  .study-org-header {
+    width: 100%;
+    justify-content: space-between;
+  }
 
-.study-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: #000;
-}
+  .study-org {
+    text-align: left;
+  }
 
-/* ===================================== */
-/* YOUR EXTRA CSS (SAFE MERGE) */
-/* ===================================== */
+  .study-tabs {
+    gap: 10px;
+    padding: 12px;
+  }
 
-.study-org-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
+  .study-tab-button,
+  .tab {
+    flex: 1 1 140px;
+  }
 
-.study-dropdown-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  margin-left: 10px;
-  margin-top: 2px;
-}
-.study-detail-header {
-  background: white;
-
-  border: 1px solid #dcdcdc;
-
-  padding: 18px 24px;
-
-  display: flex;
-
-  justify-content: space-between;
-
-  align-items: center;
-
-  margin-bottom: 20px;
-}
-.study-detail-header {
-  background-color: white !important;
-
-  border: 1px solid #d9d9d9 !important;
-
-  padding: 20px !important;
-
-  display: flex !important;
-
-  justify-content: space-between !important;
-
-  align-items: center !important;
-
-  margin-bottom: 20px !important;
-}
-
-.study-title {
-  display: flex !important;
-
-  flex-direction: column !important;
-
-  gap: 5px !important;
-}
-
-.study-id {
-  font-size: 18px !important;
-
-  font-weight: bold !important;
-
-  color: black !important;
-}
-
-.study-name {
-  font-size: 16px !important;
-
-  color: black !important;
-}
-.study-detail-header {
-  width: 95%;
-  margin: 20px auto;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.study-title {
-  padding-left: 20px;
-}
-table {
-  width: 100%;
-
-  border-collapse: collapse;
-
-  background: white;
-}
-
-th {
-  background: #062b3d;
-
-  color: white;
-
-  padding: 12px;
-
-  border: 1px solid #dcdcdc;
-}
-
-td {
-  padding: 12px;
-
-  border: 1px solid #dcdcdc;
-
-  text-align: center;
-}
-table thead th {
-  background: #062b3d !important;
-
-  color: white !important;
-
-  padding: 12px !important;
-
-  border: 1px solid #dcdcdc !important;
-}
-
-table {
-  border-collapse: collapse;
-
-  width: 100%;
-}
-.study-tabs {
-  background: #062b3d !important;
-}
-
-.tab {
-  background: #f2f2f2 !important;
-
-  color: #062b3d !important;
-
-  border-radius: 8px !important;
-
-  padding: 12px 20px !important;
-}
-
-.tab.active {
-  background: #0d6efd !important;
-
-  color: white !important;
-
-  border-bottom: 3px solid orange !important;
-}
-
-.subjects-table th,
-table th {
-  background: #062b3d !important;
-
-  color: white !important;
+  .subjects-table {
+    padding: 0 0 20px;
+  }
 }

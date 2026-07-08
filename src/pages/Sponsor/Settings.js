@@ -5,9 +5,8 @@ import './Settings.css';
 import './SponsorShared.css';
 import { MdPerson, MdNotifications, MdSecurity, MdScience, MdChevronRight } from 'react-icons/md';
 import { loadSettings, saveSettings } from './data/sponsorDataStore';
-import { useLocation, useNavigate } from "react-router-dom";
-import { PROFILE_PHOTO_EVENT } from "../../constants/profileEvents";
-import { getCurrentUser } from "../../services/roleService";
+import { useLocation } from "react-router-dom";
+import { clearProfilePhoto, getCurrentUser, syncProfilePhoto } from "../../services/roleService";
 
 const SECTIONS = [
   {
@@ -47,7 +46,6 @@ const SECTIONS = [
 const Settings = () => {
   const location = useLocation();
   console.log(location.state);
-  const navigate = useNavigate();
   const [settings, setSettings] = useState(loadSettings());
   const [activeSection, setActiveSection] = useState(null);
   const [saved, setSaved] = useState(false);
@@ -58,7 +56,11 @@ const Settings = () => {
 }, [location]);
 const [profilePhoto, setProfilePhoto] = useState(() => {
   const currentUser = getCurrentUser();
-  return currentUser?.profilePhoto || "";
+  return (
+    currentUser?.profilePhoto ||
+    localStorage.getItem("profilePhoto") ||
+    ""
+  );
 });
 const handlePhotoChange = (e) => {
   const file = e.target.files[0];
@@ -70,23 +72,15 @@ const handlePhotoChange = (e) => {
     const image = reader.result;
 
     setProfilePhoto(image);
-
-    // save separately
-    localStorage.setItem("profilePhoto", image);
-
-    // update current user also
-    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-
-    if (currentUser) {
-      currentUser.profilePhoto = image;
-      localStorage.setItem("currentUser", JSON.stringify(currentUser));
-    }
-
-    // notify navbar
-    window.dispatchEvent(new Event(PROFILE_PHOTO_EVENT));
+    syncProfilePhoto(image);
   };
 
   reader.readAsDataURL(file);
+};
+
+const handleRemovePhoto = () => {
+  setProfilePhoto("");
+  clearProfilePhoto();
 };
   useEffect(() => {
     const refresh = () => setSettings(loadSettings());
@@ -128,6 +122,15 @@ const handlePhotoChange = (e) => {
   </div>
 
   <p className="photo-text">Change Profile Photo</p>
+  {profilePhoto && (
+    <button
+      type="button"
+      className="photo-remove-btn"
+      onClick={handleRemovePhoto}
+    >
+      Remove Photo
+    </button>
+  )}
 </div>
             <div className="form-group">
   <label>First Name</label>

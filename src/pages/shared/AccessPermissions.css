@@ -148,6 +148,95 @@
   background: #1d4ed8;
 }
 
+.request-permission-btn--sm {
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
+.permission-request-overlay {
+  align-items: center;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 16px;
+  position: fixed;
+  z-index: 1200;
+}
+
+.permission-request-modal {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+  max-height: 90vh;
+  max-width: 520px;
+  overflow: auto;
+  padding: 24px;
+  width: 100%;
+}
+
+.permission-request-modal h2 {
+  margin: 0 0 8px;
+}
+
+.permission-request-subtitle {
+  color: #64748b;
+  margin: 0 0 16px;
+}
+
+.permission-request-details {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 0 16px;
+}
+
+.permission-request-details dt {
+  color: #64748b;
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+.permission-request-details dd {
+  font-weight: 600;
+  margin: 0;
+}
+
+.permission-request-reason {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.permission-request-reason textarea {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font: inherit;
+  padding: 10px;
+  resize: vertical;
+}
+
+.permission-request-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.permission-request-cancel {
+  background: #f1f5f9;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 8px 14px;
+}
+
+.sidebar-tree-label--muted {
+  color: #94a3b8;
+  font-style: italic;
+}
+
 .subject-status-kpi-grid {
   display: grid;
   gap: 16px;

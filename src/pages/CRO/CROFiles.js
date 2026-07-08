@@ -6,23 +6,13 @@ import { useCROData } from "./CRODATAContext";
 
 import EmptyState from "./EmptyState";
 
-import CROModal from "./CROModal";
-
 
 
 function CROFiles() {
 
-  const { files, addFile, deleteFile, showAlert } = useCROData();
+  const { files, showAlert } = useCROData();
 
   const [searchTerm, setSearchTerm] = useState("");
-
-  const [showUploadModal, setShowUploadModal] = useState(false);
-
-  const [fileName, setFileName] = useState("");
-
-  const [fileCategory, setFileCategory] = useState("");
-
-  const [fileSite, setFileSite] = useState("");
 
 
 
@@ -31,54 +21,6 @@ function CROFiles() {
     f.name.toLowerCase().includes(searchTerm.toLowerCase())
 
   );
-
-
-
-  const handleUpload = () => {
-
-    if (!fileName.trim()) {
-
-      showAlert("Validation", "Please enter a file name.");
-
-      return;
-
-    }
-
-    addFile({
-
-      name: fileName,
-
-      category: fileCategory || "Other",
-
-      site: fileSite,
-
-      uploadedBy: "CRO User",
-
-      size: "1.2 MB",
-
-    });
-
-    setFileName("");
-
-    setFileCategory("");
-
-    setFileSite("");
-
-    setShowUploadModal(false);
-
-    showAlert("Success", "File uploaded successfully.");
-
-  };
-
-
-
-  const handleDelete = (file) => {
-
-    deleteFile(file.id);
-
-    showAlert("Deleted", `${file.name} has been removed.`);
-
-  };
 
 
 
@@ -155,20 +97,6 @@ function CROFiles() {
           />
 
           <h2>Files List</h2>
-
-          <button
-
-            type="button"
-
-            className="cro-btn-primary"
-
-            onClick={() => setShowUploadModal(true)}
-
-          >
-
-            + Upload File
-
-          </button>
 
         </div>
 
@@ -250,22 +178,6 @@ function CROFiles() {
 
                       </button>
 
-                      <button
-
-                        type="button"
-
-                        className="cro-btn-sm cro-btn-danger"
-
-                        onClick={() => handleDelete(file)}
-
-                        style={{ marginLeft: 8 }}
-
-                      >
-
-                        Delete
-
-                      </button>
-
                     </td>
 
                   </tr>
@@ -284,84 +196,6 @@ function CROFiles() {
 
 
 
-      <CROModal
-
-        isOpen={showUploadModal}
-
-        onClose={() => setShowUploadModal(false)}
-
-        title="Upload File"
-
-        footer={
-
-          <>
-
-            <button type="button" className="cro-btn cro-btn-secondary" onClick={() => setShowUploadModal(false)}>
-
-              Cancel
-
-            </button>
-
-            <button type="button" className="cro-btn cro-btn-primary" onClick={handleUpload}>
-
-              Upload
-
-            </button>
-
-          </>
-
-        }
-
-      >
-
-        <input
-
-          className="cro-input"
-
-          placeholder="File Name"
-
-          value={fileName}
-
-          onChange={(e) => setFileName(e.target.value)}
-
-        />
-
-        <select
-
-          className="cro-input"
-
-          value={fileCategory}
-
-          onChange={(e) => setFileCategory(e.target.value)}
-
-        >
-
-          <option value="">Select Category</option>
-
-          <option value="Monitoring">Monitoring</option>
-
-          <option value="Regulatory">Regulatory</option>
-
-          <option value="Other">Other</option>
-
-        </select>
-
-        <input
-
-          className="cro-input"
-
-          placeholder="Site"
-
-          value={fileSite}
-
-          onChange={(e) => setFileSite(e.target.value)}
-
-        />
-
-        <input type="file" className="cro-input" />
-
-      </CROModal>
-
     </CROLayout>
 
   );
@@ -371,4 +205,3 @@ function CROFiles() {
 
 
 export default CROFiles;
-

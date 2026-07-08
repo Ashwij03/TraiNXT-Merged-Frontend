@@ -1,367 +1,478 @@
+import { getFilteredStudies } from '../../../services/filterService';
+import { getStudies } from '../../../services/studyService';
+import {
+  getNotifications as getAdminNotifications,
+  getRecruitment as getAdminRecruitment,
+  getRegulatoryDocs,
+  getReports as getAdminReports,
+  getSitePerformance,
+  getSites as getAdminSites,
+} from '../../../services/adminService';
+
 const STORAGE_PREFIX = 'sponsor_data_';
+const SETTINGS_KEY = 'sponsor_settings';
+const SUBSCRIPTION_KEY = 'sponsor_subscription';
+const RISKS_KEY = `${STORAGE_PREFIX}risks`;
 
-const defaultData = {
-  portfolioStudies: [
-  {
-    studyId: "747-303",
-    studyName: "OBETICHOLIC ACID (OCA)",
-    phase: "Phase III",
-    status: "Active",
-    cro: "IQVIA",
-    sites: 1,
-    enrolled: 1,
-    target: 50,
-    startDate: "2026-06-01",
-    therapeuticArea: "Hepatology"
-  },
-
-  {
-    studyId: "05151",
-    studyName: "SeptiTest",
-    phase: "Screening",
-    status: "Screening",
-    cro: "PPD",
-    sites: 1,
-    enrolled: 8,
-    target: 80,
-    startDate: "2026-06-03",
-    therapeuticArea: "Critical Care"
-  }
-],
-  oversightStudies: [
-
-{
-  studyId:"747-303",
-  studyName:"OBETICHOLIC ACID (OCA)",
-  status:"On Track",
-  progress:73,
-  enrollment:"1/50",
-  milestone:"Interim Analysis",
-  nextReview:"2026-07-01"
-},
-
-{
-  studyId:"05151",
-  studyName:"SeptiTest",
-  status:"Delayed",
-  progress:40,
-  enrollment:"8/80",
-  milestone:"Site Activation",
-  nextReview:"2026-06-20"
-}
-
-],
-  cros: [
-    { id: 'CRO-001', name: 'IQVIA', studies: 12, sites: 45, performance: 95, status: 'Active', contact: 'Sarah Chen' },
-    { id: 'CRO-002', name: 'Parexel', studies: 8, sites: 32, performance: 90, status: 'Active', contact: 'James Wilson' },
-    { id: 'CRO-003', name: 'ICON', studies: 10, sites: 28, performance: 88, status: 'Active', contact: 'Maria Lopez' },
-    { id: 'CRO-004', name: 'Syneos Health', studies: 6, sites: 20, performance: 85, status: 'Active', contact: 'David Park' },
-    { id: 'CRO-005', name: 'PPD', studies: 5, sites: 18, performance: 92, status: 'Active', contact: 'Emily Brown' },
-  ],
-  sites: [
-    { id: 'S-101', name: 'City Hospital', study: 'TRIA-001', enrolled: 198, target: 250, performance: 79, region: 'North America' },
-    { id: 'S-102', name: 'Apollo Medical Center', study: 'TRIA-002', enrolled: 175, target: 220, performance: 80, region: 'Europe' },
-    { id: 'S-103', name: 'Care Hospital', study: 'TRIA-003', enrolled: 150, target: 200, performance: 75, region: 'Asia Pacific' },
-    { id: 'S-104', name: 'Metro Research Clinic', study: 'TRIA-001', enrolled: 142, target: 180, performance: 79, region: 'North America' },
-    { id: 'S-105', name: 'University Health System', study: 'TRIA-004', enrolled: 210, target: 250, performance: 84, region: 'Europe' },
-  ],
-  recruitment: [
-    { id: 'REC-001', study: 'TRIA-001', screened: 3200, enrolled: 2200, target: 3000, rate: 73, status: 'On Track' },
-    { id: 'REC-002', study: 'TRIA-002', screened: 1400, enrolled: 900, target: 1500, rate: 60, status: 'Below Target' },
-    { id: 'REC-003', study: 'TRIA-003', screened: 680, enrolled: 420, target: 600, rate: 70, status: 'On Track' },
-    { id: 'REC-004', study: 'TRIA-004', screened: 4100, enrolled: 3100, target: 4000, rate: 78, status: 'On Track' },
-  ],
-  regulatory: [
-    { id: 'REG-001', study: 'TRIA-001', document: 'Protocol Amendment v3', status: 'Approved', authority: 'FDA', dueDate: '2026-05-01', submittedDate: '2026-04-15' },
-    { id: 'REG-002', study: 'TRIA-002', document: 'ICF Version 2.1', status: 'In Review', authority: 'IRB', dueDate: '2026-06-30', submittedDate: '2026-06-01' },
-    { id: 'REG-003', study: 'TRIA-003', document: 'IND Safety Report', status: 'Submitted', authority: 'FDA', dueDate: '2026-07-15', submittedDate: '2026-06-10' },
-    { id: 'REG-004', study: 'TRIA-004', document: 'Annual Safety Report', status: 'Overdue', authority: 'EMA', dueDate: '2026-05-20', submittedDate: null },
-  ],
-  risks: [
-    { id: 'RISK-001', study: 'TRIA-001', title: 'Enrollment Below Target', category: 'Enrollment', severity: 'High', status: 'Open', owner: 'Dr. Smith' },
-    { id: 'RISK-002', study: 'TRIA-002', title: 'Protocol Deviation Trend', category: 'Protocol', severity: 'Medium', status: 'Mitigated', owner: 'Jane Doe' },
-    { id: 'RISK-003', study: 'TRIA-003', title: 'Regulatory Submission Delay', category: 'Regulatory', severity: 'Critical', status: 'Open', owner: 'Regulatory Team' },
-    { id: 'RISK-004', study: 'TRIA-004', title: 'Site Activation Delay', category: 'Operations', severity: 'High', status: 'Open', owner: 'Ops Lead' },
-    { id: 'RISK-005', study: 'TRIA-002', title: 'Data Quality Issues', category: 'Data', severity: 'Low', status: 'Closed', owner: 'Data Manager' },
-  ],
-  reports: [
-    { id: 'RPT-001', name: 'Monthly Enrollment Summary', type: 'Enrollment', study: 'All', generatedDate: '2026-06-01', status: 'Ready' },
-    { id: 'RPT-002', name: 'Q2 Safety Report', type: 'Safety', study: 'TRIA-001', generatedDate: '2026-06-10', status: 'Ready' },
-    { id: 'RPT-003', name: 'CRO Performance Review', type: 'CRO', study: 'All', generatedDate: '2026-06-12', status: 'Pending' },
-    { id: 'RPT-004', name: 'Site Activation Tracker', type: 'Operations', study: 'TRIA-002', generatedDate: '2026-06-14', status: 'Ready' },
-  ],
-  notifications: [
-    { id: 'NOT-001', type: 'Risk Alert', message: 'Critical enrollment risk detected in TRIA-003', severity: 'Critical', date: '2026-06-17', read: false },
-    { id: 'NOT-002', type: 'Regulatory Alert', message: 'Annual Safety Report overdue for TRIA-004', severity: 'High', date: '2026-06-16', read: false },
-    { id: 'NOT-003', type: 'Study Update', message: 'TRIA-001 reached 73% enrollment milestone', severity: 'Low', date: '2026-06-15', read: true },
-    { id: 'NOT-004', type: 'CRO Alert', message: 'Syneos Health performance review due', severity: 'Medium', date: '2026-06-14', read: false },
-    { id: 'NOT-005', type: 'Site Alert', message: 'Site S-103 enrollment below 80% of target', severity: 'High', date: '2026-06-13', read: true },
-    { id: 'NOT-006', type: 'Document Alert', message: 'ICF document pending IRB approval', severity: 'Medium', date: '2026-06-12', read: false },
-  ],
-  alerts: [
-    { id: 'ALT-001', message: '3 regulatory documents overdue', severity: 'Critical', module: 'Regulatory' },
-    { id: 'ALT-002', message: '2 studies below enrollment target', severity: 'High', module: 'Recruitment' },
-    { id: 'ALT-003', message: 'CRO performance review scheduled', severity: 'Medium', module: 'CRO Oversight' },
-    { id: 'ALT-004', message: '5 unread high-priority notifications', severity: 'High', module: 'Notifications' },
-  ],
-  quickActions: [
-    { id: 'QA-001', label: 'Create Study', value: '6', subtitle: 'Portfolio studies', icon: 'study', color: '#2563eb', bg: '#eff6ff', route: '/portfolio' },
-    { id: 'QA-002', label: 'Review Risks', value: '3', subtitle: 'Open risks', icon: 'risk', color: '#dc2626', bg: '#fee2e2', route: '/risk-management' },
-    { id: 'QA-003', label: 'Generate Report', value: '3', subtitle: 'Ready reports', icon: 'report', color: '#7c3aed', bg: '#ede9fe', route: '/reports' },
-    { id: 'QA-004', label: 'View Recruitment', value: '73%', subtitle: 'Enrollment rate', icon: 'recruitment', color: '#16a34a', bg: '#ecfdf5', route: '/recruitment' },
-    { id: 'QA-005', label: 'CRO Dashboard', value: '5', subtitle: 'Active CROs', icon: 'cro', color: '#d97706', bg: '#fef3c7', route: '/cro-oversight' },
-  ],
-  settings: {
-  // Profile
-  firstName: "Sponsor",
-  lastName: "Admin",
-  fullName: "Sponsor Admin",
-
-  employeeId: "EMP-1001",
-
-  email: "sponsor@trianxt.com",
-
-  phone: "+91 9876543210",
-
-  jobTitle: "Clinical Operations Director",
-
-  department: "Clinical Operations",
-
-  organization: "TriaNXT Pharmaceuticals",
-
-  country: "India",
-
-  timeZone: "Asia/Kolkata",
-
-  language: "English",
-
-  profilePhoto: "",
-
-  digitalSignature: "",
-
-  // Notifications
-  emailAlerts: true,
-  smsAlerts: false,
-  criticalOnly: false,
-  enrollmentAlerts: true,
-  regulatoryAlerts: true,
-
-  // Security
-  currentPassword: "",
-  newPassword: "",
-  confirmPassword: "",
-  twoFactorEnabled: false,
-  sessionTimeout: true,
-
-  // Preferences
-  defaultStudyView: "grid",
-  dashboardRefresh: "5",
-  preferredTherapeuticArea: "All",
-  showCompletedStudies: true,
-  theme: "light",
-},
-subscription: {
-  plan: "Professional",
-  status: "Active",
-  startDate: "2026-01-01",
-  endDate: "2026-12-31",
-  maxUsers: 25,
-  maxStudies: 10,
-  storageLimit: 500,
-  autoRenewal: true,
-  notes: "",
-},
-  enrollmentTrend: [
-    { month: 'Jan', enrolled: 320 },
-    { month: 'Feb', enrolled: 410 },
-    { month: 'Mar', enrolled: 500 },
-    { month: 'Apr', enrolled: 620 },
-    { month: 'May', enrolled: 780 },
-    { month: 'Jun', enrolled: 920 },
-  ],
-};
-
-function loadCollection(key) {
+function readJson(key, fallback = []) {
   try {
-    const stored = localStorage.getItem(STORAGE_PREFIX + key);
-    if (stored) return JSON.parse(stored);
-  } catch (e) {
-    console.warn('Failed to load sponsor data:', key, e);
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
   }
-  return defaultData[key] ? JSON.parse(JSON.stringify(defaultData[key])) : [];
 }
 
-function saveCollection(key, data) {
-  localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(data));
-  window.dispatchEvent(new CustomEvent('sponsor-data-updated', { detail: { key } }));
+function writeJson(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+
+  window.dispatchEvent(
+    new CustomEvent('sponsor-data-updated', {
+      detail: { key },
+    })
+  );
 }
 
-export function getPortfolioStudies() { return loadCollection('portfolioStudies'); }
-export function savePortfolioStudies(data) { saveCollection('portfolioStudies', data); }
+function getSafeArray(value) {
+  return Array.isArray(value) ? value : [];
+}
 
-export function getOversightStudies() { return loadCollection('oversightStudies'); }
-export function saveOversightStudies(data) { saveCollection('oversightStudies', data); }
+function mapStudyToPortfolio(study = {}) {
+  return {
+    studyId: study.code || study.studyId || study.id || '',
+    studyName: study.name || study.studyName || '',
+    phase: study.phase || '',
+    status: study.status || '',
+    cro: study.cro || study.croName || '',
+    sites: Number(study.sites || study.siteCount || 0),
+    enrolled: Number(study.enrolled || study.enrolledSubjects || 0),
+    target: Number(study.targetSubjects || study.target || 0),
+    startDate: study.startDate || '',
+    therapeuticArea: study.indication || study.therapeuticArea || '',
+  };
+}
 
-export function getCROs() { return loadCollection('cros'); }
-export function saveCROs(data) { saveCollection('cros', data); }
+export function getPortfolioStudies() {
+  const filteredStudies = getSafeArray(getFilteredStudies());
 
-export function getSites() { return loadCollection('sites'); }
-export function saveSites(data) { saveCollection('sites', data); }
+  if (filteredStudies.length > 0) {
+    return filteredStudies.map(mapStudyToPortfolio);
+  }
 
-export function getRecruitment() { return loadCollection('recruitment'); }
-export function saveRecruitment(data) { saveCollection('recruitment', data); }
+  const allStudies = getSafeArray(getStudies());
+  return allStudies.map(mapStudyToPortfolio);
+}
 
-export function getRegulatory() { return loadCollection('regulatory'); }
-export function saveRegulatory(data) { saveCollection('regulatory', data); }
+export function savePortfolioStudies(data) {
+  writeJson(`${STORAGE_PREFIX}portfolioStudies`, data);
+}
 
-export function getRisks() { return loadCollection('risks'); }
-export function saveRisks(data) { saveCollection('risks', data); }
+export function getOversightStudies() {
+  return getPortfolioStudies().map((study) => {
+    const progress =
+      study.target > 0
+        ? Math.min(Math.round((study.enrolled / study.target) * 100), 100)
+        : 0;
 
-export function getReports() { return loadCollection('reports'); }
-export function saveReports(data) { saveCollection('reports', data); }
+    return {
+      studyId: study.studyId,
+      studyName: study.studyName,
+      status:
+        study.status === 'Completed'
+          ? 'Completed'
+          : progress >= 70
+            ? 'On Track'
+            : study.enrolled > 0
+              ? 'Delayed'
+              : 'Planning',
+      progress,
+      enrollment: `${study.enrolled}/${study.target}`,
+      milestone: study.status || '',
+      nextReview: study.startDate || '',
+    };
+  });
+}
 
-export function getNotifications() { return loadCollection('notifications'); }
-export function saveNotifications(data) { saveCollection('notifications', data); }
+export function saveOversightStudies(data) {
+  writeJson(`${STORAGE_PREFIX}oversightStudies`, data);
+}
+
+export function getCROs() {
+  const studies = getPortfolioStudies();
+  const croMap = new Map();
+
+  studies.forEach((study) => {
+    if (!study.cro) {
+      return;
+    }
+
+    const existing = croMap.get(study.cro) || {
+      id: `CRO-${study.cro}`,
+      name: study.cro,
+      studies: 0,
+      sites: 0,
+      performance: 0,
+      status: 'Active',
+      contact: '',
+    };
+
+    existing.studies += 1;
+    existing.sites += Number(study.sites) || 0;
+
+    croMap.set(study.cro, existing);
+  });
+
+  const recruitedCROs = readJson('sponsorRecruitedCROs', []);
+
+  getSafeArray(recruitedCROs).forEach((cro) => {
+    const croName = typeof cro === 'string' ? cro : cro?.name;
+
+    if (!croName || croMap.has(croName)) {
+      return;
+    }
+
+    croMap.set(croName, {
+      id: cro?.id || `CRO-${croName}`,
+      name: croName,
+      studies: Number(cro?.studies || 0),
+      sites: Number(cro?.sites || 0),
+      performance: Number(cro?.performance || 0),
+      status: cro?.status || 'Active',
+      contact: cro?.contact || '',
+    });
+  });
+
+  return Array.from(croMap.values());
+}
+
+export function saveCROs(data) {
+  writeJson(`${STORAGE_PREFIX}cros`, data);
+}
+
+export function getSites() {
+  const adminSites = getSafeArray(getAdminSites());
+
+  if (adminSites.length > 0) {
+    return adminSites.map((site = {}) => ({
+      id: site.id || site.siteNumber || '',
+      name: site.name || '',
+      study: site.study || site.studyCode || '',
+      enrolled: Number(site.enrolled || 0),
+      target: Number(site.target || 0),
+      performance: Number(site.performance || 0),
+      region: site.region || site.country || '',
+    }));
+  }
+
+  return getSafeArray(getSitePerformance()).map((site = {}) => ({
+    id: site.id || site.siteNumber || site.siteName || '',
+    name: site.siteName || site.name || '',
+    study: site.study || site.studyCode || '',
+    enrolled: Number(site.enrolled || 0),
+    target: Number(site.target || 0),
+    performance: Number(site.performance || 0),
+    region: site.region || site.country || '',
+  }));
+}
+
+export function saveSites(data) {
+  writeJson(`${STORAGE_PREFIX}sites`, data);
+}
+
+export function getRecruitment() {
+  return getSafeArray(getAdminRecruitment()).map((item = {}) => ({
+    id: item.id || '',
+    study: item.study || item.studyCode || '',
+    screened: Number(item.screened || 0),
+    enrolled: Number(item.enrolled || 0),
+    target: Number(item.target || 0),
+    rate: Number(item.rate || 0),
+    status: item.status || '',
+  }));
+}
+
+export function saveRecruitment(data) {
+  writeJson(`${STORAGE_PREFIX}recruitment`, data);
+}
+
+export function getRegulatory() {
+  return getSafeArray(getRegulatoryDocs()).map((doc = {}) => ({
+    id: doc.id || '',
+    study: doc.study || doc.studyCode || '',
+    document: doc.document || doc.name || '',
+    status: doc.status || '',
+    authority: doc.authority || '',
+    dueDate: doc.dueDate || '',
+    submittedDate: doc.submittedDate || '',
+  }));
+}
+
+export function saveRegulatory(data) {
+  writeJson(`${STORAGE_PREFIX}regulatory`, data);
+}
+
+export function getRisks() {
+  return getSafeArray(readJson(RISKS_KEY, []));
+}
+
+export function saveRisks(data) {
+  writeJson(RISKS_KEY, data);
+}
+
+export function getReports() {
+  return getSafeArray(getAdminReports()).map((report = {}) => ({
+    id: report.id || '',
+    name: report.name || report.title || '',
+    type: report.type || '',
+    study: report.study || report.studyCode || '',
+    generatedDate: report.generatedDate || report.date || '',
+    status: report.status || '',
+  }));
+}
+
+export function saveReports(data) {
+  writeJson(`${STORAGE_PREFIX}reports`, data);
+}
+
+export function getNotifications() {
+  return getSafeArray(getAdminNotifications()).map((item = {}) => ({
+    id: item.id || '',
+    type: item.type || '',
+    message: item.message || item.title || '',
+    severity: item.severity || '',
+    date: item.date || item.timestamp || '',
+    read: Boolean(item.read),
+  }));
+}
+
+export function saveNotifications(data) {
+  writeJson(`${STORAGE_PREFIX}notifications`, data);
+}
 
 export function getAlerts() {
-  const regKpis = getRegulatoryKPIs();
-  const recKpis = getRecruitmentKPIs();
-  const riskKpis = getRiskKPIs();
-  const notifKpis = getNotificationKPIs();
-  const croKpis = getCROKPIs();
+  const regulatoryKPIs = getRegulatoryKPIs();
+  const recruitmentKPIs = getRecruitmentKPIs();
+  const riskKPIs = getRiskKPIs();
+  const notificationKPIs = getNotificationKPIs();
+  const croKPIs = getCROKPIs();
 
   const alerts = [];
 
-  if (regKpis.overdue > 0) {
+  if (regulatoryKPIs.overdue > 0) {
     alerts.push({
       id: 'ALT-REG',
-      message: `${regKpis.overdue} regulatory document${regKpis.overdue > 1 ? 's' : ''} overdue`,
+      message: `${regulatoryKPIs.overdue} regulatory document${
+        regulatoryKPIs.overdue > 1 ? 's' : ''
+      } overdue`,
       severity: 'Critical',
       module: 'Regulatory',
     });
   }
 
-  if (recKpis.belowTarget > 0) {
+  if (recruitmentKPIs.belowTarget > 0) {
     alerts.push({
       id: 'ALT-REC',
-      message: `${recKpis.belowTarget} stud${recKpis.belowTarget > 1 ? 'ies' : 'y'} below enrollment target`,
+      message: `${recruitmentKPIs.belowTarget} ${
+        recruitmentKPIs.belowTarget > 1 ? 'studies' : 'study'
+      } below enrollment target`,
       severity: 'High',
       module: 'Recruitment',
     });
   }
 
-  if (riskKpis.open > 0) {
+  if (riskKPIs.open > 0) {
     alerts.push({
       id: 'ALT-RISK',
-      message: `${riskKpis.open} open risk${riskKpis.open > 1 ? 's' : ''} requiring attention`,
-      severity: riskKpis.critical > 0 ? 'Critical' : 'High',
+      message: `${riskKPIs.open} open risk${
+        riskKPIs.open > 1 ? 's' : ''
+      } requiring attention`,
+      severity: riskKPIs.critical > 0 ? 'Critical' : 'High',
       module: 'Risk Management',
     });
   }
 
-  if (notifKpis.unread > 0) {
+  if (notificationKPIs.unread > 0) {
     alerts.push({
       id: 'ALT-NOT',
-      message: `${notifKpis.unread} unread notification${notifKpis.unread > 1 ? 's' : ''}`,
-      severity: notifKpis.critical > 0 ? 'Critical' : 'High',
+      message: `${notificationKPIs.unread} unread notification${
+        notificationKPIs.unread > 1 ? 's' : ''
+      }`,
+      severity: notificationKPIs.critical > 0 ? 'Critical' : 'High',
       module: 'Notifications',
     });
   }
 
-  if (croKpis.total > 0) {
+  if (croKPIs.total > 0) {
     alerts.push({
       id: 'ALT-CRO',
-      message: `${croKpis.active} active CRO partner${croKpis.active > 1 ? 's' : ''} — performance review due`,
+      message: `${croKPIs.active} active CRO partner${
+        croKPIs.active > 1 ? 's' : ''
+      }`,
       severity: 'Medium',
       module: 'CRO Oversight',
     });
   }
 
-  return alerts.length > 0 ? alerts : loadCollection('alerts');
+  return alerts;
 }
-export function saveAlerts(data) { saveCollection('alerts', data); }
 
-export function getQuickActions() { return loadCollection('quickActions'); }
-export function saveQuickActions(data) { saveCollection('quickActions', data); }
+export function saveAlerts(data) {
+  writeJson(`${STORAGE_PREFIX}alerts`, data);
+}
 
-const SETTINGS_KEY = 'sponsor_settings';
+export function getQuickActions() {
+  const kpis = getDashboardKPIs();
+
+  return [
+    {
+      id: 'QA-001',
+      label: 'Create Study',
+      value: String(kpis.portfolio),
+      subtitle: 'Portfolio studies',
+      icon: 'study',
+      color: '#2563eb',
+      bg: '#eff6ff',
+      route: '/portfolio',
+    },
+    {
+      id: 'QA-002',
+      label: 'Review Risks',
+      value: String(kpis.risks),
+      subtitle: 'Open risks',
+      icon: 'risk',
+      color: '#dc2626',
+      bg: '#fee2e2',
+      route: '/risk-management',
+    },
+    {
+      id: 'QA-003',
+      label: 'Generate Report',
+      value: String(kpis.reports),
+      subtitle: 'Ready reports',
+      icon: 'report',
+      color: '#7c3aed',
+      bg: '#ede9fe',
+      route: '/reports',
+    },
+    {
+      id: 'QA-004',
+      label: 'View Recruitment',
+      value: `${kpis.recruitment}%`,
+      subtitle: 'Enrollment rate',
+      icon: 'recruitment',
+      color: '#16a34a',
+      bg: '#ecfdf5',
+      route: '/recruitment',
+    },
+    {
+      id: 'QA-005',
+      label: 'CRO Dashboard',
+      value: String(kpis.cros),
+      subtitle: 'Active CROs',
+      icon: 'cro',
+      color: '#d97706',
+      bg: '#fef3c7',
+      route: '/cro-oversight',
+    },
+  ];
+}
+
+export function saveQuickActions(data) {
+  writeJson(`${STORAGE_PREFIX}quickActions`, data);
+}
 
 export function loadSettings() {
-  try {
-    const stored = localStorage.getItem(SETTINGS_KEY);
-    if (stored) return { ...defaultData.settings, ...JSON.parse(stored) };
-  } catch (e) {
-    console.warn('Failed to load settings', e);
-  }
-  return JSON.parse(JSON.stringify(defaultData.settings));
+  const currentUser = readJson('currentUser', {});
+  const storedSettings = readJson(SETTINGS_KEY, {});
+
+  return {
+    firstName: currentUser.firstName || '',
+    lastName: currentUser.lastName || '',
+    fullName: currentUser.name || '',
+    employeeId: currentUser.employeeId || '',
+    email: currentUser.email || '',
+    phone: currentUser.phone || '',
+    jobTitle: currentUser.jobTitle || '',
+    department: currentUser.department || '',
+    organization: currentUser.organization || '',
+    country: currentUser.country || '',
+    timeZone: currentUser.timeZone || '',
+    language: currentUser.language || '',
+    profilePhoto: currentUser.profilePhoto || '',
+    digitalSignature: currentUser.digitalSignature || '',
+    emailAlerts: false,
+    smsAlerts: false,
+    criticalOnly: false,
+    enrollmentAlerts: false,
+    regulatoryAlerts: false,
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+    twoFactorEnabled: false,
+    sessionTimeout: false,
+    defaultStudyView: '',
+    dashboardRefresh: '',
+    preferredTherapeuticArea: '',
+    showCompletedStudies: false,
+    theme: '',
+    ...storedSettings,
+  };
 }
 
 export function saveSettings(data) {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(data));
-  window.dispatchEvent(new CustomEvent('sponsor-data-updated', { detail: { key: 'settings' } }));
+  writeJson(SETTINGS_KEY, data);
 }
-const SUBSCRIPTION_KEY = 'sponsor_subscription';
 
 export function getSubscription() {
-  try {
-    const stored = localStorage.getItem(SUBSCRIPTION_KEY);
-
-    if (stored) {
-      return {
-        ...defaultData.subscription,
-        ...JSON.parse(stored),
-      };
-    }
-  } catch (e) {
-    console.warn('Failed to load subscription', e);
-  }
-
-  return JSON.parse(JSON.stringify(defaultData.subscription));
+  return readJson(SUBSCRIPTION_KEY, {
+    plan: '',
+    status: '',
+    startDate: '',
+    endDate: '',
+    maxUsers: '',
+    maxStudies: '',
+    storageLimit: '',
+    autoRenewal: false,
+    notes: '',
+  });
 }
 
 export function saveSubscription(data) {
-  localStorage.setItem(
-    SUBSCRIPTION_KEY,
-    JSON.stringify(data)
-  );
+  writeJson(SUBSCRIPTION_KEY, data);
+}
 
-  window.dispatchEvent(
-    new CustomEvent('sponsor-data-updated', {
-      detail: { key: 'subscription' },
-    })
-  );
+export function getAllSubjectsFromStorage() {
+  const subjects = readJson('subjects', []);
+  return getSafeArray(subjects);
 }
 
 export function syncQuickActionValues() {
-  const kpis = getDashboardKPIs();
-  const actions = getQuickActions();
-  const valueMap = {
-    study: String(kpis.portfolio),
-    risk: String(kpis.risks),
-    report: String(kpis.reports),
-    recruitment: `${kpis.recruitment}%`,
-    cro: String(kpis.cros),
-  };
-  const subtitleMap = {
-    study: 'Portfolio studies',
-    risk: 'Open risks',
-    report: 'Ready reports',
-    recruitment: 'Enrollment rate',
-    cro: 'Active CROs',
-  };
-  return actions.map((a) => ({
-    ...a,
-    value: valueMap[a.icon] || a.value || '—',
-    subtitle: subtitleMap[a.icon] || a.subtitle || '',
+  return getQuickActions();
+}
+
+export function getEnrollmentTrend() {
+  return getPortfolioStudies().slice(0, 6).map((study, index) => ({
+    month: study.studyId || `Study ${index + 1}`,
+    enrolled: Number(study.enrolled || 0),
   }));
 }
 
-export function getEnrollmentTrend() { return loadCollection('enrollmentTrend'); }
-
 export function useSponsorDataRefresh(callback) {
   const handler = () => callback();
+
   window.addEventListener('sponsor-data-updated', handler);
-  return () => window.removeEventListener('sponsor-data-updated', handler);
+  window.addEventListener('studies-updated', handler);
+  window.addEventListener('subjects-updated', handler);
+  window.addEventListener('reports-updated', handler);
+  window.addEventListener('notifications-updated', handler);
+
+  return () => {
+    window.removeEventListener('sponsor-data-updated', handler);
+    window.removeEventListener('studies-updated', handler);
+    window.removeEventListener('subjects-updated', handler);
+    window.removeEventListener('reports-updated', handler);
+    window.removeEventListener('notifications-updated', handler);
+  };
 }
 
 export function getDashboardKPIs() {
@@ -371,162 +482,244 @@ export function getDashboardKPIs() {
   const reports = getReports();
   const notifications = getNotifications();
 
-  const activeStudies = portfolio.filter(s => ['Active', 'Recruiting'].includes(s.status)).length;
-  const totalEnrolled = portfolio.reduce((sum, s) => sum + (s.enrolled || 0), 0);
-  const totalTarget = portfolio.reduce((sum, s) => sum + (s.target || 0), 0);
-  const openRisks = risks.filter(r => r.status === 'Open').length;
-  const unreadNotifications = notifications.filter(n => !n.read).length;
+  const activeStudies = portfolio.filter((study) =>
+    ['Active', 'Recruiting'].includes(study.status)
+  ).length;
+
+  const totalEnrolled = portfolio.reduce(
+    (sum, study) => sum + Number(study.enrolled || 0),
+    0
+  );
+
+  const totalTarget = portfolio.reduce(
+    (sum, study) => sum + Number(study.target || 0),
+    0
+  );
 
   return {
     portfolio: portfolio.length,
     studies: activeStudies,
-    cros: cros.filter(c => c.status === 'Active').length,
-    recruitment: Math.round((totalEnrolled / Math.max(totalTarget, 1)) * 100),
+    cros: cros.filter((cro) => cro.status === 'Active').length,
+    recruitment:
+      totalTarget > 0 ? Math.round((totalEnrolled / totalTarget) * 100) : 0,
     recruitmentCount: totalEnrolled,
-    risks: openRisks,
-    reports: reports.filter(r => r.status === 'Ready').length,
-    notifications: unreadNotifications,
+    risks: risks.filter((risk) => risk.status === 'Open').length,
+    reports: reports.filter((report) => report.status === 'Ready').length,
+    notifications: notifications.filter((notification) => !notification.read)
+      .length,
     totalNotifications: notifications.length,
   };
 }
 
 export function getEnrollmentByStudy() {
-  return getPortfolioStudies().map(s => ({
-    study: s.studyId,
-    enrolled: s.enrolled || 0,
+  return getPortfolioStudies().map((study) => ({
+    study: study.studyId,
+    enrolled: Number(study.enrolled || 0),
   }));
 }
 
 export function getStudyStatusData() {
-  const portfolio = getPortfolioStudies();
-  const statusCounts = {};
-  portfolio.forEach(s => {
-    statusCounts[s.status] = (statusCounts[s.status] || 0) + 1;
+  const counts = {};
+
+  getPortfolioStudies().forEach((study) => {
+    const status = study.status || 'Unknown';
+    counts[status] = (counts[status] || 0) + 1;
   });
-  return Object.entries(statusCounts).map(([name, value]) => ({ name, value }));
+
+  return Object.entries(counts).map(([name, value]) => ({
+    name,
+    value,
+  }));
 }
 
 export function getPhaseDistribution() {
-  const portfolio = getPortfolioStudies();
-  const phaseCounts = {};
-  portfolio.forEach(s => {
-    phaseCounts[s.phase] = (phaseCounts[s.phase] || 0) + 1;
+  const counts = {};
+
+  getPortfolioStudies().forEach((study) => {
+    const phase = study.phase || 'Unspecified';
+    counts[phase] = (counts[phase] || 0) + 1;
   });
-  return Object.entries(phaseCounts).map(([phase, studies]) => ({ phase, studies }));
+
+  return Object.entries(counts).map(([phase, studies]) => ({
+    phase,
+    studies,
+  }));
 }
 
 export function getEnrollmentStatusPie() {
-  const portfolio = getPortfolioStudies();
-  let onTrack = 0, belowTarget = 0, completed = 0;
-  portfolio.forEach(s => {
-    const rate = s.target ? (s.enrolled / s.target) * 100 : 0;
-    if (s.status === 'Completed') completed++;
-    else if (rate >= 70) onTrack++;
-    else belowTarget++;
+  let onTrack = 0;
+  let belowTarget = 0;
+  let completed = 0;
+
+  getPortfolioStudies().forEach((study) => {
+    const rate =
+      study.target > 0 ? (Number(study.enrolled) / Number(study.target)) * 100 : 0;
+
+    if (study.status === 'Completed') {
+      completed += 1;
+    } else if (rate >= 70) {
+      onTrack += 1;
+    } else {
+      belowTarget += 1;
+    }
   });
+
   return [
     { name: 'On Track', value: onTrack },
     { name: 'Below Target', value: belowTarget },
     { name: 'Completed', value: completed },
-  ].filter(d => d.value > 0);
+  ].filter((item) => item.value > 0);
 }
 
 export function getPortfolioKPIs() {
   const studies = getPortfolioStudies();
+
   return {
     total: studies.length,
-    active: studies.filter(s => s.status === 'Active').length,
-    recruiting: studies.filter(s => s.status === 'Recruiting').length,
-    completed: studies.filter(s => s.status === 'Completed').length,
-    planning: studies.filter(s => s.status === 'Planning').length,
+    active: studies.filter((study) => study.status === 'Active').length,
+    recruiting: studies.filter((study) => study.status === 'Recruiting').length,
+    completed: studies.filter((study) => study.status === 'Completed').length,
+    planning: studies.filter((study) => study.status === 'Planning').length,
   };
 }
 
 export function getOversightKPIs() {
   const studies = getOversightStudies();
+
   return {
     total: studies.length,
-    onTrack: studies.filter(s => s.status === 'On Track').length,
-    delayed: studies.filter(s => s.status === 'Delayed').length,
-    completed: studies.filter(s => s.status === 'Completed').length,
+    onTrack: studies.filter((study) => study.status === 'On Track').length,
+    delayed: studies.filter((study) => study.status === 'Delayed').length,
+    completed: studies.filter((study) => study.status === 'Completed').length,
   };
 }
 
 export function getCROKPIs() {
   const cros = getCROs();
-  const avgPerf = cros.length ? Math.round(cros.reduce((s, c) => s + c.performance, 0) / cros.length) : 0;
+
+  const averagePerformance =
+    cros.length > 0
+      ? Math.round(
+          cros.reduce(
+            (sum, cro) => sum + Number(cro.performance || 0),
+            0
+          ) / cros.length
+        )
+      : 0;
+
   return {
     total: cros.length,
-    active: cros.filter(c => c.status === 'Active').length,
-    avgPerformance: avgPerf,
-    totalStudies: cros.reduce((s, c) => s + c.studies, 0),
+    active: cros.filter((cro) => cro.status === 'Active').length,
+    avgPerformance: averagePerformance,
+    totalStudies: cros.reduce(
+      (sum, cro) => sum + Number(cro.studies || 0),
+      0
+    ),
   };
 }
 
 export function getRecruitmentKPIs() {
-  const rec = getRecruitment();
-  const totalEnrolled = rec.reduce((s, r) => s + r.enrolled, 0);
-  const totalTarget = rec.reduce((s, r) => s + r.target, 0);
+  const recruitment = getRecruitment();
+
+  const totalEnrolled = recruitment.reduce(
+    (sum, item) => sum + Number(item.enrolled || 0),
+    0
+  );
+
+  const totalTarget = recruitment.reduce(
+    (sum, item) => sum + Number(item.target || 0),
+    0
+  );
+
   return {
-    totalStudies: rec.length,
+    totalStudies: recruitment.length,
     enrolled: totalEnrolled,
     target: totalTarget,
-    rate: Math.round((totalEnrolled / Math.max(totalTarget, 1)) * 100),
-    belowTarget: rec.filter(r => r.status === 'Below Target').length,
+    rate:
+      totalTarget > 0
+        ? Math.round((totalEnrolled / totalTarget) * 100)
+        : 0,
+    belowTarget: recruitment.filter(
+      (item) => item.status === 'Below Target'
+    ).length,
   };
 }
 
 export function getRegulatoryKPIs() {
-  const reg = getRegulatory();
+  const regulatory = getRegulatory();
+
   return {
-    total: reg.length,
-    approved: reg.filter(r => r.status === 'Approved').length,
-    inReview: reg.filter(r => r.status === 'In Review').length,
-    submitted: reg.filter(r => r.status === 'Submitted').length,
-    overdue: reg.filter(r => r.status === 'Overdue').length,
+    total: regulatory.length,
+    approved: regulatory.filter((item) => item.status === 'Approved').length,
+    inReview: regulatory.filter((item) => item.status === 'In Review').length,
+    submitted: regulatory.filter((item) => item.status === 'Submitted').length,
+    overdue: regulatory.filter((item) => item.status === 'Overdue').length,
   };
 }
 
 export function getRiskKPIs() {
   const risks = getRisks();
+
   return {
     total: risks.length,
-    critical: risks.filter(r => r.severity === 'Critical').length,
-    high: risks.filter(r => r.severity === 'High').length,
-    medium: risks.filter(r => r.severity === 'Medium').length,
-    low: risks.filter(r => r.severity === 'Low').length,
-    open: risks.filter(r => r.status === 'Open').length,
-    resolved: risks.filter(r => r.status === 'Closed' || r.status === 'Mitigated').length,
+    critical: risks.filter((risk) => risk.severity === 'Critical').length,
+    high: risks.filter((risk) => risk.severity === 'High').length,
+    medium: risks.filter((risk) => risk.severity === 'Medium').length,
+    low: risks.filter((risk) => risk.severity === 'Low').length,
+    open: risks.filter((risk) => risk.status === 'Open').length,
+    resolved: risks.filter(
+      (risk) =>
+        risk.status === 'Closed' || risk.status === 'Mitigated'
+    ).length,
   };
 }
 
 export function getReportKPIs() {
   const reports = getReports();
+
   return {
     total: reports.length,
-    ready: reports.filter(r => r.status === 'Ready').length,
-    pending: reports.filter(r => r.status === 'Pending').length,
+    ready: reports.filter((report) => report.status === 'Ready').length,
+    pending: reports.filter((report) => report.status === 'Pending').length,
   };
 }
 
 export function getNotificationKPIs() {
   const notifications = getNotifications();
+
   return {
     total: notifications.length,
-    critical: notifications.filter(n => n.severity === 'Critical').length,
-    high: notifications.filter(n => n.severity === 'High').length,
-    unread: notifications.filter(n => !n.read).length,
-    resolved: notifications.filter(n => n.read).length,
+    critical: notifications.filter(
+      (notification) => notification.severity === 'Critical'
+    ).length,
+    high: notifications.filter(
+      (notification) => notification.severity === 'High'
+    ).length,
+    unread: notifications.filter((notification) => !notification.read).length,
+    resolved: notifications.filter((notification) => notification.read).length,
   };
 }
 
 export function getSiteKPIs() {
   const sites = getSites();
-  const avgPerf = sites.length ? Math.round(sites.reduce((s, site) => s + site.performance, 0) / sites.length) : 0;
+
+  const averagePerformance =
+    sites.length > 0
+      ? Math.round(
+          sites.reduce(
+            (sum, site) => sum + Number(site.performance || 0),
+            0
+          ) / sites.length
+        )
+      : 0;
+
   return {
     total: sites.length,
-    avgPerformance: avgPerf,
-    totalEnrolled: sites.reduce((s, site) => s + site.enrolled, 0),
+    avgPerformance: averagePerformance,
+    totalEnrolled: sites.reduce(
+      (sum, site) => sum + Number(site.enrolled || 0),
+      0
+    ),
   };
 }
 

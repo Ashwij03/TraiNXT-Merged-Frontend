@@ -5,6 +5,7 @@ import CROLayout from "./CROLayout";
 import { useCROData } from "./CRODATAContext";
 import { CRO_STORAGE_KEYS, loadFromStorage } from "./croStorage";
 import "./CROSettings.css";
+import "../Admin/AdminPage.css";
 
 const DEFAULT_SETTINGS = {
   organization: "Clinical Research Org",
@@ -29,12 +30,12 @@ function CROSettings() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeSection, setActiveSection] = useState("account");
   const [settings, setSettings] = useState(() =>
-    loadFromStorage(CRO_STORAGE_KEYS.settings, DEFAULT_SETTINGS)
+    loadFromStorage(CRO_STORAGE_KEYS.settings, DEFAULT_SETTINGS),
   );
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileImage, setProfileImage] = useState(
-  localStorage.getItem("croProfileImage") || ""
-);
+    localStorage.getItem("croProfileImage") || "",
+  );
 
   useEffect(() => {
     const section = searchParams.get("section");
@@ -56,19 +57,19 @@ function CROSettings() {
     });
   };
   const handleProfileImageChange = (e) => {
-  const file = e.target.files[0];
+    const file = e.target.files[0];
 
-  if (!file) return;
+    if (!file) return;
 
-  const reader = new FileReader();
+    const reader = new FileReader();
 
-  reader.onload = () => {
-    setProfileImage(reader.result);
-    localStorage.setItem("croProfileImage", reader.result);
+    reader.onload = () => {
+      setProfileImage(reader.result);
+      localStorage.setItem("croProfileImage", reader.result);
+    };
+
+    reader.readAsDataURL(file);
   };
-
-  reader.readAsDataURL(file);
-};
 
   const handleSave = () => {
     localStorage.setItem(CRO_STORAGE_KEYS.settings, JSON.stringify(settings));
@@ -83,7 +84,11 @@ function CROSettings() {
     <CROLayout>
       <h1 style={{ marginBottom: "25px" }}>Settings</h1>
 
-      <div className="cro-settings-tabs" role="tablist" aria-label="Settings sections">
+      <div
+        className="cro-settings-tabs"
+        role="tablist"
+        aria-label="Settings sections"
+      >
         {SECTIONS.map((section) => (
           <button
             key={section.id}
@@ -102,21 +107,19 @@ function CROSettings() {
 
       <div className="cro-panel cro-settings-panel">
         {activeSection === "profile" && (
-  <div role="tabpanel">
-    <h2 className="cro-settings-section-title">
-      Profile Settings
-    </h2>
+          <div role="tabpanel">
+            <h2 className="cro-settings-section-title">Profile Settings</h2>
 
-    <button
-      type="button"
-      className="cro-btn-primary"
-      style={{ marginBottom: 20 }}
-      onClick={() => setShowProfileModal(true)}
-    >
-      Edit Profile
-    </button>
-  </div>
-)}
+            <button
+              type="button"
+              className="cro-btn-primary"
+              style={{ marginBottom: 20 }}
+              onClick={() => setShowProfileModal(true)}
+            >
+              Edit Profile
+            </button>
+          </div>
+        )}
         {activeSection === "account" && (
           <div role="tabpanel" id="cro-settings-account">
             <h2 className="cro-settings-section-title">Account Settings</h2>
@@ -311,148 +314,132 @@ function CROSettings() {
         </button>
       </div>
       <CROModal
-  isOpen={showProfileModal}
-  onClose={() => setShowProfileModal(false)}
-  title="Profile Settings"
-  footer={
-    <>
-      <button
-        type="button"
-        className="cro-btn-secondary"
-        onClick={() => setShowProfileModal(false)}
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        title="Profile Settings"
+        footer={
+          <>
+            <button
+              type="button"
+              className="cro-btn-secondary"
+              onClick={() => setShowProfileModal(false)}
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              className="cro-btn-primary"
+              onClick={() => setShowProfileModal(false)}
+            >
+              Save Changes
+            </button>
+          </>
+        }
       >
-        Cancel
-      </button>
+        <div className="cro-profile-form">
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              marginBottom: 25,
+            }}
+          >
+            <div
+              style={{
+                position: "relative",
+                width: 120,
+                height: 120,
+              }}
+            >
+              <img
+                src={
+                  profileImage ||
+                  "https://ui-avatars.com/api/?name=CRO&background=0F3550&color=fff&size=200"
+                }
+                alt="Profile"
+                style={{
+                  width: 120,
+                  height: 120,
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  border: "4px solid #fff",
+                  boxShadow: "0 4px 14px rgba(0,0,0,.15)",
+                }}
+              />
 
-      <button
-        type="button"
-        className="cro-btn-primary"
-        onClick={() => setShowProfileModal(false)}
-      >
-        Save Changes
-      </button>
-    </>
-  }
->
-  <div className="cro-profile-form">
-<div
-  style={{
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    marginBottom: 25,
-  }}
->
-  <div
-    style={{
-      position: "relative",
-      width: 120,
-      height: 120,
-    }}
-  >
-    <img
-      src={
-        profileImage ||
-        "https://ui-avatars.com/api/?name=CRO&background=0F3550&color=fff&size=200"
-      }
-      alt="Profile"
-      style={{
-        width: 120,
-        height: 120,
-        borderRadius: "50%",
-        objectFit: "cover",
-        border: "4px solid #fff",
-        boxShadow: "0 4px 14px rgba(0,0,0,.15)",
-      }}
-    />
+              <label
+                htmlFor="cro-profile-upload"
+                style={{
+                  position: "absolute",
+                  bottom: 5,
+                  right: 5,
+                  width: 34,
+                  height: 34,
+                  borderRadius: "50%",
+                  background: "#2563eb",
+                  color: "#fff",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  fontSize: 16,
+                  fontWeight: 700,
+                }}
+              >
+                📷
+              </label>
 
-    <label
-      htmlFor="cro-profile-upload"
-      style={{
-        position: "absolute",
-        bottom: 5,
-        right: 5,
-        width: 34,
-        height: 34,
-        borderRadius: "50%",
-        background: "#2563eb",
-        color: "#fff",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        cursor: "pointer",
-        fontSize: 16,
-        fontWeight: 700,
-      }}
-    >
-      📷
-    </label>
+              <input
+                id="cro-profile-upload"
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={handleProfileImageChange}
+              />
+            </div>
 
-    <input
-      id="cro-profile-upload"
-      type="file"
-      accept="image/*"
-      style={{ display: "none" }}
-      onChange={handleProfileImageChange}
-    />
-  </div>
+            <p
+              style={{
+                marginTop: 12,
+                color: "#64748b",
+                cursor: "pointer",
+                fontSize: 14,
+              }}
+            >
+              Change Profile Photo
+            </p>
+          </div>
 
-  <p
-    style={{
-      marginTop: 12,
-      color: "#64748b",
-      cursor: "pointer",
-      fontSize: 14,
-    }}
-  >
-    Change Profile Photo
-  </p>
-</div>
+          <label>First Name</label>
+          <input className="cro-input" defaultValue="Clinical" />
 
-    <label>First Name</label>
-    <input
-      className="cro-input"
-      defaultValue="Clinical"
-    />
+          <label>Last Name</label>
+          <input className="cro-input" defaultValue="Research Associate" />
 
-    <label>Last Name</label>
-    <input
-      className="cro-input"
-      defaultValue="Research Associate"
-    />
+          <label>Email</label>
+          <input className="cro-input" defaultValue="cro@trialnxt.com" />
 
-    <label>Email</label>
-    <input
-      className="cro-input"
-      defaultValue="cro@trialnxt.com"
-    />
+          <label>Job Title</label>
+          <input
+            className="cro-input"
+            defaultValue="Clinical Research Associate"
+          />
 
-    <label>Job Title</label>
-    <input
-      className="cro-input"
-      defaultValue="Clinical Research Associate"
-    />
+          <label>Organization</label>
+          <input
+            className="cro-input"
+            defaultValue="Clinical Research Organization"
+          />
 
-    <label>Organization</label>
-    <input
-      className="cro-input"
-      defaultValue="Clinical Research Organization"
-    />
+          <label>Phone</label>
+          <input className="cro-input" defaultValue="+91 9876543210" />
 
-    <label>Phone</label>
-    <input
-      className="cro-input"
-      defaultValue="+91 9876543210"
-    />
-
-    <label>Department</label>
-    <input
-      className="cro-input"
-      defaultValue="Clinical Operations"
-    />
-
-  </div>
-</CROModal>
+          <label>Department</label>
+          <input className="cro-input" defaultValue="Clinical Operations" />
+        </div>
+      </CROModal>
     </CROLayout>
   );
 }

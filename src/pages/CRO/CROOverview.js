@@ -4,7 +4,6 @@ import DashboardLayout from "../../Components/dashboard/DashboardLayout";
 import { getCRODashboardData } from "../../services/adminService";
 import CROContracts from "./CROContracts";
 import CRODetails from "./CRODetails";
-import CROReport from "./CROReport";
 import "./CROOversight.css";
 
 function CROOverview() {
@@ -42,8 +41,6 @@ function CROOverview() {
         <CROContracts onViewDetails={setSelectedCro} />
 
         {selectedCro && <CRODetails cro={selectedCro} />}
-
-        <CROReport />
 
         <div className="quick-actions">
           <h2>Quick Actions</h2>

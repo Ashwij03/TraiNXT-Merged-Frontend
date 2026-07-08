@@ -1,8 +1,8 @@
-import React, { useMemo } from "react";
+import React from "react";
 import "./CRODashboard.css";
+import "../shared/studies/StudyDashboard.css";
 import CROLayout from "./CROLayout";
 import { useCROData } from "./CRODATAContext";
-import SubjectAnalyticsSection from "../../Components/dashboard/SubjectAnalyticsSection";
 import StudyStatusChart from "./StudyStatusChart";
 import EnrollmentChart from "./EnrollmentChart";
 import VisitCompletionChart from "./VisitCompletionChart";
@@ -26,74 +26,56 @@ function CRODashboard() {
 
   const loading = isLoading;
 
-  const user = JSON.parse(localStorage.getItem("currentUser") || "{}");
+  const safeVisits = Array.isArray(visits) ? visits : [];
+  const safeComments = Array.isArray(comments) ? comments : [];
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
+  const safeKpis = kpis || {};
 
-  const uniqueSites = [...new Set(visits.map((v) => v.site))];
-  const recentActivities = visits.slice(0, 3);
-  const recentComments = comments.filter((c) => c.status === "Open").slice(0, 3);
-  const unreadNotifications = notifications.filter(
-    (n) => n.status === "Unread"
+  const uniqueSites = [
+    ...new Set(
+      safeVisits
+        .map((v) => v?.site)
+        .filter(Boolean)
+        .map((site) => String(site))
+    ),
+  ];
+  const recentActivities = safeVisits.slice(0, 3);
+  const recentComments = safeComments
+    .filter((c) => String(c?.status ?? "").toLowerCase() === "open")
+    .slice(0, 3);
+  const unreadNotifications = safeNotifications.filter(
+    (n) => String(n?.status ?? "Unread").toLowerCase() === "unread"
   );
-
-  const analyticsSubjects = useMemo(
-    () =>
-      subjects.map((subject) => ({
-        ...subject,
-        studyId: subject.study || subject.studyId,
-        status: subject.status || "Screening"
-      })),
-    [subjects]
-  );
-
-  const croStudies = useMemo(() => {
-    const studyMap = new Map();
-
-    subjects.forEach((subject) => {
-      const code = subject.study || subject.studyId;
-
-      if (!code) {
-        return;
-      }
-
-      if (!studyMap.has(code)) {
-        studyMap.set(code, { code, enrolled: 0 });
-      }
-
-      studyMap.get(code).enrolled += 1;
-    });
-
-    return Array.from(studyMap.values());
-  }, [subjects]);
 
   const kpiCards = [
     {
       icon: "🏥",
       title: "Sites Under Monitoring",
-      value: kpis.sitesUnderMonitoring,
+      value: safeKpis.sitesUnderMonitoring ?? 0,
       route: "/cro-subject-management",
     },
     {
       icon: "📅",
       title: "Monitoring Visits",
-      value: kpis.monitoringVisits,
+      value: safeKpis.monitoringVisits ?? 0,
       route: "/cro-monitoring",
     },
     {
       icon: "📋",
       title: "Pending Reviews",
-      value: kpis.pendingReviews,
+      value: safeKpis.pendingReviews ?? 0,
       route: "/cro-regulatory-documents",
     },
     {
       icon: "💬",
       title: "Comments",
-      value: kpis.comments,
+      value: safeKpis.comments ?? 0,
       route: "/cro-comments",
     },
     {
       icon: "📊",
       title: "Compliance Metrics",
-      value: kpis.complianceMetrics,
+      value: safeKpis.complianceMetrics ?? 0,
       route: "/cro-site-performance",
     },
   ];
@@ -215,8 +197,11 @@ function CRODashboard() {
                       </thead>
                       <tbody>
                         {uniqueSites.map((site) => {
-                          const siteSubjects = subjects.filter(
-                            (s) => s.site === site
+                          const safeSubjects = Array.isArray(subjects)
+                            ? subjects
+                            : [];
+                          const siteSubjects = safeSubjects.filter(
+                            (s) => String(s?.site ?? "") === site
                           );
                           return (
                             <tr key={site}>
@@ -244,7 +229,7 @@ function CRODashboard() {
                 tabIndex={0}
               >
                 <h2>Monitoring Visits</h2>
-                {visits.length === 0 ? (
+                {safeVisits.length === 0 ? (
                   <EmptyState title="No Visits Found" />
                 ) : (
                   <div className="cro-table-wrap">
@@ -258,13 +243,13 @@ function CRODashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {visits.slice(0, 5).map((visit) => (
-                          <tr key={visit.id}>
-                            <td>{visit.id}</td>
-                            <td>{visit.site}</td>
-                            <td>{visit.visitType}</td>
+                        {safeVisits.slice(0, 5).map((visit) => (
+                          <tr key={visit?.id ?? `${visit?.site}-${visit?.visitType}`}>
+                            <td>{visit?.id ?? "—"}</td>
+                            <td>{visit?.site ?? "—"}</td>
+                            <td>{visit?.visitType ?? visit?.visit ?? "—"}</td>
                             <td>
-                              <CROStatusBadge status={visit.status} />
+                              <CROStatusBadge status={visit?.status ?? "—"} />
                             </td>
                           </tr>
                         ))}
@@ -299,11 +284,12 @@ function CRODashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {recentActivities.map((v) => (
-                            <tr key={v.id}>
-                              <td>{v.site}</td>
+                          {recentActivities.map((v, index) => (
+                            <tr key={v?.id ?? `activity-${index}`}>
+                              <td>{v?.site ?? "—"}</td>
                               <td>
-                                {v.visitType} — {v.status}
+                                {v?.visitType ?? v?.visit ?? "Visit"} —{" "}
+                                {v?.status ?? "—"}
                               </td>
                             </tr>
                           ))}
@@ -333,15 +319,25 @@ function CRODashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {recentComments.map((c) => (
-                            <tr key={c.id}>
-                              <td>{c.subject}</td>
-                              <td>{c.message.substring(0, 50)}...</td>
+                          {recentComments.map((c) => {
+                            const preview = String(
+                              c?.message ?? c?.description ?? c?.text ?? ""
+                            );
+                            const truncated =
+                              preview.length > 50
+                                ? `${preview.substring(0, 50)}...`
+                                : preview || "—";
+
+                            return (
+                            <tr key={c?.id ?? `${c?.subject}-${preview}`}>
+                              <td>{c?.subject ?? c?.subjectId ?? "—"}</td>
+                              <td>{truncated}</td>
                               <td>
-                                <CROStatusBadge status={c.status} />
+                                <CROStatusBadge status={c?.status ?? "—"} />
                               </td>
                             </tr>
-                          ))}
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
@@ -357,27 +353,35 @@ function CRODashboard() {
   <h2>🔔 Alerts & Notifications</h2>
 
   <div className="alerts-list">
-    {unreadNotifications.map((alert) => (
+    {unreadNotifications.length === 0 ? (
+      <EmptyState title="No Unread Alerts" />
+    ) : (
+      unreadNotifications.map((alert) => {
+        const severity = String(alert?.severity ?? alert?.type ?? "info").toLowerCase();
+
+        return (
       <div
-  key={alert.id}
-  className={`alert-card ${alert.severity?.toLowerCase()}`}
+  key={alert?.id ?? `${alert?.title}-${alert?.date}`}
+  className={`alert-card ${severity}`}
 >
   <div className="alert-card-header">
-    <h4>{alert.title}</h4>
+    <h4>{alert?.title ?? "Alert"}</h4>
 
-    <span className={`status-${alert.severity?.toLowerCase()}`}>
-      {alert.severity}
+    <span className={`status-${severity}`}>
+      {alert?.severity ?? alert?.type ?? "Info"}
     </span>
   </div>
 
-  <p>{alert.message}</p>
+  <p>{alert?.message ?? "—"}</p>
 
   <div className="alert-card-footer">
-    <span>{alert.type}</span>
-    <span>{alert.date}</span>
+    <span>{alert?.type ?? "—"}</span>
+    <span>{alert?.date ?? alert?.createdAt ?? "—"}</span>
   </div>
 </div>
-    ))}
+        );
+      })
+    )}
   </div>
 </div>
              <div className="dashboard-card quick-actions-container">

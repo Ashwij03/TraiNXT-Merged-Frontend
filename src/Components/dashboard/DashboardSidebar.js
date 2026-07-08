@@ -34,11 +34,14 @@ import EISFMenuConfig from "../../pages/shared/EISF/Constants/EISFMenuConfig";
 const STUDY_SECTIONS = [
   { key: "overview", label: "Overview" },
   { key: "subjects", label: "Subjects", expandable: true },
+  { key: "planning", label: "Planning" },
+  { key: "visitPlan", label: "Visit Plan" },
   { key: "eisf", label: "eISF", expandable: true },
   { key: "regulatory", label: "Regulatory" },
   { key: "reports", label: "Reports" },
   { key: "studyFiles", label: "Study Files" },
   { key: "logs", label: "Logs" },
+  { key: "financials", label: "Financials" },
   { key: "others", label: "Others" },
 ];
 function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
@@ -263,7 +266,14 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     navigate(path);
     onNavigate?.();
   };
-  
+
+  const usesUnifiedSettings =
+    effectiveUser?.role === "Admin" || effectiveUser?.role === "SiteStaff";
+
+  const handleSettingsNav = (section = "profile") => {
+    navigate("/settings", { state: { section } });
+    onNavigate?.();
+  };
 
   const handleDashboardClick = () => {
     handleNav(dashboardPath);
@@ -337,11 +347,14 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     const tabMap = {
       overview: "Overview",
       subjects: "Subjects",
+      planning: "Planning",
+      visitPlan: "Visit Plan",
       eisf: "eISF",
       regulatory: "Regulatory",
       reports: "Reports",
       studyFiles: "Study Files",
       logs: "Logs",
+      financials: "Financials",
       others: "Others",
     };
 
@@ -355,7 +368,6 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     handleNav(`/subject/${subjectId}`);
   };
 
-
   const getSubjectSidebarFolders = (studyKey, subject) => {
     void folderTreeVersion;
 
@@ -365,19 +377,6 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     return getFirstLevelFolders("subjects", contextKey);
   };
 
-  // const handleFolderNavigate = (studyKey, sectionKey, node) => {
-  //   const name = String(node?.name || "").toLowerCase();
-
-  //   if (
-  //     sectionKey === "studyFiles" &&
-  //     (name.includes("regulatory") || name.includes("reg"))
-  //   ) {
-  //     navigateToStudySection(studyKey, "regulatory");
-  //     return;
-  //   }
-
-  //   navigateToStudySection(studyKey, sectionKey);
-  // };
   return (
     <div
       className={sidebarClassName}
@@ -583,39 +582,52 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                                     })}
                                   </div>
                                 )}
-       {isSectionOpen && sectionKey === "eisf" && (
-  <div className="sidebar-tree-group sidebar-tree-group--nested">
-    {EISFMenuConfig.map((module) => (
-      <div key={module.id}>
-        <div
-          className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-tree-row--expandable"
-          onClick={() =>
-            setExpandedStudySections((prev) => ({
-              ...prev,
-              [`${studyKey}-${module.id}`]:
-                !prev[`${studyKey}-${module.id}`],
-            }))
-          }
-        >
-          <span>{module.id} {module.title}</span>
-        </div>
+                                {isSectionOpen && sectionKey === "eisf" && (
+                                  <div className="sidebar-tree-group sidebar-tree-group--nested">
+                                    {EISFMenuConfig.map((module) => (
+                                      <div key={module.id}>
+                                        <div
+                                          className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-tree-row--expandable"
+                                          onClick={() =>
+                                            setExpandedStudySections(
+                                              (prev) => ({
+                                                ...prev,
+                                                [`${studyKey}-${module.id}`]:
+                                                  !prev[
+                                                    `${studyKey}-${module.id}`
+                                                  ],
+                                              }),
+                                            )
+                                          }
+                                        >
+                                          <span>
+                                            {module.id} {module.title}
+                                          </span>
+                                        </div>
 
-        {expandedStudySections[`${studyKey}-${module.id}`] && (
-          <div className="sidebar-tree-group sidebar-tree-group--nested">
-            {module.children.map((child) => (
-              <div
-                key={child.id}
-className="sidebar-tree-row sidebar-tree-row--folder-leaf eisf-module"                onClick={() => handleNav(child.path)}
-              >
-                <span>{child.id} {child.title}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    ))}
-  </div>
-)}
+                                        {expandedStudySections[
+                                          `${studyKey}-${module.id}`
+                                        ] && (
+                                          <div className="sidebar-tree-group sidebar-tree-group--nested">
+                                            {module.children.map((child) => (
+                                              <div
+                                                key={child.id}
+                                                className="sidebar-tree-row sidebar-tree-row--folder-leaf eisf-module"
+                                                onClick={() =>
+                                                  handleNav(child.path)
+                                                }
+                                              >
+                                                <span>
+                                                  {child.id} {child.title}
+                                                </span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             );
                           }
@@ -657,7 +669,6 @@ className="sidebar-tree-row sidebar-tree-row--folder-leaf eisf-module"          
           </div>
         </div>
       )}
-    
 
       {sidebarItems.some((item) => item.key === "site-performance") && (
         <div
@@ -754,18 +765,24 @@ className="sidebar-tree-row sidebar-tree-row--folder-leaf eisf-module"          
         </div>
       )}
 
-      <div
-        className={getLinkClass(pathname.includes("/profile"))}
-        onClick={() => handleNav("/profile")}
-      >
-        <FiUser size={16} />
-        <span>Profile</span>
-      </div>
+      {!usesUnifiedSettings && (
+        <div
+          className={getLinkClass(pathname.includes("/profile"))}
+          onClick={() => handleNav("/profile")}
+        >
+          <FiUser size={16} />
+          <span>Profile</span>
+        </div>
+      )}
 
       {sidebarItems.some((item) => item.key === "settings") && (
         <div
           className={getLinkClass(pathname.includes("settings"))}
-          onClick={() => handleNav("/settings")}
+          onClick={() =>
+            usesUnifiedSettings
+              ? handleSettingsNav("profile")
+              : handleNav("/settings")
+          }
         >
           <FiSettings size={16} />
           <span>Settings</span>

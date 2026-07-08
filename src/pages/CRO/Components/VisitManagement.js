@@ -2,235 +2,117 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CROSidebar from "./CROSidebar";
 import CRONavbar from "./CRONavbar";
+import RequestPermissionButton from "../../Components/common/RequestPermissionButton";
+import { getAllSchedules } from "../../services/adminService";
+
+function loadVisits() {
+  try {
+    const schedules = getAllSchedules();
+    if (schedules.length) {
+      return schedules.map((item, index) => ({
+        id: item.id || index,
+        visitName: item.visit || item.visitName || "Visit",
+        study: item.studyCode || item.subjectId || "—",
+        status: item.status || "Scheduled",
+      }));
+    }
+    const saved = localStorage.getItem("visits");
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
+  }
+}
 
 function VisitManagement() {
-	const [search, setSearch] = useState("");
-	const [visits, setVisits] = useState(() => {
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const [visits, setVisits] = useState(loadVisits);
 
-    const savedVisits = localStorage.getItem("visits");
-	return savedVisits
-	  ? JSON.parse(savedVisits)
-	  : [
-		{
-		  id: 1,
-		  visitName: "Screening Visit",
-		  study: "SUB001",
-		  status: "Scheduled"
-		},
-		{
-		  id: 2,
-		  visitName: "Baseline Visit",
-		  study: "SUB002",
-		  status: "Completed"
-		},
-		{
-		  id: 3,
-		  visitName: "Follow-up Visit",
-		  study: "SUB003",
-		  status: "Missed"
-		}
-	    ];
-   });  
+  useEffect(() => {
+    const refresh = () => setVisits(loadVisits());
+    window.addEventListener("visits-updated", refresh);
+    window.addEventListener("studies-updated", refresh);
+    return () => {
+      window.removeEventListener("visits-updated", refresh);
+      window.removeEventListener("studies-updated", refresh);
+    };
+  }, []);
 
-
-useEffect(() => {
-  localStorage.setItem(
-    "visits",
-    JSON.stringify(visits)
+  const filteredVisits = visits.filter((visit) =>
+    String(visit.visitName || "")
+      .toLowerCase()
+      .includes(search.toLowerCase()),
   );
-}, [visits]);
-
-const filteredVisits = visits.filter((visit) =>
-  visit.visitName.toLowerCase().includes(
-    search.toLowerCase()
-  )
-);
-
-const handleAddVisit = () => {
-  const visitName = prompt("Enter Visit Name");
-
-  if (!visitName) return;
-
-  const newVisit = {
-    id: Date.now(),
-    visitName,
-    study: "ST101",
-    status: "Scheduled"
-  };
-
-  setVisits([...visits, newVisit]);
-};
-
-const handleDelete = (id) => {
-  setVisits(
-    visits.filter((visit) => visit.id !== id)
-  );
-};
-
-const handleStatusChange = (id) => {
-  setVisits(
-    visits.map((visit) =>
-      visit.id === id
-        ? {
-            ...visit,
-            status:
-              visit.status === "Scheduled"
-                ? "In Progress"
-                : visit.status === "In Progress"
-                ? "Completed"
-                : "Scheduled"
-          }
-        : visit
-    )
-  );
-};
-
-const navigate = useNavigate();
 
   return (
     <div className="dashboard-layout">
-
       <CROSidebar />
-
       <div className="main-content">
-
         <CRONavbar />
-
         <div style={{ padding: "30px" }}>
-
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
-              alignItems: "center"
+              alignItems: "center",
+              marginBottom: "20px",
             }}
           >
             <h1>Visit Management</h1>
-
-			<button
-			onClick={handleAddVisit}
-			  style={{
-			    background: "#0d6efd",
-			    color: "#fff",
-			    border: "none",
-			    padding: "12px 24px",
-			    borderRadius: "8px",
-			    fontWeight: "600",
-			    cursor: "pointer"
-			  }}
-			>
-			  Add Visit
-			</button>
+            <RequestPermissionButton
+              action="Add Visit"
+              module="Visits"
+              label="+ Add Visit"
+            />
           </div>
 
-          <div
+          <input
+            type="text"
+            placeholder="Search Visit..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             style={{
-              background: "#fff",
-              padding: "20px",
-              borderRadius: "10px",
-              marginTop: "20px"
+              width: "350px",
+              padding: "12px",
+              marginBottom: "20px",
+              border: "1px solid #ddd",
+              borderRadius: "8px",
             }}
-          >
-		  <input
-		    type="text"
-		    placeholder="Search Visit..."
-		    value={search}
-		    onChange={(e) => setSearch(e.target.value)}
-		    style={{
-		      padding: "10px",
-		      width: "300px",
-		      marginBottom: "20px"
-		    }}
-		  />
+          />
 
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse"
-              }}
-            >
+          {filteredVisits.length === 0 ? (
+            <p>No data available yet</p>
+          ) : (
+            <table width="100%" border="1" cellPadding="10">
               <thead>
                 <tr>
-                  <th>Visit ID</th>
-                  <th>Subject</th>
-                  <th>Visit Type</th>
+                  <th>Visit</th>
+                  <th>Study / Subject</th>
                   <th>Status</th>
-                  <th>Action</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
-
-			  <tbody>
-			    {filteredVisits.map((visit) => (
-			      <tr key={visit.id}>
-			        <td>{visit.id}</td>
-
-			        <td>{visit.study}</td>
-
-			        <td>{visit.visitName}</td>
-
-			        <td>
-			          <span
-			            className={
-			              visit.status === "Completed"
-			                ? "status-completed"
-			                : visit.status === "Scheduled"
-			                ? "status-scheduled"
-			                : "status-missed"
-			            }
-			          >
-			            {visit.status}
-			          </span>
-			        </td>
-
-					<td>
-					  <button
-					    onClick={() =>
-					      alert(
-					        `Visit Name: ${visit.visitName}
-					Subject: ${visit.study}
-					Status: ${visit.status}`
-					      )
-					    }
-					  >
-					    View
-					  </button>
-
-					  <button
-					    onClick={() =>
-					      handleStatusChange(visit.id)
-					    }
-					    style={{
-					      marginLeft: "8px"
-					    }}
-					  >
-					    Status
-					  </button>
-
-					  <button
-					    onClick={() =>
-					      handleDelete(visit.id)
-					    }
-					    style={{
-					      marginLeft: "8px",
-					      background: "red",
-					      color: "white"
-					    }}
-					  >
-					    Delete
-					  </button>
-					</td>
-			      </tr>
-			    ))}
-			  </tbody>
-			  
+              <tbody>
+                {filteredVisits.map((visit) => (
+                  <tr key={visit.id}>
+                    <td>{visit.visitName}</td>
+                    <td>{visit.study}</td>
+                    <td>{visit.status}</td>
+                    <td>
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/visit-details/${visit.id}`)}
+                      >
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
-
-          </div>
-
+          )}
         </div>
-
       </div>
-
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiMessageSquare } from "react-icons/fi";
 import {
@@ -14,7 +14,7 @@ import {
   FaExclamationTriangle,
   FaInfoCircle,
   FaFileMedical,
-  FaClock
+  FaClock,
 } from "react-icons/fa";
 import {
   BarChart,
@@ -26,8 +26,9 @@ import {
   Pie,
   Cell,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
 } from "recharts";
+
 import PINavbar from "./PINavbar";
 import PISidebar from "./PISidebar";
 import PILiveChat from "./PILiveChat";
@@ -43,19 +44,29 @@ import PIEISFDashboard from "./PIEISFDashboard";
 import PIICFDashboard from "./PIICFDashboard";
 import StudyFolderDashboard from "./PIStudyFolderDashboard";
 import VisitCalendarSection from "../../Components/dashboard/VisitCalendarSection";
+
 import {
   getDashboardData,
   saveDashboardData,
   syncKpisFromData,
   getNavbarData,
   getCommentsData,
-  buildDynamicAlerts
+  buildDynamicAlerts,
 } from "./piDashboardService";
+
+import { getStudies } from "../../services/studyService";
+import {
+  getStudyKey,
+  useRoleStudiesSidebar,
+} from "../../hooks/useRoleStudiesSidebar";
+
 import "./PIDashboard.css";
-//import "../Admin/Dashboard.css";
+import "../shared/studies/StudyDashboard.css";
 
 function PIDashboard({ embeddedInLayout = false }) {
   const navigate = useNavigate();
+
+  const { studyCount } = useRoleStudiesSidebar();
 
   const [comments, setComments] = useState([]);
   const [showCommentModal, setShowCommentModal] = useState(false);
@@ -63,99 +74,256 @@ function PIDashboard({ embeddedInLayout = false }) {
   const [settingsView, setSettingsView] = useState("security");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showAlertsModal, setShowAlertsModal] = useState(false);
-  const [showStudyModal, setShowStudyModal] = useState(false);
   const [showVisitModal, setShowVisitModal] = useState(false);
   const [showQueryModal, setShowQueryModal] = useState(false);
-  // UPDATED: Track selected study from navbar for dynamic page filtering
+
   const [selectedStudy, setSelectedStudy] = useState(
-    () => getNavbarData().selectedStudy || "All Studies"
+    () => getNavbarData().selectedStudy || "All Studies",
   );
 
-  // UPDATED: Sync selected study when navbar study dropdown changes
-  useEffect(() => {
-    const onStudyChange = (e) => {
-      setSelectedStudy(e.detail || "All Studies");
-    };
-    window.addEventListener("pi-study-change", onStudyChange);
-    return () => window.removeEventListener("pi-study-change", onStudyChange);
-  }, []);
-
-  useEffect(() => {
-    const refreshDashboard = () => {
-      setDashboardData(syncKpisFromData(getDashboardData()));
-    };
-    window.addEventListener("pi-comments-updated", refreshDashboard);
-    return () =>
-      window.removeEventListener("pi-comments-updated", refreshDashboard);
-  }, []);
-
-  // UPDATED: Load dashboard data from piDashboardService (localStorage)
   const [dashboardData, setDashboardData] = useState(() =>
-    syncKpisFromData(getDashboardData())
+    syncKpisFromData(getDashboardData()),
   );
 
-  const [newStudy, setNewStudy] = useState({
-    study: "",
-    target: "",
-    enrolled: "",
-    status: "On Track"
-  });
+  const [sharedDataVersion, setSharedDataVersion] = useState(0);
 
   const [newVisit, setNewVisit] = useState({
     subject: "",
     visit: "",
-    date: ""
+    date: "",
   });
 
   const [newQuery, setNewQuery] = useState({
     id: "",
     subject: "",
-    status: "Open"
+    status: "Open",
   });
 
   const COLORS = ["#22c55e", "#f59e0b", "#ef4444"];
 
-  const navigateToPage = (page) => {
-  const routes = {
-    recruitment: "/pi-recruitment",
-    reports: "/pi-reports",
-    regulatory: "/pi-regulatory",
-    "site-performance": "/pi-site-performance",
-    notifications: "/pi-notifications",
-    comments: "/comments",
-    eisf: "/pi-eisf-dashboard",
-    icf: "/pi-icf-dashboard",
-    "study-folder": "/pi-study-folder-dashboard",
-    dashboard: "/pi-dashboard",
+  const refreshDashboardData = () => {
+    setDashboardData(syncKpisFromData(getDashboardData()));
   };
 
-  navigate(routes[page] || "/pi-dashboard");
-};
+  useEffect(() => {
+    const handleStudyChange = (event) => {
+      setSelectedStudy(event.detail || "All Studies");
+      refreshDashboardData();
+    };
 
-const getAlertIcon = (type) => {
-  if (type === "critical")
-    return <FaFileMedical className="alert-svg" />;
+    const refreshSharedData = () => {
+      setSharedDataVersion((version) => version + 1);
+      refreshDashboardData();
+    };
 
-  if (type === "danger")
-    return <FaExclamationCircle className="alert-svg" />;
+    window.addEventListener("pi-study-change", handleStudyChange);
+    window.addEventListener("pi-comments-updated", refreshDashboardData);
+    window.addEventListener("pi-dashboard-updated", refreshDashboardData);
+    window.addEventListener("studies-updated", refreshSharedData);
+    window.addEventListener("subjects-updated", refreshSharedData);
+    window.addEventListener("study-overview-updated", refreshSharedData);
 
-  if (type === "warning")
-    return <FaExclamationCircle className="alert-svg" />;
+    return () => {
+      window.removeEventListener("pi-study-change", handleStudyChange);
+      window.removeEventListener("pi-comments-updated", refreshDashboardData);
+      window.removeEventListener("pi-dashboard-updated", refreshDashboardData);
+      window.removeEventListener("studies-updated", refreshSharedData);
+      window.removeEventListener("subjects-updated", refreshSharedData);
+      window.removeEventListener("study-overview-updated", refreshSharedData);
+    };
+  }, []);
 
-  if (type === "study-alert")
-    return <FaExclamationTriangle className="alert-svg" />;
+  /*
+    sharedDataVersion is intentionally referenced here so this code reruns
+    whenever studies or subjects are changed. No useMemo is required.
+  */
+  void sharedDataVersion;
 
-  return <FaInfoCircle className="alert-svg" />;
-};
+  let sharedStudies = [];
+
+  try {
+    const studies = getStudies();
+    sharedStudies = Array.isArray(studies) ? studies : [];
+  } catch {
+    sharedStudies = [];
+  }
+
+  let subjectsByStudy = {};
+
+  try {
+    const storedSubjects = JSON.parse(
+      localStorage.getItem("subjectsByStudy") || "{}",
+    );
+
+    subjectsByStudy =
+      storedSubjects && typeof storedSubjects === "object"
+        ? storedSubjects
+        : {};
+  } catch {
+    subjectsByStudy = {};
+  }
+
+  const realSubjects = sharedStudies.flatMap((study) => {
+    const studyKey = getStudyKey(study);
+    const subjects = subjectsByStudy[studyKey];
+
+    if (!Array.isArray(subjects)) {
+      return [];
+    }
+
+    return subjects.map((subject) => ({
+      ...subject,
+      studyKey,
+      studyCode: study.code || studyKey,
+      studyName: study.name || study.title || studyKey,
+    }));
+  });
+
+  const activeSubjectsCount = realSubjects.filter((subject) => {
+    const status = String(subject.status || "").trim().toLowerCase();
+
+    return !["inactive", "withdrawn", "completed", "screen-failed"].includes(
+      status,
+    );
+  }).length;
+
+  const enrollmentCount =
+    realSubjects.length > 0
+      ? realSubjects.length
+      : sharedStudies.reduce(
+          (total, study) =>
+            total + Number(study.enrolled || study.enrollmentCount || 0),
+          0,
+        );
+
+  const targetCount = sharedStudies.reduce(
+    (total, study) =>
+      total +
+      Number(
+        study.targetSubjects ||
+          study.target ||
+          study.targetCount ||
+          study.subjectTarget ||
+          0,
+      ),
+    0,
+  );
+
+  const consentRate = useMemo(() => {
+    if (realSubjects.length === 0) {
+      return 0;
+    }
+
+    const consentedSubjects = realSubjects.filter((subject) => {
+      const consentValue = String(
+        subject.consentStatus ||
+          subject.consent ||
+          subject.icfStatus ||
+          subject.status ||
+          "",
+      )
+        .trim()
+        .toLowerCase();
+
+      return [
+        "consented",
+        "signed",
+        "complete",
+        "completed",
+        "active",
+        "enrolled",
+      ].includes(consentValue);
+    }).length;
+
+    return Math.round((consentedSubjects / realSubjects.length) * 100);
+  }, [realSubjects]);
+
+  const visitCompletion = useMemo(() => {
+    const visitData = dashboardData.visitData || [];
+
+    if (!visitData.length) {
+      return 0;
+    }
+
+    const total = visitData.reduce(
+      (sum, item) => sum + Number(item.completion || 0),
+      0,
+    );
+
+    return Math.round(total / visitData.length);
+  }, [dashboardData.visitData]);
+
+  const actualStudiesCount = sharedStudies.length || studyCount || 0;
+
+  const dynamicKpis = {
+    ...dashboardData.kpis,
+    enrollmentCount,
+    targetCount,
+    activeSubjects: activeSubjectsCount,
+    studiesCount: actualStudiesCount,
+    consentRate,
+    visitCompletion,
+  };
+
+  const navigateToPage = (page) => {
+    const routes = {
+      recruitment: "/pi-recruitment",
+      reports: "/pi-reports",
+      regulatory: "/pi-regulatory",
+      "site-performance": "/pi-site-performance",
+      notifications: "/pi-notifications",
+      comments: "/comments",
+      eisf: "/pi-eisf-dashboard",
+      icf: "/pi-icf-dashboard",
+      "study-folder": "/pi-study-folder-dashboard",
+      dashboard: "/pi-dashboard",
+    };
+
+    navigate(routes[page] || "/pi-dashboard");
+  };
+
+  const navigateToStudies = () => {
+    setSelectedPage("studies");
+    navigate("/studies");
+  };
+
+  const navigateToSubjects = () => {
+    const firstStudyWithSubjects = sharedStudies.find((study) => {
+      const studyKey = getStudyKey(study);
+      return Array.isArray(subjectsByStudy[studyKey]) &&
+        subjectsByStudy[studyKey].length > 0;
+    });
+
+    const targetStudy = firstStudyWithSubjects || sharedStudies[0];
+
+    if (!targetStudy) {
+      navigateToStudies();
+      return;
+    }
+
+    const studyKey = getStudyKey(targetStudy);
+
+    localStorage.setItem("selectedStudy", JSON.stringify(targetStudy));
+    navigate(
+      `/study-dashboard/${encodeURIComponent(
+        studyKey,
+      )}?tab=${encodeURIComponent("Subjects")}`,
+    );
+  };
+
+  const getAlertIcon = (type) => {
+    if (type === "critical") return <FaFileMedical className="alert-svg" />;
+    if (type === "danger") return <FaExclamationCircle className="alert-svg" />;
+    if (type === "warning") return <FaExclamationCircle className="alert-svg" />;
+    if (type === "study-alert") {
+      return <FaExclamationTriangle className="alert-svg" />;
+    }
+
+    return <FaInfoCircle className="alert-svg" />;
+  };
 
   const handleAlertClick = (alert) => {
-    if (alert.page) navigateToPage(alert.page);
-    else navigateToPage("notifications");
-  };
-
-  const openStudiesSection = () => {
-    window.dispatchEvent(new CustomEvent("pi-navigate-studies"));
-    setSidebarOpen(true);
+    navigateToPage(alert.page || "notifications");
   };
 
   const quickActionsData = [
@@ -168,99 +336,127 @@ const getAlertIcon = (type) => {
     {
       title: "Studies",
       icon: <FaBookOpen />,
-      count: dashboardData.kpis.studiesCount ?? dashboardData.studies.length,
-      action: openStudiesSection,
+      count: actualStudiesCount,
+      action: navigateToStudies,
     },
     {
       title: "Comments",
       icon: <FaFileAlt />,
-      count: dashboardData.kpis.commentsCount ?? dashboardData.kpis.comments ?? 0,
+      count: dynamicKpis.commentsCount || 0,
       action: () => navigateToPage("comments"),
     },
     {
       title: "Generate Report",
       icon: <FaChartBar />,
-      count: dashboardData.studies.length,
+      count: actualStudiesCount,
       action: () => navigateToPage("reports"),
     },
   ];
 
-  const dynamicAlerts = buildDynamicAlerts(dashboardData, getCommentsData());
-
-  const totalTarget = dashboardData.studies.reduce(
-    (sum, study) => sum + Number(study.target || 0),
-    0
-  );
-
-  const totalEnrolled = dashboardData.studies.reduce(
-    (sum, study) => sum + Number(study.enrolled || 0),
-    0
+  const dynamicAlerts = buildDynamicAlerts(
+    {
+      ...dashboardData,
+      kpis: dynamicKpis,
+      studies: sharedStudies,
+      recentSubjects: realSubjects,
+    },
+    getCommentsData(),
   );
 
   const enrollmentChartData = [
-    { name: "Target", value: totalTarget },
-    { name: "Enrolled", value: totalEnrolled }
+    { name: "Target", value: targetCount },
+    { name: "Enrolled", value: enrollmentCount },
   ];
 
   const consentChartData = [
     {
       name: "Consented",
-      value: (dashboardData.recentSubjects || []).filter(
-        (s) => s.status === "Active"
-      ).length
+      value: realSubjects.filter((subject) => {
+        const value = String(
+          subject.consentStatus ||
+            subject.consent ||
+            subject.icfStatus ||
+            subject.status ||
+            "",
+        )
+          .trim()
+          .toLowerCase();
+
+        return [
+          "consented",
+          "signed",
+          "complete",
+          "completed",
+          "active",
+          "enrolled",
+        ].includes(value);
+      }).length,
     },
     {
       name: "Pending",
-      value: (dashboardData.recentSubjects || []).filter(
-        (s) => s.status === "Screening"
-      ).length
+      value: realSubjects.filter((subject) => {
+        const value = String(
+          subject.consentStatus || subject.consent || subject.icfStatus || "",
+        )
+          .trim()
+          .toLowerCase();
+
+        return ["pending", "in progress", "awaiting"].includes(value);
+      }).length,
     },
     {
       name: "Declined",
-      value: (dashboardData.recentSubjects || []).filter(
-        (s) => s.status === "Withdrawn"
-      ).length
-    }
+      value: realSubjects.filter((subject) => {
+        const value = String(
+          subject.consentStatus || subject.consent || subject.icfStatus || "",
+        )
+          .trim()
+          .toLowerCase();
+
+        return ["declined", "refused", "withdrawn"].includes(value);
+      }).length,
+    },
   ];
+
   const subjectStatusChartData = [
-  { name: "Screened", value: 45 },
-  { name: "Enrolled", value: 32 },
-  { name: "Completed", value: 18 },
-  { name: "Withdrawn", value: 5 }
-];
+    {
+      name: "Screened",
+      value: realSubjects.filter(
+        (subject) =>
+          String(subject.status || "").toLowerCase() === "screening",
+      ).length,
+    },
+    {
+      name: "Enrolled",
+      value: realSubjects.filter((subject) =>
+        ["active", "enrolled"].includes(
+          String(subject.status || "").toLowerCase(),
+        ),
+      ).length,
+    },
+    {
+      name: "Completed",
+      value: realSubjects.filter(
+        (subject) =>
+          String(subject.status || "").toLowerCase() === "completed",
+      ).length,
+    },
+    {
+      name: "Withdrawn",
+      value: realSubjects.filter((subject) =>
+        ["withdrawn", "screen-failed", "inactive"].includes(
+          String(subject.status || "").toLowerCase(),
+        ),
+      ).length,
+    },
+  ];
 
   const updateDashboard = (updatedDashboard) => {
-    const synced = syncKpisFromData(updatedDashboard);
-    setDashboardData(synced);
-    saveDashboardData(synced);
-  };
+    const syncedData = syncKpisFromData(updatedDashboard);
+    const savedData = saveDashboardData(syncedData);
 
-  const handleAddStudy = () => {
-    if (!newStudy.study || !newStudy.target || !newStudy.enrolled) {
-      alert("Please fill all fields");
-      return;
-    }
-
-    const updatedDashboard = {
-      ...dashboardData,
-      studies: [
-        ...dashboardData.studies,
-        {
-          ...newStudy,
-          target: Number(newStudy.target),
-          enrolled: Number(newStudy.enrolled)
-        }
-      ]
-    };
-
-    updateDashboard(updatedDashboard);
-    setShowStudyModal(false);
-    setNewStudy({
-      study: "",
-      target: "",
-      enrolled: "",
-      status: "On Track"
-    });
+    setDashboardData(savedData);
+    window.dispatchEvent(new CustomEvent("pi-dashboard-updated"));
   };
 
   const handleAddVisit = () => {
@@ -269,17 +465,16 @@ const getAlertIcon = (type) => {
       return;
     }
 
-    const updatedDashboard = {
+    updateDashboard({
       ...dashboardData,
-      upcomingVisits: [...(dashboardData.upcomingVisits || []), newVisit]
-    };
+      upcomingVisits: [...(dashboardData.upcomingVisits || []), newVisit],
+    });
 
-    updateDashboard(updatedDashboard);
     setShowVisitModal(false);
     setNewVisit({
       subject: "",
       visit: "",
-      date: ""
+      date: "",
     });
   };
 
@@ -289,41 +484,41 @@ const getAlertIcon = (type) => {
       return;
     }
 
-    const updatedDashboard = {
+    updateDashboard({
       ...dashboardData,
-      pendingQueries: [...(dashboardData.pendingQueries || []), newQuery]
-    };
+      pendingQueries: [...(dashboardData.pendingQueries || []), newQuery],
+    });
 
-    updateDashboard(updatedDashboard);
     setShowQueryModal(false);
     setNewQuery({
       id: "",
       subject: "",
-      status: "Open"
+      status: "Open",
     });
   };
 
   const renderPageContent = (forcedPage) => {
     const page =
-        forcedPage && selectedPage === "dashboard"
-            ? forcedPage
-            : selectedPage;
-    console.log("Rendering page:", page);
+      forcedPage && selectedPage === "dashboard"
+        ? forcedPage
+        : selectedPage;
 
-
-    // UPDATED: Route all sidebar/navbar pages — remount on page change via key
     if (page === "livechat") {
       return <PILiveChat key="livechat" setSelectedPage={setSelectedPage} />;
     }
+
     if (page === "reports") {
       return <PIReports key="reports" selectedStudy={selectedStudy} />;
     }
+
     if (page === "recruitment") {
       return <PIRecruitment key="recruitment" selectedStudy={selectedStudy} />;
     }
+
     if (page === "regulatory") {
       return <PIRegulatory key="regulatory" selectedStudy={selectedStudy} />;
     }
+
     if (page === "settings") {
       return (
         <PISettings
@@ -332,16 +527,40 @@ const getAlertIcon = (type) => {
         />
       );
     }
+
     if (page === "notifications") {
-      return <PINotifications key="notifications" selectedStudy={selectedStudy} />;
+      return (
+        <PINotifications
+          key="notifications"
+          selectedStudy={selectedStudy}
+        />
+      );
     }
+
     if (page === "site-performance") {
-      return <PISitePerformance key="site-performance" selectedStudy={selectedStudy} />;
+      return (
+        <PISitePerformance
+          key="site-performance"
+          selectedStudy={selectedStudy}
+        />
+      );
     }
-    if (page === "comments") return <PIComments embedded />;
-    if (page === "eisf") return <PIEISFDashboard />;
-    if (page === "icf") return <PIICFDashboard />;
-    if (page === "study-folder") return <StudyFolderDashboard />;
+
+    if (page === "comments") {
+      return <PIComments embedded />;
+    }
+
+    if (page === "eisf") {
+      return <PIEISFDashboard />;
+    }
+
+    if (page === "icf") {
+      return <PIICFDashboard />;
+    }
+
+    if (page === "study-folder") {
+      return <StudyFolderDashboard />;
+    }
 
     return (
       <div className="pi-page-content">
@@ -350,31 +569,27 @@ const getAlertIcon = (type) => {
             <h2>Principal Investigator Dashboard</h2>
             <p className="pi-subtitle">Site overview and study progress</p>
           </div>
-
-
         </div>
 
         <div className="pi-kpi-grid">
           <div
-  className="pi-card pi-kpi-clickable"
-  onClick={() => {
-  console.log("Card Click");
-  navigateToPage("recruitment");
-}}
-  role="button"
-  tabIndex={0}
->
+            className="pi-card pi-kpi-clickable"
+            onClick={() => navigateToPage("recruitment")}
+            role="button"
+            tabIndex={0}
+          >
             <div className="card-header">
               <div className="icon-circle blue">
                 <FaUsers />
               </div>
+
               <div className="card-content">
                 <span className="card-title">Enrollment Count</span>
                 <span className="card-value">
-                  {dashboardData.kpis.enrollmentCount}
+                  {dynamicKpis.enrollmentCount || 0}
                 </span>
                 <span className="card-subtitle">
-                  Target: {dashboardData.kpis.targetCount}
+                  Target: {dynamicKpis.targetCount || 0}
                 </span>
               </div>
             </div>
@@ -382,18 +597,24 @@ const getAlertIcon = (type) => {
 
           <div
             className="pi-card pi-kpi-clickable"
-            onClick={openStudiesSection}
+            onClick={navigateToSubjects}
             role="button"
             tabIndex={0}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                navigateToSubjects();
+              }
+            }}
           >
             <div className="card-header">
               <div className="icon-circle green">
                 <FaUser />
               </div>
+
               <div className="card-content">
                 <span className="card-title">Active Subjects</span>
                 <span className="card-value">
-                  {dashboardData.kpis.activeSubjects}
+                  {dynamicKpis.activeSubjects || 0}
                 </span>
               </div>
             </div>
@@ -401,19 +622,23 @@ const getAlertIcon = (type) => {
 
           <div
             className="pi-card pi-kpi-clickable"
-            onClick={openStudiesSection}
+            onClick={navigateToStudies}
             role="button"
             tabIndex={0}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                navigateToStudies();
+              }
+            }}
           >
             <div className="card-header">
               <div className="icon-circle orange">
                 <FaClipboardList />
               </div>
+
               <div className="card-content">
                 <span className="card-title">Studies</span>
-                <span className="card-value">
-                  {dashboardData.kpis.studiesCount ?? dashboardData.studies.length}
-                </span>
+                <span className="card-value">{actualStudiesCount}</span>
               </div>
             </div>
           </div>
@@ -428,10 +653,11 @@ const getAlertIcon = (type) => {
               <div className="icon-circle red">
                 <FaFileAlt />
               </div>
+
               <div className="card-content">
                 <span className="card-title">Comments</span>
                 <span className="card-value">
-                  {dashboardData.kpis.commentsCount ?? dashboardData.kpis.comments ?? 0}
+                  {dynamicKpis.commentsCount || 0}
                 </span>
               </div>
             </div>
@@ -447,10 +673,11 @@ const getAlertIcon = (type) => {
               <div className="icon-circle purple">
                 <FaChartBar />
               </div>
+
               <div className="card-content">
                 <span className="card-title">Visit Completion %</span>
                 <span className="card-value">
-                  {dashboardData.kpis.visitCompletion}%
+                  {dynamicKpis.visitCompletion || 0}%
                 </span>
               </div>
             </div>
@@ -466,10 +693,11 @@ const getAlertIcon = (type) => {
               <div className="icon-circle teal">
                 <FaShieldAlt />
               </div>
+
               <div className="card-content">
                 <span className="card-title">Consent Rate</span>
                 <span className="card-value">
-                  {dashboardData.kpis.consentRate}%
+                  {dynamicKpis.consentRate || 0}%
                 </span>
               </div>
             </div>
@@ -491,43 +719,61 @@ const getAlertIcon = (type) => {
             <div className="pi-chart-pair-grid">
               <div className="chart-card">
                 <h4>Enrollment vs Target</h4>
+
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={enrollmentChartData}>
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="value" fill="#2563eb" radius={[6, 6, 0, 0]} />
+                    <Bar
+                      dataKey="value"
+                      fill="#2563eb"
+                      radius={[6, 6, 0, 0]}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+
               <div className="chart-card">
                 <h4>Consent Distribution</h4>
+
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
-  data={consentChartData}
-  dataKey="value"
-  outerRadius={90}
-  paddingAngle={2}
-  label={({ name, value }) =>
-    value > 0 ? `${name}: ${value}` : ""
-  }
->
-                     {consentChartData.map((entry, index) => (
-                        <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                      data={consentChartData}
+                      dataKey="value"
+                      outerRadius={90}
+                      paddingAngle={2}
+                      label={({ name, value }) =>
+                        value > 0 ? `${name}: ${value}` : ""
+                      }
+                    >
+                      {consentChartData.map((entry, index) => (
+                        <Cell
+                          key={`${entry.name}-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
                       ))}
                     </Pie>
-                    <Legend verticalAlign="middle" align="right" layout="vertical" />
+
+                    <Legend
+                      verticalAlign="middle"
+                      align="right"
+                      layout="vertical"
+                    />
+
                     <Tooltip />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
             </div>
           </div>
-                    <div className="pi-chart-pair-section">
+
+          <div className="pi-chart-pair-section">
             <div className="pi-chart-pair-grid">
               <div className="chart-card">
                 <h4>Subject Status Overview</h4>
+
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
@@ -544,65 +790,76 @@ const getAlertIcon = (type) => {
                       <Cell fill="#a855f7" />
                       <Cell fill="#ef4444" />
                     </Pie>
-                    <Tooltip />
-                    <Legend layout="vertical" align="right" verticalAlign="middle" />
-                    <text
-  x="45%"
-  y="50%"
-  textAnchor="middle"
-  dominantBaseline="middle"
-  fontSize="28"
-  fontWeight="700"
->
-  {dashboardData.recentSubjects.length}
-</text>
 
-<text
-  x="45%"
-  y="58%"
-  textAnchor="middle"
-  dominantBaseline="middle"
-  fontSize="13"
->
-  Total
-</text>
+                    <Tooltip />
+
+                    <Legend
+                      layout="vertical"
+                      align="right"
+                      verticalAlign="middle"
+                    />
+
+                    <text
+                      x="45%"
+                      y="50%"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fontSize="28"
+                      fontWeight="700"
+                    >
+                      {realSubjects.length}
+                    </text>
+
+                    <text
+                      x="45%"
+                      y="58%"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fontSize="13"
+                    >
+                      Total
+                    </text>
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="chart-card">
-  <h4>Visit Completion Trend</h4>
 
-  <ResponsiveContainer width="100%" height={250}>
-    <BarChart data={dashboardData.visitData}>
-      <XAxis dataKey="visit" />
-      <YAxis />
-      <Tooltip />
-      <Bar
-        dataKey="completion"
-        fill="#a78bfa"
-        radius={[6, 6, 0, 0]}
-      />
-    </BarChart>
-  </ResponsiveContainer>
-</div>
+              <div className="chart-card">
+                <h4>Visit Completion Trend</h4>
+
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={dashboardData.visitData || []}>
+                    <XAxis dataKey="visit" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar
+                      dataKey="completion"
+                      fill="#a78bfa"
+                      radius={[6, 6, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
         </div>
+
         <div className="alerts-actions-grid">
           <div className="pi-section alerts-card">
-            <h3>
-              Alerts &amp; Notifications ({dynamicAlerts.length})
-            </h3>
+            <h3>Alerts &amp; Notifications ({dynamicAlerts.length})</h3>
 
             <div className="alerts-list">
               {dynamicAlerts.map((alert, index) => (
                 <div
-                  key={index}
+                  key={`${alert.title}-${index}`}
                   className="alert-item pi-alert-clickable"
                   onClick={() => handleAlertClick(alert)}
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && handleAlertClick(alert)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      handleAlertClick(alert);
+                    }
+                  }}
                 >
                   <div className="alert-left">
                     <div className={`alert-icon ${alert.type}`}>
@@ -612,19 +869,29 @@ const getAlertIcon = (type) => {
                     <div>
                       <div className="alert-title-row">
                         <h4>{alert.title}</h4>
+
                         {alert.priority && (
-                          <span className={`pi-priority-badge ${alert.priority.toLowerCase()}`}>
-                            <FaClipboardList className="alert-field-icon" aria-hidden="true" />
+                          <span
+                            className={`pi-priority-badge ${alert.priority.toLowerCase()}`}
+                          >
+                            <FaClipboardList
+                              className="alert-field-icon"
+                              aria-hidden="true"
+                            />
                             {alert.priority}
                           </span>
                         )}
                       </div>
+
                       <p>{alert.message}</p>
                     </div>
                   </div>
 
                   <span className="alert-date">
-                    <FaClock className="alert-field-icon" aria-hidden="true" />
+                    <FaClock
+                      className="alert-field-icon"
+                      aria-hidden="true"
+                    />
                     {alert.date}
                   </span>
                 </div>
@@ -633,6 +900,8 @@ const getAlertIcon = (type) => {
               <div
                 className="view-alerts-link"
                 onClick={() => setShowAlertsModal(true)}
+                role="button"
+                tabIndex={0}
               >
                 View All Alerts →
               </div>
@@ -645,9 +914,11 @@ const getAlertIcon = (type) => {
             <div className="quick-actions">
               {quickActionsData.map((item, index) => (
                 <div
-                  key={index}
+                  key={`${item.title}-${index}`}
                   className="action-card"
                   onClick={item.action}
+                  role="button"
+                  tabIndex={0}
                 >
                   <div className="action-icon">{item.icon}</div>
                   <p>{item.title}</p>
@@ -658,68 +929,6 @@ const getAlertIcon = (type) => {
           </div>
         </div>
 
-        {showStudyModal && (
-          <div className="study-modal-overlay">
-            <div className="study-modal">
-              <h3>Add New Study</h3>
-
-              <input
-                type="text"
-                placeholder="Study ID"
-                value={newStudy.study}
-                onChange={(e) =>
-                  setNewStudy({
-                    ...newStudy,
-                    study: e.target.value
-                  })
-                }
-              />
-
-              <input
-                type="number"
-                placeholder="Target"
-                value={newStudy.target}
-                onChange={(e) =>
-                  setNewStudy({
-                    ...newStudy,
-                    target: e.target.value
-                  })
-                }
-              />
-
-              <input
-                type="number"
-                placeholder="Enrolled"
-                value={newStudy.enrolled}
-                onChange={(e) =>
-                  setNewStudy({
-                    ...newStudy,
-                    enrolled: e.target.value
-                  })
-                }
-              />
-
-              <select
-                value={newStudy.status}
-                onChange={(e) =>
-                  setNewStudy({
-                    ...newStudy,
-                    status: e.target.value
-                  })
-                }
-              >
-                <option>On Track</option>
-                <option>At Risk</option>
-              </select>
-
-              <div className="modal-buttons">
-                <button onClick={() => setShowStudyModal(false)}>Cancel</button>
-                <button onClick={handleAddStudy}>Save Study</button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {showVisitModal && (
           <div className="study-modal-overlay">
             <div className="study-modal">
@@ -729,10 +938,10 @@ const getAlertIcon = (type) => {
                 type="text"
                 placeholder="Subject ID"
                 value={newVisit.subject}
-                onChange={(e) =>
+                onChange={(event) =>
                   setNewVisit({
                     ...newVisit,
-                    subject: e.target.value
+                    subject: event.target.value,
                   })
                 }
               />
@@ -741,10 +950,10 @@ const getAlertIcon = (type) => {
                 type="text"
                 placeholder="Visit Name"
                 value={newVisit.visit}
-                onChange={(e) =>
+                onChange={(event) =>
                   setNewVisit({
                     ...newVisit,
-                    visit: e.target.value
+                    visit: event.target.value,
                   })
                 }
               />
@@ -752,16 +961,19 @@ const getAlertIcon = (type) => {
               <input
                 type="date"
                 value={newVisit.date}
-                onChange={(e) =>
+                onChange={(event) =>
                   setNewVisit({
                     ...newVisit,
-                    date: e.target.value
+                    date: event.target.value,
                   })
                 }
               />
 
               <div className="modal-buttons">
-                <button onClick={() => setShowVisitModal(false)}>Cancel</button>
+                <button onClick={() => setShowVisitModal(false)}>
+                  Cancel
+                </button>
+
                 <button onClick={handleAddVisit}>Save Visit</button>
               </div>
             </div>
@@ -777,10 +989,10 @@ const getAlertIcon = (type) => {
                 type="text"
                 placeholder="Query ID"
                 value={newQuery.id}
-                onChange={(e) =>
+                onChange={(event) =>
                   setNewQuery({
                     ...newQuery,
-                    id: e.target.value
+                    id: event.target.value,
                   })
                 }
               />
@@ -789,20 +1001,20 @@ const getAlertIcon = (type) => {
                 type="text"
                 placeholder="Subject ID"
                 value={newQuery.subject}
-                onChange={(e) =>
+                onChange={(event) =>
                   setNewQuery({
                     ...newQuery,
-                    subject: e.target.value
+                    subject: event.target.value,
                   })
                 }
               />
 
               <select
                 value={newQuery.status}
-                onChange={(e) =>
+                onChange={(event) =>
                   setNewQuery({
                     ...newQuery,
-                    status: e.target.value
+                    status: event.target.value,
                   })
                 }
               >
@@ -812,7 +1024,10 @@ const getAlertIcon = (type) => {
               </select>
 
               <div className="modal-buttons">
-                <button onClick={() => setShowQueryModal(false)}>Cancel</button>
+                <button onClick={() => setShowQueryModal(false)}>
+                  Cancel
+                </button>
+
                 <button onClick={handleAddQuery}>Save Query</button>
               </div>
             </div>
@@ -825,15 +1040,22 @@ const getAlertIcon = (type) => {
               <h3>All Alerts</h3>
 
               {dynamicAlerts.map((alert, index) => (
-                <div key={index} className="pi-alert-modal-item">
+                <div
+                  key={`${alert.title}-modal-${index}`}
+                  className="pi-alert-modal-item"
+                >
                   <div className="alert-title-row">
                     <strong>{alert.title}</strong>
+
                     {alert.priority && (
-                      <span className={`pi-priority-badge ${alert.priority.toLowerCase()}`}>
+                      <span
+                        className={`pi-priority-badge ${alert.priority.toLowerCase()}`}
+                      >
                         {alert.priority}
                       </span>
                     )}
                   </div>
+
                   <p>{alert.message}</p>
                   <small>{alert.date}</small>
                 </div>
@@ -868,9 +1090,9 @@ const getAlertIcon = (type) => {
   };
 
   if (embeddedInLayout) {
-  return renderPageContent(selectedPage);
-}
-console.log("PIDashboard setSelectedPage =", setSelectedPage);
+    return renderPageContent(selectedPage);
+  }
+
   return (
     <div className="pi-dashboard-wrapper">
       <PINavbar
@@ -878,14 +1100,15 @@ console.log("PIDashboard setSelectedPage =", setSelectedPage);
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         onProfileNavigate={(view) => setSettingsView(view || "security")}
       />
+
       <div className="pi-dashboard-layout">
         <PISidebar
           selectedPage={selectedPage}
           setSelectedPage={setSelectedPage}
-          subjects={dashboardData.recentSubjects || []}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
         />
+
         <div className="pi-dashboard-content">{renderPageContent()}</div>
       </div>
 

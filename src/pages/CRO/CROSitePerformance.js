@@ -7,6 +7,7 @@ import CROModal from "./CROModal";
 
 function CROSitePerformance() {
   const { sitePerformanceData } = useCROData();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [selectedSite, setSelectedSite] = useState(null);
@@ -15,22 +16,26 @@ function CROSitePerformance() {
     const matchesSearch = site.site
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
+
     const matchesStatus =
       statusFilter === "All" || site.status === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
   const excellentCount = sitePerformanceData.filter(
-    (s) => s.status === "Excellent"
+    (site) => site.status === "Excellent"
   ).length;
+
   const atRiskCount = sitePerformanceData.filter(
-    (s) => s.status === "At Risk"
+    (site) => site.status === "At Risk"
   ).length;
+
   const avgEnrollment =
     sitePerformanceData.length > 0
       ? Math.round(
           sitePerformanceData.reduce(
-            (sum, s) => sum + parseInt(s.enrollment, 10),
+            (sum, site) => sum + parseInt(site.enrollment, 10),
             0
           ) / sitePerformanceData.length
         )
@@ -41,29 +46,26 @@ function CROSitePerformance() {
       <h1 style={{ marginBottom: "25px" }}>Site Performance</h1>
 
       <div className="cro-stats-grid">
+        <div className="dashboard-card">
+          <h3>Total Sites</h3>
+          <h1>{sitePerformanceData.length}</h1>
+        </div>
 
-  <div className="dashboard-card">
-    <h3>Total Sites</h3>
-    <h1>{sitePerformanceData.length}</h1>
-  </div>
+        <div className="dashboard-card">
+          <h3>Top Performing</h3>
+          <h1>{excellentCount}</h1>
+        </div>
 
-  <div className="dashboard-card">
-    <h3>Top Performing</h3>
-    <h1>{excellentCount}</h1>
-  </div>
+        <div className="dashboard-card">
+          <h3>Average Enrollment</h3>
+          <h1>{avgEnrollment}%</h1>
+        </div>
 
-  <div className="dashboard-card">
-    <h3>Average Enrollment</h3>
-    <h1>{avgEnrollment}%</h1>
-  </div>
-
-  <div className="dashboard-card">
-    <h3>At Risk Sites</h3>
-    <h1>{atRiskCount}</h1>
-  </div>
-
-</div>
-   
+        <div className="dashboard-card">
+          <h3>At Risk Sites</h3>
+          <h1>{atRiskCount}</h1>
+        </div>
+      </div>
 
       <div className="cro-panel">
         <div className="cro-panel-header">
@@ -72,12 +74,13 @@ function CROSitePerformance() {
               type="text"
               placeholder="Search Site..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(event) => setSearchTerm(event.target.value)}
               className="cro-input"
             />
+
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(event) => setStatusFilter(event.target.value)}
               className="cro-input"
             >
               <option value="All">All</option>
@@ -86,7 +89,8 @@ function CROSitePerformance() {
               <option value="At Risk">At Risk</option>
             </select>
           </div>
-          <h2></h2>
+
+          <h2 className="sr-only">Site Performance Filters</h2>
         </div>
 
         {filteredSites.length === 0 ? (
@@ -105,6 +109,7 @@ function CROSitePerformance() {
                   <th>Actions</th>
                 </tr>
               </thead>
+
               <tbody>
                 {filteredSites.map((site) => (
                   <tr key={site.id}>
@@ -113,9 +118,11 @@ function CROSitePerformance() {
                     <td>{site.enrollment}</td>
                     <td>{site.screenFailure}</td>
                     <td>{site.compliance}</td>
+
                     <td>
                       <CROStatusBadge status={site.status} />
                     </td>
+
                     <td>
                       <button
                         type="button"
@@ -136,7 +143,11 @@ function CROSitePerformance() {
       <CROModal
         isOpen={Boolean(selectedSite)}
         onClose={() => setSelectedSite(null)}
-        title={selectedSite ? `${selectedSite.site} Performance` : "Site Details"}
+        title={
+          selectedSite
+            ? `${selectedSite.site} Performance`
+            : "Site Details"
+        }
         footer={
           <button
             type="button"
@@ -149,12 +160,30 @@ function CROSitePerformance() {
       >
         {selectedSite && (
           <div>
-            <p><strong>Site ID:</strong> {selectedSite.id}</p>
-            <p><strong>Study:</strong> {selectedSite.study}</p>
-            <p><strong>Enrollment:</strong> {selectedSite.enrollment}</p>
-            <p><strong>Screen Failure:</strong> {selectedSite.screenFailure}</p>
-            <p><strong>Visit Compliance:</strong> {selectedSite.compliance}</p>
-            <p><strong>Status:</strong> <CROStatusBadge status={selectedSite.status} /></p>
+            <p>
+              <strong>Site ID:</strong> {selectedSite.id}
+            </p>
+
+            <p>
+              <strong>Study:</strong> {selectedSite.study}
+            </p>
+
+            <p>
+              <strong>Enrollment:</strong> {selectedSite.enrollment}
+            </p>
+
+            <p>
+              <strong>Screen Failure:</strong> {selectedSite.screenFailure}
+            </p>
+
+            <p>
+              <strong>Visit Compliance:</strong> {selectedSite.compliance}
+            </p>
+
+            <p>
+              <strong>Status:</strong>{" "}
+              <CROStatusBadge status={selectedSite.status} />
+            </p>
           </div>
         )}
       </CROModal>

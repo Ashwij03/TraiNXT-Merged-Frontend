@@ -4,13 +4,15 @@ function StudyWorkspaceTabs({ activeTab, setActiveTab }) {
   const tabs = [
     "Overview",
     "Subjects",
+    "Planning",
+    "Visit Plan",
     "eISF",
     "Regulatory",
     "Reports",
     "Study Files",
     "Logs",
-    "Others",
-    "Financials"
+    "Financials",
+    "Others"
   ];
 
   return (

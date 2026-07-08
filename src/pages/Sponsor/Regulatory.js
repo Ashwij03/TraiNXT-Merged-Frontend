@@ -4,10 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import './Regulatory.css';
 import './SponsorShared.css';
 import KpiCard from './KpiCard';
-import EnterpriseModal from './EnterpriseModal';
+import RequestPermissionButton from '../../Components/common/RequestPermissionButton';
 import { FiCheckSquare, FiCheckCircle, FiClock, FiAlertTriangle } from 'react-icons/fi';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { getRegulatory, saveRegulatory, getRegulatoryKPIs } from './data/sponsorDataStore';
+import { getRegulatory, getRegulatoryKPIs } from './data/sponsorDataStore';
 
 const STATUS_COLORS = { Approved: '#22c55e', 'In Review': '#3b82f6', Submitted: '#f59e0b', Overdue: '#ef4444' };
 
@@ -15,9 +15,7 @@ const Regulatory = () => {
   const navigate = useNavigate();
   const [documents, setDocuments] = useState(getRegulatory());
   const [kpis, setKpis] = useState(getRegulatoryKPIs());
-  const [showCreate, setShowCreate] = useState(false);
   const [statusFilter, setStatusFilter] = useState('All');
-  const [form, setForm] = useState({ study: '', document: '', status: 'Submitted', authority: 'FDA', dueDate: '' });
 
   useEffect(() => {
     const refresh = () => { setDocuments(getRegulatory()); setKpis(getRegulatoryKPIs()); };
@@ -35,15 +33,6 @@ const Regulatory = () => {
     { name: 'Submitted', value: kpis.submitted },
     { name: 'Overdue', value: kpis.overdue },
   ].filter(d => d.value > 0);
-
-  const handleCreate = () => {
-    if (!form.study || !form.document) return;
-    const updated = [...documents, { id: `REG-${Date.now()}`, ...form, submittedDate: new Date().toISOString().split('T')[0] }];
-    saveRegulatory(updated);
-    setDocuments(updated);
-    setKpis(getRegulatoryKPIs());
-    setShowCreate(false);
-  };
 
   return (
     <AppLayout>
@@ -63,6 +52,9 @@ const Regulatory = () => {
         <div className="sponsor-chart-grid">
           <div className="sponsor-chart-card">
             <h3>Document Status Distribution</h3>
+            {pieData.length === 0 ? (
+              <p className="chart-empty-state">No data available yet</p>
+            ) : (
             <ResponsiveContainer width="100%" height={260}>
               <PieChart>
                 <Pie data={pieData} dataKey="value" outerRadius={90} label>
@@ -74,11 +66,12 @@ const Regulatory = () => {
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
+            )}
           </div>
         </div>
 
         <div className="sponsor-toolbar">
-          <button type="button" className="sponsor-btn-primary" onClick={() => setShowCreate(true)}>+ Add Document</button>
+          <RequestPermissionButton action="Add Document" module="Regulatory" label="+ Add Document" className="sponsor-btn-primary" />
         </div>
 
         <div className="sponsor-table-wrap">
@@ -95,7 +88,9 @@ const Regulatory = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredDocuments.map((doc) => (
+              {filteredDocuments.length === 0 ? (
+                <tr><td colSpan="7" style={{ textAlign: 'center' }}>No data available yet</td></tr>
+              ) : filteredDocuments.map((doc) => (
                 <tr key={doc.id} onClick={() => navigate('/regulatory-details', { state: doc })}>
                   <td>{doc.id}</td>
                   <td>{doc.study}</td>
@@ -112,18 +107,6 @@ const Regulatory = () => {
           </table>
         </div>
       </div>
-
-      {showCreate && (
-        <EnterpriseModal title="Add Regulatory Document" onClose={() => setShowCreate(false)} onSave={handleCreate} saveLabel="Add">
-          <input placeholder="Study ID" value={form.study} onChange={(e) => setForm({ ...form, study: e.target.value })} />
-          <input placeholder="Document Name" value={form.document} onChange={(e) => setForm({ ...form, document: e.target.value })} />
-          <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-            <option>Submitted</option><option>In Review</option><option>Approved</option><option>Overdue</option>
-          </select>
-          <input placeholder="Authority (FDA, IRB, EMA)" value={form.authority} onChange={(e) => setForm({ ...form, authority: e.target.value })} />
-          <input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} />
-        </EnterpriseModal>
-      )}
     </AppLayout>
   );
 };
