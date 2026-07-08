@@ -8,12 +8,12 @@ function StudyRegulatory() {
     <div className="module-card">
       <h2>Regulatory</h2>
       <DocumentFolderManager
-        sectionId="regulatory"
-        contextKey={id || "default"}
-        title="Regulatory"
-        studyCode={id}
-        layout="vertical"
-      />
+  sectionId="regulatory"
+  contextKey={id || "default"}
+  title="Regulatory"
+  studyCode={id}
+  layout="column"
+/>
     </div>
   );
 }

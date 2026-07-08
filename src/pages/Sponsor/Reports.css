@@ -81,3 +81,12 @@
 .open-report-btn:hover{
   background:#1d4ed8;
 }
+
+.reports-section-title {
+  color: #1e3a8a;
+  margin: 28px 0 16px;
+}
+
+.report-card--compliance {
+  border-top-color: #7c3aed;
+}

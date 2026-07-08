@@ -95,9 +95,84 @@
   background:#f8fafc;
 }
 
-.report-title{
-  color:#1e3a8a;
-  font-size:42px;
-  font-weight:700;
-  margin:0;
+.reports-section-title {
+  color: #1e3a8a;
+  margin: 28px 0 16px;
+}
+
+.report-card--compliance {
+  border-top-color: #7c3aed;
+}
+
+.report-filter-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+  padding: 20px;
+}
+
+.report-filter-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.report-filter-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.report-filter-grid select,
+.report-subscription-toggle input {
+  font: inherit;
+}
+
+.report-chart-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.report-subscription-toggle {
+  align-items: center;
+  display: flex;
+  flex-direction: row !important;
+  gap: 10px;
+}
+
+.details-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+  padding: 20px;
+}
+
+.details-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.action-buttons button {
+  background: #2563eb;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 10px 16px;
+}
+
+.action-buttons button:hover {
+  background: #1d4ed8;
 }

@@ -208,6 +208,7 @@ function StudyDashboard() {
 	<div className="main-content">
 
 	<CRONavbar
+	
 	  study={study}
 	  setStudy={setStudy}
 
