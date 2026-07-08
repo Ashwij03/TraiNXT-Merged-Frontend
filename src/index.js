@@ -11,6 +11,7 @@ import { initializeStudies } from "./services/studyService";
 // Friend imports
 import { CommentsProvider } from "./CommentsContext";
 import { CROProvider } from "./pages/CRO/CRODATAContext";
+import { FolderProvider } from "./context/FolderContext";
 
 // UPDATED: seed admin and studies localStorage data on app startup
 initializeAdminData();
@@ -25,7 +26,9 @@ root.render(
     <BrowserRouter>
       <CommentsProvider>
         <CROProvider>
-          <App />
+          <FolderProvider>
+            <App />
+          </FolderProvider>
         </CROProvider>
       </CommentsProvider>
     </BrowserRouter>

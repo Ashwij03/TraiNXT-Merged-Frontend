@@ -1,0 +1,48 @@
+.folder-options-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.folder-options-trigger {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+}
+
+.folder-options-trigger:hover {
+  background: #eef3ff;
+  color: #2563eb;
+}
+
+.folder-options-dropdown {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+  display: flex;
+  flex-direction: column;
+  min-width: 190px;
+  position: fixed;
+  z-index: 100000;
+}
+
+.folder-options-dropdown button {
+  background: transparent;
+  border: none;
+  color: #111827;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.folder-options-dropdown button:hover {
+  background: #f3f4f6;
+}

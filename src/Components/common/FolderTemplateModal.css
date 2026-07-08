@@ -1,0 +1,112 @@
+.folder-template-overlay {
+  align-items: center;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 20px;
+  position: fixed;
+  z-index: 3000;
+}
+
+.folder-template-modal {
+  background: #fff;
+  border-radius: 12px;
+  max-height: 90vh;
+  max-width: 760px;
+  overflow: auto;
+  padding: 20px;
+  width: 100%;
+}
+
+.folder-template-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.folder-template-header h3 {
+  margin: 0;
+}
+
+.folder-template-header button {
+  background: #f3f4f6;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 6px 12px;
+}
+
+.folder-template-help,
+.folder-template-message,
+.folder-template-empty {
+  color: #64748b;
+  margin: 0 0 12px;
+}
+
+.folder-template-message {
+  color: #2563eb;
+}
+
+.folder-template-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.folder-template-form input,
+.folder-template-form textarea {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font: inherit;
+  padding: 10px 12px;
+}
+
+.folder-template-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.folder-template-actions button,
+.folder-template-item-actions button {
+  background: #2563eb;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 8px 14px;
+}
+
+.folder-template-item-actions button.danger {
+  background: #dc2626;
+}
+
+.folder-template-list h4 {
+  margin: 0 0 10px;
+}
+
+.folder-template-item {
+  align-items: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 12px;
+}
+
+.folder-template-item small {
+  color: #64748b;
+  display: block;
+}
+
+.folder-template-item-actions {
+  display: flex;
+  gap: 8px;
+}
