@@ -246,3 +246,27 @@
 .value {
   font-weight: 600;
 }
+
+.visit-history,
+.activity-log{
+    margin-top:30px;
+}
+
+.history-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.history-table th,
+.history-table td{
+    border:1px solid #ddd;
+    padding:10px;
+}
+
+.activity-log ul{
+    margin-top:10px;
+}
+
+.activity-log li{
+    margin-bottom:8px;
+}

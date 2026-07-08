@@ -135,6 +135,74 @@ export default function SubjectsTab() {
 
               <td className="cell">✔</td>
 
+              {/* Visit History */}
+
+<div className="visit-history">
+
+  <h3>Visit History</h3>
+
+  <table className="history-table">
+
+    <thead>
+
+      <tr>
+
+        <th>Visit</th>
+
+        <th>Date</th>
+
+        <th>Status</th>
+
+      </tr>
+
+    </thead>
+
+    <tbody>
+
+      <tr>
+
+        <td>Screening 1</td>
+
+        <td>24-FEB-2022</td>
+
+        <td>Completed</td>
+
+      </tr>
+
+      <tr>
+
+        <td>Day 1</td>
+
+        <td>28-FEB-2022</td>
+
+        <td>Scheduled</td>
+
+      </tr>
+
+    </tbody>
+
+  </table>
+
+</div>
+
+{/* Activity Log */}
+
+<div className="activity-log">
+
+  <h3>Activity Log</h3>
+
+  <ul>
+
+    <li>Subject Created</li>
+
+    <li>Screening Visit Completed</li>
+
+    <li>Subject Enrolled</li>
+
+  </ul>
+
+</div>
+
               {/* CLICK POPUP CELL */}
               <td className="cell">
                 <div

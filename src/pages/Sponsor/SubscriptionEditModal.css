@@ -1,0 +1,295 @@
+.subscription-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 30px;
+}
+
+.subscription-modal {
+  width: 760px;
+  max-width: 96%;
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 60px rgba(0,0,0,.20);
+}
+
+.subscription-modal-header{
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    color:#fff;
+}
+
+.subscription-modal-header h3{
+    color:#fff;
+    font-size:28px;
+}
+
+.subscription-modal-close{
+    background:rgba(255,255,255,.2);
+    color:#fff;
+}
+
+.subscription-modal-close:hover{
+    background:rgba(255,255,255,.3);
+}
+
+.subscription-modal-body {
+  padding: 28px 30px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.subscription-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 22px;
+}
+
+.subscription-form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.subscription-form-field-wide {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.subscription-form-field label{
+    font-size:15px;
+    font-weight:600;
+    color:#334155;
+}
+
+.subscription-form-field input,
+.subscription-form-field select,
+.subscription-form-field textarea{
+
+    border:2px solid #dbe4f0;
+
+    background:#f8fbff;
+
+    border-radius:14px;
+}
+
+.subscription-form-field-wide textarea {
+  flex: 1;
+  min-height: 120px;
+}
+
+.subscription-form-field input:focus,
+.subscription-form-field select:focus,
+.subscription-form-field textarea:focus{
+
+    border-color:#2563eb;
+
+    background:#fff;
+
+    box-shadow:0 0 0 5px rgba(37,99,235,.12);
+}
+
+.subscription-field-error {
+
+  margin-top: 6px;
+
+  color: #dc2626;
+
+  font-size: 12px;
+}
+
+/* Toggle */
+
+.subscription-toggle-field {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 18px;
+  margin-top: 28px;
+}
+
+.subscription-toggle-field label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.subscription-toggle input {
+  width: 22px;
+  height: 22px;
+  accent-color: #2563eb;
+  cursor: pointer;
+}
+
+.subscription-toggle-slider {
+
+  position: absolute;
+
+  inset: 0;
+
+  border-radius: 30px;
+
+  background: #cbd5e1;
+
+  cursor: pointer;
+
+  transition: .3s;
+}
+
+.subscription-toggle-slider::before {
+
+  content: "";
+
+  position: absolute;
+
+  width: 20px;
+
+  height: 20px;
+
+  left: 3px;
+
+  bottom: 3px;
+
+  border-radius: 50%;
+
+  background: white;
+
+  transition: .3s;
+}
+
+.subscription-toggle input:checked + .subscription-toggle-slider {
+
+  background: #2563eb;
+}
+
+.subscription-toggle input:checked + .subscription-toggle-slider::before {
+
+  transform: translateX(22px);
+}
+
+/* Footer */
+
+.subscription-modal-footer {
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 15px;
+
+  padding: 22px 30px;
+
+  border-top: 1px solid #e5e7eb;
+
+  background: white;
+
+  position: sticky;
+
+  bottom: 0;
+
+  z-index: 2;
+}
+
+/* Buttons */
+
+.subscription-btn-primary{
+
+background:linear-gradient(135deg,#2563eb,#4f46e5);
+
+padding:13px 32px;
+
+border-radius:12px;
+
+font-size:15px;
+
+font-weight:700;
+}
+
+.subscription-btn-secondary{
+
+background:#f1f5f9;
+
+border:1px solid #dbe4f0;
+
+padding:13px 28px;
+
+border-radius:12px;
+
+font-size:15px;
+
+font-weight:700;
+}
+
+.subscription-btn-primary:hover {
+
+  transform: translateY(-2px);
+
+  box-shadow: 0 16px 35px rgba(37,99,235,.35);
+}
+
+.subscription-btn-primary:disabled {
+
+  opacity: .6;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+/* Responsive */
+
+@media (max-width:768px){
+
+.subscription-modal{
+
+width:100%;
+
+max-height:95vh;
+
+border-radius:16px;
+}
+
+.subscription-modal-header{
+
+padding:18px 20px;
+}
+
+.subscription-modal-body{
+    background:#fafcff;
+}
+
+.subscription-form-grid{
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:16px;
+    padding:24px;
+    gap:24px;
+}
+
+.subscription-form-field-wide{
+
+grid-column:auto;
+}
+
+.subscription-modal-footer{
+
+flex-direction:column;
+}
+
+.subscription-btn-primary,
+.subscription-btn-secondary{
+
+width:100%;
+}
+}

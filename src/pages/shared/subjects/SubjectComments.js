@@ -19,22 +19,20 @@ function SubjectComments({ subjectId }) {
   }, [subjectId]);
 
   return (
-    <div className="subject-tab-card">
-      <DataTable
-        title="Subject Comments"
-        columns={[
-          { key: "id", label: "ID" },
-          { key: "subjectDocument", label: "Subject/Document" },
-          { key: "comment", label: "Comment" },
-          { key: "by", label: "By" },
-          { key: "date", label: "Date" },
-          { key: "status", label: "Status" }
-        ]}
-        data={comments}
-        emptyMessage="No comments for this subject"
-      />
-    </div>
-  );
+  <DataTable
+    title="Subject Comments"
+    columns={[
+      { key: "id", label: "ID" },
+      { key: "subjectDocument", label: "Subject/Document" },
+      { key: "comment", label: "Comment" },
+      { key: "by", label: "By" },
+      { key: "date", label: "Date" },
+      { key: "status", label: "Status" }
+    ]}
+    data={comments}
+    emptyMessage="No comments for this subject"
+  />
+);
 }
 
 export default SubjectComments;

@@ -76,6 +76,32 @@ function createICFFolder() {
   };
 }
 
+export function ensureSubjectFolderWithICF(sectionId, contextKey) {
+  const tree = getFolderTree(sectionId, contextKey);
+  const root = tree[0];
+
+  if (!root) {
+    return null;
+  }
+
+  // ICF already exists
+  const icfFolder = root.children?.find(
+    (child) => child.name === ICF_FOLDER_NAME
+  );
+
+  if (icfFolder) {
+    return icfFolder;
+  }
+
+  const newICF = createICFFolder();
+
+  root.children = [...(root.children || []), newICF];
+
+  saveFolderTree(sectionId, contextKey, tree);
+
+  return newICF;
+}
+
 function emitTreeUpdate(sectionId, contextKey) {
   window.dispatchEvent(
     new CustomEvent(FOLDER_TREE_EVENT, {
@@ -225,13 +251,7 @@ export function createFolder(sectionId, contextKey, parentId, name) {
 
   parent.children = [...(parent.children || []), newFolder];
 
-  if (
-    sectionId === "subjects" &&
-    parent.id === tree[0]?.id &&
-    parent.children.length === 1
-  ) {
-    newFolder.children = [createICFFolder()];
-  }
+  
 
   saveFolderTree(sectionId, contextKey, tree);
 
