@@ -9,10 +9,7 @@ import {
   getSidebarMenuItems,
 } from "../../services/roleService";
 import { ADMIN_PREVIEW_ROLE_EVENT } from "../../constants/headerFilters";
-import {
-  FOLDER_TREE_EVENT,
-  getFirstLevelFolders,
-} from "../../services/folderService";
+import { FOLDER_TREE_EVENT } from "../../services/folderService";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -31,6 +28,7 @@ import {
 } from "react-icons/fi";
 import { getRoleExtraMenuItems } from "../../config/roleMenus";
 import EISFMenuConfig from "../../pages/shared/EISF/Constants/EISFMenuConfig";
+
 const STUDY_SECTIONS = [
   { key: "overview", label: "Overview" },
   { key: "subjects", label: "Subjects", expandable: true },
@@ -44,6 +42,7 @@ const STUDY_SECTIONS = [
   { key: "financials", label: "Financials" },
   { key: "others", label: "Others" },
 ];
+
 function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,9 +52,11 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
 
   const currentUser = getCurrentUser();
   const userEmail = currentUser?.email || "";
+
   const [effectiveRole, setEffectiveRole] = useState(() =>
     getEffectiveRole(currentUser),
   );
+
   const effectiveUser = getEffectiveUser(currentUser);
 
   const getStudiesSafe = () => {
@@ -77,7 +78,12 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
 
   const getStudyKey = (study) =>
     String(
-      study?.code ?? study?.id ?? study?.studyId ?? study?.title ?? study?.name,
+      study?.code ??
+        study?.id ??
+        study?.studyId ??
+        study?.title ??
+        study?.name ??
+        "",
     );
 
   const getStudyDisplayName = (study) =>
@@ -97,35 +103,33 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
 
     const name = getStudyDisplayName(study);
 
-    if (name && code !== name) {
-      return code;
-    }
-
-    return "";
+    return name && code !== name ? code : "";
   };
 
   const getStudySubjects = (study) => {
     const subjectsByStudy = getAllSubjectsByStudy();
     const studyKey = getStudyKey(study);
     const subjects = subjectsByStudy[studyKey];
+
     return Array.isArray(subjects) ? subjects : [];
   };
 
   const [studyBinderOpen, setStudyBinderOpen] = useState(false);
+
   const [studiesOpen, setStudiesOpen] = useState(() => {
-    const path = pathname;
     return (
-      path === "/studies" ||
-      path.startsWith("/study-dashboard") ||
-      path.startsWith("/study/") ||
-      path.includes("/comments") ||
-      path === "/comments"
+      pathname === "/studies" ||
+      pathname.startsWith("/study-dashboard") ||
+      pathname.startsWith("/study/") ||
+      pathname.includes("/comments") ||
+      pathname === "/comments"
     );
   });
-  const [expandedStudies, setExpandedStudies] = useState({});
 
+  const [expandedStudies, setExpandedStudies] = useState({});
   const [expandedStudySections, setExpandedStudySections] = useState({});
-  const [folderTreeVersion, setFolderTreeVersion] = useState(0);
+  const [, setFolderTreeVersion] = useState(0);
+
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const storedWidth = Number(localStorage.getItem("dashboardSidebarWidth"));
     return storedWidth >= 220 ? storedWidth : 260;
@@ -134,18 +138,24 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   const studies = getStudiesSafe();
   const studyCount = studies.length;
   const sidebarItems = getSidebarMenuItems(currentUser);
+
   const canManageUsers =
     effectiveUser?.role === "Admin" || effectiveUser?.role === "SiteStaff";
+
   const canApprovePermissions =
     effectiveUser?.role === "Admin" || effectiveUser?.role === "SiteStaff";
+
   const canViewCROOverview =
     effectiveUser?.role === "Admin" ||
     effectiveUser?.role === "SiteStaff" ||
     effectiveUser?.role === "CRO";
+
   const canViewAuditLogs =
     effectiveUser?.role === "Admin" || effectiveUser?.role === "SiteStaff";
+
   const canRequestAccess =
     effectiveUser?.role === "CRO" || effectiveUser?.role === "Sponsor";
+
   const roleExtraMenuItems = getRoleExtraMenuItems(effectiveUser?.role);
 
   const sidebarClassName = [
@@ -156,8 +166,10 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     .join(" ");
 
   const isStudiesOverviewRoute = pathname === "/studies";
+
   const isStudyInternalRoute =
     pathname.startsWith("/study-dashboard") || pathname.startsWith("/study/");
+
   const isCommentsRoute =
     pathname.includes("/comments") || pathname === "/comments";
 
@@ -166,6 +178,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   useEffect(() => {
     const handlePreviewRoleChange = () => {
       const nextRole = getEffectiveRole(getCurrentUser());
+
       setEffectiveRole((currentRole) =>
         currentRole === nextRole ? currentRole : nextRole,
       );
@@ -204,11 +217,9 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     }
 
     if (prevActiveStudyKeyRef.current !== activeStudyKey) {
-      setStudyBinderOpen((open) => (open ? open : true));
-      setExpandedStudies((prev) => ({
-        ...prev,
-        [activeStudyKey]: true,
-      }));
+      setStudyBinderOpen(true);
+      setExpandedStudies({ [activeStudyKey]: true });
+      setExpandedStudySections({});
       prevActiveStudyKeyRef.current = activeStudyKey;
     }
   }, [pathname, isStudyInternalRoute]);
@@ -234,7 +245,6 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       const nextWidth = Math.min(390, Math.max(220, event.clientX));
 
       setSidebarWidth(nextWidth);
-
       localStorage.setItem("dashboardSidebarWidth", String(nextWidth));
     };
 
@@ -285,7 +295,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       return;
     }
 
-    setStudiesOpen((open) => (open ? open : true));
+    setStudiesOpen(true);
 
     if (pathname !== "/studies") {
       handleNav("/studies");
@@ -294,7 +304,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
 
   const handleStudyBinderClick = (event) => {
     event.stopPropagation();
-    setStudyBinderOpen((prev) => !prev);
+    setStudyBinderOpen((previousValue) => !previousValue);
   };
 
   const handleStudiesCommentsClick = (event) => {
@@ -305,36 +315,38 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   const toggleStudyNode = (studyKey, event) => {
     event?.stopPropagation();
 
-    setExpandedStudies((prev) => ({
-      ...prev,
-      [studyKey]: !Boolean(prev[studyKey]),
-    }));
+    const isCurrentStudyOpen = Boolean(expandedStudies[studyKey]);
+
+    if (isCurrentStudyOpen) {
+      setExpandedStudies({});
+      setExpandedStudySections({});
+      return;
+    }
+
+    setExpandedStudies({ [studyKey]: true });
+    setExpandedStudySections({});
   };
 
   const toggleStudySection = (studyKey, sectionKey, event) => {
     event?.stopPropagation();
+
     const compositeKey = `${studyKey}__${sectionKey}`;
 
-    setExpandedStudySections((prev) => ({
-      ...prev,
-      [compositeKey]: !prev[compositeKey],
+    setExpandedStudySections((previousValue) => ({
+      ...previousValue,
+      [compositeKey]: !Boolean(previousValue[compositeKey]),
     }));
   };
 
-  const handleExpandableSectionLabelClick = (
-    studyKey,
-    sectionKey,
-    isSectionOpen,
-    event,
-  ) => {
+  const toggleEisfModule = (studyKey, moduleId, event) => {
     event?.stopPropagation();
 
-    if (isSectionOpen) {
-      toggleStudySection(studyKey, sectionKey, event);
-      return;
-    }
+    const moduleKey = `${studyKey}__eisf_module__${moduleId}`;
 
-    navigateToStudySection(studyKey, sectionKey);
+    setExpandedStudySections((previousValue) => ({
+      ...previousValue,
+      [moduleKey]: !Boolean(previousValue[moduleKey]),
+    }));
   };
 
   const navigateToStudySection = (studyKey, section) => {
@@ -359,22 +371,147 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     };
 
     const tab = tabMap[section] || "Overview";
-    handleNav(`/study-dashboard/${studyKey}?tab=${encodeURIComponent(tab)}`);
+
+    handleNav(
+      `/study-dashboard/${encodeURIComponent(
+        studyKey,
+      )}?tab=${encodeURIComponent(tab)}`,
+    );
+  };
+
+  const handleStudyNameClick = (studyKey, event) => {
+    event?.stopPropagation();
+
+    const isCurrentStudyOpen = Boolean(expandedStudies[studyKey]);
+
+    if (isCurrentStudyOpen) {
+      setExpandedStudies({});
+      setExpandedStudySections({});
+      return;
+    }
+
+    setExpandedStudies({ [studyKey]: true });
+    setExpandedStudySections({});
+    navigateToStudySection(studyKey, "overview");
+  };
+
+  const handleSubjectsSectionClick = (studyKey, event) => {
+    event?.stopPropagation();
+
+    const compositeKey = `${studyKey}__subjects`;
+
+    setExpandedStudySections((previousValue) => ({
+      ...previousValue,
+      [compositeKey]: !Boolean(previousValue[compositeKey]),
+    }));
+
+    localStorage.removeItem("selectedSubject");
+
+    window.dispatchEvent(
+      new CustomEvent("subject-selected", {
+        detail: {
+          studyId: studyKey,
+          subject: null,
+        },
+      }),
+    );
+
+    navigateToStudySection(studyKey, "subjects");
+  };
+
+  const handleEisfSectionClick = (studyKey, event) => {
+    event?.stopPropagation();
+
+    const compositeKey = `${studyKey}__eisf`;
+
+    setExpandedStudySections((previousValue) => ({
+      ...previousValue,
+      [compositeKey]: !Boolean(previousValue[compositeKey]),
+    }));
+
+    navigateToStudySection(studyKey, "eisf");
+  };
+
+  const handleExpandableSectionLabelClick = (studyKey, sectionKey, event) => {
+    event?.stopPropagation();
+
+    if (sectionKey === "subjects") {
+      handleSubjectsSectionClick(studyKey, event);
+      return;
+    }
+
+    if (sectionKey === "eisf") {
+      handleEisfSectionClick(studyKey, event);
+      return;
+    }
+
+    toggleStudySection(studyKey, sectionKey, event);
   };
 
   const handleSubjectClick = (studyKey, subject) => {
-    const subjectId = subject.subjectId || subject.id;
-    localStorage.setItem("selectedStudy", JSON.stringify({ code: studyKey }));
-    handleNav(`/subject/${subjectId}`);
+    const subjectId = String(subject?.subjectId || subject?.id || "").trim();
+
+    if (!subjectId) {
+      return;
+    }
+
+    const study = studies.find((item) => getStudyKey(item) === studyKey);
+
+    if (study) {
+      localStorage.setItem("selectedStudy", JSON.stringify(study));
+    }
+
+    const selectedSubject = {
+      ...subject,
+      subjectId,
+      id: subject?.id || subjectId,
+      studyId: studyKey,
+    };
+
+    localStorage.setItem("selectedSubject", JSON.stringify(selectedSubject));
+
+    setStudyBinderOpen(true);
+    setStudiesOpen(true);
+    setExpandedStudies({ [studyKey]: true });
+    setExpandedStudySections((previousValue) => ({
+      ...previousValue,
+      [`${studyKey}__subjects`]: true,
+    }));
+
+    window.dispatchEvent(
+      new CustomEvent("subject-selected", {
+        detail: {
+          studyId: studyKey,
+          subject: selectedSubject,
+        },
+      }),
+    );
+
+    handleNav(
+      `/study-dashboard/${encodeURIComponent(
+        studyKey,
+      )}?tab=Subjects&subject=${encodeURIComponent(subjectId)}`,
+    );
   };
 
-  const getSubjectSidebarFolders = (studyKey, subject) => {
-    void folderTreeVersion;
+  const handleEisfChildClick = (studyKey, child) => {
+    const study = studies.find((item) => getStudyKey(item) === studyKey);
 
-    const subjectId = subject.subjectId || subject.id;
-    const contextKey = `${studyKey}::${subjectId}`;
+    if (study) {
+      localStorage.setItem("selectedStudy", JSON.stringify(study));
+    }
 
-    return getFirstLevelFolders("subjects", contextKey);
+    const childPath = String(child?.path || "");
+    const separator = childPath.includes("?") ? "&" : "?";
+
+    if (childPath) {
+      handleNav(
+        `${childPath}${separator}study=${encodeURIComponent(studyKey)}`,
+      );
+      return;
+    }
+
+    navigateToStudySection(studyKey, "eisf");
   };
 
   return (
@@ -401,7 +538,9 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       </div>
 
       <div
-        className={`${getLinkClass(isStudiesActive)} sidebar-folder sidebar-folder--no-indicator${
+        className={`${getLinkClass(
+          isStudiesActive,
+        )} sidebar-folder sidebar-folder--no-indicator${
           studiesOpen ? " submenu-open" : ""
         }`}
         onClick={handleStudiesClick}
@@ -425,6 +564,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
             >
               {studyBinderOpen ? "−" : "+"}
             </button>
+
             <span
               className="sidebar-tree-label sidebar-tree-label--strong"
               onClick={handleStudyBinderClick}
@@ -441,7 +581,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                 const studyMeta = getStudyMeta(study);
                 const studySubjects = getStudySubjects(study);
                 const subjectCount = studySubjects.length;
-                const isStudyOpen = !!expandedStudies[studyKey];
+                const isStudyOpen = Boolean(expandedStudies[studyKey]);
 
                 return (
                   <div key={studyKey} className="sidebar-tree-study">
@@ -458,14 +598,23 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                       >
                         {isStudyOpen ? "−" : "+"}
                       </button>
+
                       <div
                         className="study-label-block"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          navigateToStudySection(studyKey, "overview");
+                        onClick={(event) =>
+                          handleStudyNameClick(studyKey, event)
+                        }
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            handleStudyNameClick(studyKey, event);
+                          }
                         }}
                       >
                         <span className="study-label-name">{studyName}</span>
+
                         {studyMeta && (
                           <small className="study-label-meta">
                             {studyMeta}
@@ -479,8 +628,9 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                         {STUDY_SECTIONS.map((section) => {
                           const sectionKey = section.key;
                           const compositeKey = `${studyKey}__${sectionKey}`;
-                          const isSectionOpen =
-                            !!expandedStudySections[compositeKey];
+                          const isSectionOpen = Boolean(
+                            expandedStudySections[compositeKey],
+                          );
 
                           if (section.expandable) {
                             const displayLabel =
@@ -494,6 +644,11 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                                   <button
                                     type="button"
                                     className="sidebar-expander"
+                                    aria-label={
+                                      isSectionOpen
+                                        ? `Collapse ${displayLabel}`
+                                        : `Expand ${displayLabel}`
+                                    }
                                     onClick={(event) =>
                                       toggleStudySection(
                                         studyKey,
@@ -511,7 +666,6 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                                       handleExpandableSectionLabelClick(
                                         studyKey,
                                         sectionKey,
-                                        isSectionOpen,
                                         event,
                                       )
                                     }
@@ -524,14 +678,12 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                                   <div className="sidebar-tree-group sidebar-tree-group--nested">
                                     {studySubjects.map((subject) => {
                                       const subjectKey = String(
-                                        subject.subjectId || subject.id,
-                                      );
+                                        subject?.subjectId || subject?.id || "",
+                                      ).trim();
 
-                                      const subjectFolders =
-                                        getSubjectSidebarFolders(
-                                          studyKey,
-                                          subject,
-                                        );
+                                      if (!subjectKey) {
+                                        return null;
+                                      }
 
                                       return (
                                         <div
@@ -551,81 +703,80 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                                               {subjectKey}
                                             </span>
                                           </div>
-
-                                          <div className="sidebar-subject-folders">
-                                            {subjectFolders?.map((folder) => (
-                                              <div
-                                                key={`${subjectKey}-${folder.id}`}
-                                                className="sidebar-tree-row sidebar-tree-row--folder-leaf"
-                                                onClick={() => {
-                                                  localStorage.setItem(
-                                                    "selectedSubject",
-                                                    JSON.stringify({
-                                                      ...subject,
-                                                      studyId: studyKey,
-                                                    }),
-                                                  );
-
-                                                  handleNav(
-                                                    `/study-dashboard/${studyKey}?tab=Subjects&subject=${subjectKey}&folder=${folder.id}`,
-                                                  );
-                                                }}
-                                              >
-                                                <span className="sidebar-tree-label">
-                                                  {folder.name}
-                                                </span>
-                                              </div>
-                                            ))}
-                                          </div>
                                         </div>
                                       );
                                     })}
                                   </div>
                                 )}
+
                                 {isSectionOpen && sectionKey === "eisf" && (
                                   <div className="sidebar-tree-group sidebar-tree-group--nested">
-                                    {EISFMenuConfig.map((module) => (
-                                      <div key={module.id}>
-                                        <div
-                                          className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-tree-row--expandable"
-                                          onClick={() =>
-                                            setExpandedStudySections(
-                                              (prev) => ({
-                                                ...prev,
-                                                [`${studyKey}-${module.id}`]:
-                                                  !prev[
-                                                    `${studyKey}-${module.id}`
-                                                  ],
-                                              }),
-                                            )
-                                          }
-                                        >
-                                          <span>
-                                            {module.id} {module.title}
-                                          </span>
-                                        </div>
+                                    {EISFMenuConfig.map((module) => {
+                                      const moduleStateKey = `${studyKey}__eisf_module__${module.id}`;
+                                      const isModuleOpen = Boolean(
+                                        expandedStudySections[moduleStateKey],
+                                      );
 
-                                        {expandedStudySections[
-                                          `${studyKey}-${module.id}`
-                                        ] && (
-                                          <div className="sidebar-tree-group sidebar-tree-group--nested">
-                                            {module.children.map((child) => (
-                                              <div
-                                                key={child.id}
-                                                className="sidebar-tree-row sidebar-tree-row--folder-leaf eisf-module"
-                                                onClick={() =>
-                                                  handleNav(child.path)
-                                                }
-                                              >
-                                                <span>
-                                                  {child.id} {child.title}
-                                                </span>
-                                              </div>
-                                            ))}
+                                      return (
+                                        <div key={module.id}>
+                                          <div className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-tree-row--expandable">
+                                            <button
+                                              type="button"
+                                              className="sidebar-expander"
+                                              aria-label={
+                                                isModuleOpen
+                                                  ? `Collapse ${module.title}`
+                                                  : `Expand ${module.title}`
+                                              }
+                                              onClick={(event) =>
+                                                toggleEisfModule(
+                                                  studyKey,
+                                                  module.id,
+                                                  event,
+                                                )
+                                              }
+                                            >
+                                              {isModuleOpen ? "−" : "+"}
+                                            </button>
+
+                                            <span
+                                              className="sidebar-tree-label"
+                                              onClick={(event) => {
+                                                event.stopPropagation();
+                                                toggleEisfModule(
+                                                  studyKey,
+                                                  module.id,
+                                                  event,
+                                                );
+                                              }}
+                                            >
+                                              {module.id} {module.title}
+                                            </span>
                                           </div>
-                                        )}
-                                      </div>
-                                    ))}
+
+                                          {isModuleOpen && (
+                                            <div className="sidebar-tree-group sidebar-tree-group--nested">
+                                              {module.children.map((child) => (
+                                                <div
+                                                  key={child.id}
+                                                  className="sidebar-tree-row sidebar-tree-row--folder-leaf eisf-module"
+                                                  onClick={() =>
+                                                    handleEisfChildClick(
+                                                      studyKey,
+                                                      child,
+                                                    )
+                                                  }
+                                                >
+                                                  <span className="sidebar-tree-label">
+                                                    {child.id} {child.title}
+                                                  </span>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
                                   </div>
                                 )}
                               </div>
@@ -644,6 +795,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                                 className="sidebar-tree-spacer"
                                 aria-hidden="true"
                               />
+
                               <span className="sidebar-tree-label">
                                 {section.label}
                               </span>

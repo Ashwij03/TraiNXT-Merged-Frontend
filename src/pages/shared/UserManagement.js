@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../Components/dashboard/DashboardLayout";
 import KPICard from "../../Components/dashboard/KPICard";
 import DataTable from "../../Components/dashboard/DataTable";
@@ -16,6 +17,8 @@ function UserManagement() {
   }, [refreshKey]);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
+
+  const navigate = useNavigate();
 
   const roles = useMemo(() => {
     const unique = Array.from(
@@ -85,6 +88,7 @@ function UserManagement() {
             value={pendingCount}
             subtitle="Awaiting Approval"
             icon="🛡️"
+            onClick={() => navigate("/access-permission")}
           />
         </div>
 
