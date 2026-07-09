@@ -19,6 +19,7 @@ import { getAccessibleStudies, getAssignedSite } from "../../services/roleServic
 import "../Admin/Dashboard.css";
 import "../shared/AccessPermissions.css";
 import "./Dashboard.css";
+import "../shared/studies/StudyDashboard.css";
 
 function SiteStaffDashboard() {
   const navigate = useNavigate();

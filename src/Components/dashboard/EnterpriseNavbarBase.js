@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./DashboardHeader.css";
 import SearchableDropdown from "../common/SearchableDropdown";
@@ -10,7 +10,7 @@ import {
   FiChevronDown,
   FiMenu,
   FiSliders,
-  FiSettings
+  FiSettings,
 } from "react-icons/fi";
 import { useAdminNavbarNotifications } from "../../hooks/useAdminNavbarNotifications";
 import {
@@ -22,15 +22,16 @@ import { getStudyByCode } from "../../services/studyService";
 import ROLES from "../../constants/roles";
 import {
   getCurrentUser,
+  getDashboardPath,
   getEffectiveRole,
   isAdmin,
   ROLE_LABELS,
-  setAdminPreviewRole
+  setAdminPreviewRole,
 } from "../../services/roleService";
 import { PROFILE_PHOTO_EVENT } from "../../constants/profileEvents";
 import {
   terminateCurrentSession,
-  touchUserSession
+  touchUserSession,
 } from "../../services/sessionService";
 import {
   ADMIN_PREVIEW_ROLE_EVENT,
@@ -55,7 +56,7 @@ import {
   setStoredSiteNumberFilter,
   setStoredSponsorFilter,
   setStoredStudyFilter,
-  setStoredSubjectFilter
+  setStoredSubjectFilter,
 } from "../../constants/headerFilters";
 import {
   getCROOptions,
@@ -66,9 +67,10 @@ import {
   getSiteNumberOptions,
   getSponsorOptions,
   getStudyOptions,
-  getSubjectOptions
+  getSubjectOptions,
 } from "../../services/filterService";
 import useLiveChatNavigation from "../../hooks/useLiveChatNavigation";
+
 function EnterpriseNavbarBase({
   onToggleSidebar,
   sidebarOpen,
@@ -78,61 +80,97 @@ function EnterpriseNavbarBase({
   setSelectedPage,
 }) {
   const navigate = useNavigate();
+  const profileSectionRef = useRef(null);
+
   const currentUser = getCurrentUser();
   const userEmail = currentUser?.email || "";
   const { openLiveChat } = useLiveChatNavigation(liveChatPath);
+
   const userIsAdmin = isAdmin(currentUser);
-  const effectiveRole = getEffectiveRole(currentUser) || ROLES.ADMIN;
+  const effectiveRole =
+    getEffectiveRole(currentUser) || layoutRole || ROLES.ADMIN;
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filterVersion, setFilterVersion] = useState(0);
-  const {
-    notifications,
-    unreadCount,
-    handleToggleRead,
-    handleMarkAllRead,
-  } = useAdminNavbarNotifications();
+
+  const { notifications, unreadCount, handleToggleRead, handleMarkAllRead } =
+    useAdminNavbarNotifications();
+
   const [previewRole, setPreviewRoleState] = useState(
     () => effectiveRole || ROLES.ADMIN
   );
- const current = JSON.parse(localStorage.getItem("currentUser"));
 
-const [profilePhoto, setProfilePhoto] = useState(
-  current?.profilePhoto || localStorage.getItem("profilePhoto") || ""
-);
+  const [profilePhoto, setProfilePhoto] = useState(
+    currentUser?.profilePhoto || ""
+  );
 
   const [selectedIndication, setSelectedIndication] = useState(
     getStoredIndicationFilter
   );
-  const [selectedSponsor, setSelectedSponsor] = useState(getStoredSponsorFilter);
+
+  const [selectedSponsor, setSelectedSponsor] = useState(
+    getStoredSponsorFilter
+  );
+
   const [selectedCRO, setSelectedCRO] = useState(getStoredCROFilter);
+
   const [selectedInstitution, setSelectedInstitution] = useState(
     () => getStoredInstitutionFilter() || getDefaultInstitution(currentUser)
   );
+
   const [selectedSiteNumber, setSelectedSiteNumber] = useState(
     getStoredSiteNumberFilter
   );
+
   const [selectedStudyCode, setSelectedStudyCode] = useState(
     getStoredStudyFilter
   );
-  const [selectedSubject, setSelectedSubject] = useState(getStoredSubjectFilter);
+
+  const [selectedSubject, setSelectedSubject] = useState(
+    getStoredSubjectFilter
+  );
 
   const indicationOptions = useMemo(() => {
     void filterVersion;
     return getIndicationOptions(currentUser);
   }, [filterVersion, currentUser]);
+
   const sponsorOptions = useMemo(() => {
     void filterVersion;
     return getSponsorOptions(currentUser);
   }, [filterVersion, currentUser]);
+
   const croOptions = useMemo(() => {
     void filterVersion;
+
     if (effectiveRole === ROLES.SPONSOR) {
       return getRecruitedCROOptions(currentUser);
     }
+
     return getCROOptions(currentUser);
   }, [effectiveRole, filterVersion, currentUser]);
+
+  const institutionOptions = useMemo(() => {
+    void filterVersion;
+    return getInstitutionOptions(currentUser);
+  }, [filterVersion, currentUser]);
+
+  const siteNumberOptions = useMemo(() => {
+    void filterVersion;
+    return getSiteNumberOptions(currentUser);
+  }, [filterVersion, currentUser]);
+
+  const studyOptions = useMemo(() => {
+    void filterVersion;
+    return getStudyOptions(currentUser);
+  }, [filterVersion, currentUser]);
+
+  const subjectOptions = useMemo(() => {
+    void filterVersion;
+    return getSubjectOptions(currentUser);
+  }, [filterVersion, currentUser]);
+
   const filterOrder = useMemo(() => {
     let base;
 
@@ -141,10 +179,7 @@ const [profilePhoto, setProfilePhoto] = useState(
         base = FILTER_ORDERS[ROLES.ADMIN];
       } else {
         const previewFilters = FILTER_ORDERS[effectiveRole] || [];
-        base = [
-          "role",
-          ...previewFilters.filter((key) => key !== "role")
-        ];
+        base = ["role", ...previewFilters.filter((key) => key !== "role")];
       }
     } else {
       base = FILTER_ORDERS[effectiveRole] || FILTER_ORDERS[ROLES.ADMIN];
@@ -156,45 +191,25 @@ const [profilePhoto, setProfilePhoto] = useState(
 
     return base;
   }, [userIsAdmin, effectiveRole, croOptions.length]);
-  const institutionOptions = useMemo(() => {
-    void filterVersion;
-    return getInstitutionOptions(currentUser);
-  }, [filterVersion, currentUser]);
-  const siteNumberOptions = useMemo(() => {
-    void filterVersion;
-    return getSiteNumberOptions(currentUser);
-  }, [filterVersion, currentUser]);
-  const studyOptions = useMemo(() => {
-    void filterVersion;
-    return getStudyOptions(currentUser);
-  }, [filterVersion, currentUser]);
-  const subjectOptions = useMemo(() => {
-    void filterVersion;
-    return getSubjectOptions(currentUser);
-  }, [filterVersion, currentUser]);
 
   useEffect(() => {
-  touchUserSession(getCurrentUser());
-}, [userEmail]);
+    touchUserSession(getCurrentUser());
+  }, [userEmail]);
 
   useEffect(() => {
-  const refreshProfilePhoto = () => {
-    const current = JSON.parse(localStorage.getItem("currentUser"));
+    const refreshProfilePhoto = () => {
+      const current = getCurrentUser();
+      setProfilePhoto(current?.profilePhoto || "");
+    };
 
-    setProfilePhoto(
-      current?.profilePhoto || localStorage.getItem("profilePhoto") || ""
-    );
-  };
+    window.addEventListener(PROFILE_PHOTO_EVENT, refreshProfilePhoto);
 
-  window.addEventListener(PROFILE_PHOTO_EVENT, refreshProfilePhoto);
-
-  return () => {
-    window.removeEventListener(PROFILE_PHOTO_EVENT, refreshProfilePhoto);
-  };
-}, []);
+    return () => {
+      window.removeEventListener(PROFILE_PHOTO_EVENT, refreshProfilePhoto);
+    };
+  }, []);
 
   useEffect(() => {
-    
     const bumpFilters = () => setFilterVersion((value) => value + 1);
 
     window.addEventListener(HEADER_FILTERS_EVENT, bumpFilters);
@@ -208,13 +223,15 @@ const [profilePhoto, setProfilePhoto] = useState(
 
   useEffect(() => {
     const handlePreviewRoleChange = () => {
-      setPreviewRoleState((current) => {
-        const next = getEffectiveRole(getCurrentUser()) || ROLES.ADMIN;
-        return current === next ? current : next;
-      });
+      setPreviewRoleState(
+        getEffectiveRole(getCurrentUser()) || ROLES.ADMIN
+      );
     };
 
-    window.addEventListener(ADMIN_PREVIEW_ROLE_EVENT, handlePreviewRoleChange);
+    window.addEventListener(
+      ADMIN_PREVIEW_ROLE_EVENT,
+      handlePreviewRoleChange
+    );
 
     return () => {
       window.removeEventListener(
@@ -223,55 +240,88 @@ const [profilePhoto, setProfilePhoto] = useState(
       );
     };
   }, [userEmail]);
-const handleLogout = () => {
-  terminateCurrentSession();
 
-  localStorage.removeItem("isLoggedIn");
-  localStorage.removeItem("adminPreviewRole");
-  localStorage.removeItem("currentUser");
+  useEffect(() => {
+    const handleOutsideProfileClick = (event) => {
+      if (
+        profileOpen &&
+        profileSectionRef.current &&
+        !profileSectionRef.current.contains(event.target)
+      ) {
+        setProfileOpen(false);
+      }
+    };
 
-  setAdminPreviewRole(null);
+    document.addEventListener("mousedown", handleOutsideProfileClick);
 
-  navigate("/login");
-};
- const handleProfileNavigation = () => {
-  const role = getEffectiveRole(getCurrentUser());
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideProfileClick);
+    };
+  }, [profileOpen]);
 
-  let path = "/settings";
+  useEffect(() => {
+    const handleEscapeKey = (event) => {
+      if (event.key === "Escape") {
+        setProfileOpen(false);
+      }
+    };
 
-  switch (role) {
-    case ROLES.ADMIN:
-      path = "/settings";
-      break;
+    document.addEventListener("keydown", handleEscapeKey);
 
-    case ROLES.SPONSOR:
-      path = "/settings";
-      break;
+    return () => {
+      document.removeEventListener("keydown", handleEscapeKey);
+    };
+  }, []);
 
-    case ROLES.CRO:
+  const handleLogout = () => {
+    terminateCurrentSession();
+
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("adminPreviewRole");
+    localStorage.removeItem("currentUser");
+
+    setAdminPreviewRole(null);
+
+    setProfileOpen(false);
+    navigate("/login");
+  };
+
+  const handleHomeNavigation = () => {
+    setProfileOpen(false);
+    setFiltersOpen(false);
+
+    const currentRole =
+      getEffectiveRole(getCurrentUser()) || layoutRole || ROLES.ADMIN;
+
+    const dashboardPath = getDashboardPath(currentRole);
+
+    if (typeof setSelectedPage === "function") {
+      setSelectedPage("dashboard");
+    }
+
+    navigate(dashboardPath);
+  };
+
+  const navigateToSettingsSection = (section) => {
+    const role = getEffectiveRole(getCurrentUser());
+
+    let path = "/settings";
+
+    if (role === ROLES.CRO) {
       path = "/cro-settings";
-      break;
+    }
 
-    case ROLES.PI:
+    if (role === ROLES.PI) {
       path = "/pi-settings";
-      break;
+    }
 
-    case ROLES.SITE_STAFF:
-      path = "/settings";
-      break;
+    setProfileOpen(false);
 
-    default:
-      path = "/settings";
-  }
+    navigate(path, {
+      state: { section },
+    });
+  };
 
-  navigate(path, {
-    state: {
-      openModal: "profile",
-    },
-  });
-
-  setProfileOpen(false);
-};
   const openStudy = (study) => {
     if (!study) {
       return;
@@ -306,7 +356,7 @@ const handleLogout = () => {
       sponsor: [SELECTED_SPONSOR_KEY, setStoredSponsorFilter],
       cro: [SELECTED_CRO_KEY, setStoredCROFilter],
       siteName: [SELECTED_INSTITUTION_KEY, setStoredInstitutionFilter],
-      siteNumber: [SELECTED_SITE_NUMBER_KEY, setStoredSiteNumberFilter]
+      siteNumber: [SELECTED_SITE_NUMBER_KEY, setStoredSiteNumberFilter],
     };
 
     const entry = storageMap[key];
@@ -340,6 +390,7 @@ const handleLogout = () => {
         return (
           <div className="header-role-control">
             <RoleSwitcherDropdown />
+
             {userIsAdmin && previewRole !== ROLES.ADMIN && (
               <span className="header-preview-indicator">
                 Viewing: {ROLE_LABELS[previewRole] || previewRole}
@@ -347,6 +398,7 @@ const handleLogout = () => {
             )}
           </div>
         );
+
       case "indication":
         return (
           <SearchableDropdown
@@ -356,13 +408,14 @@ const handleLogout = () => {
             }
             options={[
               { value: "", label: "All Indications" },
-              ...indicationOptions
+              ...indicationOptions,
             ]}
             placeholder="All Indications"
             searchPlaceholder="Search Indication"
             className="header-dropdown"
           />
         );
+
       case "sponsor":
         return (
           <SearchableDropdown
@@ -372,13 +425,14 @@ const handleLogout = () => {
             }
             options={[
               { value: "", label: "All Sponsors" },
-              ...sponsorOptions
+              ...sponsorOptions,
             ]}
             placeholder="All Sponsors"
             searchPlaceholder="Search Sponsor"
             className="header-dropdown"
           />
         );
+
       case "cro":
         if (effectiveRole === ROLES.SPONSOR && croOptions.length === 0) {
           return (
@@ -391,13 +445,19 @@ const handleLogout = () => {
         return (
           <SearchableDropdown
             value={selectedCRO}
-            onChange={(value) => updateFilter("cro", value, setSelectedCRO)}
-            options={[{ value: "", label: "All CROs" }, ...croOptions]}
+            onChange={(value) =>
+              updateFilter("cro", value, setSelectedCRO)
+            }
+            options={[
+              { value: "", label: "All CROs" },
+              ...croOptions,
+            ]}
             placeholder="All CROs"
             searchPlaceholder="Search CRO"
             className="header-dropdown"
           />
         );
+
       case "study":
         return (
           <SearchableDropdown
@@ -409,6 +469,7 @@ const handleLogout = () => {
             className="header-dropdown"
           />
         );
+
       case "siteName":
         return (
           <SearchableDropdown
@@ -422,6 +483,7 @@ const handleLogout = () => {
             className="header-dropdown"
           />
         );
+
       case "siteNumber":
         return (
           <SearchableDropdown
@@ -435,6 +497,7 @@ const handleLogout = () => {
             className="header-dropdown"
           />
         );
+
       case "subject":
         return (
           <SearchableDropdown
@@ -446,6 +509,7 @@ const handleLogout = () => {
             className="header-dropdown"
           />
         );
+
       default:
         return null;
     }
@@ -454,6 +518,7 @@ const handleLogout = () => {
   const badgeRole = userIsAdmin ? ROLES.ADMIN : currentUser?.role;
   const badgeLabel = ROLE_LABELS[badgeRole] || badgeRole || "User";
   const badgeClass = ROLE_BADGE_CLASSES[badgeRole] || "role-badge--default";
+
   const profileRoleLabel = userIsAdmin
     ? ROLE_LABELS[ROLES.ADMIN]
     : ROLE_LABELS[currentUser?.role] || currentUser?.role || "User";
@@ -482,7 +547,7 @@ const handleLogout = () => {
         <button
           type="button"
           className="header-filter-toggle"
-          onClick={() => setFiltersOpen((prev) => !prev)}
+          onClick={() => setFiltersOpen((previousValue) => !previousValue)}
           aria-label="Toggle filters"
           aria-expanded={filtersOpen}
         >
@@ -496,6 +561,7 @@ const handleLogout = () => {
               <div className="header-filter-heading">
                 {FILTER_LABELS[filterKey] || filterKey}
               </div>
+
               <div className="header-filter-control">
                 {renderFilterControl(filterKey)}
               </div>
@@ -506,17 +572,13 @@ const handleLogout = () => {
         <div className="header-right">
           <div className="header-menu">
             <button
-  type="button"
-  className="header-action-btn header-action-btn--outline"
-  onClick={() => {
-  console.log("HOME CLICKED");
-  setSelectedPage("dashboard");
-}}
->
-  <FiHome />
-  <span>Home</span>
-
-</button>
+              type="button"
+              className="header-action-btn header-action-btn--outline"
+              onClick={handleHomeNavigation}
+            >
+              <FiHome />
+              <span>Home</span>
+            </button>
 
             <button
               type="button"
@@ -540,41 +602,73 @@ const handleLogout = () => {
               type="button"
               className="header-icon-btn"
               aria-label="Settings"
-              onClick={() => navigate("/settings")}
+              onClick={() => navigateToSettingsSection("profile")}
             >
               <FiSettings />
             </button>
           </div>
 
           <div
+            ref={profileSectionRef}
             className="profile-section"
-            onClick={() => setProfileOpen((prev) => !prev)}
+            onClick={() => setProfileOpen((previousValue) => !previousValue)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setProfileOpen((previousValue) => !previousValue);
+              }
+            }}
           >
             <div className="profile-avatar">
               {profilePhoto ? (
-                <img src={profilePhoto} alt="" className="profile-avatar-img" />
+                <img
+                  src={profilePhoto}
+                  alt=""
+                  className="profile-avatar-img"
+                />
               ) : (
                 currentUser?.name?.charAt(0)?.toUpperCase()
               )}
             </div>
 
             <div>
-              <div className="profile-name">{currentUser?.name}</div>
+              <div className="profile-name">{currentUser?.name || "User"}</div>
               <div className="profile-role">{profileRoleLabel}</div>
             </div>
 
-            <span>
-              <FiChevronDown />
-            </span>
+            <FiChevronDown />
 
             {profileOpen && (
-              <div className="profile-dropdown">
-                <div onClick={handleProfileNavigation}>Profile</div>
-                <div onClick={() => navigate("/settings")}>
+              <div
+                className="profile-dropdown"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  onClick={() => navigateToSettingsSection("profile")}
+                >
+                  Profile
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => navigateToSettingsSection("account")}
+                >
                   Account Settings
-                </div>
-                <div onClick={() => navigate("/security")}>Security</div>
-                <div onClick={handleLogout}>Logout</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => navigateToSettingsSection("security")}
+                >
+                  Security
+                </button>
+
+                <button type="button" onClick={handleLogout}>
+                  Logout
+                </button>
               </div>
             )}
           </div>

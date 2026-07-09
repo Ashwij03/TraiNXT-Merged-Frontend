@@ -6,7 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import KpiCard from './KpiCard';
 import { MdMenuBook, MdMonitorHeart, MdGroups, MdLocalHospital } from 'react-icons/md';
 import EnterpriseModal from './EnterpriseModal';
-import { getPortfolioStudies, savePortfolioStudies, getPortfolioKPIs } from './data/sponsorDataStore';
+import { getPortfolioStudies, getPortfolioKPIs } from './data/sponsorDataStore';
+import { createStudy } from '../../services/studyService';
 
 const Studies = () => {
   const navigate = useNavigate();
@@ -51,17 +52,26 @@ const Studies = () => {
 
   const handleCreateStudy = () => {
     if (!newStudy.studyId || !newStudy.studyName) return;
-    const updated = [
-      ...studies,
-      {
-        ...newStudy,
+
+    try {
+      createStudy({
+        code: newStudy.studyId,
+        name: newStudy.studyName,
+        phase: newStudy.phase,
+        status: newStudy.status,
+        cro: newStudy.cro,
         sites: Number(newStudy.sites) || 0,
-        target: Number(newStudy.target) || 0,
+        indication: newStudy.therapeuticArea,
+        startDate: newStudy.startDate,
         enrolled: Number(newStudy.enrolled) || 0,
-      },
-    ];
-    savePortfolioStudies(updated);
-    setStudies(updated);
+        targetSubjects: Number(newStudy.target) || 0,
+      });
+    } catch (err) {
+      alert(err.message || 'Unable to create study.');
+      return;
+    }
+
+    setStudies(getPortfolioStudies());
     setKpis(getPortfolioKPIs());
     setShowCreateModal(false);
     setNewStudy({

@@ -1,0 +1,21 @@
+/* ===== START F3 CHANGES ===== */
+
+.study-files-search {
+  margin-bottom: 20px;
+}
+
+.study-files-search label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.study-files-search input {
+  width: 100%;
+  max-width: 350px;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* ===== END F3 CHANGES ===== */

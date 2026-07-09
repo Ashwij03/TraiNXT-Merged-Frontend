@@ -1,57 +1,5 @@
-// UPDATED: Dynamic studies with preserved default seed data structure
-
 const STUDIES_STORAGE_KEY = "trianxtStudies";
 const AUDIT_LOG_KEY = "auditLogs";
-
-const defaultStudies = [
-  {
-    code: "747-303",
-    name: "OBETICHOLIC ACID (OCA)",
-    protocol: "OBETICHOLIC ACID (OCA)",
-    indication: "Hepatology",
-    location: "Apollo Hospital",
-    site: "Apollo Hospital",
-    enrolled: 1,
-    targetSubjects: 50,
-    status: "Active",
-    principalInvestigator: "Dr. Meera Rao",
-    sponsor: "Intercept Pharmaceuticals",
-    cro: "IQVIA",
-    startDate: "2026-06-01",
-    description: "OCA clinical trial study"
-  },
-  {
-    code: "05151",
-    name: "SeptiTest",
-    protocol: "SeptiTest",
-    indication: "Infectious Disease",
-    location: "Apollo Hospital",
-    site: "Apollo Hospital",
-    enrolled: 8,
-    targetSubjects: 80,
-    status: "Screening",
-    principalInvestigator: "Dr. Arun Kumar",
-    sponsor: "Abbott Laboratories",
-    cro: "Syneos Health",
-    startDate: "2026-06-03",
-    description: "Sepsis diagnostic study"
-  }
-];
-
-export function initializeStudies() {
-  if (typeof window === "undefined") {
-    return defaultStudies;
-  }
-
-  const stored = getStoredStudies();
-
-  if (!stored.length) {
-    saveStoredStudies(defaultStudies);
-    return defaultStudies;
-  }
-
-  return stored;
-}
 
 function getStoredStudies() {
   if (typeof window === "undefined") {
@@ -59,42 +7,59 @@ function getStoredStudies() {
   }
 
   try {
-    return JSON.parse(
-      localStorage.getItem(
-        STUDIES_STORAGE_KEY
-      )
-    ) || [];
+    return JSON.parse(localStorage.getItem(STUDIES_STORAGE_KEY)) || [];
   } catch {
     return [];
   }
 }
 
 function saveStoredStudies(studies) {
-  localStorage.setItem(
-    STUDIES_STORAGE_KEY,
-    JSON.stringify(studies)
-  );
+  localStorage.setItem(STUDIES_STORAGE_KEY, JSON.stringify(studies));
+}
+
+function notifyStudiesUpdated() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(new Event("studies-updated"));
+  window.dispatchEvent(new Event("sponsor-data-updated"));
 }
 
 function normalizeStudy(study) {
   return {
     ...study,
-    protocol:
-      study.protocol || study.name,
-    site:
-      study.site || study.location,
-    indication: study.indication || "General",
-    sponsor: study.sponsor || "TriaNXT Research",
-    cro: study.cro || "TriaNXT CRO",
-    enrolled:
-      Number(study.enrolled) || 0,
-    targetSubjects:
-      Number(study.targetSubjects) || 0
+    code: study.code || "",
+    name: study.name || "",
+    protocol: study.protocol || study.name || "",
+    indication: study.indication || "",
+    country: study.country || "",
+    location: study.location || study.site || "",
+    site: study.site || study.location || "",
+    sponsor: study.sponsor || "",
+    cro: study.cro || "",
+    status: study.status || "Active",
+    principalInvestigator: study.principalInvestigator || "",
+    startDate: study.startDate || "",
+    description: study.description || "",
+    enrolled: Number(study.enrolled) || 0,
+    targetSubjects: Number(study.targetSubjects) || 0
   };
 }
 
+export function initializeStudies() {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  /*
+    Start with an empty study list.
+    The key is created only when the user creates the first study.
+  */
+  return getStoredStudies();
+}
+
 export function getStudies() {
-  initializeStudies();
   return getStoredStudies().map(normalizeStudy);
 }
 
@@ -105,21 +70,26 @@ export function getStudyByCode(code) {
 }
 
 export function createStudy(study) {
-  const normalizedStudy =
-    normalizeStudy(study);
-  const storedStudies =
-    getStoredStudies();
+  const normalizedStudy = normalizeStudy(study);
+  const storedStudies = getStoredStudies();
 
-  saveStoredStudies([
-    ...storedStudies,
-    normalizedStudy
-  ]);
+  const duplicateStudy = storedStudies.some(
+    (item) => String(item.code) === String(normalizedStudy.code)
+  );
+
+  if (duplicateStudy) {
+    throw new Error("A study with this Study ID already exists.");
+  }
+
+  saveStoredStudies([...storedStudies, normalizedStudy]);
+  notifyStudiesUpdated();
 
   return normalizedStudy;
 }
 
 export function updateStudy(studyCode, updates) {
   const storedStudies = getStoredStudies();
+
   const index = storedStudies.findIndex(
     (study) => String(study.code) === String(studyCode)
   );
@@ -135,7 +105,9 @@ export function updateStudy(studyCode, updates) {
   });
 
   storedStudies[index] = updatedStudy;
+
   saveStoredStudies(storedStudies);
+  notifyStudiesUpdated();
 
   return updatedStudy;
 }
@@ -146,29 +118,23 @@ function getAuditLogs() {
   }
 
   try {
-    return JSON.parse(
-      localStorage.getItem(
-        AUDIT_LOG_KEY
-      )
-    ) || [];
+    return JSON.parse(localStorage.getItem(AUDIT_LOG_KEY)) || [];
   } catch {
     return [];
   }
 }
 
 function saveAuditLogs(logs) {
-  localStorage.setItem(
-    AUDIT_LOG_KEY,
-    JSON.stringify(logs)
-  );
+  localStorage.setItem(AUDIT_LOG_KEY, JSON.stringify(logs));
 }
 
 export function addAuditLog(action, details) {
   const logs = getAuditLogs();
+
   const newLog = {
     id: Date.now(),
     timestamp: new Date().toISOString(),
-    action: action,
+    action,
     ...details
   };
 
@@ -179,35 +145,37 @@ export function addAuditLog(action, details) {
   }
 
   saveAuditLogs(logs);
+
   return newLog;
 }
 
 export function getRecentActivityLogs(limit = 10) {
-  const logs = getAuditLogs();
-  return logs.slice(0, limit);
+  return getAuditLogs().slice(0, limit);
 }
 
-export function deleteStudy(studyCode, deletionDetails) {
+export function deleteStudy(studyCode, deletionDetails = {}) {
   const storedStudies = getStoredStudies();
-  const study = getStudyByCode(studyCode);
+
+  const study = storedStudies.find(
+    (item) => String(item.code) === String(studyCode)
+  );
 
   if (!study) {
     throw new Error("Study not found");
   }
 
   const updatedStudies = storedStudies.filter(
-    (s) => s.code !== studyCode
+    (item) => String(item.code) !== String(studyCode)
   );
 
   saveStoredStudies(updatedStudies);
 
   const subjectsByStudy =
-    JSON.parse(
-      localStorage.getItem("subjectsByStudy")
-    ) || {};
+    JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
 
   if (subjectsByStudy[studyCode]) {
     delete subjectsByStudy[studyCode];
+
     localStorage.setItem(
       "subjectsByStudy",
       JSON.stringify(subjectsByStudy)
@@ -215,27 +183,26 @@ export function deleteStudy(studyCode, deletionDetails) {
   }
 
   addAuditLog("STUDY_DELETED", {
-    studyCode: studyCode,
+    studyCode,
     studyName: study.name,
-    deletedBy: deletionDetails.deletedBy,
-    reason: deletionDetails.reason,
+    deletedBy: deletionDetails.deletedBy || "Unknown",
+    reason: deletionDetails.reason || "",
     timestamp: new Date().toISOString()
   });
+
+  notifyStudiesUpdated();
 
   return true;
 }
 
-export function deleteSubject(studyCode, subjectId, deletionDetails) {
+export function deleteSubject(studyCode, subjectId, deletionDetails = {}) {
   const subjectsByStudy =
-    JSON.parse(
-      localStorage.getItem("subjectsByStudy")
-    ) || {};
+    JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
 
   if (Array.isArray(subjectsByStudy[studyCode])) {
-    subjectsByStudy[studyCode] =
-      subjectsByStudy[studyCode].filter(
-        (subject) => subject.id !== subjectId
-      );
+    subjectsByStudy[studyCode] = subjectsByStudy[studyCode].filter(
+      (subject) => String(subject.id) !== String(subjectId)
+    );
 
     localStorage.setItem(
       "subjectsByStudy",
@@ -244,10 +211,10 @@ export function deleteSubject(studyCode, subjectId, deletionDetails) {
   }
 
   addAuditLog("SUBJECT_DELETED", {
-    studyCode: studyCode,
-    subjectId: subjectId,
-    deletedBy: deletionDetails.deletedBy,
-    reason: deletionDetails.reason,
+    studyCode,
+    subjectId,
+    deletedBy: deletionDetails.deletedBy || "Unknown",
+    reason: deletionDetails.reason || "",
     timestamp: new Date().toISOString()
   });
 

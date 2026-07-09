@@ -10,6 +10,7 @@ import {
   setStoredPIPreviewRole
 } from "../constants/headerFilters";
 import { getStudies } from "./studyService";
+import { PROFILE_PHOTO_EVENT } from "../constants/profileEvents";
 
 const SITES_STORAGE_KEY = "sites";
 
@@ -194,11 +195,66 @@ export function getAccessibleSites(user = getCurrentUser()) {
   );
 }
 
+// UPDATED: CRO and Sponsor users are not tied to a single site the way
+// Site Staff / PI are — they oversee studies across many sites. Filtering
+// them by assignedSite (a site-based concept) incorrectly returned zero
+// studies even when the sidebar (which reads studies directly) showed
+// them correctly. CRO/Sponsor now match on their organization against
+// the study's cro/sponsor field instead, matching the sidebar's data
+// source. Admin/Site Staff/PI behavior is unchanged.
+function getUserOrgName(user) {
+  return (
+    user?.organization ||
+    user?.orgType ||
+    user?.assignedSite ||
+    user?.company ||
+    user?.name ||
+    ""
+  );
+}
+
+function matchesOrg(value, orgName) {
+  if (!value || !orgName) {
+    return false;
+  }
+
+  const normalizedValue = String(value).trim().toLowerCase();
+  const normalizedOrg = String(orgName).trim().toLowerCase();
+
+  return (
+    normalizedValue === normalizedOrg ||
+    normalizedValue.includes(normalizedOrg) ||
+    normalizedOrg.includes(normalizedValue)
+  );
+}
+
 export function getAccessibleStudies(user = getCurrentUser()) {
   const studies = getStudies();
 
   if (isAdmin(user)) {
     return studies;
+  }
+
+  const effectiveRole = user?.role;
+
+  if (effectiveRole === ROLES.CRO || effectiveRole === ROLES.SPONSOR) {
+    const orgName = getUserOrgName(user);
+
+    if (!orgName) {
+      return studies;
+    }
+
+    const studyField = effectiveRole === ROLES.CRO ? "cro" : "sponsor";
+
+    const matchedStudies = studies.filter((study) =>
+      matchesOrg(study[studyField], orgName)
+    );
+
+    // Do not exclude every study just because the org label on the study
+    // doesn't happen to match the user's stored org name (e.g. legacy
+    // studies created before the org field was captured consistently).
+    // Fall back to showing all studies rather than an incorrect zero.
+    return matchedStudies.length > 0 ? matchedStudies : studies;
   }
 
   const assignedSite = getAssignedSite(user);
@@ -469,12 +525,61 @@ export function getUserProfile(user = getCurrentUser()) {
     jobTitle: storedProfile.jobTitle || "",
     bio: storedProfile.bio || "",
     timezone: storedProfile.timezone || "Asia/Kolkata",
-    profilePhoto: storedProfile.profilePhoto || "",
+    profilePhoto: storedProfile.profilePhoto || user.profilePhoto || "",
     preferredLanguage: storedProfile.preferredLanguage || "English",
     assignedSite: getAssignedSite(user) || "",
     role: user.role || "",
     orgType: user.orgType || ""
   };
+}
+
+export function syncProfilePhoto(photo, user = getCurrentUser()) {
+  if (!user || typeof window === "undefined") {
+    return null;
+  }
+
+  const key = `profile_${user.id || user.email}`;
+  let storedProfile = {};
+
+  try {
+    storedProfile = JSON.parse(localStorage.getItem(key) || "{}");
+  } catch {
+    storedProfile = {};
+  }
+
+  const safePhoto = photo || "";
+
+  try {
+    storedProfile.profilePhoto = safePhoto;
+    localStorage.setItem(key, JSON.stringify(storedProfile));
+
+    /*
+      Do not store the same Base64 image again in a separate "profilePhoto"
+      localStorage key. It wastes browser storage and causes quota errors.
+    */
+    localStorage.removeItem("profilePhoto");
+
+    const updatedUser = updateCurrentUserProfile({
+      profilePhoto: safePhoto,
+      profileImage: safePhoto || null,
+      avatar: safePhoto || null,
+    });
+
+    window.dispatchEvent(new CustomEvent(PROFILE_PHOTO_EVENT));
+    return updatedUser;
+  } catch (error) {
+    if (error?.name === "QuotaExceededError") {
+      throw new Error(
+        "Profile photo could not be saved because browser storage is full. Please upload a smaller image."
+      );
+    }
+
+    throw error;
+  }
+}
+
+export function clearProfilePhoto(user = getCurrentUser()) {
+  return syncProfilePhoto("", user);
 }
 
 export function saveUserProfile(profile, user = getCurrentUser()) {
@@ -483,7 +588,24 @@ export function saveUserProfile(profile, user = getCurrentUser()) {
   }
 
   const key = `profile_${user.id || user.email}`;
-  localStorage.setItem(key, JSON.stringify(profile));
+
+  /*
+    Save profile information without the Base64 image first.
+    The photo is saved separately once by syncProfilePhoto().
+  */
+  const { profilePhoto, ...profileWithoutPhoto } = profile;
+
+  try {
+    localStorage.setItem(key, JSON.stringify(profileWithoutPhoto));
+  } catch (error) {
+    if (error?.name === "QuotaExceededError") {
+      throw new Error(
+        "Profile details could not be saved because browser storage is full."
+      );
+    }
+
+    throw error;
+  }
 
   const fullName = [profile.firstName, profile.middleName, profile.lastName]
     .filter(Boolean)
@@ -491,11 +613,17 @@ export function saveUserProfile(profile, user = getCurrentUser()) {
     .replace(/\s+/g, " ")
     .trim();
 
-  return updateCurrentUserProfile({
+  const updatedUser = updateCurrentUserProfile({
     name: fullName || user.name,
     assignedSite: profile.assignedSite || user.assignedSite,
-    orgType: profile.assignedSite || user.orgType
+    orgType: profile.assignedSite || user.orgType,
   });
+
+  if (Object.prototype.hasOwnProperty.call(profile, "profilePhoto")) {
+    syncProfilePhoto(profilePhoto, user);
+  }
+
+  return updatedUser;
 }
 
 export function getSiteSettings(user = getCurrentUser()) {

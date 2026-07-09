@@ -1,10 +1,8 @@
-import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import React from "react";
 import {
   FaHome,
   FaBookOpen,
   FaChartBar,
-  FaComments,
   FaUserFriends,
   FaUniversity,
   FaChartPie,
@@ -14,11 +12,12 @@ import {
 import "./PISidebar.css";
 import { getSidebarMenuData } from "./piDashboardService";
 import TriaNXTLogo from "../../Components/common/TriaNXTLogo";
+import RoleStudiesSidebarTree from "../../Components/common/RoleStudiesSidebarTree";
+import { useRoleStudiesSidebar } from "../../hooks/useRoleStudiesSidebar";
 
 const ICON_MAP = {
   home: FaHome,
   chart: FaChartBar,
-  comments: FaComments,
   users: FaUserFriends,
   university: FaUniversity,
   pie: FaChartPie,
@@ -26,55 +25,40 @@ const ICON_MAP = {
   cog: FaCog,
 };
 
-function PISidebar({
-  selectedPage,
-  setSelectedPage,
-  subjects = [],
-  isOpen = true,
-  onClose,
-}) {
-  const location = useLocation();
-  const [openStudies, setOpenStudies] = useState(false);
-  const [openBinder, setOpenBinder] = useState(false);
-  const [openSubjects, setOpenSubjects] = useState(false);
-  const [openSubject, setOpenSubject] = useState(null);
+function PISidebar({ selectedPage, setSelectedPage, isOpen = true, onClose }) {
   const menuData = getSidebarMenuData();
 
-  useEffect(() => {
-    const openStudiesHandler = () => setOpenStudies(true);
-    window.addEventListener("pi-navigate-studies", openStudiesHandler);
-    return () =>
-      window.removeEventListener("pi-navigate-studies", openStudiesHandler);
-  }, []);
+  const { studyCount, studiesOpen, isStudiesActive, handleStudiesClick } =
+    useRoleStudiesSidebar({ onNavigate: onClose });
 
-  const handleStudiesClick = () => {
-    const isStudiesRoute =
-      location.pathname === "/studies" ||
-      location.pathname.startsWith("/study-dashboard") ||
-      location.pathname.startsWith("/study/");
+  const handleStudiesNav = () => {
+    handleStudiesClick();
 
-    if (isStudiesRoute && openStudies) {
-      setOpenStudies(false);
-      return;
-    }
-
-    setOpenStudies(true);
-
-    if (!isStudiesRoute) {
+    if (typeof setSelectedPage === "function") {
       setSelectedPage("studies");
     }
   };
 
   const handleMenuClick = (page) => {
-    setSelectedPage(page);
-    if (onClose) onClose();
+    if (typeof setSelectedPage === "function") {
+      setSelectedPage(page);
+    }
+
+    if (typeof onClose === "function") {
+      onClose();
+    }
   };
 
   const getMenuClass = (page) =>
     `menu-item${selectedPage === page ? " active-menu" : ""}`;
 
-  const mainSections = menuData.sections.filter((s) => s.id !== "dashboard");
-  const dashboardSection = menuData.sections.find((s) => s.id === "dashboard");
+  const mainSections = menuData.sections.filter(
+    (section) => section.id !== "dashboard",
+  );
+
+  const dashboardSection = menuData.sections.find(
+    (section) => section.id === "dashboard",
+  );
 
   return (
     <>
@@ -100,136 +84,25 @@ function PISidebar({
           </div>
         )}
 
-        {/* STUDIES — static section (excluded from dynamic changes per requirements) */}
         <div
           className={`menu-item studies-menu${
-  selectedPage === "studies" ? " active-menu" : ""
-}`}
-          onClick={handleStudiesClick}
+            selectedPage === "studies" || isStudiesActive ? " active-menu" : ""
+          }`}
+          onClick={handleStudiesNav}
         >
           <FaBookOpen />
-          <span>Studies</span>
+          <span>Studies ({studyCount})</span>
         </div>
 
-        {openStudies && (
-          <div className="submenu-container">
-            <div
-              className="submenu-title"
-              onClick={() => setOpenBinder(!openBinder)}
-            >
-              Study Binder
-            </div>
-
-            <div
-              className={`submenu-title${
-                selectedPage === "comments" ? " active-menu" : ""
-              }`}
-              onClick={() => handleMenuClick("comments")}
-            >
-              Comments
-            </div>
-
-            {openBinder && (
-              <>
-                <div
-                  className="submenu-title"
-                  onClick={() => setOpenSubjects(!openSubjects)}
-                >
-                  Subjects ({subjects.length || 4})
-                </div>
-
-                {openSubjects && (
-                  <>
-                    <div
-                      className="subject-item"
-                      onClick={() =>
-                        setOpenSubject(
-                          openSubject === "SUB-001" ? null : "SUB-001"
-                        )
-                      }
-                    >
-                      SUB-001
-                    </div>
-
-                    {openSubject === "SUB-001" && (
-                      <div className="submenu-level2">
-                        <div
-                          className="submenu-item"
-                          onClick={() => handleMenuClick("screening")}
-                        >
-                          Screening
-                        </div>
-                        <div
-                          className="submenu-item"
-                          onClick={() => handleMenuClick("enrollment")}
-                        >
-                          Enrollment
-                        </div>
-                        <div
-                          className="submenu-item"
-                          onClick={() => handleMenuClick("visits")}
-                        >
-                          Visits
-                        </div>
-                        <div
-                          className="submenu-item"
-                          onClick={() => handleMenuClick("progress-notes")}
-                        >
-                          Progress Notes
-                        </div>
-                        <div
-                          className="submenu-item"
-                          onClick={() => handleMenuClick("comments")}
-                        >
-                          Comments
-                        </div>
-                        <div
-                          className="submenu-item"
-                          onClick={() => handleMenuClick("files")}
-                        >
-                          Files
-                        </div>
-                        <div
-                          className="submenu-item"
-                          onClick={() => handleMenuClick("logs")}
-                        >
-                          Logs
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="subject-item">SUB-002</div>
-                    <div className="subject-item">SUB-003</div>
-                    <div className="subject-item">SUB-004</div>
-                  </>
-                )}
-
-                <div
-                  className="submenu-title"
-                  onClick={() => handleMenuClick("eisf")}
-                >
-                  eISF
-                </div>
-                <div
-                  className="submenu-title"
-                  onClick={() => handleMenuClick("icf")}
-                >
-                  ICF
-                </div>
-                <div
-                  className="submenu-title"
-                  onClick={() => handleMenuClick("study-folder")}
-                >
-                  Study Folder
-                </div>
-              </>
-            )}
+        {studiesOpen && (
+          <div className="submenu-container pi-studies-tree">
+            <RoleStudiesSidebarTree onNavigate={onClose} />
           </div>
         )}
 
-        {/* UPDATED: Dynamic sidebar sections (excluding studies) */}
         {mainSections.map((section) => {
           const Icon = ICON_MAP[section.icon] || FaChartBar;
+
           return (
             <div
               key={section.id}

@@ -159,7 +159,6 @@ function cloneTree(tree) {
   return JSON.parse(JSON.stringify(tree));
 }
 
-
 export function getFirstLevelFolders(sectionId, contextKey = "default") {
   const tree = getFolderTree(sectionId, contextKey);
   const root = tree[0];
@@ -170,14 +169,18 @@ export function getFolderTree(sectionId, contextKey = "default") {
   const trees = readJson(FOLDER_TREE_KEY, {});
   const key = getStorageKey(sectionId, contextKey);
 
+  folderTreesStore[key] = trees[key] || folderTreesStore[key] || null;
+
   if (!trees[key]?.length) {
     const tree = defaultTree(sectionId);
     trees[key] = tree;
+    folderTreesStore[key] = tree;
     writeJson(FOLDER_TREE_KEY, trees);
     return cloneTree(tree);
   }
 
   const cloned = cloneTree(trees[key]);
+  folderTreesStore[key] = cloneTree(cloned);
 
   if (sectionId === "subjects") {
     const root = cloned[0];
@@ -188,10 +191,11 @@ export function getFolderTree(sectionId, contextKey = "default") {
       );
     }
   }
-console.log("===== GET FOLDER TREE =====");
-console.log("Storage Key :", key);
-console.log("Trees From LocalStorage :", trees);
-console.log("Returned Tree :", cloned);
+
+  console.log("===== GET FOLDER TREE =====");
+  console.log("Storage Key :", key);
+  console.log("Trees From LocalStorage :", trees);
+  console.log("Returned Tree :", cloned);
 
   return cloned;
 }
@@ -302,13 +306,16 @@ export function getFolderDocuments(sectionId, contextKey = "default") {
   const docs = readJson(FOLDER_DOCS_KEY, {});
   const key = docsKey(sectionId, contextKey);
 
-  return docs[key] || {};
+  folderDocsStore[key] = docs[key] || folderDocsStore[key] || {};
+
+  return folderDocsStore[key];
 }
 
 function saveFolderDocuments(sectionId, contextKey, docs) {
   const allDocs = readJson(FOLDER_DOCS_KEY, {});
   const key = docsKey(sectionId, contextKey);
 
+  folderDocsStore[key] = docs;
   allDocs[key] = docs;
 
   writeJson(FOLDER_DOCS_KEY, allDocs);

@@ -1,228 +1,408 @@
-import { useState, useEffect, useMemo } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
-import { FiFolder } from "react-icons/fi";
-import SubjectProfile from "../subjects/SubjectProfile";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { FiArrowLeft, FiFolder, FiPlus } from "react-icons/fi";
+import DocumentFolderManager from "../../../Components/common/DocumentFolderManager";
 import { canAddSubject } from "../../../utils/contentAccess";
 import { getCurrentUser } from "../../../services/roleService";
 import "./StudySubjects.css";
 
-function StudySubjects({ setActiveTab, showTable = false, showBackButton = true }) {
-  const { id: studyId } = useParams();
-  const [searchParams, setSearchParams] = useSearchParams();
+const SUBJECTS_STORAGE_KEY = "subjectsByStudy";
+const SELECTED_SUBJECT_STORAGE_KEY = "selectedSubject";
 
-  const [showModal, setShowModal] = useState(false);
+const emptySubjectForm = {
+  id: "",
+  initials: "",
+  status: "",
+  screeningDate: "",
+  enrollmentDate: "",
+  currentVisit: "",
+  pi: "",
+  site: "",
+};
 
-  const [newSubject, setNewSubject] = useState({
-    id: "",
-    initials: "",
-    status: "Screening",
-    screeningDate: "",
-    enrollmentDate: "",
-    currentVisit: "Screening",
-    pi: "",
-    site: ""
-  });
+function readStorage(key, fallbackValue) {
+  try {
+    const savedValue = localStorage.getItem(key);
 
-  const defaultSubjectsByStudy = {
-    "747-303": [
-      {
-        id: "SUB-001",
-        initials: "RA",
-        status: "Ongoing",
-        screeningDate: "2026-06-01",
-        enrollmentDate: "2026-06-05",
-        currentVisit: "Visit 3",
-        pi: "Dr. Richard Thomas",
-        site: "Apollo Hospital",
-        studyId: "747-303"
-      }
-    ],
-    "05151": [
-      {
-        id: "SUB-002",
-        initials: "AK",
-        status: "Screening",
-        screeningDate: "2026-06-03",
-        enrollmentDate: "-",
-        currentVisit: "Screening",
-        pi: "Dr. Richard Thomas",
-        site: "Apollo Hospital",
-        studyId: "05151"
-      }
-    ]
+    if (!savedValue) {
+      return fallbackValue;
+    }
+
+    return JSON.parse(savedValue) ?? fallbackValue;
+  } catch (error) {
+    console.error(`Unable to read ${key}:`, error);
+    return fallbackValue;
+  }
+}
+
+function writeStorage(key, value, eventName) {
+  localStorage.setItem(key, JSON.stringify(value));
+
+  if (eventName) {
+    window.dispatchEvent(
+      new CustomEvent(eventName, {
+        detail: value,
+      })
+    );
+  }
+}
+
+function normalizeValue(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+function getSubjectContextKey(studyId, subjectId) {
+  return `subject-${studyId || "unknown-study"}-${subjectId || "unknown-subject"}`;
+}
+
+function getSearchableSubjectText(subject) {
+  if (!subject || typeof subject !== "object") {
+    return "";
+  }
+
+  const searchableValues = [];
+
+  const addValue = (value) => {
+    if (value === null || value === undefined) {
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach(addValue);
+      return;
+    }
+
+    if (typeof value === "object") {
+      Object.values(value).forEach(addValue);
+      return;
+    }
+
+    searchableValues.push(String(value));
   };
 
-  const [subjectsByStudy, setSubjectsByStudy] =
-    useState(() => {
-      const storedSubjectsByStudy =
-        localStorage.getItem("subjectsByStudy");
+  Object.values(subject).forEach(addValue);
 
-      if (storedSubjectsByStudy) {
-        return JSON.parse(storedSubjectsByStudy);
-      }
+  return searchableValues.join(" ").toLowerCase();
+}
 
-      return defaultSubjectsByStudy;
-    });
+function getSubjectsForStudy(subjectsByStudy, studyId) {
+  if (!subjectsByStudy || typeof subjectsByStudy !== "object") {
+    return [];
+  }
 
-  const [searchTerm, setSearchTerm] =
-    useState("");
+  const exactMatch = subjectsByStudy[studyId];
 
-  const [activeSubject, setActiveSubject] = useState(null);
+  if (Array.isArray(exactMatch)) {
+    return exactMatch;
+  }
+
+  const normalizedStudyId = normalizeValue(studyId);
+
+  const matchingKey = Object.keys(subjectsByStudy).find(
+    (key) => normalizeValue(key) === normalizedStudyId
+  );
+
+  if (matchingKey && Array.isArray(subjectsByStudy[matchingKey])) {
+    return subjectsByStudy[matchingKey];
+  }
+
+  return [];
+}
+
+function getSubjectDetailCards(subject) {
+  return [
+    {
+      label: "Initials",
+      value: subject?.initials || "—",
+    },
+    {
+      label: "Status",
+      value: subject?.status || "—",
+    },
+    {
+      label: "Principal Investigator",
+      value: subject?.pi || "—",
+    },
+    {
+      label: "Site",
+      value: subject?.site || "—",
+    },
+    {
+      label: "Screening Date",
+      value: subject?.screeningDate || "—",
+    },
+    {
+      label: "Enrollment Date",
+      value: subject?.enrollmentDate || "—",
+    },
+    {
+      label: "Current Visit",
+      value: subject?.currentVisit || "—",
+    },
+  ];
+}
+
+function StudySubjects({
+  setActiveTab,
+  showTable = false,
+  showBackButton = true,
+}) {
+  const params = useParams();
+  const navigate = useNavigate();
+
+  const studyId = String(
+    params.id || params.studyId || params.code || ""
+  ).trim();
+
+  const [subjectsByStudy, setSubjectsByStudy] = useState(() =>
+    readStorage(SUBJECTS_STORAGE_KEY, {})
+  );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showSubjectModal, setShowSubjectModal] = useState(false);
+  const [selectedSubjectId, setSelectedSubjectId] = useState(null);
+  const [newSubject, setNewSubject] = useState(emptySubjectForm);
+
   const currentUser = getCurrentUser();
   const showAddSubject = canAddSubject(currentUser);
 
-  const subjectsData = useMemo(() => {
-    return Array.isArray(subjectsByStudy[studyId])
-      ? subjectsByStudy[studyId]
-      : [];
-  }, [subjectsByStudy, studyId]);
+  useEffect(() => {
+    const refreshSubjects = () => {
+      setSubjectsByStudy(readStorage(SUBJECTS_STORAGE_KEY, {}));
+    };
 
-  const filteredSubjects = useMemo(() => {
-    return subjectsData.filter((subject) =>
-      [
-        subject.id,
-        subject.initials,
-        subject.pi,
-        subject.site,
-        subject.status
-      ]
-        .filter(Boolean)
-        .some((value) =>
-          value
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase())
-        )
-    );
-  }, [subjectsData, searchTerm]);
+    window.addEventListener("subjects-updated", refreshSubjects);
+    window.addEventListener("storage", refreshSubjects);
+
+    return () => {
+      window.removeEventListener("subjects-updated", refreshSubjects);
+      window.removeEventListener("storage", refreshSubjects);
+    };
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(
-      "subjectsByStudy",
-      JSON.stringify(subjectsByStudy)
+      "selectedStudy",
+      JSON.stringify({
+        code: studyId,
+      })
     );
-  }, [subjectsByStudy]);
-
-  useEffect(() => {
-    const selectedStudy =
-      JSON.parse(localStorage.getItem("selectedStudy")) || null;
-
-    if (!selectedStudy || selectedStudy.code !== studyId) {
-      localStorage.setItem(
-        "selectedStudy",
-        JSON.stringify({ code: studyId })
-      );
-    }
   }, [studyId]);
 
-  /*
-useEffect(() => {
-  const subjectParam = searchParams.get("subject");
+  useEffect(() => {
+    const savedSubject = readStorage(SELECTED_SUBJECT_STORAGE_KEY, null);
 
-  if (!subjectParam) {
-    return;
-  }
+    if (
+      savedSubject?.id &&
+      normalizeValue(savedSubject.studyId) === normalizeValue(studyId)
+    ) {
+      setSelectedSubjectId(savedSubject.id);
+      return;
+    }
 
-  const matched = subjectsData.find(
-    (item) => String(item.id) === String(subjectParam)
-  );
+    setSelectedSubjectId(null);
+  }, [studyId]);
 
-  if (matched) {
-    setActiveSubject(matched);
-  }
-}, [searchParams, subjectsData]);
-*/
+  const subjectsData = useMemo(() => {
+    return getSubjectsForStudy(subjectsByStudy, studyId);
+  }, [studyId, subjectsByStudy]);
 
-  const handleBackFromSubject = () => {
-    setActiveSubject(null);
-    setSearchParams((params) => {
-      params.delete("subject");
-      params.delete("folder");
-      return params;
+  const filteredSubjects = useMemo(() => {
+    const normalizedSearchTerm = normalizeValue(searchTerm);
+
+    if (!normalizedSearchTerm) {
+      return subjectsData;
+    }
+
+    return subjectsData.filter((subject) => {
+      const searchableText = getSearchableSubjectText(subject);
+
+      return searchableText.includes(normalizedSearchTerm);
     });
+  }, [searchTerm, subjectsData]);
+
+  const selectedSubject = useMemo(() => {
+    if (!selectedSubjectId) {
+      return null;
+    }
+
+    return (
+      subjectsData.find(
+        (subject) =>
+          normalizeValue(subject.id) === normalizeValue(selectedSubjectId)
+      ) || null
+    );
+  }, [selectedSubjectId, subjectsData]);
+
+  const saveSubjects = (updatedSubjectsByStudy) => {
+    setSubjectsByStudy(updatedSubjectsByStudy);
+
+    writeStorage(
+      SUBJECTS_STORAGE_KEY,
+      updatedSubjectsByStudy,
+      "subjects-updated"
+    );
   };
 
   const handleAddSubject = () => {
-    if (!newSubject.id.trim()) {
+    const subjectId = newSubject.id.trim();
+
+    if (!studyId || !subjectId) {
+      window.alert("Subject ID is required.");
+      return;
+    }
+
+    const subjectAlreadyExists = subjectsData.some(
+      (subject) =>
+        normalizeValue(subject.id) === normalizeValue(subjectId)
+    );
+
+    if (subjectAlreadyExists) {
+      window.alert("A subject with this Subject ID already exists.");
       return;
     }
 
     const subjectToAdd = {
       ...newSubject,
-      studyId
+      id: subjectId,
+      initials: newSubject.initials.trim(),
+      pi: newSubject.pi.trim(),
+      site: newSubject.site.trim(),
+      studyId,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
-    setSubjectsByStudy((prev) => ({
-      ...prev,
-      [studyId]: [
-        ...(prev[studyId] || []),
-        subjectToAdd
-      ]
-    }));
-
-    setShowModal(false);
-
-    setNewSubject({
-      id: "",
-      initials: "",
-      status: "Screening",
-      screeningDate: "",
-      enrollmentDate: "",
-      currentVisit: "Screening",
-      pi: "",
-      site: ""
+    saveSubjects({
+      ...subjectsByStudy,
+      [studyId]: [...subjectsData, subjectToAdd],
     });
+
+    setNewSubject(emptySubjectForm);
+    setShowSubjectModal(false);
   };
 
-  /*
-if (activeSubject) {
-  return (
-    <SubjectProfile
-      subject={activeSubject}
-      studyId={studyId}
-      onBack={handleBackFromSubject}
-    />
-  );
-}
-*/
+  const openSubjectFolder = (subject, shouldNavigate = false) => {
+    localStorage.setItem(
+      SELECTED_SUBJECT_STORAGE_KEY,
+      JSON.stringify({
+        ...subject,
+        studyId,
+      })
+    );
+
+    setSelectedSubjectId(subject.id);
+
+    if (shouldNavigate && studyId) {
+      navigate(
+        `/study-dashboard/${encodeURIComponent(
+          studyId
+        )}?tab=Subjects&subject=${encodeURIComponent(subject.id)}`
+      );
+    }
+  };
+
+  const closeSubjectFolder = () => {
+    localStorage.removeItem(SELECTED_SUBJECT_STORAGE_KEY);
+    setSelectedSubjectId(null);
+    setSearchTerm("");
+  };
+
+  if (selectedSubject) {
+    const subjectContextKey = getSubjectContextKey(
+      studyId,
+      selectedSubject.id
+    );
+
+    const subjectDetailCards = getSubjectDetailCards(selectedSubject);
+
+    return (
+      <div className="subjects-module">
+        <div className="subject-details-header">
+          <button
+            type="button"
+            className="back-btn"
+            onClick={closeSubjectFolder}
+          >
+            <FiArrowLeft />
+            Back to Subjects
+          </button>
+
+          <div className="subject-details-title-row">
+            <h2>{selectedSubject.id}</h2>
+          </div>
+
+          <div className="subject-details-grid">
+            {subjectDetailCards.map((detail) => (
+              <div
+                key={detail.label}
+                className="subject-details-card"
+              >
+                <span>{detail.label}</span>
+                <strong>{detail.value}</strong>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="subjects-document-manager">
+          <DocumentFolderManager
+            key={subjectContextKey}
+            sectionId="subjects"
+            contextKey={subjectContextKey}
+            title={selectedSubject.id}
+            studyCode={studyId}
+            subjectId={selectedSubject.id}
+            layout="explorer"
+            onBackToSubjects={closeSubjectFolder}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="subjects-module">
-      {showBackButton && (
+      {showBackButton && typeof setActiveTab === "function" && (
         <button
+          type="button"
           className="back-btn"
-          onClick={() =>
-            setActiveTab("Overview")
-          }
+          onClick={() => setActiveTab("Overview")}
         >
-          ← Back
+          <FiArrowLeft />
+          Back
         </button>
       )}
 
       <div className="subjects-header">
-        <h2>
-          Subjects
-        </h2>
+        <div>
+          <h2>Subjects</h2>
+
+          <p className="subject-details-subtitle">
+            Manage subjects for the selected study.
+          </p>
+        </div>
 
         {showAddSubject && (
           <button
+            type="button"
             className="add-subject-btn"
-            onClick={() =>
-              setShowModal(true)
-            }
+            onClick={() => setShowSubjectModal(true)}
           >
-            + Add Subject
+            <FiPlus />
+            Add Subject
           </button>
         )}
       </div>
 
       <div className="subject-search-bar">
         <input
-          type="text"
-          placeholder="Search by Subject ID, PI, Site, Status..."
+          type="search"
+          placeholder="Search by Subject ID, initials, PI, site, status, visit, date..."
           value={searchTerm}
-          onChange={(e) =>
-            setSearchTerm(e.target.value)
-          }
+          onChange={(event) => setSearchTerm(event.target.value)}
+          aria-label="Search subjects"
         />
       </div>
 
@@ -239,7 +419,6 @@ if (activeSubject) {
                 <th>Screening</th>
                 <th>Enrollment</th>
                 <th>Current Visit</th>
-                <th>Action</th>
               </tr>
             </thead>
 
@@ -247,50 +426,27 @@ if (activeSubject) {
               {filteredSubjects.length > 0 ? (
                 filteredSubjects.map((subject) => (
                   <tr key={subject.id}>
-                    <td>{subject.id}</td>
-                    <td>{subject.initials}</td>
-                    <td>{subject.status}</td>
-                    <td>{subject.pi}</td>
-                    <td>{subject.site}</td>
-                    <td>{subject.screeningDate}</td>
-                    <td>{subject.enrollmentDate}</td>
-                    <td>{subject.currentVisit}</td>
-
-                    <td>
-                      <button
-                        className="view-btn"
-                        onClick={() => {
-                          localStorage.setItem(
-                            "selectedSubject",
-                            JSON.stringify({
-                              ...subject,
-                              studyId
-                            })
-                          );
-
-                          setSearchParams((params) => {
-                            params.set("subject", subject.id);
-                            return params;
-                          });
-                          setActiveSubject(subject);
-                        }}
-                      >
-                        Open Folder
-                      </button>
-                    </td>
+                    <td>{subject.id || "—"}</td>
+                    <td>{subject.initials || "—"}</td>
+                    <td>{subject.status || "—"}</td>
+                    <td>{subject.pi || "—"}</td>
+                    <td>{subject.site || "—"}</td>
+                    <td>{subject.screeningDate || "—"}</td>
+                    <td>{subject.enrollmentDate || "—"}</td>
+                    <td>{subject.currentVisit || "—"}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
                   <td
-                    colSpan="9"
+                    colSpan="8"
                     style={{
                       textAlign: "center",
                       padding: "30px",
-                      color: "#64748b"
+                      color: "#64748b",
                     }}
                   >
-                    No subjects found
+                    No matching subjects found.
                   </td>
                 </tr>
               )}
@@ -298,158 +454,187 @@ if (activeSubject) {
           </table>
         </div>
       ) : (
-      <div className="subjects-explorer">
-        <div className="subjects-explorer-toolbar">
-          <span className="subjects-explorer-path">Subjects</span>
-          <span className="subjects-explorer-count">
-            {filteredSubjects.length} item(s)
-          </span>
-        </div>
+        <div className="subjects-explorer">
+          <div className="subjects-explorer-toolbar">
+            <span className="subjects-explorer-path">Subjects</span>
 
-        {filteredSubjects.length > 0 ? (
-          <div className="subjects-folder-grid">
-            {filteredSubjects.map((subject) => (
-              <button
-                key={subject.id}
-                type="button"
-                className="subjects-folder-item"
-                onClick={() => {
-                  localStorage.setItem(
-                    "selectedSubject",
-                    JSON.stringify({
-                      ...subject,
-                      studyId
-                    })
-                  );
-
-                  setSearchParams((params) => {
-                    params.set("subject", subject.id);
-                    return params;
-                  });
-                  setActiveSubject(subject);
-                }}
-              >
-                <FiFolder className="subjects-folder-icon" />
-                <span className="subjects-folder-name">{subject.id}</span>
-                <small>{subject.status || "—"}</small>
-              </button>
-            ))}
+            <span className="subjects-explorer-count">
+              {filteredSubjects.length} item(s)
+            </span>
           </div>
-        ) : (
-          <p className="subjects-explorer-empty">No subjects found</p>
-        )}
-      </div>
+
+          {filteredSubjects.length > 0 ? (
+            <div className="subjects-folder-grid">
+              {filteredSubjects.map((subject) => (
+                <button
+                  key={subject.id}
+                  type="button"
+                  className="subjects-folder-item"
+                  onClick={() => openSubjectFolder(subject)}
+                >
+                  <FiFolder className="subjects-folder-icon" />
+
+                  <span className="subjects-folder-name">
+                    {subject.id || "Unnamed Subject"}
+                  </span>
+
+                  <small>{subject.status || "No status"}</small>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="subjects-explorer-empty">
+              No matching subjects found.
+            </p>
+          )}
+        </div>
       )}
 
-      {showModal && (
+      {showSubjectModal && (
         <div className="subject-modal-overlay">
           <div className="subject-modal">
             <h3>Add New Subject</h3>
 
+            <label htmlFor="subject-id">Subject ID</label>
             <input
+              id="subject-id"
               placeholder="Subject ID"
               value={newSubject.id}
-              onChange={(e) =>
+              onChange={(event) =>
                 setNewSubject({
                   ...newSubject,
-                  id: e.target.value
+                  id: event.target.value,
                 })
               }
             />
 
+            <label htmlFor="subject-initials">Initials</label>
             <input
+              id="subject-initials"
               placeholder="Initials"
               value={newSubject.initials}
-              onChange={(e) =>
+              onChange={(event) =>
                 setNewSubject({
                   ...newSubject,
-                  initials: e.target.value
+                  initials: event.target.value,
                 })
               }
             />
 
+            <label htmlFor="subject-pi">Principal Investigator</label>
             <input
+              id="subject-pi"
               placeholder="Principal Investigator"
               value={newSubject.pi}
-              onChange={(e) =>
+              onChange={(event) =>
                 setNewSubject({
                   ...newSubject,
-                  pi: e.target.value
+                  pi: event.target.value,
                 })
               }
             />
 
+            <label htmlFor="subject-site">Site</label>
             <input
+              id="subject-site"
               placeholder="Site"
               value={newSubject.site}
-              onChange={(e) =>
+              onChange={(event) =>
                 setNewSubject({
                   ...newSubject,
-                  site: e.target.value
+                  site: event.target.value,
                 })
               }
             />
 
             <div className="form-group">
-              <label>
+              <label htmlFor="subject-screening-date">
                 Screening Date
               </label>
 
               <input
+                id="subject-screening-date"
                 type="date"
                 value={newSubject.screeningDate}
-                onChange={(e) =>
+                onChange={(event) =>
                   setNewSubject({
                     ...newSubject,
-                    screeningDate: e.target.value
+                    screeningDate: event.target.value,
                   })
                 }
               />
             </div>
 
             <div className="form-group">
-              <label>
+              <label htmlFor="subject-enrollment-date">
                 Enrollment Date
               </label>
 
               <input
+                id="subject-enrollment-date"
                 type="date"
                 value={newSubject.enrollmentDate}
-                onChange={(e) =>
+                onChange={(event) =>
                   setNewSubject({
                     ...newSubject,
-                    enrollmentDate: e.target.value
+                    enrollmentDate: event.target.value,
                   })
                 }
               />
             </div>
 
+            <label htmlFor="subject-status">Status</label>
             <select
+              id="subject-status"
               value={newSubject.status}
-              onChange={(e) =>
+              onChange={(event) =>
                 setNewSubject({
                   ...newSubject,
-                  status: e.target.value
+                  status: event.target.value,
                 })
               }
             >
-              <option>Screening</option>
-              <option>Enrolled</option>
-              <option>Ongoing</option>
-              <option>Completed</option>
-              <option>Withdrawn</option>
-              <option>Dropout</option>
+              <option value="">Select</option>
+              <option value="Screening">Screening</option>
+              <option value="Enrolled">Enrolled</option>
+              <option value="Ongoing">Ongoing</option>
+              <option value="Completed">Completed</option>
+              <option value="Withdrawn">Withdrawn</option>
+              <option value="Dropout">Dropout</option>
+            </select>
+
+            <label htmlFor="subject-current-visit">Current Visit</label>
+            <select
+              id="subject-current-visit"
+              value={newSubject.currentVisit}
+              onChange={(event) =>
+                setNewSubject({
+                  ...newSubject,
+                  currentVisit: event.target.value,
+                })
+              }
+            >
+              <option value="">Select</option>
+              <option value="Screening">Screening</option>
+              <option value="Enrollment">Enrollment</option>
+              <option value="Visit 1">Visit 1</option>
+              <option value="Visit 2">Visit 2</option>
+              <option value="Visit 3">Visit 3</option>
+              <option value="Follow-up">Follow-up</option>
+              <option value="Completed">Completed</option>
             </select>
 
             <div className="modal-actions">
-              <button onClick={handleAddSubject}>
+              <button type="button" onClick={handleAddSubject}>
                 Add Subject
               </button>
 
               <button
-                onClick={() =>
-                  setShowModal(false)
-                }
+                type="button"
+                onClick={() => {
+                  setShowSubjectModal(false);
+                  setNewSubject(emptySubjectForm);
+                }}
               >
                 Cancel
               </button>

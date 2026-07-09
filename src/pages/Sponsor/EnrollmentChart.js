@@ -23,6 +23,9 @@ const EnrollmentChart = ({ data: propData }) => {
   return (
     <div className="chart-card">
       <h3>Enrollment by Study</h3>
+      {data.length === 0 ? (
+        <p className="chart-empty-state">No data available yet</p>
+      ) : (
       <ResponsiveContainer width="100%" height={320}>
         <BarChart data={data} margin={{ top: 20, right: 20, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
@@ -32,6 +35,7 @@ const EnrollmentChart = ({ data: propData }) => {
           <Bar dataKey="enrolled" fill="#082b3d" radius={[8, 8, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
+      )}
     </div>
   );
 };

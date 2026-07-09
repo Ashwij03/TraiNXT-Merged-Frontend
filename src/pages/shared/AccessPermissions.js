@@ -1,11 +1,12 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import DashboardLayout from "../../Components/dashboard/DashboardLayout";
 import DataTable from "../../Components/dashboard/DataTable";
 import {
   acceptAccessRequest,
   getAccessRequestHistory,
   getPendingAccessRequests,
-  revokeAccessRequest
+  revokeAccessRequest,
+  PERMISSION_REQUESTS_UPDATED,
 } from "../../services/accessPermissionService";
 import {
   approveSignupRequest,
@@ -35,6 +36,12 @@ function StatusPill({ status }) {
 function AccessPermissions() {
   const [activeTab, setActiveTab] = useState("signup");
   const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    const refresh = () => setRefreshKey((value) => value + 1);
+    window.addEventListener(PERMISSION_REQUESTS_UPDATED, refresh);
+    return () => window.removeEventListener(PERMISSION_REQUESTS_UPDATED, refresh);
+  }, []);
 
   const pendingRequests = useMemo(() => {
     void refreshKey;
@@ -74,20 +81,25 @@ function AccessPermissions() {
   const pendingColumns = [
     { key: "id", label: "Request ID" },
     { key: "user", label: "User" },
-    { key: "studySubject", label: "Study / Subject" },
-    { key: "accessType", label: "Access Type" },
+    { key: "role", label: "Role" },
+    { key: "action", label: "Action" },
+    { key: "module", label: "Module" },
+    { key: "record", label: "Record" },
+    { key: "reason", label: "Reason" },
     { key: "requestedOn", label: "Requested On" },
-    { key: "actions", label: "Actions" }
+    { key: "actions", label: "Actions" },
   ];
 
   const historyColumns = [
     { key: "id", label: "Request ID" },
     { key: "user", label: "User" },
-    { key: "studySubject", label: "Study / Subject" },
-    { key: "accessType", label: "Access Type" },
+    { key: "role", label: "Role" },
+    { key: "action", label: "Action" },
+    { key: "module", label: "Module" },
+    { key: "record", label: "Record" },
     { key: "requestedOn", label: "Requested On" },
     { key: "status", label: "Status" },
-    { key: "resolvedOn", label: "Resolved On" }
+    { key: "resolvedOn", label: "Resolved On" },
   ];
 
   const signupColumns = [
@@ -102,9 +114,12 @@ function AccessPermissions() {
   const pendingData = pendingRequests.map((request) => ({
     id: request.id,
     user: request.userName || request.user,
-    studySubject: request.studySubject,
-    accessType: request.accessType,
-    requestedOn: request.requestedOn,
+    role: request.role || "—",
+    action: request.action || request.accessType,
+    module: request.module || "General",
+    record: request.recordName || request.recordId || request.studySubject,
+    reason: request.reason || "—",
+    requestedOn: request.requestedOn || request.timestamp?.slice(0, 10),
     actions: (
       <div className="access-actions-cell">
         <button
@@ -128,11 +143,13 @@ function AccessPermissions() {
   const historyData = requestHistory.map((request) => ({
     id: request.id,
     user: request.userName || request.user,
-    studySubject: request.studySubject,
-    accessType: request.accessType,
-    requestedOn: request.requestedOn,
+    role: request.role || "—",
+    action: request.action || request.accessType,
+    module: request.module || "General",
+    record: request.recordName || request.recordId || request.studySubject,
+    requestedOn: request.requestedOn || request.timestamp?.slice(0, 10),
     status: <StatusPill status={request.status} />,
-    resolvedOn: request.resolvedOn || "—"
+    resolvedOn: request.resolvedOn?.slice?.(0, 10) || request.resolvedOn || "—",
   }));
 
   const signupData = pendingSignupRequests.map((user) => ({

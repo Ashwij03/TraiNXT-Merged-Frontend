@@ -1,7 +1,5 @@
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useState } from "react";
-
-// import SubjectsTab from "./SubjectsTab";
 import ProgressNotes from "../operations/ProgressNotes";
 import Comments from "../operations/Comments";
 import FileDetails from "../documents/FileDetails";
@@ -11,349 +9,215 @@ import ERegSection from "../../../ERegSection.jsx";
 import StudyFinancials from "../../Sponsor/Financials/StudyFinancials";
 import DashboardLayout from "../../../Components/dashboard/DashboardLayout";
 
-function StudyDetails() {
+const STUDY_STORAGE_KEYS = ["studies", "studiesData", "studyData"];
 
+function readStorage(key, fallbackValue) {
+  try {
+    const savedValue = localStorage.getItem(key);
+
+    if (!savedValue) {
+      return fallbackValue;
+    }
+
+    return JSON.parse(savedValue) ?? fallbackValue;
+  } catch (error) {
+    console.error(`Unable to read ${key}:`, error);
+    return fallbackValue;
+  }
+}
+
+function getAllStudies() {
+  for (const storageKey of STUDY_STORAGE_KEYS) {
+    const savedStudies = readStorage(storageKey, null);
+
+    if (Array.isArray(savedStudies)) {
+      return savedStudies;
+    }
+
+    if (savedStudies && typeof savedStudies === "object") {
+      return Object.values(savedStudies).flatMap((value) =>
+        Array.isArray(value) ? value : [value]
+      );
+    }
+  }
+
+  return [];
+}
+
+function getStudyCode(study) {
+  return String(
+    study?.code ||
+      study?.studyCode ||
+      study?.studyId ||
+      study?.id ||
+      ""
+  );
+}
+
+function getStudyTitle(study) {
+  return (
+    study?.title ||
+    study?.studyName ||
+    study?.name ||
+    study?.protocolTitle ||
+    "Study"
+  );
+}
+
+function getStudyOrganization(study) {
+  return (
+    study?.org ||
+    study?.organization ||
+    study?.sponsor ||
+    study?.company ||
+    "—"
+  );
+}
+
+function getStudyLocation(study) {
+  return (
+    study?.location ||
+    study?.siteLocation ||
+    study?.city ||
+    study?.country ||
+    "—"
+  );
+}
+
+function StudyDetails() {
   const { code } = useParams();
 
   const [showSubjects, setShowSubjects] = useState(false);
-
   const [activeTab, setActiveTab] = useState("financials");
+  const [studies, setStudies] = useState(() => getAllStudies());
 
-  // Dynamic study data
-  const studyData = {
+  useEffect(() => {
+    const refreshStudies = () => {
+      setStudies(getAllStudies());
+    };
 
-    "747-303": {
-      title: "OBETICHOLIC ACID (OCA)",
-      org: "Test Organization",
-      location: "Cambridge, MA",
-    },
+    window.addEventListener("studies-updated", refreshStudies);
+    window.addEventListener("study-data-updated", refreshStudies);
+    window.addEventListener("storage", refreshStudies);
 
-    "05151": {
-      title: "SeptiTest",
-      org: "Test Organization",
-      location: "Cambridge, MA",
-    },
+    return () => {
+      window.removeEventListener("studies-updated", refreshStudies);
+      window.removeEventListener("study-data-updated", refreshStudies);
+      window.removeEventListener("storage", refreshStudies);
+    };
+  }, []);
 
-  };
+  const currentStudy = useMemo(() => {
+    const normalizedCode = String(code || "").trim().toLowerCase();
 
-  // Current selected study
-  const currentStudy = studyData[code];
+    return (
+      studies.find(
+        (study) =>
+          getStudyCode(study).trim().toLowerCase() === normalizedCode
+      ) || null
+    );
+  }, [code, studies]);
 
-  // Codex change: Study workspace is wrapped so sidebar/header stay visible on /study/:code.
+  const studyCode = getStudyCode(currentStudy) || code || "—";
+  const studyTitle = getStudyTitle(currentStudy);
+  const studyOrganization = getStudyOrganization(currentStudy);
+  const studyLocation = getStudyLocation(currentStudy);
+
+  const tabs = [
+    { id: "subjects", label: "Subjects" },
+    { id: "progress", label: "Progress Notes" },
+    { id: "comments", label: "Comments" },
+    { id: "files", label: "Files" },
+    { id: "logs", label: "Logs" },
+    { id: "ereg", label: "eReg" },
+    { id: "financials", label: "Financials" },
+  ];
+
   return (
-
     <DashboardLayout>
-
-    <div
-      className="studies-wrapper"
-      style={{
-        width: "100%",
-        margin: "0",
-        padding: "0"
-      }}>
-        
-      {/* HEADER */}
-      <div
-        className="study-detail-header"
-        style={{
-          backgroundColor: "#032B3A",
-          padding: "25px 35px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          width: "100%",
-          margin: "0",
-          borderRadius: "4px"
-        }}>
+      <div className="studies-wrapper">
+        <div className="study-detail-header">
           <div className="study-title">
-            <div
-              className="study-id"
-              style={{
-                color: "white",
-                fontSize: "18px",
-                fontWeight: "bold"
-              }}
-            >
-              {code}
-            </div>
-            
-            <div
-              className="study-name"
-              style={{
-                color: "white",
-                marginTop: "8px"
-              }}
-            >
-              {currentStudy?.title}
-            </div>
-            
+            <div className="study-id">{studyCode}</div>
+
+            <div className="study-name">{studyTitle}</div>
           </div>
-          <div
-            className="study-org-header"
-            style={{ color: "white" }}
-          >
+
+          <div className="study-org-header">
             <div className="study-org">
-              <strong style={{ color: "white" }}>
-                {currentStudy?.org}
-              </strong>
-              <p style={{ color: "white" }}>
-                {currentStudy?.location}
-              </p>
+              <strong>{studyOrganization}</strong>
+              <p>{studyLocation}</p>
             </div>
+
             <button
+              type="button"
               className="study-dropdown-btn"
-              onClick={() => setShowSubjects(!showSubjects)}
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "white",
-                marginLeft: "10px",
-                cursor: "pointer"
-              }}
+              onClick={() => setShowSubjects((previousValue) => !previousValue)}
+              aria-label="Toggle study details"
+              aria-expanded={showSubjects}
             >
               ▼
             </button>
+          </div>
+        </div>
+
+        {showSubjects && (
+          <div className="study-dropdown-content">
+            <p>
+              <strong>Study Code:</strong> {studyCode}
+            </p>
+
+            <p>
+              <strong>Study Name:</strong> {studyTitle}
+            </p>
+
+            <p>
+              <strong>Organization:</strong> {studyOrganization}
+            </p>
+
+            <p>
+              <strong>Location:</strong> {studyLocation}
+            </p>
+          </div>
+        )}
+
+        <div className="study-tabs">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              className={`study-tab-button ${
+                activeTab === tab.id ? "active" : ""
+              }`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="study-tab-content">
+          {activeTab === "subjects" && (
+            <div className="study-empty-state">
+              Subjects content will appear here.
+            </div>
+          )}
+
+          {activeTab === "progress" && <ProgressNotes />}
+
+          {activeTab === "comments" && <Comments />}
+
+          {activeTab === "files" && <FileDetails />}
+
+          {activeTab === "logs" && <StudyLogs />}
+
+          {activeTab === "ereg" && <ERegSection />}
+
+          {activeTab === "financials" && <StudyFinancials />}
+        </div>
       </div>
-
-    </div>
-
-
-      {/* TABS */}
-      <div
-        className="study-tabs"
-        style={{
-          display: "flex",
-          gap: "18px",
-          background: "#062b3d",
-          padding: "16px 20px",
-          borderRadius: "4px",
-          width: "100%",
-          margin: "0",
-        }}
-      >
-
-        {/* SUBJECTS */}
-        <div
-          onClick={() => setActiveTab("subjects")}
-          style={{
-            background:
-              activeTab === "subjects"
-                ? "#0d6efd"
-                : "#f2f2f2",
-
-            color:
-              activeTab === "subjects"
-                ? "white"
-                : "#062b3d",
-
-            padding: "12px 20px",
-
-            borderRadius: "8px",
-
-            cursor: "pointer",
-
-            fontWeight: "bold"
-          }}
-        >
-          Subjects
-        </div>
-
-        {/* PROGRESS */}
-        <div
-          onClick={() => setActiveTab("progress")}
-          style={{
-            background:
-              activeTab === "progress"
-                ? "#0d6efd"
-                : "#f2f2f2",
-
-            color:
-              activeTab === "progress"
-                ? "white"
-                : "#062b3d",
-
-            padding: "12px 20px",
-
-            borderRadius: "8px",
-
-            cursor: "pointer",
-
-            fontWeight: "bold"
-          }}
-        >
-          Progress Notes
-        </div>
-
-        {/* COMMENTS */}
-        <div
-          onClick={() => setActiveTab("comments")}
-          style={{
-            background:
-              activeTab === "comments"
-                ? "#0d6efd"
-                : "#f2f2f2",
-
-            color:
-              activeTab === "comments"
-                ? "white"
-                : "#062b3d",
-
-            padding: "12px 20px",
-
-            borderRadius: "8px",
-
-            cursor: "pointer",
-
-            fontWeight: "bold"
-          }}
-        >
-          Comments
-        </div>
-
-        {/* FILES */}
-        <div
-          onClick={() => setActiveTab("files")}
-          style={{
-            background:
-              activeTab === "files"
-                ? "#0d6efd"
-                : "#f2f2f2",
-
-            color:
-              activeTab === "files"
-                ? "white"
-                : "#062b3d",
-
-            padding: "12px 20px",
-
-            borderRadius: "8px",
-
-            cursor: "pointer",
-
-            fontWeight: "bold"
-          }}
-        >
-          Files
-        </div>
-
-        {/* LOGS */}
-        <div
-          onClick={() => setActiveTab("logs")}
-          style={{
-            background:
-              activeTab === "logs"
-                ? "#0d6efd"
-                : "#f2f2f2",
-
-            color:
-              activeTab === "logs"
-                ? "white"
-                : "#062b3d",
-
-            padding: "12px 20px",
-
-            borderRadius: "8px",
-
-            cursor: "pointer",
-
-            fontWeight: "bold"
-          }}
-        >
-          Logs
-        </div>
-
-        {/* EREG */}
-        <div
-          onClick={() => setActiveTab("ereg")}
-          style={{
-            background:
-              activeTab === "ereg"
-                ? "#0d6efd"
-                : "#f2f2f2",
-
-            color:
-              activeTab === "ereg"
-                ? "white"
-                : "#062b3d",
-
-            padding: "12px 20px",
-
-            borderRadius: "8px",
-
-            cursor: "pointer",
-
-            fontWeight: "bold"
-          }}
-        >
-          eReg
-        </div>
-
-      </div>
-      {/* FINANCIALS */}
-<div
-  onClick={() => setActiveTab("financials")}
-  style={{
-    background:
-      activeTab === "financials"
-        ? "#0d6efd"
-        : "#f2f2f2",
-
-    color:
-      activeTab === "financials"
-        ? "white"
-        : "#062b3d",
-
-    padding: "12px 20px",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "bold"
-  }}
->
-  Financials
-</div>
-
-      {/* SUBJECTS */}
-      {/* {activeTab === "subjects" && (
-        <>
-          <SubjectsTab />
-        </>
-      )} */}
-
-      {/* PROGRESS NOTES */}
-      {activeTab === "progress" && (
-        <ProgressNotes />
-      )}
-
-      {/* COMMENTS */}
-      {activeTab === "comments" && (
-        <Comments />
-      )}
-
-      {/* FILES */}
-      {activeTab === "files" && (
-        <FileDetails />
-      )}
-
-      {/* LOGS */}
-      {activeTab === "logs" && (
-        <StudyLogs />
-      )}
-
-      {/* EREG */}
-      {activeTab === "ereg" && (
-        <ERegSection />
-      )}
-      {/* FINANCIALS */}
-{activeTab === "financials" && (
-  <StudyFinancials />
-)}
-
-    </div>
-
     </DashboardLayout>
-
   );
-
 }
 
 export default StudyDetails;

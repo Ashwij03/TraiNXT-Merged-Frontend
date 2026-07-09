@@ -31,36 +31,38 @@
 .back-to-studies-btn {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+
+  padding: 10px 18px;
+
   background: #ffffff;
-  color: #082c3c;
-  border: 1px solid #dbe4ea;
+
+  border: 1px solid #d6dde6;
+
   border-radius: 10px;
-  padding: 10px 16px;
+
+  color: #334155;
+
   font-size: 14px;
+
   font-weight: 600;
-  box-shadow: 0 2px 10px rgba(8, 44, 60, 0.06);
+
   cursor: pointer;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
+
+  transition: .25s;
 }
 
 .back-to-studies-btn:hover {
-  background: #082c3c;
-  color: #ffffff;
-  border-color: #082c3c;
-  box-shadow: 0 10px 24px rgba(8, 44, 60, 0.16);
-  transform: translateY(-1px);
+  background: #f8fafc;
+
+  border-color: #0d6efd;
+
+  color: #0d6efd;
 }
 
 .back-to-studies-btn svg {
   width: 16px;
   height: 16px;
-  flex-shrink: 0;
 }
 
 /* ==========================================
@@ -78,7 +80,6 @@
   margin-bottom: 24px;
   gap: 16px;
   box-shadow: var(--tnxt-shadow);
-}
 }
 
 .study-dashboard-page .page-header h1 {
@@ -120,46 +121,72 @@
   padding: 20px;
 }
 
-.edit-study-btn,
-.delete-study-btn {
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 10px 16px;
-  font-size: 14px;
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+.page-header-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
-  white-space: nowrap;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.study-dashboard-page .page-header .btn-edit {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.55);
+/* Edit Button */
+
+.edit-study-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 10px 18px;
+
+  border: 1px solid #ffffff;
+
+  border-radius: 10px;
+
+  background: transparent;
+
   color: #ffffff;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: .25s;
 }
 
-.study-dashboard-page .page-header .btn-edit:hover {
+.edit-study-btn:hover {
   background: #ffffff;
-  border-color: #ffffff;
   color: #082c3c;
-  box-shadow: 0 8px 18px rgba(255, 255, 255, 0.2);
 }
+
+/* Delete Button */
 
 .delete-study-btn {
-  background: #dc3545;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 10px 18px;
+
+  border: 1px solid #ef4444;
+
+  border-radius: 10px;
+
+  background: transparent;
+
   color: #ffffff;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: .25s;
 }
 
 .delete-study-btn:hover {
-  background: #bb2d3b;
-  transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(220, 53, 69, 0.25);
+  background: #ef4444;
 }
 
 .edit-study-btn svg,
@@ -495,15 +522,17 @@ RESPONSIVE
   }
 
   .page-header-actions {
-    width: 100%;
-    flex-wrap: wrap;
-  }
+    width:100%;
+    display:flex;
+    flex-direction:column;
+}
 
-  .edit-study-btn,
-  .delete-study-btn {
-    width: 100%;
-    justify-content: center;
-  }
+.edit-study-btn,
+.delete-study-btn,
+.request-permission-btn{
+    width:100%;
+    justify-content:center;
+}
 
   .study-dashboard-page .studies-kpi-grid {
     grid-template-columns: 1fr;
@@ -526,4 +555,285 @@ RESPONSIVE
     width: 100%;
     justify-content: center;
   }
+}
+
+/* ==========================================
+   STUDY OVERVIEW WIDGETS (Section B)
+========================================== */
+
+.refresh-study-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.refresh-study-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.refresh-study-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.refresh-study-btn .spinning {
+  animation: study-refresh-spin 0.8s linear infinite;
+}
+
+@keyframes study-refresh-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.study-overview-widgets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.study-widget-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+  border: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.study-widget-clickable {
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.study-widget-clickable:hover {
+  border-color: #0d6efd;
+  box-shadow: 0 4px 14px rgba(13, 110, 253, 0.12);
+}
+
+.study-widget-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.study-widget-header h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.study-widget-empty {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.study-widget-progress {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.study-widget-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #0d6efd, #38bdf8);
+}
+
+.study-widget-stat {
+  margin: 0;
+  color: #334155;
+  font-size: 14px;
+}
+
+.study-progress-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.study-progress-item {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+}
+
+.study-progress-value {
+  display: block;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.study-progress-label {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.study-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.study-status-chip {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+}
+
+.study-status-count {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.study-status-label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.study-health-card .study-health-score {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.study-health-value {
+  font-size: 36px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.study-health-status {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.study-health-status.status-at-risk {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.study-health-status.status-needs-attention {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.study-health-factors {
+  margin: 0;
+  padding-left: 18px;
+  color: #475569;
+}
+
+.study-health-factors li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.impact-tag {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.study-milestone-card {
+  margin-bottom: 20px;
+}
+
+.study-milestone-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.study-milestone-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.study-milestone-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.study-milestone-info span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.study-milestone-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.study-milestone-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.study-milestone-form input,
+.study-milestone-actions input,
+.study-milestone-actions select {
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+}
+
+.study-table-wrap {
+  overflow-x: auto;
+}
+
+.study-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.study-table-wrap th,
+.study-table-wrap td {
+  padding: 8px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  font-size: 14px;
+}
+
+.icon-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.icon-btn.danger {
+  color: #dc3545;
 }

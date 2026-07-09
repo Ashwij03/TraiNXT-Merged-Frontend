@@ -40,7 +40,7 @@ import Sites from "./pages/Admin/Sites";
 import LogsPage from "./pages/shared/logs/LogsPage";
 import TrainingLogPage from "./pages/shared/logs/TrainingLogPage";
 import DelegationLogPage from "./pages/shared/logs/DelegationLogPage";
-import { getDashboardPath, getCurrentUser } from "./services/roleService";
+import { getDashboardPath, getCurrentUser, getEffectiveRole } from "./services/roleService";
 import EISFDashboard from "./pages/shared/EISF/EDashboard/EISFDashboard";
 import {
   RoleAwareComments,
@@ -130,6 +130,16 @@ function RoleAwareFallback() {
   return <Navigate to={destination} replace />;
 }
 
+function UnifiedSettingsRedirect({ section, children }) {
+  const role = getEffectiveRole(getCurrentUser());
+
+  if (role === ROLES.ADMIN || role === ROLES.SITE_STAFF) {
+    return <Navigate to="/settings" state={{ section }} replace />;
+  }
+
+  return children;
+}
+
 function App() {
   return (
     <Routes>
@@ -144,7 +154,9 @@ function App() {
         path="/profile"
         element={
           <ProtectedRoute>
-            <ProfilePage />
+            <UnifiedSettingsRedirect section="profile">
+              <ProfilePage />
+            </UnifiedSettingsRedirect>
           </ProtectedRoute>
         }
       />
@@ -153,7 +165,9 @@ function App() {
         path="/security"
         element={
           <ProtectedRoute>
-            <SecurityPage />
+            <UnifiedSettingsRedirect section="security">
+              <SecurityPage />
+            </UnifiedSettingsRedirect>
           </ProtectedRoute>
         }
       />

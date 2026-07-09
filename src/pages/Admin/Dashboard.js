@@ -20,6 +20,7 @@ import {
 } from "../../constants/headerFilters";
 
 import "./Dashboard.css";
+import "../shared/studies/StudyDashboard.css";
 import "../shared/AccessPermissions.css";
 
 function AdminDashboard() {

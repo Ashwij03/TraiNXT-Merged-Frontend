@@ -6,256 +6,166 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import {
-  CRO_STORAGE_KEYS,
-  loadFromStorage,
-  saveToStorage,
-} from "./croStorage"
+import { getStudies } from "../../services/studyService";
 
 const CRODataContext = createContext();
 
-const DEFAULT_SUBJECTS = [
-  {
-    id: "SUB-001",
-    study: "OCA",
-    site: "Apollo",
-    status: "Active",
-    enrollment: "12-May-2026",
-    visit: "Visit 2",
-  },
-  {
-    id: "SUB-002",
-    study: "OCA",
-    site: "Apollo",
-    status: "Completed",
-    enrollment: "15-Apr-2026",
-    visit: "Completed",
-  },
-  {
-    id: "SUB-003",
-    study: "OCA",
-    site: "Yashoda",
-    status: "Active",
-    enrollment: "22-May-2026",
-    visit: "Screening",
-  },
-];
+function readStorageArray(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key));
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return [];
+  }
+}
 
-const DEFAULT_VISITS = [
-  {
-    id: "MON-001",
-    site: "Apollo",
-    cra: "John",
-    visitType: "SIV",
-    date: "2026-06-15",
-    status: "Completed",
-  },
-  {
-    id: "MON-002",
-    site: "Yashoda",
-    cra: "David",
-    visitType: "IMV",
-    date: "2026-06-20",
-    status: "Pending",
-  },
-  {
-    id: "MON-003",
-    site: "Apollo",
-    cra: "Sarah",
-    visitType: "COV",
-    date: "2026-06-28",
-    status: "Scheduled",
-  },
-];
+function getSharedStudies() {
+  try {
+    const studies = getStudies();
+    return Array.isArray(studies) ? studies : [];
+  } catch {
+    return [];
+  }
+}
 
-const DEFAULT_DOCUMENTS = [
-  {
-    id: "DOC-001",
-    name: "Protocol",
-    site: "Apollo",
-    version: "V3.0",
-    expiry: "2026-12-31",
-    status: "Approved",
-  },
-  {
-    id: "DOC-002",
-    name: "ICF",
-    site: "Yashoda",
-    version: "V2.1",
-    expiry: "2026-08-15",
-    status: "Pending",
-  },
-  {
-    id: "DOC-003",
-    name: "Investigator Brochure",
-    site: "Apollo",
-    version: "V5.0",
-    expiry: "2026-07-20",
-    status: "Approved",
-  },
-];
+function getSharedSubjects() {
+  try {
+    const subjectsByStudy =
+      JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
 
-const DEFAULT_REPORTS = [
-  {
-    id: "REP-001",
-    name: "Enrollment Report",
-    type: "Enrollment",
-    generatedOn: "01-Jul-2025",
-    status: "Generated",
-  },
-  {
-    id: "REP-002",
-    name: "Site Performance Report",
-    type: "Performance",
-    generatedOn: "03-Jul-2025",
-    status: "Pending",
-  },
-  {
-    id: "REP-003",
-    name: "Monitoring Report",
-    type: "Monitoring",
-    generatedOn: "05-Jul-2025",
-    status: "Generated",
-  },
-];
+    const studiesByCode = new Map(
+      getStudies().map((study) => [String(study.code), study]),
+    );
 
-const DEFAULT_COMMENTS = [
-  {
-    id: "CMT-001",
-    subject: "SUB-001",
-    site: "Apollo",
-    author: "CRA John",
-    message: "Source data verification pending for Visit 2",
-    status: "Open",
-    date: "2026-06-10",
-    replies: [],
-  },
-  {
-    id: "CMT-002",
-    subject: "SUB-003",
-    site: "Yashoda",
-    author: "Data Manager",
-    message: "Protocol deviation review required",
-    status: "Answered",
-    date: "2026-06-12",
-    replies: [
-      {
-        id: "RPL-001",
-        author: "Site Coordinator",
-        message: "Deviation documented and submitted",
-        date: "2026-06-13",
-      },
-    ],
-  },
-  {
-    id: "CMT-003",
-    subject: "SUB-002",
-    site: "Apollo",
-    author: "Monitor",
-    message: "Query resolution awaiting site response",
-    status: "Open",
-    date: "2026-06-14",
-    replies: [],
-  },
-];
+    return Object.entries(subjectsByStudy).flatMap(([studyCode, list]) => {
+      const study = studiesByCode.get(String(studyCode));
 
-const DEFAULT_NOTIFICATIONS = [
-  {
-    id: "NOT-001",
-    title: "Monitoring Visit Due",
-    message: "Apollo Hospital monitoring visit scheduled within 3 days.",
-    type: "Monitoring",
-    severity: "High",
-    date: "2026-06-18",
-    status: "Unread",
-  },
-  {
-    id: "NOT-002",
-    title: "Protocol Deviation Review",
-    message: "Subject SUB-003 requires CRO review and acknowledgement.",
-    type: "Compliance",
-    severity: "Medium",
-    date: "2026-06-18",
-    status: "Unread",
-  },
-  {
-    id: "NOT-003",
-    title: "Regulatory Document Expiry",
-    message: "SITE-101 delegation log expires within 7 days.",
-    type: "Regulatory",
-    severity: "Low",
-    date: "2026-06-18",
-    status: "Unread",
-  },
-];
+      return (Array.isArray(list) ? list : []).map((subject, index) => ({
+        ...subject,
+        id:
+          subject.id ||
+          subject.subjectId ||
+          `${studyCode}-SUB-${String(index + 1).padStart(3, "0")}`,
+        subjectId:
+          subject.subjectId ||
+          subject.id ||
+          `${studyCode}-SUB-${String(index + 1).padStart(3, "0")}`,
+        studyCode,
+        study: study?.name || studyCode,
+        studyName: study?.name || studyCode,
+        site: subject.site || study?.site || study?.location || "",
+        status: subject.status || "Active",
+      }));
+    });
+  } catch {
+    return [];
+  }
+}
 
-const DEFAULT_FILES = [
-  {
-    id: "FIL-001",
-    name: "Monitoring Report Q2.pdf",
-    category: "Monitoring",
-    site: "Apollo",
-    uploadedOn: "2026-06-01",
-    size: "2.4 MB",
-  },
-  {
-    id: "FIL-002",
-    name: "Site Initiation Checklist.docx",
-    category: "Regulatory",
-    site: "Yashoda",
-    uploadedOn: "2026-05-28",
-    size: "890 KB",
-  },
-];
+/*
+  These readers are read-only.
 
-function usePersistedState(storageKey, defaultValue) {
-  const [state, setState] = useState(() =>
-    loadFromStorage(storageKey, defaultValue)
-  );
+  They support the common shared storage keys used across the project.
+  If a key does not exist yet, CRO shows an empty list instead of demo data.
+*/
+function getSharedVisits() {
+  return readStorageArray("visitSchedules");
+}
 
-  useEffect(() => {
-    saveToStorage(storageKey, state);
-  }, [storageKey, state]);
+function getSharedDocuments() {
+  return readStorageArray("documents");
+}
 
-  return [state, setState];
+function getSharedReports() {
+  return readStorageArray("reports");
+}
+
+function getSharedComments() {
+  return readStorageArray("comments");
+}
+
+function getSharedNotifications() {
+  return readStorageArray("notifications");
+}
+
+function getSharedFiles() {
+  return readStorageArray("files");
 }
 
 export const CROProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [subjects, setSubjects] = usePersistedState(
-    CRO_STORAGE_KEYS.subjects,
-    DEFAULT_SUBJECTS
+
+  const [studies, setStudies] = useState(() => getSharedStudies());
+  const [subjects, setSubjects] = useState(() => getSharedSubjects());
+  const [visits, setVisits] = useState(() => getSharedVisits());
+  const [documents, setDocuments] = useState(() => getSharedDocuments());
+  const [reports, setReports] = useState(() => getSharedReports());
+  const [comments, setComments] = useState(() => getSharedComments());
+  const [notifications, setNotifications] = useState(() =>
+    getSharedNotifications(),
   );
-  const [visits, setVisits] = usePersistedState(
-    CRO_STORAGE_KEYS.visits,
-    DEFAULT_VISITS
-  );
-  const [documents, setDocuments] = usePersistedState(
-    CRO_STORAGE_KEYS.documents,
-    DEFAULT_DOCUMENTS
-  );
-  const [reports, setReports] = usePersistedState(
-    CRO_STORAGE_KEYS.reports,
-    DEFAULT_REPORTS
-  );
-  const [comments, setComments] = usePersistedState(
-    CRO_STORAGE_KEYS.comments,
-    DEFAULT_COMMENTS
-  );
-  const [notifications, setNotifications] = usePersistedState(
-    CRO_STORAGE_KEYS.notifications,
-    DEFAULT_NOTIFICATIONS
-  );
-  const [files, setFiles] = usePersistedState(
-    CRO_STORAGE_KEYS.files,
-    DEFAULT_FILES
-  );
+  const [files, setFiles] = useState(() => getSharedFiles());
 
   const [alertModal, setAlertModal] = useState({
     open: false,
     title: "",
     message: "",
   });
+
+  const refreshSharedData = useCallback(() => {
+    setStudies(getSharedStudies());
+    setSubjects(getSharedSubjects());
+    setVisits(getSharedVisits());
+    setDocuments(getSharedDocuments());
+    setReports(getSharedReports());
+    setComments(getSharedComments());
+    setNotifications(getSharedNotifications());
+    setFiles(getSharedFiles());
+  }, []);
+
+  useEffect(() => {
+    refreshSharedData();
+
+    const handleSharedDataUpdate = () => {
+      refreshSharedData();
+    };
+
+    window.addEventListener("studies-updated", handleSharedDataUpdate);
+    window.addEventListener("subjects-updated", handleSharedDataUpdate);
+    window.addEventListener("visits-updated", handleSharedDataUpdate);
+    window.addEventListener("documents-updated", handleSharedDataUpdate);
+    window.addEventListener("reports-updated", handleSharedDataUpdate);
+    window.addEventListener("comments-updated", handleSharedDataUpdate);
+    window.addEventListener("notifications-updated", handleSharedDataUpdate);
+    window.addEventListener("files-updated", handleSharedDataUpdate);
+    window.addEventListener("sponsor-data-updated", handleSharedDataUpdate);
+    window.addEventListener("storage", handleSharedDataUpdate);
+
+    return () => {
+      window.removeEventListener("studies-updated", handleSharedDataUpdate);
+      window.removeEventListener("subjects-updated", handleSharedDataUpdate);
+      window.removeEventListener("visits-updated", handleSharedDataUpdate);
+      window.removeEventListener("documents-updated", handleSharedDataUpdate);
+      window.removeEventListener("reports-updated", handleSharedDataUpdate);
+      window.removeEventListener("comments-updated", handleSharedDataUpdate);
+      window.removeEventListener(
+        "notifications-updated",
+        handleSharedDataUpdate,
+      );
+      window.removeEventListener("files-updated", handleSharedDataUpdate);
+      window.removeEventListener(
+        "sponsor-data-updated",
+        handleSharedDataUpdate,
+      );
+      window.removeEventListener("storage", handleSharedDataUpdate);
+    };
+  }, [refreshSharedData]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const showAlert = useCallback((title, message) => {
     setAlertModal({ open: true, title, message });
@@ -271,33 +181,78 @@ export const CROProvider = ({ children }) => {
 
   const closeModal = closeAlert;
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 300);
-    return () => clearTimeout(timer);
+  // CRO is allowed to add comments (create-only). It must never edit,
+  // reply to, resolve, or delete comments — those remain Admin/Site
+  // Staff/PI actions. This writes to the same shared "comments" key
+  // used across the app and notifies other roles via the same event
+  // this context already listens for.
+  const addComment = useCallback((newComment) => {
+    try {
+      const existingComments = readStorageArray("comments");
+
+      const commentToSave = {
+        id: `C-${Date.now()}`,
+        status: "Open",
+        createdBy: "CRO User",
+        createdRole: "CRO",
+        date: new Date().toISOString().split("T")[0],
+        ...newComment,
+      };
+
+      const updatedComments = [commentToSave, ...existingComments];
+
+      localStorage.setItem("comments", JSON.stringify(updatedComments));
+      window.dispatchEvent(new Event("comments-updated"));
+
+      return commentToSave;
+    } catch {
+      return null;
+    }
   }, []);
 
   const kpiMetrics = useMemo(() => {
-    const uniqueSites = new Set(visits.map((v) => v.site)).size;
+    const uniqueSites = new Set(
+      visits.map((visit) => visit.site).filter(Boolean),
+    ).size;
+
     const pendingReviews = documents.filter(
-      (d) => d.status === "Pending"
+      (document) => document.status === "Pending",
     ).length;
+
     const completedVisits = visits.filter(
-      (v) => v.status === "Completed"
+      (visit) => visit.status === "Completed",
     ).length;
+
     const approvedDocs = documents.filter(
-      (d) => d.status === "Approved"
+      (document) => document.status === "Approved",
     ).length;
+
     const visitCompliance =
       visits.length > 0
         ? Math.round((completedVisits / visits.length) * 100)
         : 0;
-    const docCompliance =
+
+    const documentCompliance =
       documents.length > 0
         ? Math.round((approvedDocs / documents.length) * 100)
         : 0;
+
+    const complianceValues = [];
+
+    if (visits.length > 0) {
+      complianceValues.push(visitCompliance);
+    }
+
+    if (documents.length > 0) {
+      complianceValues.push(documentCompliance);
+    }
+
     const complianceRate =
-      visitCompliance > 0 || docCompliance > 0
-        ? Math.round((visitCompliance + docCompliance) / (documents.length > 0 && visits.length > 0 ? 2 : 1))
+      complianceValues.length > 0
+        ? Math.round(
+            complianceValues.reduce((total, value) => total + value, 0) /
+              complianceValues.length,
+          )
         : 0;
 
     return {
@@ -311,39 +266,51 @@ export const CROProvider = ({ children }) => {
   }, [visits, documents, comments]);
 
   const sitePerformanceData = useMemo(() => {
-    const siteNames = [...new Set(subjects.map((s) => s.site))];
+    const siteNames = [
+      ...new Set(subjects.map((subject) => subject.site).filter(Boolean)),
+    ];
 
-    return siteNames.map((site, idx) => {
-      const siteSubjects = subjects.filter((s) => s.site === site);
-      const siteVisits = visits.filter((v) => v.site === site);
+    return siteNames.map((site, index) => {
+      const siteSubjects = subjects.filter((subject) => subject.site === site);
+      const siteVisits = visits.filter((visit) => visit.site === site);
+
       const completedVisits = siteVisits.filter(
-        (v) => v.status === "Completed"
+        (visit) => visit.status === "Completed",
       ).length;
-      const enrolled = siteSubjects.filter((s) =>
-        ["Active", "Completed"].includes(s.status)
+
+      const enrolled = siteSubjects.filter((subject) =>
+        ["Active", "Completed"].includes(subject.status),
       ).length;
+
       const withdrawn = siteSubjects.filter(
-        (s) => s.status === "Withdrawn"
+        (subject) => subject.status === "Withdrawn",
       ).length;
+
       const enrollmentPct =
         siteSubjects.length > 0
           ? Math.round((enrolled / siteSubjects.length) * 100)
           : 0;
+
       const screenFailurePct =
         siteSubjects.length > 0
           ? Math.round((withdrawn / siteSubjects.length) * 100)
           : 0;
+
       const compliancePct =
         siteVisits.length > 0
           ? Math.round((completedVisits / siteVisits.length) * 100)
           : 0;
 
       let status = "Good";
-      if (compliancePct >= 95 && enrollmentPct >= 80) status = "Excellent";
-      else if (compliancePct < 75 || enrollmentPct < 60) status = "At Risk";
+
+      if (compliancePct >= 95 && enrollmentPct >= 80) {
+        status = "Excellent";
+      } else if (compliancePct < 75 || enrollmentPct < 60) {
+        status = "At Risk";
+      }
 
       return {
-        id: `SITE-${String(idx + 1).padStart(3, "0")}`,
+        id: `SITE-${String(index + 1).padStart(3, "0")}`,
         site,
         study: siteSubjects[0]?.study || "—",
         enrollment: `${enrollmentPct}%`,
@@ -354,335 +321,176 @@ export const CROProvider = ({ children }) => {
     });
   }, [subjects, visits]);
 
-  const kpis = kpiMetrics;
-
   const upcomingVisits = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
     return [...visits]
-      .filter((v) => v.status !== "Completed")
-      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .filter((visit) => visit.status !== "Completed")
+      .sort(
+        (firstVisit, secondVisit) =>
+          new Date(firstVisit.date) - new Date(secondVisit.date),
+      )
       .slice(0, 8);
   }, [visits]);
 
   const globalSearch = useCallback(
     (query) => {
-      if (!query || query.trim().length < 1) return [];
+      if (!query || query.trim().length < 1) {
+        return [];
+      }
 
-      const q = query.toLowerCase().trim();
+      const normalizedQuery = query.toLowerCase().trim();
       const results = [];
 
-      subjects.forEach((s) => {
+      subjects.forEach((subject) => {
+        const subjectId = String(subject.subjectId || subject.id || "");
+        const site = String(subject.site || "");
+        const study = String(subject.study || subject.studyName || "");
+
         if (
-          s.id.toLowerCase().includes(q) ||
-          s.site.toLowerCase().includes(q) ||
-          s.study.toLowerCase().includes(q)
+          subjectId.toLowerCase().includes(normalizedQuery) ||
+          site.toLowerCase().includes(normalizedQuery) ||
+          study.toLowerCase().includes(normalizedQuery)
         ) {
           results.push({
             type: "Subject",
-            id: s.id,
-            label: s.id,
-            sublabel: `${s.site} · ${s.status}`,
-            route: `/cro-subject/${s.id}`,
-            data: s,
+            id: subjectId,
+            label: subjectId,
+            sublabel: `${site} · ${subject.status || ""}`,
+            route: `/cro-subject/${subjectId}`,
+            data: subject,
           });
         }
       });
 
-      visits.forEach((v) => {
+      visits.forEach((visit) => {
+        const visitId = String(visit.id || "");
+        const site = String(visit.site || "");
+        const visitType = String(visit.visitType || visit.visit || "");
+
         if (
-          v.id.toLowerCase().includes(q) ||
-          v.site.toLowerCase().includes(q) ||
-          v.visitType.toLowerCase().includes(q)
+          visitId.toLowerCase().includes(normalizedQuery) ||
+          site.toLowerCase().includes(normalizedQuery) ||
+          visitType.toLowerCase().includes(normalizedQuery)
         ) {
           results.push({
             type: "Visit",
-            id: v.id,
-            label: v.id,
-            sublabel: `${v.site} · ${v.visitType}`,
+            id: visitId,
+            label: visitId,
+            sublabel: `${site} · ${visitType}`,
             route: "/cro-monitoring",
-            data: v,
+            data: visit,
           });
         }
       });
 
-      documents.forEach((d) => {
+      documents.forEach((document) => {
+        const documentId = String(document.id || "");
+        const name = String(document.name || document.fileName || "");
+        const site = String(document.site || "");
+
         if (
-          d.id.toLowerCase().includes(q) ||
-          d.name.toLowerCase().includes(q) ||
-          d.site.toLowerCase().includes(q)
+          documentId.toLowerCase().includes(normalizedQuery) ||
+          name.toLowerCase().includes(normalizedQuery) ||
+          site.toLowerCase().includes(normalizedQuery)
         ) {
           results.push({
             type: "Regulatory Document",
-            id: d.id,
-            label: d.name,
-            sublabel: `${d.site} · ${d.status}`,
+            id: documentId,
+            label: name,
+            sublabel: `${site} · ${document.status || ""}`,
             route: "/cro-regulatory-documents",
-            data: d,
+            data: document,
           });
         }
       });
 
-      reports.forEach((r) => {
+      reports.forEach((report) => {
+        const reportId = String(report.id || "");
+        const name = String(report.name || report.title || "");
+        const type = String(report.type || "");
+
         if (
-          r.id.toLowerCase().includes(q) ||
-          r.name.toLowerCase().includes(q) ||
-          r.type.toLowerCase().includes(q)
+          reportId.toLowerCase().includes(normalizedQuery) ||
+          name.toLowerCase().includes(normalizedQuery) ||
+          type.toLowerCase().includes(normalizedQuery)
         ) {
           results.push({
             type: "Report",
-            id: r.id,
-            label: r.name,
-            sublabel: r.type,
+            id: reportId,
+            label: name,
+            sublabel: type,
             route: "/cro-reports",
-            data: r,
+            data: report,
           });
         }
       });
 
-      comments.forEach((c) => {
+      comments.forEach((comment) => {
+        const commentId = String(comment.id || "");
+        const message = String(comment.message || comment.comment || "");
+
         if (
-          c.id.toLowerCase().includes(q) ||
-          c.message.toLowerCase().includes(q) ||
-          c.subject.toLowerCase().includes(q)
+          commentId.toLowerCase().includes(normalizedQuery) ||
+          message.toLowerCase().includes(normalizedQuery)
         ) {
           results.push({
             type: "Comment",
-            id: c.id,
-            label: c.id,
-            sublabel: c.message.substring(0, 50),
+            id: commentId,
+            label: commentId,
+            sublabel: message.substring(0, 50),
             route: "/cro-comments",
-            data: c,
+            data: comment,
           });
         }
       });
 
-      files.forEach((f) => {
+      files.forEach((file) => {
+        const fileId = String(file.id || "");
+        const name = String(file.name || file.fileName || "");
+        const category = String(file.category || "");
+
         if (
-          f.id.toLowerCase().includes(q) ||
-          f.name.toLowerCase().includes(q) ||
-          f.category.toLowerCase().includes(q)
+          fileId.toLowerCase().includes(normalizedQuery) ||
+          name.toLowerCase().includes(normalizedQuery) ||
+          category.toLowerCase().includes(normalizedQuery)
         ) {
           results.push({
             type: "File",
-            id: f.id,
-            label: f.name,
-            sublabel: f.category,
+            id: fileId,
+            label: name,
+            sublabel: category,
             route: "/cro-files",
-            data: f,
-          });
-        }
-      });
-
-      visits.forEach((v) => {
-        if (
-          v.cra.toLowerCase().includes(q) &&
-          !results.some((r) => r.id === v.id && r.type === "Visit")
-        ) {
-          results.push({
-            type: "Monitoring Record",
-            id: v.id,
-            label: v.id,
-            sublabel: `CRA: ${v.cra}`,
-            route: "/cro-monitoring",
-            data: v,
+            data: file,
           });
         }
       });
 
       return results.slice(0, 12);
     },
-    [subjects, visits, documents, reports, comments, files]
-  );
-
-  const addSubject = useCallback((subject) => {
-    setSubjects((prev) => [...prev, subject]);
-  }, [setSubjects]);
-
-  const updateSubject = useCallback(
-    (id, updates) => {
-      setSubjects((prev) =>
-        prev.map((s) => (s.id === id ? { ...s, ...updates } : s))
-      );
-    },
-    [setSubjects]
-  );
-
-  const deleteSubject = useCallback(
-    (id) => {
-      setSubjects((prev) => prev.filter((s) => s.id !== id));
-    },
-    [setSubjects]
-  );
-
-  const addVisit = useCallback(
-    (visit) => {
-      setVisits((prev) => [...prev, visit]);
-    },
-    [setVisits]
-  );
-
-  const updateVisit = useCallback(
-    (id, updates) => {
-      setVisits((prev) =>
-        prev.map((v) => (v.id === id ? { ...v, ...updates } : v))
-      );
-    },
-    [setVisits]
-  );
-
-  const deleteVisit = useCallback(
-    (id) => {
-      setVisits((prev) => prev.filter((v) => v.id !== id));
-    },
-    [setVisits]
-  );
-
-  const addDocument = useCallback(
-    (doc) => {
-      setDocuments((prev) => [...prev, doc]);
-    },
-    [setDocuments]
-  );
-
-  const updateDocument = useCallback(
-    (id, updates) => {
-      setDocuments((prev) =>
-        prev.map((d) => (d.id === id ? { ...d, ...updates } : d))
-      );
-    },
-    [setDocuments]
-  );
-
-  const addReport = useCallback(
-    (report) => {
-      setReports((prev) => [
-        ...prev,
-        {
-          id: report.id || `REP-${String(prev.length + 1).padStart(3, "0")}`,
-          status: report.status || "Generated",
-          ...report,
-        },
-      ]);
-    },
-    [setReports]
-  );
-
-  const addComment = useCallback(
-    (comment) => {
-      setComments((prev) => [
-        ...prev,
-        {
-          id: comment.id || `CMT-${String(prev.length + 1).padStart(3, "0")}`,
-          replies: comment.replies || [],
-          date: comment.date || new Date().toISOString().split("T")[0],
-          ...comment,
-        },
-      ]);
-    },
-    [setComments]
-  );
-
-  const replyToComment = useCallback(
-    (commentId, reply) => {
-      setComments((prev) =>
-        prev.map((c) =>
-          c.id === commentId
-            ? { ...c, replies: [...(c.replies || []), reply] }
-            : c
-        )
-      );
-    },
-    [setComments]
-  );
-
-  const markNotificationRead = useCallback(
-    (id) => {
-      setNotifications((prev) =>
-        prev.map((n) =>
-          n.id === id ? { ...n, status: "Read" } : n
-        )
-      );
-    },
-    [setNotifications]
-  );
-
-  const addNotification = useCallback(
-    (notification) => {
-      setNotifications((prev) => [
-        ...prev,
-        {
-          id: notification.id || `NOT-${String(prev.length + 1).padStart(3, "0")}`,
-          date: notification.date || new Date().toISOString().split("T")[0],
-          status: notification.status || "Unread",
-          ...notification,
-        },
-      ]);
-    },
-    [setNotifications]
-  );
-
-  const addFile = useCallback(
-    (file) => {
-      setFiles((prev) => [
-        ...prev,
-        {
-          id: file.id || `FIL-${String(prev.length + 1).padStart(3, "0")}`,
-          uploadedOn: file.uploadedOn || file.date || new Date().toISOString().split("T")[0],
-          size: file.size || "1.0 MB",
-          ...file,
-        },
-      ]);
-    },
-    [setFiles]
-  );
-
-  const deleteFile = useCallback(
-    (id) => {
-      setFiles((prev) => prev.filter((f) => f.id !== id));
-    },
-    [setFiles]
+    [subjects, visits, documents, reports, comments, files],
   );
 
   return (
     <CRODataContext.Provider
       value={{
         isLoading,
+
+        // Read-only shared data
+        studies,
         subjects,
-        setSubjects,
-        addSubject,
-        updateSubject,
-        deleteSubject,
         visits,
-        setVisits,
-        addVisit,
-        updateVisit,
-        deleteVisit,
         documents,
-        setDocuments,
-        addDocument,
-        updateDocument,
         reports,
-        setReports,
-        addReport,
         comments,
-        setComments,
-        addComment,
-        replyToComment,
         notifications,
-        setNotifications,
-        markNotificationRead,
-        addNotification,
         files,
-        setFiles,
-        addFile,
-        deleteFile,
+
         kpiMetrics,
-        kpis,
+        kpis: kpiMetrics,
         sitePerformanceData,
         upcomingVisits,
         globalSearch,
+        addComment,
+
         alertModal,
         modal: alertModal,
         showAlert,
@@ -698,8 +506,10 @@ export const CROProvider = ({ children }) => {
 
 export const useCROData = () => {
   const context = useContext(CRODataContext);
+
   if (!context) {
     throw new Error("useCROData must be used within CROProvider");
   }
+
   return context;
 };

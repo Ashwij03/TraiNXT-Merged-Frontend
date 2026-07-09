@@ -1,1768 +1,1418 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import "./StudyFinancials.css";
-import {
-    payments,
-    receivables,
-    invoiceData,
-    budgetSummary
-} from "./FinancialMockData";
+import { payments, receivables, invoiceData } from "./FinancialMockData";
 
-function StudyFinancials() {
-const [selectedFilter, setSelectedFilter] = useState("All");
-const [showAllData, setShowAllData] = useState(false);
-const [searchTerm, setSearchTerm] = useState("");
-const [showBudgetModal, setShowBudgetModal] = useState(false);
-const [currentPage, setCurrentPage] = useState(1);
-
-const rowsPerPage = 5;
-
-const [budgets, setBudgets] = useState([
-  {
-    id: 1,
-    name: "Initial Study Budget",
-    category: "Clinical Operations",
-    amount: 2500000,
-    startDate: "2026-07-01",
-    endDate: "2027-06-30",
-    status: "Active",
-    description: "Initial approved study budget"
-  }
-]);
-
-const [budgetForm, setBudgetForm] = useState({
+const INITIAL_BUDGET_FORM = {
   name: "",
   category: "",
   amount: "",
   startDate: "",
   endDate: "",
   status: "Active",
-  description: ""
-});
-const [editBudgetId, setEditBudgetId] = useState(null);
+  description: "",
+};
 
-const [isEditingBudget, setIsEditingBudget] = useState(false);
-
-const [showReceivableModal, setShowReceivableModal] = useState(false);
-const [showInvoiceModal, setShowInvoiceModal] = useState(false);
-
-const [isEditingInvoice, setIsEditingInvoice] = useState(false);
-
-const [invoiceForm, setInvoiceForm] = useState({
-    invoiceNo: "",
-    payer: "",
-    amount: "",
-    issueDate: "",
-    dueDate: "",
-    status: "Pending"
-});
-
-const [receivableForm, setReceivableForm] = useState({
-    payer: "",
-    amount: "",
-    dueDate: "",
-    status: "Pending"
-});
-
-const [showDeleteModal, setShowDeleteModal] = useState(false);
-
-const [deleteReason, setDeleteReason] = useState("");
-
-const [deleteType, setDeleteType] = useState("");
-
-const [deleteId, setDeleteId] = useState(null);
-
-const [editReceivableId, setEditReceivableId] = useState(null);
-
-const [isEditingReceivable, setIsEditingReceivable] = useState(false);
-
-const [showPaymentModal, setShowPaymentModal] = useState(false);
-
-const [paymentList, setPaymentList] = useState(payments);
-
-const [receivableList, setReceivableList] = useState(receivables);
-
-const [invoiceList, setInvoiceList] = useState(invoiceData);
-
-const [paymentForm, setPaymentForm] = useState({
+const INITIAL_PAYMENT_FORM = {
   milestone: "",
   amount: "",
   paidOn: "",
   status: "Pending",
-  notes: ""
-});
+  notes: "",
+};
 
-const [editPaymentId, setEditPaymentId] = useState(null);
+const INITIAL_RECEIVABLE_FORM = {
+  payer: "",
+  amount: "",
+  dueDate: "",
+  status: "Pending",
+};
 
-const [isEditingPayment, setIsEditingPayment] = useState(false);
+const INITIAL_INVOICE_FORM = {
+  invoiceNo: "",
+  payer: "",
+  amount: "",
+  issueDate: "",
+  dueDate: "",
+  status: "Pending",
+};
 
-const [sortField, setSortField] = useState("");
-const [sortDirection, setSortDirection] = useState("asc");
+const getStatusClassName = (status) => {
+  const normalizedStatus = String(status || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-");
 
-const filteredPaymentList =
-paymentList
-.filter((payment)=>{
+  const statusMap = {
+    active: "financial-status-active",
+    paid: "financial-status-paid",
+    pending: "financial-status-pending",
+    upcoming: "financial-status-upcoming",
+    received: "financial-status-paid",
+    overdue: "financial-status-pending",
+    draft: "financial-status-upcoming",
+    closed: "financial-status-pending",
+  };
 
-const matchesSearch =
+  return statusMap[normalizedStatus] || "financial-status-upcoming";
+};
 
-payment.milestone
-.toLowerCase()
-.includes(searchTerm.toLowerCase());
+const formatCurrency = (value) =>
+  `$${Number(value || 0).toLocaleString("en-US")}`;
 
-const matchesStatus =
+function StudyFinancials() {
+  const [selectedFilter, setSelectedFilter] = useState("All");
+  const [showAllData, setShowAllData] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortField, setSortField] = useState("");
+  const [sortDirection, setSortDirection] = useState("asc");
 
-selectedFilter==="All"
+  const [budgets, setBudgets] = useState([
+    {
+      id: 1,
+      name: "Initial Study Budget",
+      category: "Clinical Operations",
+      amount: 2500000,
+      startDate: "2026-07-01",
+      endDate: "2027-06-30",
+      status: "Active",
+      description: "Initial approved study budget",
+    },
+  ]);
 
-||
+  const [paymentList, setPaymentList] = useState(payments);
+  const [receivableList, setReceivableList] = useState(receivables);
+  const [invoiceList, setInvoiceList] = useState(invoiceData);
 
-payment.status===selectedFilter;
+  const [showBudgetModal, setShowBudgetModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showReceivableModal, setShowReceivableModal] = useState(false);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-return matchesSearch && matchesStatus;
+  const [budgetForm, setBudgetForm] = useState(INITIAL_BUDGET_FORM);
+  const [paymentForm, setPaymentForm] = useState(INITIAL_PAYMENT_FORM);
+  const [receivableForm, setReceivableForm] = useState(
+    INITIAL_RECEIVABLE_FORM,
+  );
+  const [invoiceForm, setInvoiceForm] = useState(INITIAL_INVOICE_FORM);
 
-});
-const filteredReceivableList =
-  receivableList.filter((receivable) => {
+  const [editBudgetId, setEditBudgetId] = useState(null);
+  const [editPaymentId, setEditPaymentId] = useState(null);
+  const [editReceivableId, setEditReceivableId] = useState(null);
+  const [isEditingInvoice, setIsEditingInvoice] = useState(false);
 
-    const matchesSearch =
-      receivable.payer
+  const [deleteReason, setDeleteReason] = useState("");
+  const [deleteType, setDeleteType] = useState("");
+  const [deleteId, setDeleteId] = useState(null);
+
+  const rowsPerPage = 5;
+
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+
+  const filteredPaymentList = useMemo(() => {
+    return paymentList.filter((payment) => {
+      const matchesSearch = String(payment.milestone || "")
         .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+        .includes(normalizedSearchTerm);
 
-    return matchesSearch;
+      const matchesStatus =
+        selectedFilter === "All" || payment.status === selectedFilter;
 
-  });
+      return matchesSearch && matchesStatus;
+    });
+  }, [paymentList, normalizedSearchTerm, selectedFilter]);
 
-  
-const handleEditBudget = (budget) => {
+  const filteredReceivableList = useMemo(() => {
+    return receivableList.filter((receivable) => {
+      return (
+        String(receivable.payer || "")
+          .toLowerCase()
+          .includes(normalizedSearchTerm) ||
+        String(receivable.status || "")
+          .toLowerCase()
+          .includes(normalizedSearchTerm)
+      );
+    });
+  }, [receivableList, normalizedSearchTerm]);
 
+  const filteredInvoiceList = useMemo(() => {
+    return invoiceList.filter((invoice) => {
+      return (
+        String(invoice.invoiceNo || "")
+          .toLowerCase()
+          .includes(normalizedSearchTerm) ||
+        String(invoice.payer || "")
+          .toLowerCase()
+          .includes(normalizedSearchTerm) ||
+        String(invoice.status || "")
+          .toLowerCase()
+          .includes(normalizedSearchTerm)
+      );
+    });
+  }, [invoiceList, normalizedSearchTerm]);
+
+  const filteredBudgets = useMemo(() => {
+    return budgets.filter((budget) => {
+      return (
+        String(budget.name || "")
+          .toLowerCase()
+          .includes(normalizedSearchTerm) ||
+        String(budget.category || "")
+          .toLowerCase()
+          .includes(normalizedSearchTerm) ||
+        String(budget.status || "")
+          .toLowerCase()
+          .includes(normalizedSearchTerm)
+      );
+    });
+  }, [budgets, normalizedSearchTerm]);
+
+  const sortedBudgets = useMemo(() => {
+    const items = [...filteredBudgets];
+
+    if (!sortField) {
+      return items;
+    }
+
+    return items.sort((firstItem, secondItem) => {
+      const firstValue = firstItem[sortField];
+      const secondValue = secondItem[sortField];
+
+      if (typeof firstValue === "number" && typeof secondValue === "number") {
+        return sortDirection === "asc"
+          ? firstValue - secondValue
+          : secondValue - firstValue;
+      }
+
+      const comparison = String(firstValue || "").localeCompare(
+        String(secondValue || ""),
+      );
+
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
+  }, [filteredBudgets, sortDirection, sortField]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedBudgets.length / rowsPerPage));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const firstIndex = (safeCurrentPage - 1) * rowsPerPage;
+  const currentBudgets = sortedBudgets.slice(
+    firstIndex,
+    firstIndex + rowsPerPage,
+  );
+
+  const totalBudget = useMemo(
+    () => budgets.reduce((sum, item) => sum + Number(item.amount || 0), 0),
+    [budgets],
+  );
+
+  const totalPayments = useMemo(
+    () =>
+      paymentList.reduce((sum, item) => sum + Number(item.amount || 0), 0),
+    [paymentList],
+  );
+
+  const remainingBudget = totalBudget - totalPayments;
+  const utilizedPercentage =
+    totalBudget > 0 ? Math.min((totalPayments / totalBudget) * 100, 100) : 0;
+
+  const resetBudgetModal = () => {
+    setBudgetForm(INITIAL_BUDGET_FORM);
+    setEditBudgetId(null);
+    setShowBudgetModal(false);
+  };
+
+  const resetPaymentModal = () => {
+    setPaymentForm(INITIAL_PAYMENT_FORM);
+    setEditPaymentId(null);
+    setShowPaymentModal(false);
+  };
+
+  const resetReceivableModal = () => {
+    setReceivableForm(INITIAL_RECEIVABLE_FORM);
+    setEditReceivableId(null);
+    setShowReceivableModal(false);
+  };
+
+  const resetInvoiceModal = () => {
+    setInvoiceForm(INITIAL_INVOICE_FORM);
+    setIsEditingInvoice(false);
+    setShowInvoiceModal(false);
+  };
+
+  const openNewBudgetModal = () => {
+    setBudgetForm(INITIAL_BUDGET_FORM);
+    setEditBudgetId(null);
+    setShowBudgetModal(true);
+  };
+
+  const openNewPaymentModal = () => {
+    setPaymentForm(INITIAL_PAYMENT_FORM);
+    setEditPaymentId(null);
+    setShowPaymentModal(true);
+  };
+
+  const openNewReceivableModal = () => {
+    setReceivableForm(INITIAL_RECEIVABLE_FORM);
+    setEditReceivableId(null);
+    setShowReceivableModal(true);
+  };
+
+  const openNewInvoiceModal = () => {
+    setInvoiceForm(INITIAL_INVOICE_FORM);
+    setIsEditingInvoice(false);
+    setShowInvoiceModal(true);
+  };
+
+  const handleEditBudget = (budget) => {
     setBudgetForm({
-        name: budget.name,
-        category: budget.category,
-        amount: budget.amount,
-        startDate: budget.startDate,
-        endDate: budget.endDate,
-        status: budget.status,
-        description: budget.description
+      name: budget.name || "",
+      category: budget.category || "",
+      amount: budget.amount || "",
+      startDate: budget.startDate || "",
+      endDate: budget.endDate || "",
+      status: budget.status || "Active",
+      description: budget.description || "",
     });
 
     setEditBudgetId(budget.id);
-
-    setIsEditingBudget(true);
-
     setShowBudgetModal(true);
-
-};
-const handleSaveBudget = () => {
-
-  if (
-    !budgetForm.name ||
-    !budgetForm.category ||
-    !budgetForm.amount ||
-    !budgetForm.startDate ||
-    !budgetForm.endDate
-  ) {
-    alert("Please fill all required fields.");
-    return;
-  }
-
-  // EDIT EXISTING BUDGET
-  if (isEditingBudget) {
-
-    const updatedBudgets = budgets.map((budget) =>
-      budget.id === editBudgetId
-        ? {
-            ...budget,
-            ...budgetForm,
-            amount: Number(budgetForm.amount)
-          }
-        : budget
-    );
-
-    setBudgets(updatedBudgets);
-
-    setShowBudgetModal(false);
-    setIsEditingBudget(false);
-    setEditBudgetId(null);
-
-    setBudgetForm({
-      name: "",
-      category: "",
-      amount: "",
-      startDate: "",
-      endDate: "",
-      status: "Active",
-      description: ""
-    });
-
-    return;
-  }
-
-  // CREATE NEW BUDGET
-  const newBudget = {
-    id: Date.now(),
-    ...budgetForm,
-    amount: Number(budgetForm.amount)
   };
 
-  setBudgets([...budgets, newBudget]);
-
-  setShowBudgetModal(false);
-
-  setBudgetForm({
-    name: "",
-    category: "",
-    amount: "",
-    startDate: "",
-    endDate: "",
-    status: "Active",
-    description: ""
-  });
-
-};
-const handleDeleteBudget = (id) => {
-
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete this budget?"
-  );
-
-  if (!confirmDelete) return;
-
-  const updatedBudgets = budgets.filter(
-    (budget) => budget.id !== id
-  );
-
-  setBudgets(updatedBudgets);
-
-};
-
-const handleSavePayment = () => {
-
-  if (
-    !paymentForm.milestone ||
-    !paymentForm.amount ||
-    !paymentForm.paidOn
-  ) {
-    alert("Please fill all required fields.");
-    return;
-  }
-  if (isEditingPayment) {
-
-  const updatedPayments = paymentList.map((payment) =>
-
-    payment.id === editPaymentId
-
-      ? {
-          ...payment,
-          milestone: paymentForm.milestone,
-          amount: Number(paymentForm.amount),
-          paidOn: paymentForm.paidOn,
-          status: paymentForm.status,
-          notes: paymentForm.notes
-        }
-
-      : payment
-
-  );
-
-  setPaymentList(updatedPayments);
-
-  setShowPaymentModal(false);
-
-  setIsEditingPayment(false);
-
-  setEditPaymentId(null);
-
-  setPaymentForm({
-    milestone: "",
-    amount: "",
-    paidOn: "",
-    status: "Pending",
-    notes: ""
-  });
-
-  return;
-}
-
-  const newPayment = {
-    id: Date.now(),
-    milestone: paymentForm.milestone,
-    amount: Number(paymentForm.amount),
-    paidOn: paymentForm.paidOn,
-    status: paymentForm.status,
-    notes: paymentForm.notes
-  };
-
-  setPaymentList([...paymentList, newPayment]);
-
-  setShowPaymentModal(false);
-
-  setPaymentForm({
-    milestone: "",
-    amount: "",
-    paidOn: "",
-    status: "Pending",
-    notes: ""
-  });
-
-};
-const handleEditPayment = (payment) => {
-
-  setPaymentForm({
-    milestone: payment.milestone,
-    amount: payment.amount,
-    paidOn: payment.paidOn,
-    status: payment.status,
-    notes: payment.notes || ""
-  });
-
-  setEditPaymentId(payment.id);
-
-  setIsEditingPayment(true);
-
-  setShowPaymentModal(true);
-
-};
-const handleDeletePayment = (id) => {
-
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete this payment?"
-  );
-
-  if (!confirmDelete) return;
-
-  const updatedPayments = paymentList.filter(
-    payment => payment.id !== id
-  );
-
-  setPaymentList(updatedPayments);
-
-};
-const handleSaveReceivable = () => {
-
+  const handleSaveBudget = () => {
     if (
-        !receivableForm.payer ||
-        !receivableForm.amount ||
-        !receivableForm.dueDate
+      !budgetForm.name.trim() ||
+      !budgetForm.category.trim() ||
+      !budgetForm.amount ||
+      !budgetForm.startDate ||
+      !budgetForm.endDate
     ) {
-        alert("Please fill all required fields.");
-        return;
+      alert("Please fill all required budget fields.");
+      return;
     }
 
-    if (isEditingReceivable) {
+    const preparedBudget = {
+      ...budgetForm,
+      name: budgetForm.name.trim(),
+      category: budgetForm.category.trim(),
+      amount: Number(budgetForm.amount),
+    };
 
-        const updatedReceivables = receivableList.map((item) =>
-            item.id === editReceivableId
-                ? {
-                      ...item,
-                      ...receivableForm,
-                      amount: Number(receivableForm.amount)
-                  }
-                : item
-        );
-
-        setReceivableList(updatedReceivables);
-
+    if (editBudgetId !== null) {
+      setBudgets((currentBudgets) =>
+        currentBudgets.map((budget) =>
+          budget.id === editBudgetId
+            ? { ...budget, ...preparedBudget }
+            : budget,
+        ),
+      );
     } else {
-
-        const newReceivable = {
-            id: Date.now(),
-            ...receivableForm,
-            amount: Number(receivableForm.amount)
-        };
-
-        setReceivableList([
-            ...receivableList,
-            newReceivable
-        ]);
-
+      setBudgets((currentBudgets) => [
+        ...currentBudgets,
+        {
+          id: Date.now(),
+          ...preparedBudget,
+        },
+      ]);
     }
 
-    setShowReceivableModal(false);
+    resetBudgetModal();
+  };
 
-    setIsEditingReceivable(false);
-
-    setEditReceivableId(null);
-
-    setReceivableForm({
-        payer: "",
-        amount: "",
-        dueDate: "",
-        status: "Pending"
+  const handleEditPayment = (payment) => {
+    setPaymentForm({
+      milestone: payment.milestone || "",
+      amount: payment.amount || "",
+      paidOn: payment.paidOn || "",
+      status: payment.status || "Pending",
+      notes: payment.notes || "",
     });
 
-};
+    setEditPaymentId(payment.id);
+    setShowPaymentModal(true);
+  };
 
-const handleSaveInvoice = () => {
-
-    if (isEditingInvoice) {
-
-        setInvoiceList(
-            invoiceList.map((invoice) =>
-                invoice.id === invoiceForm.id
-                    ? invoiceForm
-                    : invoice
-            )
-        );
-
-    } else {
-
-        setInvoiceList([
-            ...invoiceList,
-            {
-                ...invoiceForm,
-                id: Date.now()
-            }
-        ]);
-
+  const handleSavePayment = () => {
+    if (
+      !paymentForm.milestone.trim() ||
+      !paymentForm.amount ||
+      !paymentForm.paidOn
+    ) {
+      alert("Please fill all required payment fields.");
+      return;
     }
 
-    setShowInvoiceModal(false);
+    const preparedPayment = {
+      milestone: paymentForm.milestone.trim(),
+      amount: Number(paymentForm.amount),
+      paidOn: paymentForm.paidOn,
+      status: paymentForm.status,
+      notes: paymentForm.notes.trim(),
+    };
 
-    setIsEditingInvoice(false);
+    if (editPaymentId !== null) {
+      setPaymentList((currentPayments) =>
+        currentPayments.map((payment) =>
+          payment.id === editPaymentId
+            ? { ...payment, ...preparedPayment }
+            : payment,
+        ),
+      );
+    } else {
+      setPaymentList((currentPayments) => [
+        ...currentPayments,
+        {
+          id: Date.now(),
+          ...preparedPayment,
+        },
+      ]);
+    }
 
-setInvoiceForm({
-    invoiceNo: "",
-    payer: "",
-    amount: "",
-    issueDate: "",
-    dueDate: "",
-    status: "Pending"
-});
+    resetPaymentModal();
+  };
 
-    setInvoiceForm({
-        invoiceNo: "",
-        payer: "",
-        amount: "",
-        issueDate: "",
-        dueDate: "",
-        status: "Pending"
-    });
-
-};
-const handleEditInvoice = (invoice) => {
-
-    setInvoiceForm(invoice);
-
-    setIsEditingInvoice(true);
-
-    setShowInvoiceModal(true);
-
-};
-const handleDeleteInvoice = (id) => {
-
-    const confirmDelete = window.confirm(
-        "Are you sure you want to delete this invoice?"
-    );
-
-    if (!confirmDelete) return;
-
-    setInvoiceList(
-        invoiceList.filter(
-            (invoice) => invoice.id !== id
-        )
-    );
-
-};
-const handleEditReceivable = (receivable) => {
-
+  const handleEditReceivable = (receivable) => {
     setReceivableForm({
-        payer: receivable.payer,
-        amount: receivable.amount,
-        dueDate: receivable.dueDate,
-        status: receivable.status
+      payer: receivable.payer || "",
+      amount: receivable.amount || "",
+      dueDate: receivable.dueDate || "",
+      status: receivable.status || "Pending",
     });
 
     setEditReceivableId(receivable.id);
-
-    setIsEditingReceivable(true);
-
     setShowReceivableModal(true);
+  };
 
-};
-const handleDeleteReceivable = (id) => {
+  const handleSaveReceivable = () => {
+    if (
+      !receivableForm.payer.trim() ||
+      !receivableForm.amount ||
+      !receivableForm.dueDate
+    ) {
+      alert("Please fill all required receivable fields.");
+      return;
+    }
 
-    const confirmDelete = window.confirm(
-        "Are you sure you want to delete this receivable?"
-    );
+    const preparedReceivable = {
+      payer: receivableForm.payer.trim(),
+      amount: Number(receivableForm.amount),
+      dueDate: receivableForm.dueDate,
+      status: receivableForm.status,
+    };
 
-    if (!confirmDelete) return;
-
-    const updatedReceivables =
-        receivableList.filter(
-            (item) => item.id !== id
-        );
-
-    setReceivableList(updatedReceivables);
-
-};
-
-const filteredBudgets = budgets.filter((budget)=>
-
-budget.name
-.toLowerCase()
-.includes(searchTerm.toLowerCase())
-
-||
-
-budget.category
-.toLowerCase()
-.includes(searchTerm.toLowerCase())
-
-);
-const lastIndex = currentPage * rowsPerPage;
-
-const firstIndex = lastIndex - rowsPerPage;
-
-const currentBudgets = filteredBudgets.slice(
-    firstIndex,
-    lastIndex
-);
-const totalPages = Math.ceil(filteredBudgets.length / rowsPerPage);
-
-const totalBudget = budgets.reduce(
-  (sum, item) => sum + item.amount,
-  0
-);
-
-const totalPayments = paymentList.reduce(
-  (sum, item) => sum + item.amount,
-  0
-);
-
-const remainingBudget = totalBudget - totalPayments;
-
-const exportToCSV = () => {
-
-    let csv = "Budget Name,Category,Amount,Status,Start Date,End Date\n";
-
-      filteredBudgets.forEach((budget) => {
-
-        csv += `${budget.name},${budget.category},${budget.amount},${budget.status},${budget.startDate},${budget.endDate}\n`;
-
-    });
-
-    csv += "\n";
-
-    csv += "Milestone,Amount,Paid On,Status\n";
-
-     filteredPaymentList.forEach((payment) => {
-
-        csv += `${payment.milestone},${payment.amount},${payment.paidOn},${payment.status}\n`;
-
-    });
-
-    const blob = new Blob([csv], { type: "text/csv" });
-
-    const url = window.URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-
-    link.href = url;
-
-    link.download = "StudyFinancials.csv";
-
-    link.click();
-
-};
-const handleSort = (field) => {
-
-    if (sortField === field) {
-        setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    if (editReceivableId !== null) {
+      setReceivableList((currentReceivables) =>
+        currentReceivables.map((receivable) =>
+          receivable.id === editReceivableId
+            ? { ...receivable, ...preparedReceivable }
+            : receivable,
+        ),
+      );
     } else {
-        setSortField(field);
-        setSortDirection("asc");
+      setReceivableList((currentReceivables) => [
+        ...currentReceivables,
+        {
+          id: Date.now(),
+          ...preparedReceivable,
+        },
+      ]);
     }
 
-};
-const sortedBudgets = [...budgets].sort((a, b) => {
+    resetReceivableModal();
+  };
 
-    if (!sortField) return 0;
+  const handleEditInvoice = (invoice) => {
+    setInvoiceForm({
+      id: invoice.id,
+      invoiceNo: invoice.invoiceNo || "",
+      payer: invoice.payer || "",
+      amount: invoice.amount || "",
+      issueDate: invoice.issueDate || "",
+      dueDate: invoice.dueDate || "",
+      status: invoice.status || "Pending",
+    });
 
-    if (a[sortField] < b[sortField])
-        return sortDirection === "asc" ? -1 : 1;
+    setIsEditingInvoice(true);
+    setShowInvoiceModal(true);
+  };
 
-    if (a[sortField] > b[sortField])
-        return sortDirection === "asc" ? 1 : -1;
-
-    return 0;
-
-});
-const confirmDelete = () => {
-
-    if (!deleteReason.trim()) {
-        alert("Please enter the reason for deletion.");
-        return;
+  const handleSaveInvoice = () => {
+    if (
+      !invoiceForm.invoiceNo.trim() ||
+      !invoiceForm.payer.trim() ||
+      !invoiceForm.amount ||
+      !invoiceForm.issueDate ||
+      !invoiceForm.dueDate
+    ) {
+      alert("Please fill all required invoice fields.");
+      return;
     }
 
-    if (deleteType === "budget") {
-        setBudgets(
-            budgets.filter(item => item.id !== deleteId)
-        );
+    const preparedInvoice = {
+      invoiceNo: invoiceForm.invoiceNo.trim(),
+      payer: invoiceForm.payer.trim(),
+      amount: Number(invoiceForm.amount),
+      issueDate: invoiceForm.issueDate,
+      dueDate: invoiceForm.dueDate,
+      status: invoiceForm.status,
+    };
+
+    if (isEditingInvoice) {
+      setInvoiceList((currentInvoices) =>
+        currentInvoices.map((invoice) =>
+          invoice.id === invoiceForm.id
+            ? { ...invoice, ...preparedInvoice }
+            : invoice,
+        ),
+      );
+    } else {
+      setInvoiceList((currentInvoices) => [
+        ...currentInvoices,
+        {
+          id: Date.now(),
+          ...preparedInvoice,
+        },
+      ]);
     }
 
-    if (deleteType === "payment") {
-        setPaymentList(
-            paymentList.filter(item => item.id !== deleteId)
-        );
-    }
+    resetInvoiceModal();
+  };
 
-    if (deleteType === "receivable") {
-        setReceivableList(
-            receivableList.filter(item => item.id !== deleteId)
-        );
-    }
+  const openDeleteModal = (type, id) => {
+    setDeleteType(type);
+    setDeleteId(id);
+    setDeleteReason("");
+    setShowDeleteModal(true);
+  };
 
-    if (deleteType === "invoice") {
-        setInvoiceList(
-            invoiceList.filter(item => item.id !== deleteId)
-        );
-    }
-
+  const closeDeleteModal = () => {
     setDeleteReason("");
     setDeleteId(null);
     setDeleteType("");
     setShowDeleteModal(false);
-};
-    return (
+  };
 
-        <div className="financial-page">
+  const confirmDelete = () => {
+    if (!deleteReason.trim()) {
+      alert("Please enter the reason for deletion.");
+      return;
+    }
 
-            <div className="financial-header">
+    if (deleteType === "budget") {
+      setBudgets((currentBudgets) =>
+        currentBudgets.filter((budget) => budget.id !== deleteId),
+      );
+    }
 
-    <div>
+    if (deleteType === "payment") {
+      setPaymentList((currentPayments) =>
+        currentPayments.filter((payment) => payment.id !== deleteId),
+      );
+    }
 
-        <h2>Study Financials</h2>
+    if (deleteType === "receivable") {
+      setReceivableList((currentReceivables) =>
+        currentReceivables.filter((receivable) => receivable.id !== deleteId),
+      );
+    }
 
-        <p>Manage Study Budgets and Payments</p>
-        <input
-    type="text"
-    placeholder="Search Budget or Payment..."
-    value={searchTerm}
-    onChange={(e)=>{
-    setSearchTerm(e.target.value);
-    setCurrentPage(1);
-}}
-    className="financial-search"
-/>
-    </div>
+    if (deleteType === "invoice") {
+      setInvoiceList((currentInvoices) =>
+        currentInvoices.filter((invoice) => invoice.id !== deleteId),
+      );
+    }
 
-    <div className="financial-filter">
+    closeDeleteModal();
+  };
 
-        <select
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection((currentDirection) =>
+        currentDirection === "asc" ? "desc" : "asc",
+      );
+      return;
+    }
+
+    setSortField(field);
+    setSortDirection("asc");
+  };
+
+  const getSortIndicator = (field) => {
+    if (sortField !== field) {
+      return "";
+    }
+
+    return sortDirection === "asc" ? " ↑" : " ↓";
+  };
+
+  const escapeCsvValue = (value) => {
+    const text = String(value ?? "");
+
+    if (text.includes(",") || text.includes('"') || text.includes("\n")) {
+      return `"${text.replace(/"/g, '""')}"`;
+    }
+
+    return text;
+  };
+
+  const exportToCSV = () => {
+    const rows = [
+      ["Study Budgets"],
+      ["Budget Name", "Category", "Amount", "Status", "Start Date", "End Date"],
+      ...filteredBudgets.map((budget) => [
+        budget.name,
+        budget.category,
+        budget.amount,
+        budget.status,
+        budget.startDate,
+        budget.endDate,
+      ]),
+      [],
+      ["Payments"],
+      ["Milestone", "Amount", "Paid On", "Status", "Notes"],
+      ...filteredPaymentList.map((payment) => [
+        payment.milestone,
+        payment.amount,
+        payment.paidOn,
+        payment.status,
+        payment.notes || "",
+      ]),
+    ];
+
+    const csv = rows
+      .map((row) => row.map(escapeCsvValue).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "study-financials.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="financial-page">
+      <div className="financial-header">
+        <div>
+          <h2>Study Financials</h2>
+          <p>Manage study budgets, payments, receivables, and invoices.</p>
+
+          <input
+            type="search"
+            placeholder="Search budgets, payments, receivables..."
+            value={searchTerm}
+            onChange={(event) => {
+              setSearchTerm(event.target.value);
+              setCurrentPage(1);
+            }}
+            className="financial-search"
+          />
+        </div>
+
+        <div className="financial-filter">
+          <label htmlFor="financial-status-filter">Payment status</label>
+
+          <select
+            id="financial-status-filter"
             value={selectedFilter}
-            onChange={(e)=>setSelectedFilter(e.target.value)}
-        >
-
-            <option>All</option>
-
-            <option>Paid</option>
-
-            <option>Pending</option>
-
-            <option>Upcoming</option>
-
-        </select>
-
-    </div>
-
-</div>
-
-            <div className="financial-cards">
-
-                <div className="financial-card">
-                    <h4>Total Budget</h4>
-                    <h2>${totalBudget.toLocaleString()}</h2>
-                </div>
-
-                <div className="financial-card">
-                    <h4>Budget Utilized</h4>
-                  <h2>
-                   $
-                 {totalBudget.toLocaleString()}
-                   </h2>
-                </div>
-
-                <div className="financial-card">
-                    <h4>Remaining Budget</h4>
-                    <h2>${remainingBudget.toLocaleString()}</h2>
-                </div>
-
-                <div className="financial-card">
-                    <h4>Budget Status</h4>
-                 <span className="status active">
-                 {remainingBudget > 0 ? "Healthy" : "Exceeded"}
-                 </span>
-
-                  <p style={{marginTop:"10px"}}>
-
-                   Budgets Created : {budgets.length}
-
-                   </p>
-                </div>
-
-            </div>
-
-            <div className="financial-actions">
-
-       <button
-  onClick={() => setShowBudgetModal(true)}
->
-  + New Budget
-</button>
-
-<button
-onClick={() => {
-    setShowPaymentModal(true);
-    setIsEditingPayment(false);
-
-    setPaymentForm({
-        milestone: "",
-        amount: "",
-        paidOn: "",
-        status: "Pending",
-        notes: ""
-    });
-}}
->
-
-+ New Payment
-
-</button>
-
-    <button
-onClick={()=>{
-    setShowReceivableModal(true);
-
-    setIsEditingReceivable(false);
-
-    setReceivableForm({
-        payer:"",
-        amount:"",
-        dueDate:"",
-        status:"Pending"
-    });
-}}
->
-    + New Receivable
-</button>
-<button
-    onClick={() => {
-        setShowInvoiceModal(true);
-        setIsEditingInvoice(false);
-
-        setInvoiceForm({
-            invoiceNo: "",
-            payer: "",
-            amount: "",
-            issueDate: "",
-            dueDate: "",
-            status: "Pending"
-        });
-    }}
->
-    + New Invoice
-</button>
-
-<button
-onClick={()=>setShowAllData(!showAllData)}
->
-    {showAllData ? "Hide" : "View All"}
-</button>
-
-<button onClick={exportToCSV}>
-    Export CSV
-</button>
-
-</div>
-
-{showAllData && (
-
-<div className="financial-summary">
-
-<h2>Financial Summary</h2>
-
-<div className="summary-card">
-
-<p>
-Total Budgets : <b>{budgets.length}</b>
-</p>
-
-<p>
-Total Payments : <b>{paymentList.length}</b>
-</p>
-
-<p>
-Budget Utilized :
-<b>
-$
-{budgets
-.reduce((sum,item)=>sum+item.amount,0)
-.toLocaleString()}
-</b>
-</p>
-
-<p>
-Payments Recorded :
-<b>
-$
-{paymentList
-.reduce((sum,item)=>sum+item.amount,0)
-.toLocaleString()}
-</b>
-</p>
-
-</div>
-
-</div>
-
-)}
-
-
-            <div className="budget-list">
-
-             <h3>Study Budgets</h3>
-
-            </div>
-
-            <div className="budget-table">
-
-<table>
-
-<thead>
-
-<tr>
-
-<th onClick={() => handleSort("name")}>
-    Budget Name
-</th>
-
-<th onClick={() => handleSort("category")}>
-    Category
-</th>
-
-<th onClick={() => handleSort("amount")}>
-    Amount
-</th>
-
-<th onClick={() => handleSort("status")}>
-    Status
-</th>
-
-<th onClick={() => handleSort("startDate")}>
-    Start Date
-</th>
-
-<th onClick={() => handleSort("endDate")}>
-    End Date
-</th>
-
-<th>Actions</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-{
-
-sortedBudgets.map((budget) => (
-
-<tr key={budget.id}>
-
-<td>{budget.name}</td>
-
-<td>{budget.category}</td>
-
-<td>
-
-${budget.amount.toLocaleString()}
-
-</td>
-
-<td>
-
-<span className="status active">
-
-{budget.status}
-
-</span>
-
-</td>
-
-<td>
-
-{budget.startDate}
-
-</td>
-
-<td>
-
-{budget.endDate}
-
-</td>
-
-<td>
-
-<button
-onClick={()=>handleEditBudget(budget)}
->
-
-Edit
-
-</button>
-
-<button
-  onClick={() => {
-    setDeleteType("budget");
-    setDeleteId(budget.id);
-    setDeleteReason("");
-    setShowDeleteModal(true);
-  }}
->
-  Delete
-</button>
-
-</td>
-
-</tr>
-
-))
-
-}
-
-</tbody>
-
-</table>
-
-</div>
-<div className="pagination">
-
-<button
-disabled={currentPage===1}
-onClick={()=>
-setCurrentPage(currentPage-1)
-}
->
-Previous
-</button>
-
-<span>
-
-Page {currentPage} of {totalPages}
-
-</span>
-
-<button
-disabled={currentPage===totalPages}
-onClick={()=>
-setCurrentPage(currentPage+1)
-}
->
-Next
-</button>
-
-</div>
-
-            <div className="payment-table">
-
-                <table>
-
-                    <thead>
-
-                        <tr>
-                            <th>Milestone</th>
-                            <th>Amount</th>
-                            <th>Paid On</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-
-                    </thead>
-
-                   <tbody>
-
-{
-filteredPaymentList.length===0 ?
-
-
-<tr>
-
-<td colSpan="4">
-
-No Payments Found
-
-</td>
-
-</tr>
-
-:
-
-filteredPaymentList.map((payment)=>(
-
-<tr key={payment.id}>
-
-<td>{payment.milestone}</td>
-
-<td>
-
-${payment.amount.toLocaleString()}
-
-</td>
-
-<td>{payment.paidOn}</td>
-
-<td>
-
-<span className={`status ${payment.status.toLowerCase()}`}>
-
-{payment.status}
-
-</span>
-
-</td>
-<td>
-
-<button
-className="action-btn edit-btn"
-onClick={() => handleEditPayment(payment)}
->
-Edit
-</button>
-
-<button
-className="action-btn delete-btn"
-onClick={() => {
-    setDeleteType("payment");
-    setDeleteId(payment.id);
-    setDeleteReason("");
-    setShowDeleteModal(true);
-}}
->
-Delete
-</button>
-
-</td>
-
-</tr>
-
-))
-
-}
-
-</tbody>
-
-</table>
-
-</div>
-<div className="receivable-table">
-
-    <h3>Study Receivables</h3>
-
-    <table>
-
-        <thead>
-
-            <tr>
-
-                <th>Payer</th>
-                <th>Amount</th>
-                <th>Due Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-
-            </tr>
-
-        </thead>
-
-        <tbody>
-
-        {
-            filteredReceivableList.map((receivable) => (
-
-                <tr key={receivable.id}>
-
-                    <td>{receivable.payer}</td>
-
-                    <td>
-                        ${receivable.amount.toLocaleString()}
-                    </td>
-
-                    <td>{receivable.dueDate}</td>
-
-                    <td>
-
-                        <span className={`status ${receivable.status.toLowerCase()}`}>
-
-                            {receivable.status}
-
-                        </span>
-
-                    </td>
-
-          <td>
-    <div className="receivable-action-buttons">
-
-        <button
-            className="receivable-edit-btn"
-            onClick={() => handleEditReceivable(receivable)}
-        >
-            Edit
+            onChange={(event) => setSelectedFilter(event.target.value)}
+          >
+            <option value="All">All</option>
+            <option value="Paid">Paid</option>
+            <option value="Pending">Pending</option>
+            <option value="Upcoming">Upcoming</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="financial-cards">
+        <div className="financial-card">
+          <h4>Total Budget</h4>
+          <h2>{formatCurrency(totalBudget)}</h2>
+        </div>
+
+        <div className="financial-card">
+          <h4>Budget Utilized</h4>
+          <h2>{formatCurrency(totalPayments)}</h2>
+          <p>{utilizedPercentage.toFixed(1)}% of total budget</p>
+        </div>
+
+        <div className="financial-card">
+          <h4>Remaining Budget</h4>
+          <h2>{formatCurrency(remainingBudget)}</h2>
+        </div>
+
+        <div className="financial-card">
+          <h4>Budget Status</h4>
+          <span
+            className={`financial-status ${
+              remainingBudget >= 0
+                ? "financial-status-active"
+                : "financial-status-pending"
+            }`}
+          >
+            {remainingBudget >= 0 ? "Healthy" : "Exceeded"}
+          </span>
+          <p>Budgets created: {budgets.length}</p>
+        </div>
+      </div>
+
+      <div className="financial-actions">
+        <button type="button" onClick={openNewBudgetModal}>
+          + New Budget
         </button>
 
-             <button
-             className="receivable-delete-btn"
-             onClick={() => {
-             setDeleteType("receivable");
-             setDeleteId(receivable.id);
-             setDeleteReason("");
-             setShowDeleteModal(true);
-           }}
->
-Delete
-</button>
+        <button type="button" onClick={openNewPaymentModal}>
+          + New Payment
+        </button>
 
-    </div>
-</td>
+        <button type="button" onClick={openNewReceivableModal}>
+          + New Receivable
+        </button>
 
-                </tr>
+        <button type="button" onClick={openNewInvoiceModal}>
+          + New Invoice
+        </button>
 
-            ))
-        }
+        <button
+          type="button"
+          onClick={() => setShowAllData((currentValue) => !currentValue)}
+        >
+          {showAllData ? "Hide Summary" : "View Summary"}
+        </button>
 
-        </tbody>
+        <button type="button" onClick={exportToCSV}>
+          Export CSV
+        </button>
+      </div>
 
-    </table>
+      {showAllData && (
+        <section className="financial-summary">
+          <h2>Financial Summary</h2>
 
-</div>
-<div className="invoice-table">
+          <div className="financial-summary-card">
+            <p>
+              Total Budgets: <b>{budgets.length}</b>
+            </p>
 
-    <h3>Study Invoices</h3>
+            <p>
+              Total Payments: <b>{paymentList.length}</b>
+            </p>
 
-    <table>
+            <p>
+              Budget Utilized: <b>{formatCurrency(totalPayments)}</b>
+            </p>
 
-        <thead>
+            <p>
+              Remaining Budget: <b>{formatCurrency(remainingBudget)}</b>
+            </p>
+          </div>
+        </section>
+      )}
 
+      <section className="budget-list">
+        <h3>Study Budgets</h3>
+      </section>
+
+      <div className="budget-table">
+        <table>
+          <thead>
             <tr>
-
-                <th>Invoice No</th>
-                <th>Payer</th>
-                <th>Amount</th>
-                <th>Issue Date</th>
-                <th>Due Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-
+              <th onClick={() => handleSort("name")}>
+                Budget Name{getSortIndicator("name")}
+              </th>
+              <th onClick={() => handleSort("category")}>
+                Category{getSortIndicator("category")}
+              </th>
+              <th onClick={() => handleSort("amount")}>
+                Amount{getSortIndicator("amount")}
+              </th>
+              <th onClick={() => handleSort("status")}>
+                Status{getSortIndicator("status")}
+              </th>
+              <th onClick={() => handleSort("startDate")}>
+                Start Date{getSortIndicator("startDate")}
+              </th>
+              <th onClick={() => handleSort("endDate")}>
+                End Date{getSortIndicator("endDate")}
+              </th>
+              <th>Actions</th>
             </tr>
-
-        </thead>
-
-        <tbody>
-
-        {
-
-        invoiceList.map((invoice)=>(
-
-        <tr key={invoice.id}>
-
-            <td>{invoice.invoiceNo}</td>
-
-            <td>{invoice.payer}</td>
-
-            <td>${invoice.amount.toLocaleString()}</td>
-
-            <td>{invoice.issueDate}</td>
-
-            <td>{invoice.dueDate}</td>
-
-            <td>
-
-                <span className={`status ${invoice.status.toLowerCase()}`}>
-
-                    {invoice.status}
-
-                </span>
-
-            </td>
-
-            <td>
-
-               <button
-    className="receivable-edit-btn"
-    onClick={() => handleEditInvoice(invoice)}
->
-    Edit
-</button>    
-
-<button
-className="receivable-delete-btn"
-onClick={() => {
-    setDeleteType("invoice");
-    setDeleteId(invoice.id);
-    setDeleteReason("");
-    setShowDeleteModal(true);
-}}
->
-Delete
-</button>
-
-            </td>
-
-        </tr>
-
-        ))
-
-        }
-
-        </tbody>
-
-    </table>
-
-</div>
-
-
-{showBudgetModal && (
-
-<div className="financial-modal-overlay">
-
-<div className="financial-modal">
-
-<h2>
-
-{
-
-isEditingBudget
-
-?
-
-"Edit Study Budget"
-
-:
-
-"New Study Budget"
-
-}
-
-</h2>
-
-<div className="financial-form">
-
-<label className="form-label">
-    Budget Name
-</label>
-
-<input
-    type="text"
-    value={budgetForm.name}
-    onChange={(e) =>
-        setBudgetForm({
-            ...budgetForm,
-            name: e.target.value
-        })
-    }
-/>
-
-<label className="form-label">
-    Budget Category
-</label>
-
-<input
-    value={budgetForm.category}
-    onChange={(e)=>
-        setBudgetForm({
-            ...budgetForm,
-            category:e.target.value
-        })
-    }
-/>
-
-<label className="form-label">
-    Budget Amount
-</label>
-
-<input
-    type="number"
-    value={budgetForm.amount}
-    onChange={(e) =>
-        setBudgetForm({
-            ...budgetForm,
-            amount: e.target.value
-        })
-    }
-/>
-
-<label className="form-label">
-    Start Date
-</label>
-
-<input
-    type="date"
-    value={budgetForm.startDate}
-    onChange={(e) =>
-        setBudgetForm({
-            ...budgetForm,
-            startDate: e.target.value
-        })
-    }
-/>
-
-<label className="form-label">
-    End Date
-</label>
-
-<input
-    type="date"
-    value={budgetForm.endDate}
-    onChange={(e) =>
-        setBudgetForm({
-            ...budgetForm,
-            endDate: e.target.value
-        })
-    }
-/>
-
-<label className="form-label">
-    Budget Status
-</label>
-
-<select
-    value={budgetForm.status}
-    onChange={(e) =>
-        setBudgetForm({
-            ...budgetForm,
-            status: e.target.value
-        })
-    }
->
-    <option value="Active">Active</option>
-    <option value="Draft">Draft</option>
-    <option value="Closed">Closed</option>
-</select>
-
-<label className="form-label">
-    Budget Description
-</label>
-
-<textarea
-    rows="4"
-    value={budgetForm.description}
-    onChange={(e) =>
-        setBudgetForm({
-            ...budgetForm,
-            description: e.target.value
-        })
-    }
-/>
-
-</div>
-
-<div className="financial-modal-actions">
-
-<button
-onClick={()=>setShowBudgetModal(false)}
->
-
-Cancel
-
-</button>
-
-<button
-    onClick={handleSaveBudget}
->
-    {isEditingBudget ? "Update Budget" : "Save Budget"}
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-)}
-
-{/* PAYMENT MODAL */}
-
-{showPaymentModal && (
-
-<div className="modal-overlay">
-
-<div className="modal-content">
-
-<h2>
-{isEditingPayment ? "Edit Payment" : "New Payment"}
-</h2>
-
-<label className="form-label">Milestone</label>
-
-<input
-type="text"
-value={paymentForm.milestone}
-onChange={(e)=>
-setPaymentForm({
-...paymentForm,
-milestone:e.target.value
-})
-}
-/>
-
-<label className="form-label">Amount</label>
-
-<input
-type="number"
-value={paymentForm.amount}
-onChange={(e)=>
-setPaymentForm({
-...paymentForm,
-amount:e.target.value
-})
-}
-/>
-
-<label className="form-label">Payment Date</label>
-
-<input
-type="date"
-value={paymentForm.paidOn}
-onChange={(e)=>
-setPaymentForm({
-...paymentForm,
-paidOn:e.target.value
-})
-}
-/>
-
-<label className="form-label">Payment Status</label>
-
-<select
-value={paymentForm.status}
-onChange={(e)=>
-setPaymentForm({
-...paymentForm,
-status:e.target.value
-})
-}
->
-<option>Paid</option>
-<option>Pending</option>
-<option>Upcoming</option>
-</select>
-
-<label className="form-label">Notes</label>
-
-<textarea
-rows="4"
-value={paymentForm.notes}
-onChange={(e)=>
-setPaymentForm({
-...paymentForm,
-notes:e.target.value
-})
-}
-/>
-
-<div className="modal-actions">
-
-<button
-onClick={()=>setShowPaymentModal(false)}
->
-Cancel
-</button>
-
-<button
-onClick={handleSavePayment}
->
-{isEditingPayment ? "Update Payment" : "Save Payment"}
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-)}
-
-{showReceivableModal && (
-
-<div className="financial-modal-overlay">
-
-<div className="modal-content">
-
-<h2>
-
-{isEditingReceivable ? "Edit Receivable" : "New Receivable"}
-
-</h2>
-
-<div className="modal-form">
-
-<div>
-
-<label className="form-label">
-    Payer
-</label>
-
-<input
-    type="text"
-    value={receivableForm.payer}
-    onChange={(e)=>
-        setReceivableForm({
-            ...receivableForm,
-            payer:e.target.value
-        })
-    }
-/>
-
-<label className="form-label">
-    Amount
-</label>
-
-<input
-    type="number"
-    value={receivableForm.amount}
-    onChange={(e)=>
-        setReceivableForm({
-            ...receivableForm,
-            amount:e.target.value
-        })
-    }
-/>
-
-<label className="form-label">
-    Due Date
-</label>
-
-<input
-    type="date"
-    value={receivableForm.dueDate}
-    onChange={(e)=>
-        setReceivableForm({
-            ...receivableForm,
-            dueDate:e.target.value
-        })
-    }
-/>
-
-<label className="form-label">
-    Receivable Status
-</label>
-
-<select
-    value={receivableForm.status}
-    onChange={(e)=>
-        setReceivableForm({
-            ...receivableForm,
-            status:e.target.value
-        })
-    }
->
-    <option>Pending</option>
-    <option>Received</option>
-    <option>Overdue</option>
-</select>
-</div>
-</div>
-
-<div className="modal-actions">
-
-<button
-onClick={()=>setShowReceivableModal(false)}
->
-Cancel
-</button>
-
-<button
-onClick={handleSaveReceivable}
->
-{isEditingReceivable ? "Update Receivable" : "Save Receivable"}
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-
-)}
-{showInvoiceModal && (
-<div className="modal-overlay">
-  <div className="modal-content">
-
-    <h2>
-      {isEditingInvoice ? "Edit Invoice" : "New Invoice"}
-    </h2>
-
-    <label className="form-label">
-    Invoice Number
-</label>
-
-<input
-    type="text"
-    value={invoiceForm.invoiceNo}
-    onChange={(e)=>
-        setInvoiceForm({
-            ...invoiceForm,
-            invoiceNo:e.target.value
-        })
-    }
-/>
-
-<label className="form-label">
-    Payer
-</label>
-
-<input
-    type="text"
-    value={invoiceForm.payer}
-    onChange={(e)=>
-        setInvoiceForm({
-            ...invoiceForm,
-            payer:e.target.value
-        })
-    }
-/>
-
-<label className="form-label">
-    Amount
-</label>
-
-<input
-    type="number"
-    value={invoiceForm.amount}
-    onChange={(e)=>
-        setInvoiceForm({
-            ...invoiceForm,
-            amount:e.target.value
-        })
-    }
-/>
-
-<label className="form-label">
-    Issue Date
-</label>
-
-<input
-    type="date"
-    value={invoiceForm.issueDate}
-    onChange={(e)=>
-        setInvoiceForm({
-            ...invoiceForm,
-            issueDate:e.target.value
-        })
-    }
-/>
-
-<label className="form-label">
-    Due Date
-</label>
-
-<input
-    type="date"
-    value={invoiceForm.dueDate}
-    onChange={(e)=>
-        setInvoiceForm({
-            ...invoiceForm,
-            dueDate:e.target.value
-        })
-    }
-/>
-
-<label className="form-label">
-    Invoice Status
-</label>
-
-<select
-    value={invoiceForm.status}
-    onChange={(e)=>
-        setInvoiceForm({
-            ...invoiceForm,
-            status:e.target.value
-        })
-    }
->
-    <option>Pending</option>
-    <option>Paid</option>
-    <option>Overdue</option>
-</select>
-
-
-    <div className="modal-actions">
-
-      <button
-        onClick={() => setShowInvoiceModal(false)}
-      >
-        Cancel
-      </button>
-
-      <button
-        onClick={handleSaveInvoice}
-      >
-        {isEditingInvoice
-          ? "Update Invoice"
-          : "Save Invoice"}
-      </button>
-
-    </div>
-
-  </div>
-</div>
-)}
-{showDeleteModal && (
-
-<div className="modal-overlay">
-
-    <div className="modal-content">
-
-        <h2>Delete Confirmation</h2>
-
-        <p>
-            Are you sure you want to delete this {deleteType}?
-        </p>
-
-        <label className="form-label">
-            Reason for Delete *
-        </label>
-
-        <textarea
-            rows="4"
-            value={deleteReason}
-            onChange={(e) =>
-                setDeleteReason(e.target.value)
-            }
-            placeholder="Enter reason..."
-        />
-
-        <div className="modal-actions">
-
-            <button
-                onClick={() =>
-                    setShowDeleteModal(false)
+          </thead>
+
+          <tbody>
+            {currentBudgets.length === 0 ? (
+              <tr>
+                <td colSpan="7">No budgets found.</td>
+              </tr>
+            ) : (
+              currentBudgets.map((budget) => (
+                <tr key={budget.id}>
+                  <td>{budget.name}</td>
+                  <td>{budget.category}</td>
+                  <td>{formatCurrency(budget.amount)}</td>
+                  <td>
+                    <span
+                      className={`financial-status ${getStatusClassName(
+                        budget.status,
+                      )}`}
+                    >
+                      {budget.status}
+                    </span>
+                  </td>
+                  <td>{budget.startDate}</td>
+                  <td>{budget.endDate}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className="financial-action-btn"
+                      onClick={() => handleEditBudget(budget)}
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      className="financial-delete-btn"
+                      onClick={() => openDeleteModal("budget", budget.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="financial-pagination">
+        <button
+          type="button"
+          disabled={safeCurrentPage === 1}
+          onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
+        >
+          Previous
+        </button>
+
+        <span>
+          Page {safeCurrentPage} of {totalPages}
+        </span>
+
+        <button
+          type="button"
+          disabled={safeCurrentPage === totalPages}
+          onClick={() =>
+            setCurrentPage((page) => Math.min(page + 1, totalPages))
+          }
+        >
+          Next
+        </button>
+      </div>
+
+      <section className="payment-table">
+        <h3>Study Payments</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Milestone</th>
+              <th>Amount</th>
+              <th>Paid On</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {filteredPaymentList.length === 0 ? (
+              <tr>
+                <td colSpan="5">No payments found.</td>
+              </tr>
+            ) : (
+              filteredPaymentList.map((payment) => (
+                <tr key={payment.id}>
+                  <td>{payment.milestone}</td>
+                  <td>{formatCurrency(payment.amount)}</td>
+                  <td>{payment.paidOn}</td>
+                  <td>
+                    <span
+                      className={`financial-status ${getStatusClassName(
+                        payment.status,
+                      )}`}
+                    >
+                      {payment.status}
+                    </span>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      className="financial-action-btn"
+                      onClick={() => handleEditPayment(payment)}
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      className="financial-delete-btn"
+                      onClick={() => openDeleteModal("payment", payment.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </section>
+
+      <section className="financial-receivable-table">
+        <h3>Study Receivables</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Payer</th>
+              <th>Amount</th>
+              <th>Due Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {filteredReceivableList.length === 0 ? (
+              <tr>
+                <td colSpan="5">No receivables found.</td>
+              </tr>
+            ) : (
+              filteredReceivableList.map((receivable) => (
+                <tr key={receivable.id}>
+                  <td>{receivable.payer}</td>
+                  <td>{formatCurrency(receivable.amount)}</td>
+                  <td>{receivable.dueDate}</td>
+                  <td>
+                    <span
+                      className={`financial-status ${getStatusClassName(
+                        receivable.status,
+                      )}`}
+                    >
+                      {receivable.status}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="financial-receivable-action-buttons">
+                      <button
+                        type="button"
+                        className="financial-receivable-edit-btn"
+                        onClick={() => handleEditReceivable(receivable)}
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        className="financial-receivable-delete-btn"
+                        onClick={() =>
+                          openDeleteModal("receivable", receivable.id)
+                        }
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </section>
+
+      <section className="financial-receivable-table">
+        <h3>Study Invoices</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Invoice No</th>
+              <th>Payer</th>
+              <th>Amount</th>
+              <th>Issue Date</th>
+              <th>Due Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {filteredInvoiceList.length === 0 ? (
+              <tr>
+                <td colSpan="7">No invoices found.</td>
+              </tr>
+            ) : (
+              filteredInvoiceList.map((invoice) => (
+                <tr key={invoice.id}>
+                  <td>{invoice.invoiceNo}</td>
+                  <td>{invoice.payer}</td>
+                  <td>{formatCurrency(invoice.amount)}</td>
+                  <td>{invoice.issueDate}</td>
+                  <td>{invoice.dueDate}</td>
+                  <td>
+                    <span
+                      className={`financial-status ${getStatusClassName(
+                        invoice.status,
+                      )}`}
+                    >
+                      {invoice.status}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="financial-receivable-action-buttons">
+                      <button
+                        type="button"
+                        className="financial-receivable-edit-btn"
+                        onClick={() => handleEditInvoice(invoice)}
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        className="financial-receivable-delete-btn"
+                        onClick={() => openDeleteModal("invoice", invoice.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </section>
+
+      {showBudgetModal && (
+        <div className="financial-modal-overlay">
+          <div className="financial-modal" role="dialog" aria-modal="true">
+            <h2>
+              {editBudgetId !== null
+                ? "Edit Study Budget"
+                : "New Study Budget"}
+            </h2>
+
+            <div className="financial-form">
+              <label className="financial-form-label">Budget Name</label>
+              <input
+                type="text"
+                value={budgetForm.name}
+                onChange={(event) =>
+                  setBudgetForm((currentForm) => ({
+                    ...currentForm,
+                    name: event.target.value,
+                  }))
                 }
-            >
+              />
+
+              <label className="financial-form-label">Budget Category</label>
+              <input
+                type="text"
+                value={budgetForm.category}
+                onChange={(event) =>
+                  setBudgetForm((currentForm) => ({
+                    ...currentForm,
+                    category: event.target.value,
+                  }))
+                }
+              />
+
+              <label className="financial-form-label">Budget Amount</label>
+              <input
+                type="number"
+                min="0"
+                value={budgetForm.amount}
+                onChange={(event) =>
+                  setBudgetForm((currentForm) => ({
+                    ...currentForm,
+                    amount: event.target.value,
+                  }))
+                }
+              />
+
+              <label className="financial-form-label">Start Date</label>
+              <input
+                type="date"
+                value={budgetForm.startDate}
+                onChange={(event) =>
+                  setBudgetForm((currentForm) => ({
+                    ...currentForm,
+                    startDate: event.target.value,
+                  }))
+                }
+              />
+
+              <label className="financial-form-label">End Date</label>
+              <input
+                type="date"
+                value={budgetForm.endDate}
+                onChange={(event) =>
+                  setBudgetForm((currentForm) => ({
+                    ...currentForm,
+                    endDate: event.target.value,
+                  }))
+                }
+              />
+
+              <label className="financial-form-label">Budget Status</label>
+              <select
+                value={budgetForm.status}
+                onChange={(event) =>
+                  setBudgetForm((currentForm) => ({
+                    ...currentForm,
+                    status: event.target.value,
+                  }))
+                }
+              >
+                <option value="Active">Active</option>
+                <option value="Draft">Draft</option>
+                <option value="Closed">Closed</option>
+              </select>
+
+              <label className="financial-form-label">
+                Budget Description
+              </label>
+              <textarea
+                rows="4"
+                value={budgetForm.description}
+                onChange={(event) =>
+                  setBudgetForm((currentForm) => ({
+                    ...currentForm,
+                    description: event.target.value,
+                  }))
+                }
+              />
+            </div>
+
+            <div className="financial-modal-actions">
+              <button type="button" onClick={resetBudgetModal}>
                 Cancel
-            </button>
+              </button>
 
-            <button
-                className="receivable-delete-btn"
+              <button type="button" onClick={handleSaveBudget}>
+                {editBudgetId !== null ? "Update Budget" : "Save Budget"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPaymentModal && (
+        <div className="financial-modal-overlay">
+          <div className="financial-modal" role="dialog" aria-modal="true">
+            <h2>
+              {editPaymentId !== null ? "Edit Payment" : "New Payment"}
+            </h2>
+
+            <div className="financial-form">
+              <label className="financial-form-label">Milestone</label>
+              <input
+                type="text"
+                value={paymentForm.milestone}
+                onChange={(event) =>
+                  setPaymentForm((currentForm) => ({
+                    ...currentForm,
+                    milestone: event.target.value,
+                  }))
+                }
+              />
+
+              <label className="financial-form-label">Amount</label>
+              <input
+                type="number"
+                min="0"
+                value={paymentForm.amount}
+                onChange={(event) =>
+                  setPaymentForm((currentForm) => ({
+                    ...currentForm,
+                    amount: event.target.value,
+                  }))
+                }
+              />
+
+              <label className="financial-form-label">Payment Date</label>
+              <input
+                type="date"
+                value={paymentForm.paidOn}
+                onChange={(event) =>
+                  setPaymentForm((currentForm) => ({
+                    ...currentForm,
+                    paidOn: event.target.value,
+                  }))
+                }
+              />
+
+              <label className="financial-form-label">Payment Status</label>
+              <select
+                value={paymentForm.status}
+                onChange={(event) =>
+                  setPaymentForm((currentForm) => ({
+                    ...currentForm,
+                    status: event.target.value,
+                  }))
+                }
+              >
+                <option value="Paid">Paid</option>
+                <option value="Pending">Pending</option>
+                <option value="Upcoming">Upcoming</option>
+              </select>
+
+              <label className="financial-form-label">Notes</label>
+              <textarea
+                rows="4"
+                value={paymentForm.notes}
+                onChange={(event) =>
+                  setPaymentForm((currentForm) => ({
+                    ...currentForm,
+                    notes: event.target.value,
+                  }))
+                }
+              />
+            </div>
+
+            <div className="financial-modal-actions">
+              <button type="button" onClick={resetPaymentModal}>
+                Cancel
+              </button>
+
+              <button type="button" onClick={handleSavePayment}>
+                {editPaymentId !== null ? "Update Payment" : "Save Payment"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showReceivableModal && (
+        <div className="financial-modal-overlay">
+          <div className="financial-modal" role="dialog" aria-modal="true">
+            <h2>
+              {editReceivableId !== null
+                ? "Edit Receivable"
+                : "New Receivable"}
+            </h2>
+
+            <div className="financial-form">
+              <label className="financial-form-label">Payer</label>
+              <input
+                type="text"
+                value={receivableForm.payer}
+                onChange={(event) =>
+                  setReceivableForm((currentForm) => ({
+                    ...currentForm,
+                    payer: event.target.value,
+                  }))
+                }
+              />
+
+              <label className="financial-form-label">Amount</label>
+              <input
+                type="number"
+                min="0"
+                value={receivableForm.amount}
+                onChange={(event) =>
+                  setReceivableForm((currentForm) => ({
+                    ...currentForm,
+                    amount: event.target.value,
+                  }))
+                }
+              />
+
+              <label className="financial-form-label">Due Date</label>
+              <input
+                type="date"
+                value={receivableForm.dueDate}
+                onChange={(event) =>
+                  setReceivableForm((currentForm) => ({
+                    ...currentForm,
+                    dueDate: event.target.value,
+                  }))
+                }
+              />
+
+              <label className="financial-form-label">
+                Receivable Status
+              </label>
+              <select
+                value={receivableForm.status}
+                onChange={(event) =>
+                  setReceivableForm((currentForm) => ({
+                    ...currentForm,
+                    status: event.target.value,
+                  }))
+                }
+              >
+                <option value="Pending">Pending</option>
+                <option value="Received">Received</option>
+                <option value="Overdue">Overdue</option>
+              </select>
+            </div>
+
+            <div className="financial-modal-actions">
+              <button type="button" onClick={resetReceivableModal}>
+                Cancel
+              </button>
+
+              <button type="button" onClick={handleSaveReceivable}>
+                {editReceivableId !== null
+                  ? "Update Receivable"
+                  : "Save Receivable"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showInvoiceModal && (
+        <div className="financial-modal-overlay">
+          <div className="financial-modal" role="dialog" aria-modal="true">
+            <h2>{isEditingInvoice ? "Edit Invoice" : "New Invoice"}</h2>
+
+            <div className="financial-form">
+              <label className="financial-form-label">Invoice Number</label>
+              <input
+                type="text"
+                value={invoiceForm.invoiceNo}
+                onChange={(event) =>
+                  setInvoiceForm((currentForm) => ({
+                    ...currentForm,
+                    invoiceNo: event.target.value,
+                  }))
+                }
+              />
+
+              <label className="financial-form-label">Payer</label>
+              <input
+                type="text"
+                value={invoiceForm.payer}
+                onChange={(event) =>
+                  setInvoiceForm((currentForm) => ({
+                    ...currentForm,
+                    payer: event.target.value,
+                  }))
+                }
+              />
+
+              <label className="financial-form-label">Amount</label>
+              <input
+                type="number"
+                min="0"
+                value={invoiceForm.amount}
+                onChange={(event) =>
+                  setInvoiceForm((currentForm) => ({
+                    ...currentForm,
+                    amount: event.target.value,
+                  }))
+                }
+              />
+
+              <label className="financial-form-label">Issue Date</label>
+              <input
+                type="date"
+                value={invoiceForm.issueDate}
+                onChange={(event) =>
+                  setInvoiceForm((currentForm) => ({
+                    ...currentForm,
+                    issueDate: event.target.value,
+                  }))
+                }
+              />
+
+              <label className="financial-form-label">Due Date</label>
+              <input
+                type="date"
+                value={invoiceForm.dueDate}
+                onChange={(event) =>
+                  setInvoiceForm((currentForm) => ({
+                    ...currentForm,
+                    dueDate: event.target.value,
+                  }))
+                }
+              />
+
+              <label className="financial-form-label">Invoice Status</label>
+              <select
+                value={invoiceForm.status}
+                onChange={(event) =>
+                  setInvoiceForm((currentForm) => ({
+                    ...currentForm,
+                    status: event.target.value,
+                  }))
+                }
+              >
+                <option value="Pending">Pending</option>
+                <option value="Paid">Paid</option>
+                <option value="Overdue">Overdue</option>
+              </select>
+            </div>
+
+            <div className="financial-modal-actions">
+              <button type="button" onClick={resetInvoiceModal}>
+                Cancel
+              </button>
+
+              <button type="button" onClick={handleSaveInvoice}>
+                {isEditingInvoice ? "Update Invoice" : "Save Invoice"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && (
+        <div className="financial-modal-overlay">
+          <div className="financial-modal" role="dialog" aria-modal="true">
+            <h2>Delete Confirmation</h2>
+
+            <p>Are you sure you want to delete this {deleteType}?</p>
+
+            <div className="financial-form">
+              <label className="financial-form-label">
+                Reason for Delete *
+              </label>
+
+              <textarea
+                rows="4"
+                value={deleteReason}
+                onChange={(event) => setDeleteReason(event.target.value)}
+                placeholder="Enter reason..."
+              />
+            </div>
+
+            <div className="financial-modal-actions">
+              <button type="button" onClick={closeDeleteModal}>
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="financial-receivable-delete-btn"
                 onClick={confirmDelete}
-            >
+              >
                 Delete
-            </button>
-
+              </button>
+            </div>
+          </div>
         </div>
-
+      )}
     </div>
-
-</div>
-
-)}
-        </div>
-        
-
-    );
-
+  );
 }
-
-
 
 export default StudyFinancials;
