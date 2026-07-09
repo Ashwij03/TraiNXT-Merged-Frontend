@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getStudies } from "../services/studyService";
 import {
@@ -30,7 +30,12 @@ function getAllSubjectsByStudy() {
 
 export function getStudyKey(study) {
   return String(
-    study?.code ?? study?.id ?? study?.studyId ?? study?.title ?? study?.name,
+    study?.code ??
+      study?.id ??
+      study?.studyId ??
+      study?.title ??
+      study?.name ??
+      "",
   );
 }
 
@@ -47,62 +52,68 @@ export function getStudyDisplayName(study) {
 
 export function getStudyMeta(study) {
   const code = study?.code || study?.id || study?.studyId;
-  if (!code) return "";
-  const name = getStudyDisplayName(study);
-  if (name && code !== name) return code;
-  return "";
+
+  if (!code) {
+    return "";
+  }
+
+  return String(code) !== getStudyDisplayName(study) ? String(code) : "";
 }
 
 function getStudySubjects(study) {
   const subjectsByStudy = getAllSubjectsByStudy();
   const studyKey = getStudyKey(study);
   const subjects = subjectsByStudy[studyKey];
+
   return Array.isArray(subjects) ? subjects : [];
+}
+
+function readStudies() {
+  try {
+    const result = getStudies();
+    return Array.isArray(result) ? result : [];
+  } catch {
+    return [];
+  }
 }
 
 export function useRoleStudiesSidebar({ onNavigate } = {}) {
   const navigate = useNavigate();
   const location = useLocation();
   const pathname = location.pathname;
-  const prevActiveStudyKeyRef = useRef(null);
 
-  const [studiesVersion, setStudiesVersion] = useState(0);
-  const [studyBinderOpen, setStudyBinderOpen] = useState(false);
-  const [studiesOpen, setStudiesOpen] = useState(() => {
-    const path = pathname;
-    return (
-      path === "/studies" ||
-      path.startsWith("/study-dashboard") ||
-      path.startsWith("/study/") ||
-      path.includes("/comments") ||
-      path === "/comments"
-    );
-  });
-  const [expandedStudies, setExpandedStudies] = useState({});
-  const [expandedStudySections, setExpandedStudySections] = useState({});
+  const [studies, setStudies] = useState(() => readStudies());
   const [folderTreeVersion, setFolderTreeVersion] = useState(0);
 
-  void studiesVersion;
+  const [studiesOpen, setStudiesOpen] = useState(() => {
+    return (
+      pathname === "/studies" ||
+      pathname.startsWith("/study-dashboard") ||
+      pathname.startsWith("/study/") ||
+      pathname === "/comments" ||
+      pathname.includes("/comments")
+    );
+  });
 
-  const studies = (() => {
-    try {
-      const list = getStudies();
-      return Array.isArray(list) ? list : [];
-    } catch {
-      return [];
-    }
-  })();
+  const [studyBinderOpen, setStudyBinderOpen] = useState(false);
+  const [expandedStudies, setExpandedStudies] = useState({});
+  const [expandedStudySections, setExpandedStudySections] = useState({});
 
   const studyCount = studies.length;
+
   const isStudiesOverviewRoute = pathname === "/studies";
   const isStudyInternalRoute =
     pathname.startsWith("/study-dashboard") || pathname.startsWith("/study/");
   const isCommentsRoute =
-    pathname.includes("/comments") || pathname === "/comments";
-  const isStudiesActive = isStudiesOverviewRoute || isStudyInternalRoute;
+    pathname === "/comments" || pathname.includes("/comments");
+
+  const isStudiesActive =
+    isStudiesOverviewRoute || isStudyInternalRoute || isCommentsRoute;
 
   useEffect(() => {
-    const refreshStudies = () => setStudiesVersion((v) => v + 1);
+    const refreshStudies = () => {
+      setStudies(readStudies());
+    };
 
     window.addEventListener("studies-updated", refreshStudies);
     window.addEventListener("subjects-updated", refreshStudies);
@@ -122,68 +133,42 @@ export function useRoleStudiesSidebar({ onNavigate } = {}) {
   }, []);
 
   useEffect(() => {
-    const handleFolderTreeUpdate = () => {
-      setFolderTreeVersion((value) => value + 1);
+    const refreshFolderTree = () => {
+      setFolderTreeVersion((version) => version + 1);
     };
 
-    window.addEventListener(FOLDER_TREE_EVENT, handleFolderTreeUpdate);
-    return () =>
-      window.removeEventListener(FOLDER_TREE_EVENT, handleFolderTreeUpdate);
+    window.addEventListener(FOLDER_TREE_EVENT, refreshFolderTree);
+
+    return () => {
+      window.removeEventListener(FOLDER_TREE_EVENT, refreshFolderTree);
+    };
   }, []);
 
   useEffect(() => {
-    if (isStudiesOverviewRoute || isStudyInternalRoute || isCommentsRoute) {
-      setStudiesOpen((open) => (open ? open : true));
-      return;
+    if (isStudiesActive) {
+      setStudiesOpen(true);
     }
-    setStudiesOpen((open) => (open ? false : open));
-  }, [isStudiesOverviewRoute, isStudyInternalRoute, isCommentsRoute, pathname]);
-
-  useEffect(() => {
-    if (!isStudyInternalRoute) {
-      prevActiveStudyKeyRef.current = null;
-      return;
-    }
-
-    const studyMatch = pathname.match(/^\/study-dashboard\/([^/?]+)/);
-    const activeStudyKey = studyMatch?.[1];
-    if (!activeStudyKey) return;
-
-    const studyExists = studies.some(
-      (study) => getStudyKey(study) === activeStudyKey,
-    );
-
-    if (!studyExists && studies.length >= 0) {
-      navigate("/studies", { replace: true });
-      return;
-    }
-
-    if (prevActiveStudyKeyRef.current !== activeStudyKey) {
-      setStudyBinderOpen((open) => (open ? open : true));
-      setExpandedStudies((prev) => ({ ...prev, [activeStudyKey]: true }));
-      prevActiveStudyKeyRef.current = activeStudyKey;
-    }
-  }, [pathname, isStudyInternalRoute, studies, navigate]);
+  }, [isStudiesActive]);
 
   const handleNav = (path) => {
     navigate(path);
-    onNavigate?.();
+
+    if (typeof onNavigate === "function") {
+      onNavigate();
+    }
   };
 
   const handleStudiesClick = () => {
-    if (pathname === "/studies" && studiesOpen) {
-      setStudiesOpen(false);
-      return;
-    }
-    setStudiesOpen((open) => (open ? open : true));
+    setStudiesOpen((open) => !open);
+
     if (pathname !== "/studies") {
-      handleNav("/studies");
+      navigate("/studies");
     }
   };
 
   const handleStudyBinderClick = (event) => {
     event?.stopPropagation();
-    setStudyBinderOpen((prev) => !prev);
+    setStudyBinderOpen((open) => !open);
   };
 
   const handleStudiesCommentsClick = (event) => {
@@ -193,25 +178,31 @@ export function useRoleStudiesSidebar({ onNavigate } = {}) {
 
   const toggleStudyNode = (studyKey, event) => {
     event?.stopPropagation();
-    setExpandedStudies((prev) => ({
-      ...prev,
-      [studyKey]: !Boolean(prev[studyKey]),
+
+    setExpandedStudies((previous) => ({
+      ...previous,
+      [studyKey]: !previous[studyKey],
     }));
   };
 
   const toggleStudySection = (studyKey, sectionKey, event) => {
     event?.stopPropagation();
+
     const compositeKey = `${studyKey}__${sectionKey}`;
-    setExpandedStudySections((prev) => ({
-      ...prev,
-      [compositeKey]: !prev[compositeKey],
+
+    setExpandedStudySections((previous) => ({
+      ...previous,
+      [compositeKey]: !previous[compositeKey],
     }));
   };
 
-  const navigateToStudySection = (studyKey, section) => {
-    const study = studies.find((item) => getStudyKey(item) === studyKey);
-    if (study) {
-      localStorage.setItem("selectedStudy", JSON.stringify(study));
+  const navigateToStudySection = (studyKey, sectionKey) => {
+    const selectedStudy = studies.find(
+      (study) => getStudyKey(study) === String(studyKey),
+    );
+
+    if (selectedStudy) {
+      localStorage.setItem("selectedStudy", JSON.stringify(selectedStudy));
     }
 
     const tabMap = {
@@ -228,8 +219,13 @@ export function useRoleStudiesSidebar({ onNavigate } = {}) {
       others: "Others",
     };
 
-    const tab = tabMap[section] || "Overview";
-    handleNav(`/study-dashboard/${studyKey}?tab=${encodeURIComponent(tab)}`);
+    const tab = tabMap[sectionKey] || "Overview";
+
+    handleNav(
+      `/study-dashboard/${encodeURIComponent(
+        studyKey,
+      )}?tab=${encodeURIComponent(tab)}`,
+    );
   };
 
   const handleExpandableSectionLabelClick = (
@@ -239,24 +235,40 @@ export function useRoleStudiesSidebar({ onNavigate } = {}) {
     event,
   ) => {
     event?.stopPropagation();
+
     if (isSectionOpen) {
       toggleStudySection(studyKey, sectionKey, event);
       return;
     }
+
     navigateToStudySection(studyKey, sectionKey);
   };
 
   const handleSubjectClick = (studyKey, subject) => {
-    const subjectId = subject.subjectId || subject.id;
-    localStorage.setItem("selectedStudy", JSON.stringify({ code: studyKey }));
-    handleNav(`/subject/${subjectId}`);
+    const subjectId = subject?.subjectId || subject?.id;
+
+    if (!subjectId) {
+      return;
+    }
+
+    localStorage.setItem(
+      "selectedStudy",
+      JSON.stringify({ code: String(studyKey) }),
+    );
+
+    handleNav(`/subject/${encodeURIComponent(subjectId)}`);
   };
 
   const getSubjectSidebarFolders = (studyKey, subject) => {
     void folderTreeVersion;
-    const subjectId = subject.subjectId || subject.id;
-    const contextKey = `${studyKey}::${subjectId}`;
-    return getFirstLevelFolders("subjects", contextKey);
+
+    const subjectId = subject?.subjectId || subject?.id;
+
+    if (!subjectId) {
+      return [];
+    }
+
+    return getFirstLevelFolders("subjects", `${studyKey}::${subjectId}`);
   };
 
   const getSubjectsForStudy = (study) => getStudySubjects(study);

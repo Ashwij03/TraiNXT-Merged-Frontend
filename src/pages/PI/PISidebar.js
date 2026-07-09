@@ -1,5 +1,4 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
 import {
   FaHome,
   FaBookOpen,
@@ -26,48 +25,40 @@ const ICON_MAP = {
   cog: FaCog,
 };
 
-function PISidebar({
-  selectedPage,
-  setSelectedPage,
-  isOpen = true,
-  onClose,
-}) {
-  const location = useLocation();
+function PISidebar({ selectedPage, setSelectedPage, isOpen = true, onClose }) {
   const menuData = getSidebarMenuData();
-  const {
-    studyCount,
-    studiesOpen,
-    isStudiesActive,
-    handleStudiesClick,
-  } = useRoleStudiesSidebar({ onNavigate: onClose });
+
+  const { studyCount, studiesOpen, isStudiesActive, handleStudiesClick } =
+    useRoleStudiesSidebar({ onNavigate: onClose });
 
   const handleStudiesNav = () => {
-    const isStudiesRoute =
-      location.pathname === "/studies" ||
-      location.pathname.startsWith("/study-dashboard") ||
-      location.pathname.startsWith("/study/");
-
-    if (isStudiesRoute && studiesOpen) {
-      handleStudiesClick();
-      return;
-    }
-
     handleStudiesClick();
-    if (!isStudiesRoute) {
+
+    if (typeof setSelectedPage === "function") {
       setSelectedPage("studies");
     }
   };
 
   const handleMenuClick = (page) => {
-    setSelectedPage(page);
-    if (onClose) onClose();
+    if (typeof setSelectedPage === "function") {
+      setSelectedPage(page);
+    }
+
+    if (typeof onClose === "function") {
+      onClose();
+    }
   };
 
   const getMenuClass = (page) =>
     `menu-item${selectedPage === page ? " active-menu" : ""}`;
 
-  const mainSections = menuData.sections.filter((section) => section.id !== "dashboard");
-  const dashboardSection = menuData.sections.find((section) => section.id === "dashboard");
+  const mainSections = menuData.sections.filter(
+    (section) => section.id !== "dashboard",
+  );
+
+  const dashboardSection = menuData.sections.find(
+    (section) => section.id === "dashboard",
+  );
 
   return (
     <>
@@ -111,6 +102,7 @@ function PISidebar({
 
         {mainSections.map((section) => {
           const Icon = ICON_MAP[section.icon] || FaChartBar;
+
           return (
             <div
               key={section.id}

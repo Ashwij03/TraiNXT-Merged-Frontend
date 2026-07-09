@@ -9,7 +9,6 @@ import {
 import "../../Components/dashboard/DashboardSidebar.css";
 
 function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
-  const sidebar = useRoleStudiesSidebar({ onNavigate });
   const {
     studies,
     studiesOpen,
@@ -28,7 +27,7 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
     getSubjectSidebarFolders,
     getSubjectsForStudy,
     handleNav,
-  } = sidebar;
+  } = useRoleStudiesSidebar({ onNavigate });
 
   if (!studiesOpen) {
     return null;
@@ -47,12 +46,14 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
         >
           {studyBinderOpen ? "−" : "+"}
         </button>
-        <span
-          className="sidebar-tree-label sidebar-tree-label--strong"
+
+        <button
+          type="button"
+          className="sidebar-tree-label sidebar-tree-label--strong sidebar-tree-label-button"
           onClick={handleStudyBinderClick}
         >
           Study Binder
-        </span>
+        </button>
       </div>
 
       {studyBinderOpen && (
@@ -69,7 +70,7 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
               const studyMeta = getStudyMeta(study);
               const studySubjects = getSubjectsForStudy(study);
               const subjectCount = studySubjects.length;
-              const isStudyOpen = !!expandedStudies[studyKey];
+              const isStudyOpen = Boolean(expandedStudies[studyKey]);
 
               return (
                 <div key={studyKey} className="sidebar-tree-study">
@@ -79,25 +80,24 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                       className="sidebar-expander"
                       aria-label={
                         isStudyOpen
-                          ? "Collapse study sections"
-                          : "Expand study sections"
+                          ? `Collapse ${studyName}`
+                          : `Expand ${studyName}`
                       }
                       onClick={(event) => toggleStudyNode(studyKey, event)}
                     >
                       {isStudyOpen ? "−" : "+"}
                     </button>
-                    <div
-                      className="study-label-block"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        navigateToStudySection(studyKey, "overview");
-                      }}
+
+                    <button
+                      type="button"
+                      className="study-label-block study-label-block-button"
+                      onClick={(event) => toggleStudyNode(studyKey, event)}
                     >
                       <span className="study-label-name">{studyName}</span>
                       {studyMeta && (
                         <small className="study-label-meta">{studyMeta}</small>
                       )}
-                    </div>
+                    </button>
                   </div>
 
                   {isStudyOpen && (
@@ -105,8 +105,9 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                       {STUDY_SECTIONS.map((section) => {
                         const sectionKey = section.key;
                         const compositeKey = `${studyKey}__${sectionKey}`;
-                        const isSectionOpen =
-                          !!expandedStudySections[compositeKey];
+                        const isSectionOpen = Boolean(
+                          expandedStudySections[compositeKey],
+                        );
 
                         if (section.expandable) {
                           const displayLabel =
@@ -120,6 +121,11 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                                 <button
                                   type="button"
                                   className="sidebar-expander"
+                                  aria-label={
+                                    isSectionOpen
+                                      ? `Collapse ${displayLabel}`
+                                      : `Expand ${displayLabel}`
+                                  }
                                   onClick={(event) =>
                                     toggleStudySection(
                                       studyKey,
@@ -130,8 +136,10 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                                 >
                                   {isSectionOpen ? "−" : "+"}
                                 </button>
-                                <span
-                                  className="sidebar-tree-label"
+
+                                <button
+                                  type="button"
+                                  className="sidebar-tree-label sidebar-tree-label-button"
                                   onClick={(event) =>
                                     handleExpandableSectionLabelClick(
                                       studyKey,
@@ -142,7 +150,7 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                                   }
                                 >
                                   {displayLabel}
-                                </span>
+                                </button>
                               </div>
 
                               {isSectionOpen && sectionKey === "subjects" && (
@@ -162,6 +170,7 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                                       const subjectKey = String(
                                         subject.subjectId || subject.id,
                                       );
+
                                       const subjectFolders =
                                         getSubjectSidebarFolders(
                                           studyKey,
@@ -173,8 +182,9 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                                           key={`${studyKey}-${subjectKey}`}
                                           className="sidebar-subject-group"
                                         >
-                                          <div
-                                            className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-subject-row"
+                                          <button
+                                            type="button"
+                                            className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-subject-row sidebar-tree-row-button"
                                             onClick={() =>
                                               handleSubjectClick(
                                                 studyKey,
@@ -185,12 +195,14 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                                             <span className="sidebar-tree-label">
                                               {subjectKey}
                                             </span>
-                                          </div>
+                                          </button>
+
                                           <div className="sidebar-subject-folders">
-                                            {subjectFolders?.map((folder) => (
-                                              <div
+                                            {subjectFolders.map((folder) => (
+                                              <button
                                                 key={`${subjectKey}-${folder.id}`}
-                                                className="sidebar-tree-row sidebar-tree-row--folder-leaf"
+                                                type="button"
+                                                className="sidebar-tree-row sidebar-tree-row--folder-leaf sidebar-tree-row-button"
                                                 onClick={() => {
                                                   localStorage.setItem(
                                                     "selectedSubject",
@@ -199,15 +211,22 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                                                       studyId: studyKey,
                                                     }),
                                                   );
+
                                                   handleNav(
-                                                    `/study-dashboard/${studyKey}?tab=Subjects&subject=${subjectKey}&folder=${folder.id}`,
+                                                    `/study-dashboard/${encodeURIComponent(
+                                                      studyKey,
+                                                    )}?tab=Subjects&subject=${encodeURIComponent(
+                                                      subjectKey,
+                                                    )}&folder=${encodeURIComponent(
+                                                      folder.id,
+                                                    )}`,
                                                   );
                                                 }}
                                               >
                                                 <span className="sidebar-tree-label">
                                                   {folder.name}
                                                 </span>
-                                              </div>
+                                              </button>
                                             ))}
                                           </div>
                                         </div>
@@ -219,43 +238,74 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
 
                               {isSectionOpen && sectionKey === "eisf" && (
                                 <div className="sidebar-tree-group sidebar-tree-group--nested">
-                                  {EISFMenuConfig.map((module) => (
-                                    <div key={module.id}>
-                                      <div
-                                        className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-tree-row--expandable"
-                                        onClick={() =>
-                                          setExpandedStudySections((prev) => ({
-                                            ...prev,
-                                            [`${studyKey}-${module.id}`]:
-                                              !prev[`${studyKey}-${module.id}`],
-                                          }))
-                                        }
-                                      >
-                                        <span>
-                                          {module.id} {module.title}
-                                        </span>
-                                      </div>
-                                      {expandedStudySections[
-                                        `${studyKey}-${module.id}`
-                                      ] && (
-                                        <div className="sidebar-tree-group sidebar-tree-group--nested">
-                                          {module.children.map((child) => (
-                                            <div
-                                              key={child.id}
-                                              className="sidebar-tree-row sidebar-tree-row--folder-leaf eisf-module"
-                                              onClick={() =>
-                                                handleNav(child.path)
-                                              }
-                                            >
-                                              <span>
-                                                {child.id} {child.title}
-                                              </span>
-                                            </div>
-                                          ))}
+                                  {EISFMenuConfig.map((module) => {
+                                    const moduleKey = `${studyKey}__eisf__${module.id}`;
+                                    const isModuleOpen = Boolean(
+                                      expandedStudySections[moduleKey],
+                                    );
+
+                                    return (
+                                      <div key={module.id}>
+                                        <div className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-tree-row--expandable">
+                                          <button
+                                            type="button"
+                                            className="sidebar-expander"
+                                            aria-label={
+                                              isModuleOpen
+                                                ? `Collapse ${module.title}`
+                                                : `Expand ${module.title}`
+                                            }
+                                            onClick={() =>
+                                              setExpandedStudySections(
+                                                (previous) => ({
+                                                  ...previous,
+                                                  [moduleKey]:
+                                                    !previous[moduleKey],
+                                                }),
+                                              )
+                                            }
+                                          >
+                                            {isModuleOpen ? "−" : "+"}
+                                          </button>
+
+                                          <button
+                                            type="button"
+                                            className="sidebar-tree-label sidebar-tree-label-button"
+                                            onClick={() =>
+                                              setExpandedStudySections(
+                                                (previous) => ({
+                                                  ...previous,
+                                                  [moduleKey]:
+                                                    !previous[moduleKey],
+                                                }),
+                                              )
+                                            }
+                                          >
+                                            {module.id} {module.title}
+                                          </button>
                                         </div>
-                                      )}
-                                    </div>
-                                  ))}
+
+                                        {isModuleOpen && (
+                                          <div className="sidebar-tree-group sidebar-tree-group--nested">
+                                            {module.children.map((child) => (
+                                              <button
+                                                key={child.id}
+                                                type="button"
+                                                className="sidebar-tree-row sidebar-tree-row--folder-leaf eisf-module sidebar-tree-row-button"
+                                                onClick={() =>
+                                                  handleNav(child.path)
+                                                }
+                                              >
+                                                <span>
+                                                  {child.id} {child.title}
+                                                </span>
+                                              </button>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               )}
                             </div>
@@ -263,9 +313,10 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                         }
 
                         return (
-                          <div
+                          <button
                             key={compositeKey}
-                            className="sidebar-tree-row sidebar-tree-row--section-leaf"
+                            type="button"
+                            className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-tree-row-button"
                             onClick={() =>
                               navigateToStudySection(studyKey, sectionKey)
                             }
@@ -277,7 +328,7 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                             <span className="sidebar-tree-label">
                               {section.label}
                             </span>
-                          </div>
+                          </button>
                         );
                       })}
                     </div>
@@ -289,15 +340,16 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
         </div>
       )}
 
-      <div
-        className={`sidebar-tree-row sidebar-tree-row--comments${
+      <button
+        type="button"
+        className={`sidebar-tree-row sidebar-tree-row--comments sidebar-tree-row-button${
           isCommentsRoute ? " active" : ""
         }`}
         onClick={handleStudiesCommentsClick}
       >
         <span className="sidebar-tree-spacer" aria-hidden="true" />
         <span className="sidebar-tree-label">Comments</span>
-      </div>
+      </button>
     </div>
   );
 }
