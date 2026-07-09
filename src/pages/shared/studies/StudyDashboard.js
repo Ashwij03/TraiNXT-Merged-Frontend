@@ -1,3 +1,6 @@
+// ===== START F2 CHANGES =====
+import StudyActivity from "./StudyActivity";
+// ===== END F2 CHANGES =====
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import DashboardLayout from "../../../Components/dashboard/DashboardLayout";
@@ -760,6 +763,9 @@ function StudyDashboard() {
             />
           )}
         </>
+      )}
+      {activeTab === "Activity" && (
+        <StudyActivity />
       )}
     </DashboardLayout>
   );
