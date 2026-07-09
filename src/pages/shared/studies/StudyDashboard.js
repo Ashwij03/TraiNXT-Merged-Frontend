@@ -27,7 +27,7 @@ import UpcomingVisitsWidget from "../../../Components/dashboard/UpcomingVisitsWi
 import PendingCommentsWidget from "../../../Components/dashboard/PendingCommentsWidget";
 import QuickActionsWidget from "../../../Components/dashboard/QuickActionsWidget";
 import DocumentFolderManager from "../../../Components/common/DocumentFolderManager";
-
+import EISFWorkspace from "../EISF/EISFWorkspace";
 import {
   FiUsers,
   FiClipboard,
@@ -492,19 +492,11 @@ function StudyDashboard() {
         {activeTab === "Reports" && (
           <StudyReports />
         )}
-
         {activeTab === "eISF" && (
-          <div className="module-card">
-            <h2>eISF</h2>
-            <DocumentFolderManager
-              sectionId="eISF"
-              contextKey={id || "default"}
-              title="eISF"
-              studyCode={id}
-              layout="vertical"
-            />
-          </div>
-        )}
+  <EISFWorkspace studyCode={id} />
+)}
+
+        
 {activeTab === "Financials" && (
   <StudyFinancials />
 )}

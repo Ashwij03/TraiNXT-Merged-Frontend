@@ -84,24 +84,38 @@ export function ensureSubjectFolderWithICF(sectionId, contextKey) {
     return null;
   }
 
-  // ICF already exists
-  const icfFolder = root.children?.find(
+  // Create Subject folder if it doesn't exist
+  if (!root.children || root.children.length === 0) {
+    const subjectFolder = {
+      id: createId("folder"),
+      name: "Subject",
+      children: [createICFFolder()]
+    };
+
+    root.children = [subjectFolder];
+    saveFolderTree(sectionId, contextKey, tree);
+
+    return subjectFolder;
+  }
+
+  const subjectFolder = root.children[0];
+
+  // Ensure ICF folder exists inside Subject
+  const hasICF = subjectFolder.children?.some(
     (child) => child.name === ICF_FOLDER_NAME
   );
 
-  if (icfFolder) {
-    return icfFolder;
+  if (!hasICF) {
+    subjectFolder.children = [
+      ...(subjectFolder.children || []),
+      createICFFolder()
+    ];
+
+    saveFolderTree(sectionId, contextKey, tree);
   }
 
-  const newICF = createICFFolder();
-
-  root.children = [...(root.children || []), newICF];
-
-  saveFolderTree(sectionId, contextKey, tree);
-
-  return newICF;
+  return subjectFolder;
 }
-
 function emitTreeUpdate(sectionId, contextKey) {
   window.dispatchEvent(
     new CustomEvent(FOLDER_TREE_EVENT, {
@@ -145,31 +159,6 @@ function cloneTree(tree) {
   return JSON.parse(JSON.stringify(tree));
 }
 
-export function ensureSubjectFolderWithICF(sectionId, contextKey) {
-  const tree = getFolderTree(sectionId, contextKey);
-  const root = tree[0];
-
-  if (!root) {
-    return null;
-  }
-
-  const hasSubjectFolder = root.children?.length > 0;
-
-  if (hasSubjectFolder) {
-    return root.children[0];
-  }
-
-  const subjectFolder = {
-    id: createId("folder"),
-    name: "Subject",
-    children: [createICFFolder()]
-  };
-
-  root.children = [subjectFolder];
-  saveFolderTree(sectionId, contextKey, tree);
-
-  return subjectFolder;
-}
 
 export function getFirstLevelFolders(sectionId, contextKey = "default") {
   const tree = getFolderTree(sectionId, contextKey);

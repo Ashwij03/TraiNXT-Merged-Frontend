@@ -11,6 +11,7 @@
     "emoji-picker-react": "^4.19.1",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
+    "jszip": "^3.10.1",
     "react": "^19.2.0",
     "react-calendar": "^6.0.1",
     "react-dom": "^19.2.0",
