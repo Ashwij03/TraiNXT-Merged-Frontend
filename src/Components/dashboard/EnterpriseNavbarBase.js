@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./DashboardHeader.css";
 import SearchableDropdown from "../common/SearchableDropdown";
@@ -22,6 +22,7 @@ import { getStudyByCode } from "../../services/studyService";
 import ROLES from "../../constants/roles";
 import {
   getCurrentUser,
+  getDashboardPath,
   getEffectiveRole,
   isAdmin,
   ROLE_LABELS,
@@ -69,6 +70,7 @@ import {
   getSubjectOptions,
 } from "../../services/filterService";
 import useLiveChatNavigation from "../../hooks/useLiveChatNavigation";
+
 function EnterpriseNavbarBase({
   onToggleSidebar,
   sidebarOpen,
@@ -78,65 +80,97 @@ function EnterpriseNavbarBase({
   setSelectedPage,
 }) {
   const navigate = useNavigate();
+  const profileSectionRef = useRef(null);
+
   const currentUser = getCurrentUser();
   const userEmail = currentUser?.email || "";
   const { openLiveChat } = useLiveChatNavigation(liveChatPath);
+
   const userIsAdmin = isAdmin(currentUser);
-  const effectiveRole = getEffectiveRole(currentUser) || ROLES.ADMIN;
+  const effectiveRole =
+    getEffectiveRole(currentUser) || layoutRole || ROLES.ADMIN;
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filterVersion, setFilterVersion] = useState(0);
+
   const { notifications, unreadCount, handleToggleRead, handleMarkAllRead } =
     useAdminNavbarNotifications();
+
   const [previewRole, setPreviewRoleState] = useState(
-    () => effectiveRole || ROLES.ADMIN,
+    () => effectiveRole || ROLES.ADMIN
   );
 
-  // Per-user profile photo only — never fall back to a flat, unscoped
-  // "profilePhoto" localStorage key, since that key is shared across every
-  // account and causes one user's photo to leak into every other user's
-  // header avatar. syncProfilePhoto() in roleService writes the photo onto
-  // currentUser.profilePhoto (scoped per user id/email), so that's the only
-  // source of truth here.
   const [profilePhoto, setProfilePhoto] = useState(
-    currentUser?.profilePhoto || "",
+    currentUser?.profilePhoto || ""
   );
 
   const [selectedIndication, setSelectedIndication] = useState(
-    getStoredIndicationFilter,
+    getStoredIndicationFilter
   );
+
   const [selectedSponsor, setSelectedSponsor] = useState(
-    getStoredSponsorFilter,
+    getStoredSponsorFilter
   );
+
   const [selectedCRO, setSelectedCRO] = useState(getStoredCROFilter);
+
   const [selectedInstitution, setSelectedInstitution] = useState(
-    () => getStoredInstitutionFilter() || getDefaultInstitution(currentUser),
+    () => getStoredInstitutionFilter() || getDefaultInstitution(currentUser)
   );
+
   const [selectedSiteNumber, setSelectedSiteNumber] = useState(
-    getStoredSiteNumberFilter,
+    getStoredSiteNumberFilter
   );
-  const [selectedStudyCode, setSelectedStudyCode] =
-    useState(getStoredStudyFilter);
+
+  const [selectedStudyCode, setSelectedStudyCode] = useState(
+    getStoredStudyFilter
+  );
+
   const [selectedSubject, setSelectedSubject] = useState(
-    getStoredSubjectFilter,
+    getStoredSubjectFilter
   );
 
   const indicationOptions = useMemo(() => {
     void filterVersion;
     return getIndicationOptions(currentUser);
   }, [filterVersion, currentUser]);
+
   const sponsorOptions = useMemo(() => {
     void filterVersion;
     return getSponsorOptions(currentUser);
   }, [filterVersion, currentUser]);
+
   const croOptions = useMemo(() => {
     void filterVersion;
+
     if (effectiveRole === ROLES.SPONSOR) {
       return getRecruitedCROOptions(currentUser);
     }
+
     return getCROOptions(currentUser);
   }, [effectiveRole, filterVersion, currentUser]);
+
+  const institutionOptions = useMemo(() => {
+    void filterVersion;
+    return getInstitutionOptions(currentUser);
+  }, [filterVersion, currentUser]);
+
+  const siteNumberOptions = useMemo(() => {
+    void filterVersion;
+    return getSiteNumberOptions(currentUser);
+  }, [filterVersion, currentUser]);
+
+  const studyOptions = useMemo(() => {
+    void filterVersion;
+    return getStudyOptions(currentUser);
+  }, [filterVersion, currentUser]);
+
+  const subjectOptions = useMemo(() => {
+    void filterVersion;
+    return getSubjectOptions(currentUser);
+  }, [filterVersion, currentUser]);
+
   const filterOrder = useMemo(() => {
     let base;
 
@@ -157,22 +191,6 @@ function EnterpriseNavbarBase({
 
     return base;
   }, [userIsAdmin, effectiveRole, croOptions.length]);
-  const institutionOptions = useMemo(() => {
-    void filterVersion;
-    return getInstitutionOptions(currentUser);
-  }, [filterVersion, currentUser]);
-  const siteNumberOptions = useMemo(() => {
-    void filterVersion;
-    return getSiteNumberOptions(currentUser);
-  }, [filterVersion, currentUser]);
-  const studyOptions = useMemo(() => {
-    void filterVersion;
-    return getStudyOptions(currentUser);
-  }, [filterVersion, currentUser]);
-  const subjectOptions = useMemo(() => {
-    void filterVersion;
-    return getSubjectOptions(currentUser);
-  }, [filterVersion, currentUser]);
 
   useEffect(() => {
     touchUserSession(getCurrentUser());
@@ -205,21 +223,56 @@ function EnterpriseNavbarBase({
 
   useEffect(() => {
     const handlePreviewRoleChange = () => {
-      setPreviewRoleState((current) => {
-        const next = getEffectiveRole(getCurrentUser()) || ROLES.ADMIN;
-        return current === next ? current : next;
-      });
+      setPreviewRoleState(
+        getEffectiveRole(getCurrentUser()) || ROLES.ADMIN
+      );
     };
 
-    window.addEventListener(ADMIN_PREVIEW_ROLE_EVENT, handlePreviewRoleChange);
+    window.addEventListener(
+      ADMIN_PREVIEW_ROLE_EVENT,
+      handlePreviewRoleChange
+    );
 
     return () => {
       window.removeEventListener(
         ADMIN_PREVIEW_ROLE_EVENT,
-        handlePreviewRoleChange,
+        handlePreviewRoleChange
       );
     };
   }, [userEmail]);
+
+  useEffect(() => {
+    const handleOutsideProfileClick = (event) => {
+      if (
+        profileOpen &&
+        profileSectionRef.current &&
+        !profileSectionRef.current.contains(event.target)
+      ) {
+        setProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideProfileClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideProfileClick);
+    };
+  }, [profileOpen]);
+
+  useEffect(() => {
+    const handleEscapeKey = (event) => {
+      if (event.key === "Escape") {
+        setProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleEscapeKey);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscapeKey);
+    };
+  }, []);
+
   const handleLogout = () => {
     terminateCurrentSession();
 
@@ -229,30 +282,46 @@ function EnterpriseNavbarBase({
 
     setAdminPreviewRole(null);
 
+    setProfileOpen(false);
     navigate("/login");
   };
+
+  const handleHomeNavigation = () => {
+    setProfileOpen(false);
+    setFiltersOpen(false);
+
+    const currentRole =
+      getEffectiveRole(getCurrentUser()) || layoutRole || ROLES.ADMIN;
+
+    const dashboardPath = getDashboardPath(currentRole);
+
+    if (typeof setSelectedPage === "function") {
+      setSelectedPage("dashboard");
+    }
+
+    navigate(dashboardPath);
+  };
+
   const navigateToSettingsSection = (section) => {
     const role = getEffectiveRole(getCurrentUser());
 
     let path = "/settings";
 
-    switch (role) {
-      case ROLES.CRO:
-        path = "/cro-settings";
-        break;
-      case ROLES.PI:
-        path = "/pi-settings";
-        break;
-      default:
-        path = "/settings";
+    if (role === ROLES.CRO) {
+      path = "/cro-settings";
     }
+
+    if (role === ROLES.PI) {
+      path = "/pi-settings";
+    }
+
+    setProfileOpen(false);
 
     navigate(path, {
       state: { section },
     });
-
-    setProfileOpen(false);
   };
+
   const openStudy = (study) => {
     if (!study) {
       return;
@@ -321,6 +390,7 @@ function EnterpriseNavbarBase({
         return (
           <div className="header-role-control">
             <RoleSwitcherDropdown />
+
             {userIsAdmin && previewRole !== ROLES.ADMIN && (
               <span className="header-preview-indicator">
                 Viewing: {ROLE_LABELS[previewRole] || previewRole}
@@ -328,6 +398,7 @@ function EnterpriseNavbarBase({
             )}
           </div>
         );
+
       case "indication":
         return (
           <SearchableDropdown
@@ -344,6 +415,7 @@ function EnterpriseNavbarBase({
             className="header-dropdown"
           />
         );
+
       case "sponsor":
         return (
           <SearchableDropdown
@@ -351,12 +423,16 @@ function EnterpriseNavbarBase({
             onChange={(value) =>
               updateFilter("sponsor", value, setSelectedSponsor)
             }
-            options={[{ value: "", label: "All Sponsors" }, ...sponsorOptions]}
+            options={[
+              { value: "", label: "All Sponsors" },
+              ...sponsorOptions,
+            ]}
             placeholder="All Sponsors"
             searchPlaceholder="Search Sponsor"
             className="header-dropdown"
           />
         );
+
       case "cro":
         if (effectiveRole === ROLES.SPONSOR && croOptions.length === 0) {
           return (
@@ -369,13 +445,19 @@ function EnterpriseNavbarBase({
         return (
           <SearchableDropdown
             value={selectedCRO}
-            onChange={(value) => updateFilter("cro", value, setSelectedCRO)}
-            options={[{ value: "", label: "All CROs" }, ...croOptions]}
+            onChange={(value) =>
+              updateFilter("cro", value, setSelectedCRO)
+            }
+            options={[
+              { value: "", label: "All CROs" },
+              ...croOptions,
+            ]}
             placeholder="All CROs"
             searchPlaceholder="Search CRO"
             className="header-dropdown"
           />
         );
+
       case "study":
         return (
           <SearchableDropdown
@@ -387,6 +469,7 @@ function EnterpriseNavbarBase({
             className="header-dropdown"
           />
         );
+
       case "siteName":
         return (
           <SearchableDropdown
@@ -400,6 +483,7 @@ function EnterpriseNavbarBase({
             className="header-dropdown"
           />
         );
+
       case "siteNumber":
         return (
           <SearchableDropdown
@@ -413,6 +497,7 @@ function EnterpriseNavbarBase({
             className="header-dropdown"
           />
         );
+
       case "subject":
         return (
           <SearchableDropdown
@@ -424,6 +509,7 @@ function EnterpriseNavbarBase({
             className="header-dropdown"
           />
         );
+
       default:
         return null;
     }
@@ -432,6 +518,7 @@ function EnterpriseNavbarBase({
   const badgeRole = userIsAdmin ? ROLES.ADMIN : currentUser?.role;
   const badgeLabel = ROLE_LABELS[badgeRole] || badgeRole || "User";
   const badgeClass = ROLE_BADGE_CLASSES[badgeRole] || "role-badge--default";
+
   const profileRoleLabel = userIsAdmin
     ? ROLE_LABELS[ROLES.ADMIN]
     : ROLE_LABELS[currentUser?.role] || currentUser?.role || "User";
@@ -460,7 +547,7 @@ function EnterpriseNavbarBase({
         <button
           type="button"
           className="header-filter-toggle"
-          onClick={() => setFiltersOpen((prev) => !prev)}
+          onClick={() => setFiltersOpen((previousValue) => !previousValue)}
           aria-label="Toggle filters"
           aria-expanded={filtersOpen}
         >
@@ -474,6 +561,7 @@ function EnterpriseNavbarBase({
               <div className="header-filter-heading">
                 {FILTER_LABELS[filterKey] || filterKey}
               </div>
+
               <div className="header-filter-control">
                 {renderFilterControl(filterKey)}
               </div>
@@ -486,10 +574,7 @@ function EnterpriseNavbarBase({
             <button
               type="button"
               className="header-action-btn header-action-btn--outline"
-              onClick={() => {
-                console.log("HOME CLICKED");
-                setSelectedPage("dashboard");
-              }}
+              onClick={handleHomeNavigation}
             >
               <FiHome />
               <span>Home</span>
@@ -524,38 +609,66 @@ function EnterpriseNavbarBase({
           </div>
 
           <div
+            ref={profileSectionRef}
             className="profile-section"
-            onClick={() => setProfileOpen((prev) => !prev)}
+            onClick={() => setProfileOpen((previousValue) => !previousValue)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setProfileOpen((previousValue) => !previousValue);
+              }
+            }}
           >
             <div className="profile-avatar">
               {profilePhoto ? (
-                <img src={profilePhoto} alt="" className="profile-avatar-img" />
+                <img
+                  src={profilePhoto}
+                  alt=""
+                  className="profile-avatar-img"
+                />
               ) : (
                 currentUser?.name?.charAt(0)?.toUpperCase()
               )}
             </div>
 
             <div>
-              <div className="profile-name">{currentUser?.name}</div>
+              <div className="profile-name">{currentUser?.name || "User"}</div>
               <div className="profile-role">{profileRoleLabel}</div>
             </div>
 
-            <span>
-              <FiChevronDown />
-            </span>
+            <FiChevronDown />
 
             {profileOpen && (
-              <div className="profile-dropdown">
-                <div onClick={() => navigateToSettingsSection("profile")}>
+              <div
+                className="profile-dropdown"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  onClick={() => navigateToSettingsSection("profile")}
+                >
                   Profile
-                </div>
-                <div onClick={() => navigateToSettingsSection("account")}>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => navigateToSettingsSection("account")}
+                >
                   Account Settings
-                </div>
-                <div onClick={() => navigateToSettingsSection("security")}>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => navigateToSettingsSection("security")}
+                >
                   Security
-                </div>
-                <div onClick={handleLogout}>Logout</div>
+                </button>
+
+                <button type="button" onClick={handleLogout}>
+                  Logout
+                </button>
               </div>
             )}
           </div>

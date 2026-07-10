@@ -6,6 +6,7 @@ import "./SponsorShared.css";
 import StudyFinancials from "./Financials/StudyFinancials";
 import { getPortfolioStudies, getRisks } from "./data/sponsorDataStore";
 
+
 function StudyWorkspace() {
   const { id } = useParams();
   const navigate = useNavigate();

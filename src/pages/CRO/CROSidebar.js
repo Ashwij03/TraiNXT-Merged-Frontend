@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   FaTachometerAlt,
   FaBook,
@@ -21,10 +21,22 @@ import "./CRODashboard.css";
 
 const MAIN_ITEMS = [
   { to: "/cro-dashboard", icon: FaTachometerAlt, label: "Dashboard" },
-  { to: "/cro-subject-management", icon: FaUserFriends, label: "Subject Management" },
+  {
+    to: "/cro-subject-management",
+    icon: FaUserFriends,
+    label: "Subject Management",
+  },
   { to: "/cro-monitoring", icon: FaTasks, label: "Monitoring" },
-  { to: "/cro-regulatory-documents", icon: FaShieldAlt, label: "Regulatory Docs" },
-  { to: "/cro-site-performance", icon: FaChartLine, label: "Site Performance" },
+  {
+    to: "/cro-regulatory-documents",
+    icon: FaShieldAlt,
+    label: "Regulatory Docs",
+  },
+  {
+    to: "/cro-site-performance",
+    icon: FaChartLine,
+    label: "Site Performance",
+  },
   { to: "/cro-reports", icon: FaFileAlt, label: "Reports" },
   { to: "/cro-notifications", icon: FaBell, label: "Notifications" },
   { to: "/cro-settings", icon: FaCog, label: "Settings" },
@@ -43,6 +55,7 @@ function SidebarItem({ to, icon: Icon, label, onNavigate }) {
         <span className="cro-sidebar-icon">
           <Icon />
         </span>
+
         <span className="cro-sidebar-label">{label}</span>
       </NavLink>
     </li>
@@ -51,7 +64,7 @@ function SidebarItem({ to, icon: Icon, label, onNavigate }) {
 
 function CROSidebar({ isOpen = false, collapsed = false, onClose }) {
   const navigate = useNavigate();
-  const location = useLocation();
+
   const {
     studyCount,
     studiesOpen,
@@ -60,30 +73,21 @@ function CROSidebar({ isOpen = false, collapsed = false, onClose }) {
     handleStudiesClick,
   } = useRoleStudiesSidebar({ onNavigate: onClose });
 
-  const isStudiesRoute =
-    location.pathname === "/studies" ||
-    location.pathname.startsWith("/study-dashboard") ||
-    location.pathname.startsWith("/study/") ||
-    location.pathname.startsWith("/comments");
-
   const handleNavigate = () => {
-    if (onClose) onClose();
+    if (typeof onClose === "function") {
+      onClose();
+    }
   };
 
   const handleStudiesToggle = () => {
-    if (!isStudiesRoute) {
-      handleStudiesClick();
-      handleNavigate();
-      return;
-    }
     handleStudiesClick();
   };
 
   return (
     <aside
       className={`cro-sidebar cro-sidebar-aligned
-    ${isOpen ? " open" : ""}
-    ${collapsed ? " collapsed" : ""}`}
+        ${isOpen ? " open" : ""}
+        ${collapsed ? " collapsed" : ""}`}
     >
       {!collapsed && (
         <div className="cro-sidebar-top">
@@ -97,7 +101,11 @@ function CROSidebar({ isOpen = false, collapsed = false, onClose }) {
             <TriaNXTLogo size="sidebar" />
           </div>
 
-          <button type="button" className="cro-sidebar-close" onClick={onClose}>
+          <button
+            type="button"
+            className="cro-sidebar-close"
+            onClick={onClose}
+          >
             <FaTimes />
           </button>
         </div>
@@ -122,7 +130,9 @@ function CROSidebar({ isOpen = false, collapsed = false, onClose }) {
             <span className="cro-sidebar-icon">
               <FaBook />
             </span>
+
             <span className="cro-sidebar-label">Studies ({studyCount})</span>
+
             <span className="cro-sidebar-chevron">
               {studiesOpen ? <FaChevronDown /> : <FaChevronRight />}
             </span>
