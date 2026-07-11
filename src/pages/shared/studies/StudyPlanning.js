@@ -52,6 +52,7 @@ function StudyPlanning() {
           <RequestPermissionButton
             action="Edit Planning"
             module="Study Planning"
+            studyCode={studyCode}
             label="Request Edit Permission"
           />
         )}

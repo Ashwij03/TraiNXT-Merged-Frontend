@@ -3,18 +3,40 @@ import { getComments, saveComments } from "./adminService";
 import {
   getCurrentUser,
   getEffectiveRole,
-  hasPermission
+  hasPermission,
+  getAccessibleStudies
 } from "./roleService";
 import PERMISSIONS from "../constants/permissions";
+import { notifyCommentAdded } from "./notificationService";
 
+// Two different features share this one comment store:
+// 1. Document/subject-level QC comments (DocumentFolderManager, StudyComments)
+//    — these carry a documentId/subjectId and, for Sponsor, stay hidden
+//    until the document/study reaches a final stage. This is pre-existing
+//    behavior and is preserved as-is.
+// 2. Top-level per-study Comments (RoleCommentsView, used by the Sponsor
+//    and Admin "Comments" tab) — these never carry a documentId/subjectId
+//    and must be visible to every permitted role immediately, scoped only
+//    by study (B7). They were incorrectly falling through to the same
+//    Sponsor stage-gate below, which hid a Sponsor's own comment from
+//    them and from every other role right after posting it.
 const FINAL_STAGES = ["Final", "Closeout", "Completed"];
+const RESTRICTED_ROLES = [ROLES.CRO, ROLES.SPONSOR];
+
+function isDocumentScopedComment(comment) {
+  return Boolean(comment.documentId || comment.subjectId);
+}
+
+function accessibleStudyCodeSet(user) {
+  return new Set(
+    getAccessibleStudies(user)
+      .map((study) => String(study?.code || ""))
+      .filter(Boolean)
+  );
+}
 
 export function canWriteComments(user = getCurrentUser()) {
-  const role = getEffectiveRole(user);
-  return (
-    hasPermission(PERMISSIONS.CREATE_COMMENT, user) ||
-    [ROLES.SITE_STAFF, ROLES.PI, ROLES.CRO].includes(role)
-  );
+  return hasPermission(PERMISSIONS.CREATE_COMMENT, user);
 }
 
 export function canResolveComments(user = getCurrentUser()) {
@@ -25,15 +47,33 @@ export function canResolveComments(user = getCurrentUser()) {
   );
 }
 
+// CRO/Sponsor may only ever post a top-level comment — they can never
+// reply to an existing one.
+export function canReplyToComments(user = getCurrentUser()) {
+  const role = getEffectiveRole(user);
+  return !RESTRICTED_ROLES.includes(role);
+}
+
 export function canViewComment(comment, user = getCurrentUser(), studyStage) {
+  if (!hasPermission(PERMISSIONS.VIEW_COMMENTS, user)) {
+    return false;
+  }
+
   const role = getEffectiveRole(user);
 
-  if (role === ROLES.SPONSOR) {
+  if (role === ROLES.SPONSOR && isDocumentScopedComment(comment)) {
     const stage = comment.stage || studyStage || "";
     return FINAL_STAGES.includes(stage);
   }
 
-  return hasPermission(PERMISSIONS.VIEW_COMMENTS, user);
+  // CRO/Sponsor must never see comments from a study they don't have
+  // access to (applies to both document-scoped and top-level comments).
+  if (RESTRICTED_ROLES.includes(role)) {
+    const studyCode = String(comment.study || comment.studyCode || "");
+    return studyCode ? accessibleStudyCodeSet(user).has(studyCode) : false;
+  }
+
+  return true;
 }
 
 export function getVisibleComments(options = {}, user = getCurrentUser()) {
@@ -65,19 +105,35 @@ export function getVisibleComments(options = {}, user = getCurrentUser()) {
   );
 }
 
+function notifyCommentsUpdated() {
+  window.dispatchEvent(new Event("comments-updated"));
+  window.dispatchEvent(new Event("sponsor-data-updated"));
+  // "notifications-updated" is dispatched separately, only when
+  // notifyCommentAdded below actually creates a notification record
+  // (see B10) — never fired unconditionally from here.
+}
+
 export function addCommentRecord(payload, user = getCurrentUser()) {
   if (!canWriteComments(user)) {
     return null;
   }
 
+  const role = getEffectiveRole(user);
+  const requestedParentId = payload.parentId || null;
+
+  // CRO/Sponsor can only ever create a top-level comment — silently force
+  // parentId to null instead of trusting a caller-supplied value.
+  const parentId = RESTRICTED_ROLES.includes(role) ? null : requestedParentId;
+
   const comments = getComments(user);
   const newComment = {
     id: `C-${Date.now()}`,
+    parentId,
     subjectId: payload.subjectId || "",
     document: payload.document || payload.documentName || "",
     documentId: payload.documentId || "",
     documentDeleted: false,
-    study: payload.study || "",
+    study: payload.study || payload.studyCode || "",
     site: payload.site || user?.assignedSite || "",
     status: "Open",
     priority: payload.priority || "Medium",
@@ -85,10 +141,19 @@ export function addCommentRecord(payload, user = getCurrentUser()) {
     createdAt: new Date().toISOString().slice(0, 10),
     createdBy: user?.name || "Unknown",
     description: payload.description || payload.text || "",
-    createdRole: getEffectiveRole(user)
+    createdRole: role
   };
 
   saveComments([newComment, ...comments]);
+  notifyCommentsUpdated();
+  // notifyCommentAdded expects { studyCode, authorRole }, while this
+  // record's own schema (shared with the document-scoped QC comment
+  // feature above) uses { study, createdRole } — adapt the field names
+  // here rather than renaming the stored record shape everywhere else.
+  notifyCommentAdded({
+    studyCode: newComment.study,
+    authorRole: newComment.createdRole,
+  });
   return newComment;
 }
 
@@ -109,6 +174,7 @@ export function resolveCommentRecord(commentId, user = getCurrentUser()) {
   );
 
   saveComments(comments);
+  notifyCommentsUpdated();
   return true;
 }
 
@@ -130,4 +196,5 @@ export function markCommentsDocumentDeleted(documentId, documentName) {
   });
 
   saveComments(comments);
+  notifyCommentsUpdated();
 }

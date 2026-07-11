@@ -1,3 +1,9 @@
+import {
+  notifyPermissionRequestApproved,
+  notifyPermissionRequestCreated,
+  notifyPermissionRequestRejected,
+} from "./notificationService";
+
 const REQUESTS_KEY = "accessPermissionRequests";
 const HISTORY_KEY = "accessPermissionHistory";
 const APPROVED_SCOPES_KEY = "approvedPermissionScopes";
@@ -30,6 +36,7 @@ function normalizeRequest(request) {
     user: request.user || request.requestedBy || "Unknown User",
     email: request.email || "",
     role: request.role || "",
+    studyCode: request.studyCode || request.study || "",
     action: request.action || request.accessType || "Edit Access",
     module: request.module || "General",
     recordId: request.recordId || "",
@@ -82,12 +89,24 @@ export function getApprovedPermissionScopes(email) {
   );
 }
 
-export function hasApprovedScope(email, action, module, recordId = "") {
+// studyCode is optional so existing callers that haven't been updated yet
+// keep working unscoped (matches prior behavior) — but once a scope carries
+// a studyCode, it only ever satisfies a check for that exact study, never
+// every study the user happens to have access to.
+export function hasApprovedScope(
+  email,
+  action,
+  module,
+  recordId = "",
+  studyCode = "",
+) {
   return getApprovedPermissionScopes(email).some((scope) => {
     const actionMatch = scope.action === action || scope.accessType === action;
     const moduleMatch = scope.module === module;
     const recordMatch = !scope.recordId || !recordId || scope.recordId === recordId;
-    return actionMatch && moduleMatch && recordMatch;
+    const studyMatch =
+      !scope.studyCode || !studyCode || scope.studyCode === studyCode;
+    return actionMatch && moduleMatch && recordMatch && studyMatch;
   });
 }
 
@@ -97,6 +116,7 @@ function grantApprovedScope(request) {
     id: `SCOPE-${Date.now()}`,
     email: request.email,
     role: request.role,
+    studyCode: request.studyCode || "",
     action: request.action,
     module: request.module,
     recordId: request.recordId,
@@ -131,6 +151,7 @@ export function acceptAccessRequest(requestId) {
   writeJson(HISTORY_KEY, history);
 
   notifyPermissionRequestsUpdated();
+  notifyPermissionRequestApproved(updated);
   return updated;
 }
 
@@ -156,6 +177,7 @@ export function revokeAccessRequest(requestId) {
   writeJson(HISTORY_KEY, history);
 
   notifyPermissionRequestsUpdated();
+  notifyPermissionRequestRejected(updated);
   return updated;
 }
 
@@ -196,6 +218,7 @@ export function submitAccessRequest(payload, user) {
     user: user?.name || "Unknown User",
     email: user?.email || "",
     role: user?.role || "",
+    studyCode: payload.studyCode || payload.study || "",
     action: payload.action || payload.accessType || "Edit Access",
     module: payload.module || "General",
     recordId: payload.recordId || "",
@@ -213,5 +236,6 @@ export function submitAccessRequest(payload, user) {
   requests.push(entry);
   writeJson(REQUESTS_KEY, requests);
   notifyPermissionRequestsUpdated();
+  notifyPermissionRequestCreated(entry);
   return entry;
 }

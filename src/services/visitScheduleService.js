@@ -7,6 +7,7 @@ import {
   isAdmin
 } from "./roleService";
 import { getFilterState } from "./filterService";
+import { notifyVisitCreated, notifyVisitUpdated } from "./notificationService";
 
 export const VISIT_STAGES = [
   "Screening",
@@ -341,9 +342,22 @@ export function addOrUpdateVisitSchedule({
   }
 
   const existing = readJson(SCHEDULES_STORAGE_KEY, []);
+  const wasExisting = existing.some((item) => item.id === entry.id);
   const withoutDuplicate = existing.filter((item) => item.id !== entry.id);
   saveSchedules([...withoutDuplicate, entry]);
   clearNextVisitPrompt(studyId, subjectId);
+
+  // "manual" is the one source that represents a real, user-driven
+  // create/update action (visit-plan sync and the next-visit form both
+  // funnel through here) — this is the single choke point for the B10
+  // "visit created/updated" notification triggers.
+  const notifyPayload = { studyCode: studyId, subjectId, date, status };
+  if (wasExisting) {
+    notifyVisitUpdated(notifyPayload);
+  } else {
+    notifyVisitCreated(notifyPayload);
+  }
+
   return entry;
 }
 

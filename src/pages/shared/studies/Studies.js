@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../../Components/dashboard/DashboardLayout";
 import KPICard from "../../../Components/dashboard/KPICard";
-import { createStudy } from "../../../services/studyService";
+import { createStudy, getStudies } from "../../../services/studyService";
 import {
   getAccessibleStudies,
   getCurrentUser,
+  getEffectiveRole,
 } from "../../../services/roleService";
 import { canAddStudy } from "../../../utils/contentAccess";
+import ROLES from "../../../constants/roles";
 import {
   FiFolder,
   FiGrid,
@@ -44,9 +46,21 @@ function Studies() {
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
 
-  const [studies, setStudies] = useState(() =>
-    getAccessibleStudies(currentUser)
-  );
+  // For CRO, the main Studies page must mirror the exact same dynamic
+  // study source the CRO sidebar uses (getStudies(), unfiltered), so the
+  // sidebar count and the main page list/KPI always match. Every other
+  // role keeps using getAccessibleStudies() exactly as before.
+  const loadStudies = useCallback(() => {
+    const user = getCurrentUser();
+    const effectiveRole = String(getEffectiveRole(user) || "")
+      .trim()
+      .toLowerCase();
+    const isCroRole = effectiveRole === String(ROLES.CRO).trim().toLowerCase();
+
+    return isCroRole ? getStudies() : getAccessibleStudies(user);
+  }, []);
+
+  const [studies, setStudies] = useState(() => loadStudies());
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [sponsorFilter, setSponsorFilter] = useState("");
@@ -184,6 +198,18 @@ function Studies() {
     }
   }, [currentPage, totalPages]);
 
+  useEffect(() => {
+    const refreshStudies = () => setStudies(loadStudies());
+
+    window.addEventListener("studies-updated", refreshStudies);
+    window.addEventListener("sponsor-data-updated", refreshStudies);
+
+    return () => {
+      window.removeEventListener("studies-updated", refreshStudies);
+      window.removeEventListener("sponsor-data-updated", refreshStudies);
+    };
+  }, [loadStudies]);
+
   const paginatedStudies = useMemo(() => {
     const startIndex = (currentPage - 1) * STUDIES_PER_PAGE;
 
@@ -258,7 +284,7 @@ function Studies() {
     localStorage.setItem("sidebarStudiesOpen", JSON.stringify(true));
     localStorage.setItem("sidebarStudyBinderOpen", JSON.stringify(true));
 
-    setStudies(getAccessibleStudies(currentUser));
+    setStudies(loadStudies());
     setForm(initialForm);
     setFormOpen(false);
     setCurrentPage(1);
@@ -453,7 +479,7 @@ function Studies() {
             </select>
           </div>
 
-          <div className="view-toggle">
+          <div className="studies-view-toggle">
             <button
               type="button"
               className={viewMode === "grid" ? "active" : ""}
@@ -486,7 +512,7 @@ function Studies() {
         <div className="studies-summary-kpi">
           <KPICard
             title="Total Studies"
-            value={filteredStudies.length}
+            value={studies.length}
             subtitle="Accessible Studies"
             icon={<FiFolder />}
           />

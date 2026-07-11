@@ -16,7 +16,7 @@ import "./DashboardLayout.css";
 
 import "./dashboard.css";
 
-import React, { cloneElement, isValidElement } from "react";
+import React from "react";
 
 export const PI_PAGE_ROUTES = {
   dashboard: "/pi-dashboard",
@@ -135,12 +135,7 @@ function PIDashboardLayout({ children }) {
             className="dashboard-content pi-dashboard-content"
             ref={contentRef}
           >
-            {isValidElement(children)
-              ? cloneElement(children, {
-                  selectedPage,
-                  setSelectedPage,
-                })
-              : children}
+            {children}
           </div>
         </div>
       </div>

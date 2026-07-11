@@ -1,23 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CROSidebar from "./CROSidebar";
 import CRONavbar from "./CRONavbar";
-import RequestPermissionButton from "../../Components/common/RequestPermissionButton";
-import { getAllSchedules } from "../../services/adminService";
+import RequestPermissionButton from "../../../Components/common/RequestPermissionButton";
+import { getAccessibleStudies, getCurrentUser } from "../../../services/roleService";
+import {
+  getFilteredSchedules,
+  mapScheduleToTableRow,
+  SCHEDULES_EVENT,
+} from "../../../services/visitScheduleService";
 
-function loadVisits() {
+function readSharedVisits(studyCode) {
   try {
-    const schedules = getAllSchedules();
-    if (schedules.length) {
-      return schedules.map((item, index) => ({
-        id: item.id || index,
-        visitName: item.visit || item.visitName || "Visit",
-        study: item.studyCode || item.subjectId || "—",
-        status: item.status || "Scheduled",
-      }));
-    }
-    const saved = localStorage.getItem("visits");
-    return saved ? JSON.parse(saved) : [];
+    const schedules = getFilteredSchedules(getCurrentUser(), {
+      studyCode: studyCode || undefined,
+    });
+    return schedules.map(mapScheduleToTableRow);
   } catch {
     return [];
   }
@@ -26,22 +24,35 @@ function loadVisits() {
 function VisitManagement() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const [visits, setVisits] = useState(loadVisits);
+  const [studies, setStudies] = useState(() => getAccessibleStudies(getCurrentUser()));
+  const [studyCode, setStudyCode] = useState("");
+  const [visits, setVisits] = useState(() => readSharedVisits(""));
 
   useEffect(() => {
-    const refresh = () => setVisits(loadVisits());
-    window.addEventListener("visits-updated", refresh);
+    setVisits(readSharedVisits(studyCode));
+  }, [studyCode]);
+
+  useEffect(() => {
+    const refresh = () => {
+      setVisits(readSharedVisits(studyCode));
+      setStudies(getAccessibleStudies(getCurrentUser()));
+    };
+    window.addEventListener(SCHEDULES_EVENT, refresh);
     window.addEventListener("studies-updated", refresh);
     return () => {
-      window.removeEventListener("visits-updated", refresh);
+      window.removeEventListener(SCHEDULES_EVENT, refresh);
       window.removeEventListener("studies-updated", refresh);
     };
-  }, []);
+  }, [studyCode]);
 
-  const filteredVisits = visits.filter((visit) =>
-    String(visit.visitName || "")
-      .toLowerCase()
-      .includes(search.toLowerCase()),
+  const filteredVisits = useMemo(
+    () =>
+      visits.filter((visit) =>
+        String(visit.visit || "")
+          .toLowerCase()
+          .includes(search.toLowerCase()),
+      ),
+    [visits, search],
   );
 
   return (
@@ -59,11 +70,29 @@ function VisitManagement() {
             }}
           >
             <h1>Visit Management</h1>
-            <RequestPermissionButton
-              action="Add Visit"
-              module="Visits"
-              label="+ Add Visit"
-            />
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <select
+                value={studyCode}
+                onChange={(event) => setStudyCode(event.target.value)}
+                aria-label="Select study for new visit"
+                style={{ padding: "8px" }}
+              >
+                <option value="">All studies</option>
+                {studies.map((study) => (
+                  <option key={study.code} value={study.code}>
+                    {study.name || study.code}
+                  </option>
+                ))}
+              </select>
+              {studyCode && (
+                <RequestPermissionButton
+                  action="Add Visit"
+                  module="Visits"
+                  studyCode={studyCode}
+                  label="+ Add Visit"
+                />
+              )}
+            </div>
           </div>
 
           <input
@@ -86,8 +115,10 @@ function VisitManagement() {
             <table width="100%" border="1" cellPadding="10">
               <thead>
                 <tr>
+                  <th>Subject ID</th>
                   <th>Visit</th>
-                  <th>Study / Subject</th>
+                  <th>Date</th>
+                  <th>Study</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
@@ -95,7 +126,9 @@ function VisitManagement() {
               <tbody>
                 {filteredVisits.map((visit) => (
                   <tr key={visit.id}>
-                    <td>{visit.visitName}</td>
+                    <td>{visit.subjectId}</td>
+                    <td>{visit.visit}</td>
+                    <td>{visit.date}</td>
                     <td>{visit.study}</td>
                     <td>{visit.status}</td>
                     <td>

@@ -5,6 +5,7 @@ import StatusBadge from "./StatusBadge";
 import EmptyState from "./EmptyState";
 import CROModal from "./CROModal";
 import RequestPermissionButton from "../../Components/common/RequestPermissionButton";
+import { getAccessibleStudies, getCurrentUser } from "../../services/roleService";
 
 function CRORegulatoryDocuments() {
   const { documents } = useCROData();
@@ -13,6 +14,14 @@ function CRORegulatoryDocuments() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState(null);
+  const [studies, setStudies] = useState(() => getAccessibleStudies(getCurrentUser()));
+  const [uploadStudyCode, setUploadStudyCode] = useState("");
+
+  React.useEffect(() => {
+    const refresh = () => setStudies(getAccessibleStudies(getCurrentUser()));
+    window.addEventListener("studies-updated", refresh);
+    return () => window.removeEventListener("studies-updated", refresh);
+  }, []);
 
   const filteredDocuments = documents.filter((doc) => {
     const matchesSearch = String(doc.name || "")
@@ -81,12 +90,30 @@ function CRORegulatoryDocuments() {
               <option value="Expired">Expired</option>
             </select>
           </div>
-          <RequestPermissionButton
-            action="Upload Document"
-            module="Regulatory Documents"
-            label="+ Upload Document"
-            className="cro-btn-primary-inline request-permission-btn"
-          />
+          <div className="cro-panel-filters">
+            <select
+              value={uploadStudyCode}
+              onChange={(event) => setUploadStudyCode(event.target.value)}
+              className="cro-input"
+              aria-label="Select study for new document"
+            >
+              <option value="">Select study…</option>
+              {studies.map((study) => (
+                <option key={study.code} value={study.code}>
+                  {study.name || study.code}
+                </option>
+              ))}
+            </select>
+            {uploadStudyCode && (
+              <RequestPermissionButton
+                action="Upload Document"
+                module="Regulatory Documents"
+                studyCode={uploadStudyCode}
+                label="+ Upload Document"
+                className="cro-btn-primary-inline request-permission-btn"
+              />
+            )}
+          </div>
         </div>
 
         {filteredDocuments.length === 0 ? (
@@ -144,6 +171,7 @@ function CRORegulatoryDocuments() {
               module="Regulatory Documents"
               recordId={selectedDoc?.id}
               recordName={selectedDoc?.name}
+              studyCode={selectedDoc?.studyCode}
               label="Approve"
               className="cro-btn cro-btn-primary"
             />
