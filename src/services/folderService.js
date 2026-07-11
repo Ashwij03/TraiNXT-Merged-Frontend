@@ -89,24 +89,38 @@ export function ensureSubjectFolderWithICF(sectionId, contextKey) {
     return null;
   }
 
-  // ICF already exists
-  const icfFolder = root.children?.find(
+  // Create Subject folder if it doesn't exist
+  if (!root.children || root.children.length === 0) {
+    const subjectFolder = {
+      id: createId("folder"),
+      name: "Subject",
+      children: [createICFFolder()]
+    };
+
+    root.children = [subjectFolder];
+    saveFolderTree(sectionId, contextKey, tree);
+
+    return subjectFolder;
+  }
+
+  const subjectFolder = root.children[0];
+
+  // Ensure ICF folder exists inside Subject
+  const hasICF = subjectFolder.children?.some(
     (child) => child.name === ICF_FOLDER_NAME
   );
 
-  if (icfFolder) {
-    return icfFolder;
+  if (!hasICF) {
+    subjectFolder.children = [
+      ...(subjectFolder.children || []),
+      createICFFolder()
+    ];
+
+    saveFolderTree(sectionId, contextKey, tree);
   }
 
-  const newICF = createICFFolder();
-
-  root.children = [...(root.children || []), newICF];
-
-  saveFolderTree(sectionId, contextKey, tree);
-
-  return newICF;
+  return subjectFolder;
 }
-
 function emitTreeUpdate(sectionId, contextKey) {
   window.dispatchEvent(
     new CustomEvent(FOLDER_TREE_EVENT, {

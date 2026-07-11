@@ -1,56 +1,71 @@
-import { useEffect, useMemo, useState } from "react";
 import "./ParticipatingSiteTeam.css";
+import { useState, useMemo } from "react";
+import { getParticipatingSiteDocuments } from "../services/eisfService";
+import useDocuments from "../hooks/useDocuments";
+import useSearch from "../hooks/useSearch";
+import * as documentService from "../services/documentService";
+import DOCUMENT_STATUS from "../Constants/documentStatus";
 import DashboardCards from "../components/DashboardCards";
 import DocumentToolbar from "../components/DocumentToolbar";
 import DocumentTable from "../components/DocumentTable";
 import UploadDocumentModal from "../components/UploadDocumentModal";
-import { getParticipatingSiteDocuments } from "../services/eisfService";
 import DocumentViewer from "../components/DocumentViewer";
 import EditDocumentModal from "../components/EditDocumentModal";
 import VersionHistoryModal from "../components/VersionHistoryModal";
 import AuditTrailModal from "../components/AuditTrailModal";
 export default function ParticipatingSiteTeam() {
-  const [documents, setDocuments] = useState([]);
-  const [search, setSearch] = useState("");
+ 
   const [showUpload, setShowUpload] = useState(false);
   const [selectedDocument,setSelectedDocument]=useState(null);
   const [viewerOpen,setViewerOpen]=useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [historyOpen,setHistoryOpen]=useState(false);
   const [auditOpen,setAuditOpen]=useState(false);
-  useEffect(() => {
-    setDocuments(getParticipatingSiteDocuments());
-  }, []);
+ 
+const {
+  documents,
+  setDocuments,
+} = useDocuments(getParticipatingSiteDocuments());
 
-  const filteredDocuments = useMemo(() => {
-    return documents.filter((doc) => {
-      const value = search.toLowerCase();
+const {
+  search,
+  setSearch,
+  filteredDocuments,
+} = useSearch(documents);
 
-      return (
-        doc.documentName.toLowerCase().includes(value) ||
-        doc.category.toLowerCase().includes(value) ||
-        doc.uploadedBy.toLowerCase().includes(value) ||
-        doc.status.toLowerCase().includes(value)
-      );
-    });
-  }, [documents, search]);
+const sections = [
+  { id: "1.1", name: "Contact List" },
+  { id: "1.2", name: "Signature & Delegation Log" },
+  { id: "1.3", name: "CVs" },
+  { id: "1.4", name: "GCP Training Certificates" },
+  { id: "1.5", name: "EDC Training Certifications" },
+  { id: "1.6", name: "Other Training Certificates" },
+];
+
+const [activeSection, setActiveSection] = useState("1.1");
+
+const sectionDocuments = useMemo(() => {
+  return filteredDocuments.filter(
+    (doc) => doc.section === activeSection
+  );
+}, [filteredDocuments, activeSection]);
 
   const handleUpload = (formData) => {
 
-  const newDocument = {
-    id: Date.now(),
-    documentName: formData.documentName,
-    category: formData.category,
-    section: "1.1",
-    version: formData.version || "1.0",
-    status: "Draft",
-    uploadedBy: "Current User",
-    approvedBy: "-",
-    modifiedDate: new Date().toLocaleDateString(),
-    expiryDate: "-",
-    fileName: formData.file.name,
-    fileSize: `${(formData.file.size / 1024).toFixed(1)} KB`
-  };
+ const newDocument = {
+  id: Date.now(),
+  documentName: formData.documentName,
+  category: formData.category,
+  section: "1.1",
+  version: formData.version || "1.0",
+  status: DOCUMENT_STATUS.DRAFT,
+  uploadedBy: "Current User",
+  approvedBy: "-",
+  modifiedDate: new Date().toLocaleDateString(),
+  expiryDate: "-",
+  fileName: formData.file.name,
+  fileSize: `${(formData.file.size / 1024).toFixed(1)} KB`,
+};
 
   setDocuments((prev) => [newDocument, ...prev]);
 };
@@ -92,6 +107,7 @@ const handleSaveDocument = (updatedDocument) => {
   setSelectedDocument(null);
 };
 
+
   return (
     <div className="pst-page">
 
@@ -112,9 +128,38 @@ const handleSaveDocument = (updatedDocument) => {
     onSearch={setSearch}
     onUpload={() => setShowUpload(true)}
 />
+<div className="pst-sections">
 
+    {sections.map((section) => (
+
+        <button
+            key={section.id}
+            className={
+                activeSection === section.id
+                    ? "pst-section active"
+                    : "pst-section"
+            }
+            onClick={() => setActiveSection(section.id)}
+        >
+            <span>{section.id}</span>
+
+            {section.name}
+
+            <span className="count">
+                {
+                    documents.filter(
+                        d => d.section === section.id
+                    ).length
+                }
+            </span>
+
+        </button>
+
+    ))}
+
+</div>
   <DocumentTable
-    documents={filteredDocuments}
+    documents={sectionDocuments}
     onView={handleView}
     onHistory={handleHistory}
     onAudit={handleAudit}

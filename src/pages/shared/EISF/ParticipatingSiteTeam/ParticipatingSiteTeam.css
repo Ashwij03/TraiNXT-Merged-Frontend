@@ -84,3 +84,44 @@
 .action-btn:hover{
     opacity:.9;
 }
+.pst-sections{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin:20px 0;
+}
+
+.pst-section{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 16px;
+    border:1px solid #ddd;
+    border-radius:8px;
+    background:#fff;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.pst-section:hover{
+    background:#f5f7fb;
+}
+
+.pst-section.active{
+    background:#1976d2;
+    color:#fff;
+    border-color:#1976d2;
+}
+
+.pst-section .count{
+    background:#eee;
+    color:#333;
+    padding:2px 8px;
+    border-radius:20px;
+    font-size:12px;
+}
+
+.pst-section.active .count{
+    background:white;
+    color:#1976d2;
+}
