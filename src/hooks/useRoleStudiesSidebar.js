@@ -8,7 +8,7 @@ export const STUDY_SECTIONS = [
   { key: "subjects", label: "Subjects", expandable: true },
   { key: "planning", label: "Planning" },
   { key: "visitPlan", label: "Visit Plan" },
-  { key: "eisf", label: "eISF", expandable: true },
+  { key: "eisf", label: "eISF" },
   { key: "regulatory", label: "Regulatory" },
   { key: "reports", label: "Reports" },
   { key: "studyFiles", label: "Study Files" },
@@ -19,9 +19,7 @@ export const STUDY_SECTIONS = [
 
 function getAllSubjectsByStudy() {
   try {
-    const savedSubjects = JSON.parse(
-      localStorage.getItem("subjectsByStudy")
-    );
+    const savedSubjects = JSON.parse(localStorage.getItem("subjectsByStudy"));
 
     return savedSubjects && typeof savedSubjects === "object"
       ? savedSubjects
@@ -38,7 +36,7 @@ export function getStudyKey(study) {
       study?.studyId ??
       study?.title ??
       study?.name ??
-      ""
+      "",
   ).trim();
 }
 
@@ -162,12 +160,7 @@ export function useRoleStudiesSidebar({ onNavigate } = {}) {
     }
 
     setStudiesOpen((currentValue) => (currentValue ? false : currentValue));
-  }, [
-    isStudiesOverviewRoute,
-    isStudyInternalRoute,
-    isCommentsRoute,
-    pathname,
-  ]);
+  }, [isStudiesOverviewRoute, isStudyInternalRoute, isCommentsRoute, pathname]);
 
   useEffect(() => {
     if (!isStudyInternalRoute) {
@@ -245,20 +238,9 @@ export function useRoleStudiesSidebar({ onNavigate } = {}) {
     }));
   };
 
-  const toggleEisfModule = (studyKey, moduleId, event) => {
-    event?.stopPropagation();
-
-    const moduleKey = `${studyKey}__eisf_module__${moduleId}`;
-
-    setExpandedStudySections((previousValue) => ({
-      ...previousValue,
-      [moduleKey]: !Boolean(previousValue[moduleKey]),
-    }));
-  };
-
   const navigateToStudySection = (studyKey, sectionKey) => {
     const selectedStudy = studies.find(
-      (study) => getStudyKey(study) === String(studyKey)
+      (study) => getStudyKey(study) === String(studyKey),
     );
 
     if (selectedStudy) {
@@ -283,8 +265,8 @@ export function useRoleStudiesSidebar({ onNavigate } = {}) {
 
     handleNav(
       `/study-dashboard/${encodeURIComponent(
-        studyKey
-      )}?tab=${encodeURIComponent(tab)}`
+        studyKey,
+      )}?tab=${encodeURIComponent(tab)}`,
     );
   };
 
@@ -322,23 +304,10 @@ export function useRoleStudiesSidebar({ onNavigate } = {}) {
           studyId: studyKey,
           subject: null,
         },
-      })
+      }),
     );
 
     navigateToStudySection(studyKey, "subjects");
-  };
-
-  const handleEisfSectionClick = (studyKey, event) => {
-    event?.stopPropagation();
-
-    const compositeKey = `${studyKey}__eisf`;
-
-    setExpandedStudySections((previousValue) => ({
-      ...previousValue,
-      [compositeKey]: !Boolean(previousValue[compositeKey]),
-    }));
-
-    navigateToStudySection(studyKey, "eisf");
   };
 
   const handleExpandableSectionLabelClick = (studyKey, sectionKey, event) => {
@@ -346,11 +315,6 @@ export function useRoleStudiesSidebar({ onNavigate } = {}) {
 
     if (sectionKey === "subjects") {
       handleSubjectsSectionClick(studyKey, event);
-      return;
-    }
-
-    if (sectionKey === "eisf") {
-      handleEisfSectionClick(studyKey, event);
       return;
     }
 
@@ -365,7 +329,7 @@ export function useRoleStudiesSidebar({ onNavigate } = {}) {
     }
 
     const selectedStudy = studies.find(
-      (study) => getStudyKey(study) === String(studyKey)
+      (study) => getStudyKey(study) === String(studyKey),
     );
 
     if (selectedStudy) {
@@ -394,36 +358,14 @@ export function useRoleStudiesSidebar({ onNavigate } = {}) {
           studyId: studyKey,
           subject: selectedSubject,
         },
-      })
+      }),
     );
 
     handleNav(
       `/study-dashboard/${encodeURIComponent(
-        studyKey
-      )}?tab=Subjects&subject=${encodeURIComponent(subjectId)}`
+        studyKey,
+      )}?tab=Subjects&subject=${encodeURIComponent(subjectId)}`,
     );
-  };
-
-  const handleEisfChildClick = (studyKey, child) => {
-    const selectedStudy = studies.find(
-      (study) => getStudyKey(study) === String(studyKey)
-    );
-
-    if (selectedStudy) {
-      localStorage.setItem("selectedStudy", JSON.stringify(selectedStudy));
-    }
-
-    const childPath = String(child?.path || "");
-    const separator = childPath.includes("?") ? "&" : "?";
-
-    if (childPath) {
-      handleNav(
-        `${childPath}${separator}study=${encodeURIComponent(studyKey)}`
-      );
-      return;
-    }
-
-    navigateToStudySection(studyKey, "eisf");
   };
 
   const getSubjectsForStudy = (study) => getStudySubjects(study);
@@ -443,12 +385,10 @@ export function useRoleStudiesSidebar({ onNavigate } = {}) {
     handleStudiesCommentsClick,
     toggleStudyNode,
     toggleStudySection,
-    toggleEisfModule,
     navigateToStudySection,
     handleStudyNameClick,
     handleExpandableSectionLabelClick,
     handleSubjectClick,
-    handleEisfChildClick,
     getSubjectsForStudy,
     handleNav,
   };

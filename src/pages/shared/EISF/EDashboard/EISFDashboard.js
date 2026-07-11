@@ -50,79 +50,101 @@ const pageMap = {
   "21.0": Archiving,
   "22.0": InvestigationalProduct,
 };
-export default function EISFDashboard() {
+function getParentSectionId(id) {
+  if (!id) return "1.0";
+
+  const [sectionNumber] = id.split(".");
+
+  return `${sectionNumber}.0`;
+}
+
+export default function EISFDashboard({ studyCode } = {}) {
   const [selected, setSelected] = useState("1.0");
+  const [expanded, setExpanded] = useState({});
 
-  const [expanded, setExpanded] = useState(() => {
-    const state = {};
+  const selectedModuleId = useMemo(
+    () => getParentSectionId(selected),
+    [selected]
+  );
 
-    EISFMenuConfig.forEach((item) => {
-      if (item.children?.length) {
-        state[item.id] = false;
-      }
-    });
+  const CurrentPage = useMemo(() => {
+    return pageMap[selectedModuleId] || ParticipatingSiteTeam;
+  }, [selectedModuleId]);
+  const handleModuleChange = (moduleId) => {
+    setSelected(moduleId);
+  };
 
-    return state;
-  });
+  const handleSectionChange = (sectionId) => {
+    setSelected(sectionId);
+  };
 
- const CurrentPage = useMemo(() => {
-    return pageMap[selected] || ParticipatingSiteTeam;
-  }, [selected]);
-  const toggle = (id) => {
+  const toggleModule = (moduleId) => {
     setExpanded((prev) => ({
       ...prev,
-      [id]: !prev[id]
+      [moduleId]: !prev[moduleId],
     }));
   };
 
   return (
-    <div className="eisf-layout">
+    <div className="eisf-layout eisf-layout-reference">
       <aside className="eisf-sidebar">
-        <div className="eisf-sidebar-title">eISF</div>
+        <div className="eisf-sidebar-title">eISF Modules</div>
 
-        {EISFMenuConfig.map((item) => (
-          <div key={item.id}>
-            <div
-              className={`eisf-menu-item ${
-                selected === item.id ? "active" : ""
-              }`}
-            >
+        <div className="eisf-sidebar-list">
+          {EISFMenuConfig.map((item) => (
+            <div className="eisf-sidebar-group" key={item.id}>
               <div
-                className="eisf-menu-label"
-                onClick={() => setSelected(item.id)}
+                className={`eisf-menu-item ${
+                  selectedModuleId === item.id ? "active" : ""
+                }`}
               >
-                {item.title}
-              </div>
-
-              {item.children?.length > 0 && (
                 <button
                   type="button"
-                  className="eisf-expand-btn"
-                  onClick={() => toggle(item.id)}
+                  className="eisf-menu-label"
+                  onClick={() => handleModuleChange(item.id)}
                 >
-                  {expanded[item.id] ? "−" : "+"}
+                  <span className="eisf-module-number">{item.id}</span>
+                  <span>{item.title}</span>
                 </button>
-              )}
-            </div>
 
-            {expanded[item.id] &&
-  item.children?.map((child) => (
-    <div
-      key={child.id}
-      className={`eisf-child-item ${
-        selected === child.id ? "active" : ""
-      }`}
-      onClick={() => setSelected(item.id)}
-    >
-      {child.title}
-    </div>
-  ))}
-          </div>
-        ))}
+                {item.children?.length > 0 && (
+                  <button
+                    type="button"
+                    className="eisf-expand-btn"
+                    onClick={() => toggleModule(item.id)}
+                    aria-label={`${expanded[item.id] ? "Collapse" : "Expand"} ${item.title}`}
+                  >
+                    {expanded[item.id] ? "−" : "+"}
+                  </button>
+                )}
+              </div>
+
+              {expanded[item.id] &&
+                item.children?.map((child) => (
+                  <button
+                    type="button"
+                    key={child.id}
+                    className={`eisf-child-item ${
+                      selected === child.id ? "active" : ""
+                    }`}
+                    onClick={() => handleSectionChange(child.id)}
+                  >
+                    {child.id} {child.title}
+                  </button>
+                ))}
+            </div>
+          ))}
+        </div>
       </aside>
 
       <main className="eisf-content">
-        <CurrentPage />
+        <CurrentPage
+          studyCode={studyCode}
+          activeSectionId={selected === selectedModuleId ? undefined : selected}
+          selectedModuleId={selectedModuleId}
+          onModuleChange={handleModuleChange}
+          onSectionChange={handleSectionChange}
+        />
       </main>
     </div>
   );

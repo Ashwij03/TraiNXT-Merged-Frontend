@@ -1,18 +1,37 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./UploadDocumentModal.css";
 
 export default function UploadDocumentModal({
   open,
   onClose,
-  onUpload
+  onUpload,
+  categoryOptions = [],
+  defaultCategory = ""
 }) {
   const [form, setForm] = useState({
     documentName: "",
-    category: "",
+    category: defaultCategory || "",
     version: "",
     comments: "",
     file: null
   });
+
+  const categories = useMemo(() => {
+    const options = Array.isArray(categoryOptions) ? categoryOptions : [];
+
+    return options.length
+      ? options
+      : ["Contact", "Delegation", "Training", "CV"];
+  }, [categoryOptions]);
+
+  useEffect(() => {
+    if (open && defaultCategory) {
+      setForm((prev) => ({
+        ...prev,
+        category: prev.category || defaultCategory
+      }));
+    }
+  }, [open, defaultCategory]);
 
   if (!open) return null;
 
@@ -26,7 +45,7 @@ export default function UploadDocumentModal({
 
     setForm({
       documentName: "",
-      category: "",
+      category: defaultCategory || "",
       version: "",
       comments: "",
       file: null
@@ -70,10 +89,11 @@ export default function UploadDocumentModal({
             }
           >
             <option value="">Select</option>
-            <option>Contact</option>
-            <option>Delegation</option>
-            <option>Training</option>
-            <option>CV</option>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
           </select>
 
           <label>Version</label>

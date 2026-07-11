@@ -27,14 +27,13 @@ import {
   FiLayers,
 } from "react-icons/fi";
 import { getRoleExtraMenuItems } from "../../config/roleMenus";
-import EISFMenuConfig from "../../pages/shared/EISF/Constants/EISFMenuConfig";
 
 const STUDY_SECTIONS = [
   { key: "overview", label: "Overview" },
   { key: "subjects", label: "Subjects", expandable: true },
   { key: "planning", label: "Planning" },
   { key: "visitPlan", label: "Visit Plan" },
-  { key: "eisf", label: "eISF", expandable: true },
+  { key: "eisf", label: "eISF" },
   { key: "regulatory", label: "Regulatory" },
   { key: "reports", label: "Reports" },
   { key: "studyFiles", label: "Study Files" },
@@ -338,17 +337,6 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     }));
   };
 
-  const toggleEisfModule = (studyKey, moduleId, event) => {
-    event?.stopPropagation();
-
-    const moduleKey = `${studyKey}__eisf_module__${moduleId}`;
-
-    setExpandedStudySections((previousValue) => ({
-      ...previousValue,
-      [moduleKey]: !Boolean(previousValue[moduleKey]),
-    }));
-  };
-
   const navigateToStudySection = (studyKey, section) => {
     const study = studies.find((item) => getStudyKey(item) === studyKey);
 
@@ -419,29 +407,11 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     navigateToStudySection(studyKey, "subjects");
   };
 
-  const handleEisfSectionClick = (studyKey, event) => {
-    event?.stopPropagation();
-
-    const compositeKey = `${studyKey}__eisf`;
-
-    setExpandedStudySections((previousValue) => ({
-      ...previousValue,
-      [compositeKey]: !Boolean(previousValue[compositeKey]),
-    }));
-
-    navigateToStudySection(studyKey, "eisf");
-  };
-
   const handleExpandableSectionLabelClick = (studyKey, sectionKey, event) => {
     event?.stopPropagation();
 
     if (sectionKey === "subjects") {
       handleSubjectsSectionClick(studyKey, event);
-      return;
-    }
-
-    if (sectionKey === "eisf") {
-      handleEisfSectionClick(studyKey, event);
       return;
     }
 
@@ -492,26 +462,6 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         studyKey,
       )}?tab=Subjects&subject=${encodeURIComponent(subjectId)}`,
     );
-  };
-
-  const handleEisfChildClick = (studyKey, child) => {
-    const study = studies.find((item) => getStudyKey(item) === studyKey);
-
-    if (study) {
-      localStorage.setItem("selectedStudy", JSON.stringify(study));
-    }
-
-    const childPath = String(child?.path || "");
-    const separator = childPath.includes("?") ? "&" : "?";
-
-    if (childPath) {
-      handleNav(
-        `${childPath}${separator}study=${encodeURIComponent(studyKey)}`,
-      );
-      return;
-    }
-
-    navigateToStudySection(studyKey, "eisf");
   };
 
   return (
@@ -703,77 +653,6 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                                               {subjectKey}
                                             </span>
                                           </div>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-
-                                {isSectionOpen && sectionKey === "eisf" && (
-                                  <div className="sidebar-tree-group sidebar-tree-group--nested">
-                                    {EISFMenuConfig.map((module) => {
-                                      const moduleStateKey = `${studyKey}__eisf_module__${module.id}`;
-                                      const isModuleOpen = Boolean(
-                                        expandedStudySections[moduleStateKey],
-                                      );
-
-                                      return (
-                                        <div key={module.id}>
-                                          <div className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-tree-row--expandable">
-                                            <button
-                                              type="button"
-                                              className="sidebar-expander"
-                                              aria-label={
-                                                isModuleOpen
-                                                  ? `Collapse ${module.title}`
-                                                  : `Expand ${module.title}`
-                                              }
-                                              onClick={(event) =>
-                                                toggleEisfModule(
-                                                  studyKey,
-                                                  module.id,
-                                                  event,
-                                                )
-                                              }
-                                            >
-                                              {isModuleOpen ? "−" : "+"}
-                                            </button>
-
-                                            <span
-                                              className="sidebar-tree-label"
-                                              onClick={(event) => {
-                                                event.stopPropagation();
-                                                toggleEisfModule(
-                                                  studyKey,
-                                                  module.id,
-                                                  event,
-                                                );
-                                              }}
-                                            >
-                                              {module.id} {module.title}
-                                            </span>
-                                          </div>
-
-                                          {isModuleOpen && (
-                                            <div className="sidebar-tree-group sidebar-tree-group--nested">
-                                              {module.children.map((child) => (
-                                                <div
-                                                  key={child.id}
-                                                  className="sidebar-tree-row sidebar-tree-row--folder-leaf eisf-module"
-                                                  onClick={() =>
-                                                    handleEisfChildClick(
-                                                      studyKey,
-                                                      child,
-                                                    )
-                                                  }
-                                                >
-                                                  <span className="sidebar-tree-label">
-                                                    {child.id} {child.title}
-                                                  </span>
-                                                </div>
-                                              ))}
-                                            </div>
-                                          )}
                                         </div>
                                       );
                                     })}
