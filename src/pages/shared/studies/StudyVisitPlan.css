@@ -108,7 +108,17 @@
   overflow: auto;
   box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
 }
-
+.visit-plan-wizard {
+    width: 95vw;
+    max-width: 1400px;
+    min-width: 1100px;
+    max-height: 90vh;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
 .visit-plan-wizard-header,
 .visit-plan-wizard-footer {
   display: flex;
@@ -213,4 +223,42 @@
   .schedule-matrix-actions {
     display: none;
   }
+}
+.visit-plan-upcoming{
+background:#fff;
+padding:20px;
+border-radius:12px;
+margin-bottom:20px;
+box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+.schedule-procedure-list{
+    margin:0;
+    padding-left:18px;
+}
+
+.schedule-procedure-list li{
+    margin-bottom:6px;
+    line-height:1.5;
+}
+
+.schedule-procedure-list strong{
+    color:#0d6efd;
+}
+
+.no-procedure{
+    color:#9ca3af;
+    font-style:italic;
+}
+
+.schedule-matrix td{
+    vertical-align:top;
+    min-width:220px;
+}
+
+.schedule-matrix th{
+    white-space:nowrap;
+}
+
+.schedule-matrix{
+    width:100%;
 }

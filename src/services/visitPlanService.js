@@ -39,15 +39,30 @@ export function saveVisitPlan(studyCode, plan) {
   const list = Array.isArray(all[code]) ? all[code] : [];
 
   const entry = {
-    id: plan?.id || `vp-${Date.now()}`,
-    name: String(plan?.name ?? "").trim() || "Visit Plan",
-    description: plan?.description || "",
-    status: plan?.status || "Draft",
-    createdAt: plan?.createdAt || new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    screeningWindow: plan?.screeningWindow || "",
-    enrollmentWindow: plan?.enrollmentWindow || "",
-  };
+  id: plan?.id || `vp-${Date.now()}`,
+
+  name: String(plan?.name ?? "").trim() || "Visit Plan",
+
+  description: plan?.description || "",
+
+  clinicalStudy: plan?.clinicalStudy || "",
+
+  studyArm: plan?.studyArm || "",
+
+  version: plan?.version || "1.0",
+
+  studyVisitGroup: plan?.studyVisitGroup || "",
+
+  status: plan?.status || "Draft",
+
+  createdAt: plan?.createdAt || new Date().toISOString(),
+
+  updatedAt: new Date().toISOString(),
+
+  screeningWindow: plan?.screeningWindow || "",
+
+  enrollmentWindow: plan?.enrollmentWindow || "",
+};
 
   const index = list.findIndex((item) => item.id === entry.id);
   const next =
@@ -99,14 +114,39 @@ export function getVisitPlanVisits(planId) {
 
 export function saveVisitPlanVisit(planId, visit) {
   const list = getVisitPlanVisits(planId);
-  const entry = {
-    id: visit?.id || `vv-${Date.now()}`,
-    visitName: String(visit?.visitName ?? "").trim() || "Visit",
-    windowStart: visit?.windowStart || "",
-    windowEnd: visit?.windowEnd || "",
-    dayOffset: visit?.dayOffset ?? "",
-    required: Boolean(visit?.required ?? true),
-  };
+const entry = {
+  id: visit?.id || `vv-${Date.now()}`,
+
+  visitTemplateId:
+    visit?.visitTemplateId || `VT-${Date.now()}`,
+
+  sequence:
+    visit?.sequence || 1,
+
+  visitName:
+    String(visit?.visitName ?? "").trim() || "Visit",
+
+  visitType:
+    visit?.visitType || "Scheduled",
+
+  windowStart:
+    visit?.windowStart || "",
+
+  windowStartUnit:
+    visit?.windowStartUnit || "Days",
+
+  windowEnd:
+    visit?.windowEnd || "",
+
+  windowEndUnit:
+    visit?.windowEndUnit || "Days",
+
+  dayOffset:
+    visit?.dayOffset ?? "",
+
+  required:
+    Boolean(visit?.required ?? true),
+};
 
   const index = list.findIndex((item) => item.id === entry.id);
   const next =
@@ -128,13 +168,40 @@ export function getVisitPlanProcedures(planId) {
 
 export function saveVisitPlanProcedure(planId, procedure) {
   const list = getVisitPlanProcedures(planId);
-  const entry = {
-    id: procedure?.id || `vproc-${Date.now()}`,
-    visitId: procedure?.visitId || "",
-    procedureName: String(procedure?.procedureName ?? "").trim() || "Procedure",
-    category: procedure?.category || "Assessment",
-    required: Boolean(procedure?.required ?? true),
-  };
+ const entry = {
+
+id:
+procedure?.id ||
+`vproc-${Date.now()}`,
+
+visitId:
+procedure?.visitId || "",
+
+procedureCode:
+procedure?.procedureCode ||
+`PROC-${Date.now()}`,
+
+procedureName:
+String(
+procedure?.procedureName ?? ""
+).trim() || "Procedure",
+
+taskOrder:
+procedure?.taskOrder || 1,
+
+sequence:
+procedure?.sequence || 1,
+
+category:
+procedure?.category ||
+"Assessment",
+
+required:
+Boolean(
+procedure?.required ?? true
+)
+
+};
 
   const index = list.findIndex((item) => item.id === entry.id);
   const next =

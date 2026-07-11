@@ -1,56 +1,55 @@
-import { useEffect, useMemo, useState } from "react";
 import "./ParticipatingSiteTeam.css";
+import { useState } from "react";
+
+import { getParticipatingSiteDocuments } from "../services/eisfService";
+import useDocuments from "../hooks/useDocuments";
+import useSearch from "../hooks/useSearch";
+import * as documentService from "../services/documentService";
+import DOCUMENT_STATUS from "../Constants/documentStatus";
 import DashboardCards from "../components/DashboardCards";
 import DocumentToolbar from "../components/DocumentToolbar";
 import DocumentTable from "../components/DocumentTable";
 import UploadDocumentModal from "../components/UploadDocumentModal";
-import { getParticipatingSiteDocuments } from "../services/eisfService";
 import DocumentViewer from "../components/DocumentViewer";
 import EditDocumentModal from "../components/EditDocumentModal";
 import VersionHistoryModal from "../components/VersionHistoryModal";
 import AuditTrailModal from "../components/AuditTrailModal";
 export default function ParticipatingSiteTeam() {
-  const [documents, setDocuments] = useState([]);
-  const [search, setSearch] = useState("");
+ 
   const [showUpload, setShowUpload] = useState(false);
   const [selectedDocument,setSelectedDocument]=useState(null);
   const [viewerOpen,setViewerOpen]=useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [historyOpen,setHistoryOpen]=useState(false);
   const [auditOpen,setAuditOpen]=useState(false);
-  useEffect(() => {
-    setDocuments(getParticipatingSiteDocuments());
-  }, []);
+ 
+const {
+  documents,
+  setDocuments,
+} = useDocuments(getParticipatingSiteDocuments());
 
-  const filteredDocuments = useMemo(() => {
-    return documents.filter((doc) => {
-      const value = search.toLowerCase();
-
-      return (
-        doc.documentName.toLowerCase().includes(value) ||
-        doc.category.toLowerCase().includes(value) ||
-        doc.uploadedBy.toLowerCase().includes(value) ||
-        doc.status.toLowerCase().includes(value)
-      );
-    });
-  }, [documents, search]);
+const {
+  search,
+  setSearch,
+  filteredDocuments,
+} = useSearch(documents);
 
   const handleUpload = (formData) => {
 
-  const newDocument = {
-    id: Date.now(),
-    documentName: formData.documentName,
-    category: formData.category,
-    section: "1.1",
-    version: formData.version || "1.0",
-    status: "Draft",
-    uploadedBy: "Current User",
-    approvedBy: "-",
-    modifiedDate: new Date().toLocaleDateString(),
-    expiryDate: "-",
-    fileName: formData.file.name,
-    fileSize: `${(formData.file.size / 1024).toFixed(1)} KB`
-  };
+ const newDocument = {
+  id: Date.now(),
+  documentName: formData.documentName,
+  category: formData.category,
+  section: "1.1",
+  version: formData.version || "1.0",
+  status: DOCUMENT_STATUS.DRAFT,
+  uploadedBy: "Current User",
+  approvedBy: "-",
+  modifiedDate: new Date().toLocaleDateString(),
+  expiryDate: "-",
+  fileName: formData.file.name,
+  fileSize: `${(formData.file.size / 1024).toFixed(1)} KB`,
+};
 
   setDocuments((prev) => [newDocument, ...prev]);
 };

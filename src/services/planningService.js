@@ -21,7 +21,6 @@ function readJson(key, fallback) {
     return fallback;
   }
 }
-
 function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
@@ -117,6 +116,7 @@ export function saveStudyTeamMember(studyCode, member) {
     role: member?.role || "",
     email: member?.email || "",
     organization: member?.organization || "",
+    startDate: member?.startDate || "",
     phone: member?.phone || "",
   };
 
@@ -188,13 +188,15 @@ export function saveProtocol(studyCode, protocol) {
   };
 
   const entry = {
-    id: protocol?.id || `proto-${Date.now()}`,
-    title: String(protocol?.title ?? "").trim() || "Protocol",
-    currentVersion: versionEntry.version,
-    versions: protocol?.versions?.length
-      ? protocol.versions
-      : [versionEntry],
-  };
+id: protocol?.id || `proto-${Date.now()}`,
+title: String(protocol?.title ?? "").trim() || "Protocol",
+protocolNumber: protocol?.protocolNumber || "",
+status: protocol?.status || "Draft",
+currentVersion: versionEntry.version,
+versions: protocol?.versions?.length
+? protocol.versions
+: [versionEntry],
+};
 
   if (protocol?.newVersion) {
     entry.versions = [...entry.versions, versionEntry];
