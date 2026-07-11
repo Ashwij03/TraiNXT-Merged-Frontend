@@ -3,7 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FiArrowLeft, FiFolder, FiPlus } from "react-icons/fi";
 import DocumentFolderManager from "../../../Components/common/DocumentFolderManager";
 import { canAddSubject } from "../../../utils/contentAccess";
-import { getCurrentUser } from "../../../services/roleService";
+import {
+  getCurrentUser,
+  getEffectiveRole,
+  ROLE_LABELS,
+} from "../../../services/roleService";
+import { notifySubjectCreated } from "../../../services/notificationService";
 import "./StudySubjects.css";
 
 const SUBJECTS_STORAGE_KEY = "subjectsByStudy";
@@ -277,6 +282,16 @@ function StudySubjects({
     saveSubjects({
       ...subjectsByStudy,
       [studyId]: [...subjectsData, subjectToAdd],
+    });
+
+    // notifySubjectCreated expects { subjectId, studyCode, addedByRole },
+    // while this page's own subject record uses { id, studyId } — adapt the
+    // field names here rather than renaming the stored record shape used by
+    // every other subject reader in the app.
+    notifySubjectCreated({
+      subjectId: subjectToAdd.id,
+      studyCode: studyId,
+      addedByRole: ROLE_LABELS[getEffectiveRole(currentUser)] || getEffectiveRole(currentUser),
     });
 
     setNewSubject(emptySubjectForm);

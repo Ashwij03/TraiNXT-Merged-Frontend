@@ -1,22 +1,65 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import CROLayout from "./CROLayout";
 import { useCROData } from "./CRODATAContext";
 import CROStatusBadge from "./CROStatusBadge";
 import EmptyState from "./EmptyState";
+import RequestPermissionButton from "../../Components/common/RequestPermissionButton";
 import { downloadCsvReport } from "../../utils/exportReport";
+import { getReportsForStudy } from "../../services/reportService";
+import { getCurrentUser, getAccessibleStudies } from "../../services/roleService";
+
+// Reads reports through reportService's own study-scoped, permission-aware
+// getter rather than a raw shared array. getReportsForStudy() already
+// enforces per-study visibility and returns [] for studies the current
+// user can't see, so unioning across only the user's accessible studies
+// can never leak another study's reports into this list.
+function loadReportsForCurrentUser() {
+  const user = getCurrentUser();
+  const accessibleStudies = getAccessibleStudies(user);
+
+  return accessibleStudies.flatMap((study) =>
+    getReportsForStudy(study.code, user),
+  );
+}
 
 function CROReports() {
-  const { reports, showModal } = useCROData();
+  const { studies, showModal } = useCROData();
   const [searchTerm, setSearchTerm] = useState("");
+  const [reports, setReports] = useState(() => loadReportsForCurrentUser());
+
+  const refreshReports = useCallback(() => {
+    setReports(loadReportsForCurrentUser());
+  }, []);
+
+  useEffect(() => {
+    refreshReports();
+
+    window.addEventListener("reports-updated", refreshReports);
+    window.addEventListener("sponsor-data-updated", refreshReports);
+    window.addEventListener("studies-updated", refreshReports);
+
+    return () => {
+      window.removeEventListener("reports-updated", refreshReports);
+      window.removeEventListener("sponsor-data-updated", refreshReports);
+      window.removeEventListener("studies-updated", refreshReports);
+    };
+  }, [refreshReports]);
+
+  const studyNameByCode = studies.reduce((map, study) => {
+    map[String(study.code)] = study.name || study.code;
+    return map;
+  }, {});
 
   const filteredReports = reports.filter((report) =>
-    report.name.toLowerCase().includes(searchTerm.toLowerCase())
+    String(report.name || "").toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleViewReport = (report) => {
     showModal({
       title: "Report Details",
-      message: `ID: ${report.id}\nName: ${report.name}\nType: ${report.type}\nStatus: ${report.status}`,
+      message: `ID: ${report.id}\nName: ${report.name}\nType: ${report.reportType}\nStudy: ${
+        studyNameByCode[String(report.studyCode)] || report.studyCode
+      }\nStatus: ${report.status}`,
     });
   };
 
@@ -24,14 +67,15 @@ function CROReports() {
     const rows = [
       ["Report ID", report.id],
       ["Report Name", report.name],
-      ["Type", report.type],
-      ["Generated On", report.generatedOn],
+      ["Type", report.reportType],
+      ["Study", studyNameByCode[String(report.studyCode)] || report.studyCode],
+      ["Created On", report.createdAt],
       ["Status", report.status],
     ];
 
     downloadCsvReport(
       `${report.name.replace(/\s+/g, "-")}-${Date.now()}.csv`,
-      rows
+      rows,
     );
   };
 
@@ -67,6 +111,12 @@ function CROReports() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="cro-input"
           />
+          <RequestPermissionButton
+            action="Create Report"
+            module="Reports"
+            label="+ Request Report"
+            className="cro-btn-primary-inline request-permission-btn"
+          />
         </div>
 
         {filteredReports.length === 0 ? (
@@ -79,7 +129,8 @@ function CROReports() {
                   <th>Report ID</th>
                   <th>Report Name</th>
                   <th>Type</th>
-                  <th>Generated On</th>
+                  <th>Study</th>
+                  <th>Created On</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
@@ -89,8 +140,9 @@ function CROReports() {
                   <tr key={report.id}>
                     <td>{report.id}</td>
                     <td>{report.name}</td>
-                    <td>{report.type}</td>
-                    <td>{report.generatedOn}</td>
+                    <td>{report.reportType}</td>
+                    <td>{studyNameByCode[String(report.studyCode)] || report.studyCode}</td>
+                    <td>{report.createdAt}</td>
                     <td>
                       <CROStatusBadge status={report.status} />
                     </td>

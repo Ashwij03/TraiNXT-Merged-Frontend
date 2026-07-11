@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import CROSidebar from "./Components/CROSidebar";
 import CRONavbar from "./Components/CRONavbar";
 import RequestPermissionButton from "../../Components/common/RequestPermissionButton";
+import { getAccessibleStudies, getCurrentUser } from "../../services/roleService";
 
 function readEnrollmentRecords() {
   try {
@@ -28,9 +29,16 @@ function readEnrollmentRecords() {
 function Enrollment() {
   const [search, setSearch] = useState("");
   const [enrollments, setEnrollments] = useState(readEnrollmentRecords);
+  const [studies, setStudies] = useState(() =>
+    getAccessibleStudies(getCurrentUser()),
+  );
+  const [studyCode, setStudyCode] = useState("");
 
   useEffect(() => {
-    const refresh = () => setEnrollments(readEnrollmentRecords());
+    const refresh = () => {
+      setEnrollments(readEnrollmentRecords());
+      setStudies(getAccessibleStudies(getCurrentUser()));
+    };
     window.addEventListener("subjects-updated", refresh);
     window.addEventListener("studies-updated", refresh);
     return () => {
@@ -64,11 +72,29 @@ function Enrollment() {
             }}
           >
             <h1>Enrollment</h1>
-            <RequestPermissionButton
-              action="Add Enrollment"
-              module="Enrollment"
-              label="+ Add Enrollment"
-            />
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <select
+                value={studyCode}
+                onChange={(event) => setStudyCode(event.target.value)}
+                aria-label="Select study for new enrollment"
+                style={{ padding: "8px" }}
+              >
+                <option value="">Select study…</option>
+                {studies.map((study) => (
+                  <option key={study.code} value={study.code}>
+                    {study.name || study.code}
+                  </option>
+                ))}
+              </select>
+              {studyCode && (
+                <RequestPermissionButton
+                  action="Add Enrollment"
+                  module="Enrollment"
+                  studyCode={studyCode}
+                  label="+ Add Enrollment"
+                />
+              )}
+            </div>
           </div>
 
           <input

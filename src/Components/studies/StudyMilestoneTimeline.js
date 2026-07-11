@@ -49,6 +49,7 @@ function StudyMilestoneTimeline({
           <RequestPermissionButton
             action="Edit Milestones"
             module="Study Overview"
+            studyCode={studyCode}
             label="Request Edit"
             variant="link"
           />

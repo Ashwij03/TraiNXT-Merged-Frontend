@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import CROSidebar from "./Components/CROSidebar";
 import CRONavbar from "./Components/CRONavbar";
 import RequestPermissionButton from "../../Components/common/RequestPermissionButton";
+import { getAccessibleStudies, getCurrentUser } from "../../services/roleService";
 
 function readSharedFiles() {
   try {
@@ -13,11 +14,19 @@ function readSharedFiles() {
 
 function FileDetails() {
   const [files, setFiles] = useState(readSharedFiles);
+  const [studies, setStudies] = useState(() => getAccessibleStudies(getCurrentUser()));
+  const [uploadStudyCode, setUploadStudyCode] = useState("");
 
   useEffect(() => {
     const refresh = () => setFiles(readSharedFiles());
     window.addEventListener("files-updated", refresh);
     return () => window.removeEventListener("files-updated", refresh);
+  }, []);
+
+  useEffect(() => {
+    const refreshStudies = () => setStudies(getAccessibleStudies(getCurrentUser()));
+    window.addEventListener("studies-updated", refreshStudies);
+    return () => window.removeEventListener("studies-updated", refreshStudies);
   }, []);
 
   const handleDownload = (file) => {
@@ -43,11 +52,29 @@ function FileDetails() {
             }}
           >
             <h1>Files</h1>
-            <RequestPermissionButton
-              action="Upload File"
-              module="Files"
-              label="+ Add File"
-            />
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <select
+                value={uploadStudyCode}
+                onChange={(event) => setUploadStudyCode(event.target.value)}
+                aria-label="Select study for new file"
+                style={{ padding: "8px" }}
+              >
+                <option value="">Select study…</option>
+                {studies.map((study) => (
+                  <option key={study.code} value={study.code}>
+                    {study.name || study.code}
+                  </option>
+                ))}
+              </select>
+              {uploadStudyCode && (
+                <RequestPermissionButton
+                  action="Upload File"
+                  module="Files"
+                  studyCode={uploadStudyCode}
+                  label="+ Add File"
+                />
+              )}
+            </div>
           </div>
 
           {files.length === 0 ? (
@@ -81,6 +108,7 @@ function FileDetails() {
                       module="Files"
                       recordId={file.id}
                       recordName={file.name || file.fileName}
+                      studyCode={file.studyCode}
                       label="Delete"
                       variant="link"
                     />

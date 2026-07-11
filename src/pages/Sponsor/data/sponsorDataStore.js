@@ -2,6 +2,8 @@ import { getFilteredStudies } from '../../../services/filterService';
 import { getStudies } from '../../../services/studyService';
 import {
   getNotifications as getAdminNotifications,
+  markNotificationRead as markAdminNotificationRead,
+  markAllNotificationsRead as markAllAdminNotificationsRead,
   getRecruitment as getAdminRecruitment,
   getRegulatoryDocs,
   getReports as getAdminReports,
@@ -234,19 +236,76 @@ export function saveReports(data) {
   writeJson(`${STORAGE_PREFIX}reports`, data);
 }
 
+// Shared notification records (services/notificationService.js, written by
+// every role's subject/visit/document/report/comment/permission actions)
+// carry title/message/studyCode/createdAt/read -- not the type/severity/date
+// shape this page expects. This map derives a severity from the record's
+// title so the Critical/High/Medium/Low badges and filters here reflect
+// something real instead of always being blank.
+const NOTIFICATION_SEVERITY_BY_TITLE = {
+  'Permission request submitted': 'High',
+  'Permission request rejected': 'High',
+  'Permission request approved': 'Medium',
+  'Document added': 'Medium',
+  'Report created': 'Medium',
+  'Report updated': 'Medium',
+  'Visit scheduled': 'Medium',
+  'Visit updated': 'Medium',
+  'Subject added': 'Low',
+  'Subject updated': 'Low',
+  'New comment': 'Low',
+};
+
+function formatSponsorNotificationDate(isoString) {
+  const parsed = new Date(isoString);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return '';
+  }
+
+  return parsed.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
 export function getNotifications() {
   return getSafeArray(getAdminNotifications()).map((item = {}) => ({
     id: item.id || '',
-    type: item.type || '',
+    type: item.title || '',
     message: item.message || item.title || '',
-    severity: item.severity || '',
-    date: item.date || item.timestamp || '',
+    severity: NOTIFICATION_SEVERITY_BY_TITLE[item.title] || 'Medium',
+    date: formatSponsorNotificationDate(item.createdAt),
     read: Boolean(item.read),
   }));
 }
 
+// Diffs the incoming (page-local, optimistic) items against the shared
+// notification records and marks any newly-read ids through the shared
+// service, so "read" actually persists instead of being written to a
+// sponsor-only key that getNotifications() never reads back from.
 export function saveNotifications(data) {
-  writeJson(`${STORAGE_PREFIX}notifications`, data);
+  const items = getSafeArray(data);
+
+  const previouslyUnreadIds = new Set(
+    getSafeArray(getAdminNotifications())
+      .filter((item) => !item.read)
+      .map((item) => item.id)
+  );
+
+  items.forEach((item) => {
+    if (item.read && previouslyUnreadIds.has(item.id)) {
+      markAdminNotificationRead(item.id);
+    }
+  });
+}
+
+// Exposed for callers (e.g. a future "mark all read" action) that want to
+// go through the shared service directly rather than diffing a full item
+// list via saveNotifications().
+export function markAllNotificationsRead() {
+  markAllAdminNotificationsRead();
 }
 
 export function getAlerts() {

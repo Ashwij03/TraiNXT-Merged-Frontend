@@ -1,10 +1,20 @@
 // UPDATED: Central PI dashboard data layer (localStorage + dynamic study synchronization)
 
+// Notifications are intentionally NOT read from/written to their own
+// isolated "piNotificationsData" key anymore. B10 requires one shared
+// notification source across every role so PI sees the same records that
+// Admin/Site Staff/CRO/Sponsor generate (subject/visit/document/report/
+// comment/permission events) instead of an isolated, never-populated copy.
+import {
+  getNotificationsForUser,
+  markNotificationRead as markSharedNotificationRead,
+} from "../../services/notificationService";
+import { getCurrentUser } from "../../services/roleService";
+
 const STORAGE_KEYS = {
   dashboard: "piDashboardData",
   comments: "piCommentsData",
   reports: "piReportsData",
-  notifications: "piNotificationsData",
   settings: "piSettingsData",
   security: "piSecurityData",
   recruitment: "piRecruitmentData",
@@ -377,16 +387,96 @@ export const saveReportsData = (data) => {
   return data;
 };
 
-export const getNotificationsPageData = () =>
-  readStorage(STORAGE_KEYS.notifications, {
-    kpis: { total: 0, unread: 0, tasksDue: 0, alerts: 0 },
-    items: [],
+const NOTIFICATION_CATEGORY_BY_TITLE = {
+  "Visit scheduled": "Upcoming Visits",
+  "Visit updated": "Upcoming Visits",
+  "Document added": "Regulatory Deadlines",
+  "Subject added": "Study Updates",
+  "Subject updated": "Study Updates",
+  "Report created": "Study Updates",
+  "Report updated": "Study Updates",
+  "New comment": "Study Updates",
+  "Permission request submitted": "Compliance Alerts",
+  "Permission request approved": "Compliance Alerts",
+  "Permission request rejected": "Compliance Alerts",
+};
+
+const NOTIFICATION_PRIORITY_BY_TITLE = {
+  "Visit scheduled": "Medium",
+  "Visit updated": "Medium",
+  "Document added": "Medium",
+  "Subject added": "Low",
+  "Subject updated": "Low",
+  "Report created": "Medium",
+  "Report updated": "Medium",
+  "New comment": "Low",
+  "Permission request submitted": "High",
+  "Permission request approved": "Medium",
+  "Permission request rejected": "Medium",
+};
+
+const formatNotificationDate = (isoString) => {
+  const parsed = new Date(isoString);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return "";
+  }
+
+  return parsed.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   });
+};
+
+// Maps a shared notificationService record (id/title/message/studyCode/
+// createdAt/read) into the { message, category, study, priority, date,
+// status } shape the Notifications page/table already renders.
+const toNotificationsPageItem = (notification) => ({
+  id: notification.id,
+  message: notification.message,
+  category: NOTIFICATION_CATEGORY_BY_TITLE[notification.title] || "Study Updates",
+  study: notification.studyCode || "",
+  priority: NOTIFICATION_PRIORITY_BY_TITLE[notification.title] || "Medium",
+  date: formatNotificationDate(notification.createdAt),
+  status: notification.read ? "Read" : "Unread",
+});
+
+export const getNotificationsPageData = () => {
+  const items = getNotificationsForUser(getCurrentUser()).map(
+    toNotificationsPageItem
+  );
+
+  const unread = items.filter((item) => item.status === "Unread").length;
+  const alerts = items.filter(
+    (item) => item.priority === "High" || item.priority === "Critical"
+  ).length;
+
+  return {
+    kpis: { total: items.length, unread, tasksDue: unread, alerts },
+    items,
+  };
+};
 
 export const saveNotificationsPageData = (data) => {
-  writeStorage(STORAGE_KEYS.notifications, data);
+  const items = Array.isArray(data?.items) ? data.items : [];
+  const user = getCurrentUser();
+
+  const currentlyUnreadIds = new Set(
+    getNotificationsForUser(user)
+      .filter((notification) => !notification.read)
+      .map((notification) => notification.id)
+  );
+
+  items.forEach((item) => {
+    if (item.status === "Read" && currentlyUnreadIds.has(item.id)) {
+      markSharedNotificationRead(item.id, user);
+    }
+  });
+
   dispatchNotificationsUpdated();
-  return data;
+
+  return getNotificationsPageData();
 };
 
 export const syncNotificationsPageToNavbar = (pageItems = []) => {
