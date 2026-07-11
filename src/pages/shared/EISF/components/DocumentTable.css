@@ -72,3 +72,114 @@
     background:#0891b2;
     color:#fff;
 }
+
+.reference-table-card {
+    border: 1px solid #edf1f7;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: hidden;
+}
+
+.reference-table-card .document-table thead {
+    background: #f7f9fc;
+}
+
+.reference-table-card .document-table th {
+    color: whitesmoke;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
+    padding: 13px 16px;
+    border-bottom: 1px solid #edf1f7;
+}
+
+.reference-table-card .document-table td {
+    color: #1e293b;
+    font-size: 13px;
+    padding: 17px 16px;
+    border-bottom: 1px solid #edf1f7;
+    vertical-align: middle;
+}
+
+.reference-table-card .document-table tbody tr:hover {
+    background: #fbfdff;
+}
+
+.reference-table-card .select-col {
+    width: 34px;
+    padding-right: 4px;
+}
+
+.reference-table-card input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    accent-color: #1f7ae0;
+}
+
+.document-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+}
+
+.pdf-file-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 30px;
+    border: 1px solid #d8e0ea;
+    border-radius: 4px;
+    background:
+        linear-gradient(135deg, transparent 0 72%, #e7edf5 73% 100%),
+        #fff;
+    color: #ef4444;
+    font-size: 8px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.modified-cell {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 3px;
+    white-space: nowrap;
+}
+
+.modified-cell small {
+    color: #64748b;
+    font-size: 11px;
+}
+
+.icon-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.icon-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: #475569;
+    cursor: pointer;
+}
+
+.icon-action-btn:hover {
+    border-color: #dbeafe;
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.icon-action-btn.menu {
+    border-color: #e5eaf2;
+    background: #fff;
+    color: #0f172a;
+}

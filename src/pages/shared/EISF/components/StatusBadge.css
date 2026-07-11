@@ -33,3 +33,15 @@
     background:#fff4d6;
     color:#ca8a04;
 }
+
+.status-badge.under-review,
+.status-badge.under-approval {
+    background:#fff4d6;
+    color:#ca8a04;
+}
+
+.status-badge.superseded,
+.status-badge.archived {
+    background:#eef2f7;
+    color:#475569;
+}
