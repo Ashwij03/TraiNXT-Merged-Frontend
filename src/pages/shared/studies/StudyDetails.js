@@ -59,17 +59,15 @@ function getStudyTitle(study) {
     study?.title ||
     study?.studyName ||
     study?.name ||
-    study?.protocolTitle ||
-    "Study"
+    "Untitled Study"
   );
 }
 
 function getStudyOrganization(study) {
   return (
-    study?.org ||
     study?.organization ||
     study?.sponsor ||
-    study?.company ||
+    study?.cro ||
     "—"
   );
 }
@@ -77,8 +75,7 @@ function getStudyOrganization(study) {
 function getStudyLocation(study) {
   return (
     study?.location ||
-    study?.siteLocation ||
-    study?.city ||
+    study?.site ||
     study?.country ||
     "—"
   );
@@ -205,7 +202,7 @@ function StudyDetails() {
 
           {activeTab === "progress" && <ProgressNotes />}
 
-          {activeTab === "comments" && <Comments />}
+          {activeTab === "comments" && <Comments embedded />}
 
           {activeTab === "files" && <FileDetails />}
 
@@ -213,7 +210,7 @@ function StudyDetails() {
 
           {activeTab === "ereg" && <ERegSection />}
 
-          {activeTab === "financials" && <StudyFinancials />}
+          {activeTab === "financials" && <StudyFinancials studyCode={studyCode} />}
         </div>
       </div>
     </DashboardLayout>

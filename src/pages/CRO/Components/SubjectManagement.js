@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import CROSidebar from "./CROSidebar";
 import CRONavbar from "./CRONavbar";
-import RequestPermissionButton from "../../Components/common/RequestPermissionButton";
+import RequestPermissionButton from "../../../Components/common/RequestPermissionButton";
+import { getAccessibleStudies, getCurrentUser } from "../../../services/roleService";
 
 function readSharedSubjects() {
   try {
@@ -23,9 +24,14 @@ function readSharedSubjects() {
 function SubjectManagement() {
   const [subjects, setSubjects] = useState(readSharedSubjects);
   const [search, setSearch] = useState("");
+  const [studies, setStudies] = useState(() => getAccessibleStudies(getCurrentUser()));
+  const [studyCode, setStudyCode] = useState("");
 
   useEffect(() => {
-    const refresh = () => setSubjects(readSharedSubjects());
+    const refresh = () => {
+      setSubjects(readSharedSubjects());
+      setStudies(getAccessibleStudies(getCurrentUser()));
+    };
     window.addEventListener("subjects-updated", refresh);
     window.addEventListener("studies-updated", refresh);
     return () => {
@@ -58,11 +64,29 @@ function SubjectManagement() {
             }}
           >
             <h1>Subject Management</h1>
-            <RequestPermissionButton
-              action="Add Subject"
-              module="Subject Management"
-              label="Add Subject"
-            />
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <select
+                value={studyCode}
+                onChange={(event) => setStudyCode(event.target.value)}
+                aria-label="Select study for new subject"
+                style={{ padding: "8px" }}
+              >
+                <option value="">Select study…</option>
+                {studies.map((study) => (
+                  <option key={study.code} value={study.code}>
+                    {study.name || study.code}
+                  </option>
+                ))}
+              </select>
+              {studyCode && (
+                <RequestPermissionButton
+                  action="Add Subject"
+                  module="Subject Management"
+                  studyCode={studyCode}
+                  label="Add Subject"
+                />
+              )}
+            </div>
           </div>
 
           <div

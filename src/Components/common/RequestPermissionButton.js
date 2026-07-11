@@ -8,6 +8,7 @@ function RequestPermissionButton({
   module,
   recordId = "",
   recordName = "",
+  studyCode = "",
   label = "Request Permission",
   className = "request-permission-btn",
   variant = "button",
@@ -31,6 +32,7 @@ function RequestPermissionButton({
         module,
         recordId,
         recordName,
+        studyCode,
         reason: reason.trim(),
         studySubject: recordName || recordId || module,
         accessType: action,
@@ -80,6 +82,12 @@ function RequestPermissionButton({
                 <dt>Module</dt>
                 <dd>{module}</dd>
               </div>
+              {studyCode && (
+                <div>
+                  <dt>Study</dt>
+                  <dd>{studyCode}</dd>
+                </div>
+              )}
               {recordId && (
                 <div>
                   <dt>Record ID</dt>

@@ -141,6 +141,7 @@ function StudyVisitPlan() {
             <RequestPermissionButton
               action="Edit Visit Plan"
               module="Visit Plan"
+              studyCode={studyCode}
               label="Request Edit Permission"
             />
           )}

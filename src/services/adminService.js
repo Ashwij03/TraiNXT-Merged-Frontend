@@ -1,4 +1,4 @@
-// UPDATED: Central admin data service — localStorage-backed with default seed data
+// UPDATED: Central admin data service — localStorage-backed, fully dynamic (no default/seed data)
 
 import { getStudies, getRecentActivityLogs, getStudyByCode } from "./studyService";
 import {
@@ -12,6 +12,12 @@ import {
   getMergedSchedules,
   getUpcomingVisitsWindow
 } from "./visitScheduleService";
+import {
+  getNotificationsForUser,
+  markNotificationRead as markSharedNotificationRead,
+  markAllNotificationsReadForUser,
+  NOTIFICATIONS_UPDATED
+} from "./notificationService";
 
 // UPDATED: queries storage key renamed to comments (legacy "queries" key migrated on read)
 const STORAGE_KEYS = {
@@ -43,7 +49,12 @@ function readJson(key, fallback = []) {
 }
 
 function writeJson(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Swallow storage write failures (e.g. quota exceeded) rather than
+    // crashing the caller; data simply will not persist for this write.
+  }
 }
 
 function getAllSubjectsFlat() {
@@ -60,386 +71,28 @@ function getAllSubjectsFlat() {
   );
 }
 
-function seedIfEmpty(key, defaults) {
-  const existing = readJson(key, null);
-
-  if (Array.isArray(existing) && existing.length === 0) {
-    writeJson(key, defaults);
-    return defaults;
+// UPDATED: migrate legacy localStorage key from "queries" to "comments"
+function migrateLegacyQueriesStorage() {
+  if (typeof window === "undefined") {
+    return;
   }
 
-  if (existing === null || existing === undefined) {
-    writeJson(key, defaults);
-    return defaults;
-  }
+  const legacy = localStorage.getItem("queries");
+  const current = localStorage.getItem(STORAGE_KEYS.comments);
 
-  return existing;
+  if (legacy && !current) {
+    localStorage.setItem(STORAGE_KEYS.comments, legacy);
+  }
 }
 
+// UPDATED: No more default/seed data of any kind. This now only performs the
+// one-time legacy key migration so existing real data keeps working; it no
+// longer manufactures sites, comments, schedules, reports, training logs,
+// delegation logs, or any other demo records. Every getter below reads
+// whatever is actually in localStorage and returns an empty array/object
+// when nothing has been created yet.
 export function initializeAdminData() {
-  const defaultSites = [
-    {
-      id: "SITE-A",
-      siteNumber: "001",
-      name: "Apollo Hospital",
-      location: "Chennai",
-      pi: "Dr. Meera Rao",
-      status: "Active",
-      enrollmentRate: 82,
-      subjectsEnrolled: 24,
-      targetSubjects: 30
-    },
-    {
-      id: "SITE-B",
-      siteNumber: "002",
-      name: "City Hospital",
-      location: "Bangalore",
-      pi: "Dr. Priya Sharma",
-      status: "Active",
-      enrollmentRate: 68,
-      subjectsEnrolled: 17,
-      targetSubjects: 25
-    },
-    {
-      id: "SITE-C",
-      siteNumber: "003",
-      name: "Fortis Healthcare",
-      location: "Mumbai",
-      pi: "Dr. Arun Kumar",
-      status: "Onboarding",
-      enrollmentRate: 45,
-      subjectsEnrolled: 9,
-      targetSubjects: 20
-    }
-  ];
-
-  const defaultComments = [
-    {
-      id: "C-101",
-      subjectId: "SUB-001",
-      document: "Lab Report — Visit 2",
-      study: "747-303",
-      site: "Apollo Hospital",
-      status: "Open",
-      priority: "High",
-      createdAt: "2026-06-08",
-      createdBy: "Dr. Meera Rao",
-      description: "Missing lab result for Visit 2",
-      stage: "Monitoring"
-    },
-    {
-      id: "C-102",
-      subjectId: "SUB-002",
-      document: "Informed Consent Form",
-      study: "05151",
-      site: "Apollo Hospital",
-      status: "Open",
-      priority: "Medium",
-      createdAt: "2026-06-09",
-      createdBy: "Site Monitor",
-      description: "Consent date discrepancy",
-      stage: "Monitoring"
-    },
-    {
-      id: "C-103",
-      subjectId: "SUB-003",
-      document: "Screening Visit Notes",
-      study: "747-303",
-      site: "City Hospital",
-      status: "Resolved",
-      priority: "Low",
-      createdAt: "2026-06-05",
-      createdBy: "CRA Reviewer",
-      description: "Comment closed after clarification",
-      stage: "Final"
-    }
-  ];
-
-  const defaultSchedules = [
-    {
-      date: "2026-06-08",
-      subjectId: "SUB-001",
-      subjectName: "John Doe",
-      visit: "Screening",
-      status: "Completed",
-      study: "747-303",
-      site: "Apollo Hospital",
-      time: "10:00 AM"
-    },
-    {
-      date: "2026-06-08",
-      subjectId: "SUB-002",
-      subjectName: "Jane Smith",
-      visit: "Visit 1",
-      status: "Scheduled",
-      study: "05151",
-      site: "Apollo Hospital",
-      time: "02:00 PM"
-    },
-    {
-      date: "2026-06-10",
-      subjectId: "SUB-003",
-      subjectName: "Mike Johnson",
-      visit: "Visit 2",
-      status: "Completed",
-      study: "747-303",
-      site: "City Hospital",
-      time: "11:00 AM"
-    },
-    {
-      date: "2026-06-10",
-      subjectId: "SUB-001",
-      subjectName: "John Doe",
-      visit: "Visit 3",
-      status: "Scheduled",
-      study: "747-303",
-      site: "Apollo Hospital",
-      time: "03:30 PM"
-    },
-    {
-      date: "2026-06-15",
-      subjectId: "SUB-004",
-      subjectName: "Sarah Williams",
-      visit: "End of Study",
-      status: "Scheduled",
-      study: "05151",
-      site: "Fortis Healthcare",
-      time: "09:00 AM"
-    }
-  ];
-
-  const defaultNotifications = [
-    {
-      id: "N-001",
-      title: "Pending user approvals",
-      message: "New registration requests require admin review",
-      type: "warning",
-      read: false,
-      createdAt: "2026-06-15T08:00:00.000Z"
-    },
-    {
-      id: "N-002",
-      title: "Site performance report ready",
-      message: "Monthly site metrics are available for review",
-      type: "info",
-      read: false,
-      createdAt: "2026-06-14T14:30:00.000Z"
-    },
-    {
-      id: "N-003",
-      title: "Regulatory document expiring",
-      message: "Site B IRB approval expires in 14 days",
-      type: "danger",
-      read: true,
-      createdAt: "2026-06-13T10:15:00.000Z"
-    }
-  ];
-
-  const defaultSettings = {
-    organizationName: "TriaNXT Research",
-    timezone: "Asia/Kolkata",
-    dateFormat: "DD-MMM-YYYY",
-    emailNotifications: true,
-    auditRetentionDays: 365,
-    defaultStudyStatus: "Active"
-  };
-
-  const defaultSitePerformance = [
-    {
-      siteId: "SITE-A",
-      siteName: "Apollo Hospital",
-      enrollmentTarget: 30,
-      enrolled: 24,
-      screeningRate: 88,
-      visitCompliance: 94,
-      commentResolutionDays: 2.1
-    },
-    {
-      siteId: "SITE-B",
-      siteName: "City Hospital",
-      enrollmentTarget: 25,
-      enrolled: 17,
-      screeningRate: 72,
-      visitCompliance: 89,
-      commentResolutionDays: 3.4
-    },
-    {
-      siteId: "SITE-C",
-      siteName: "Fortis Healthcare",
-      enrollmentTarget: 20,
-      enrolled: 9,
-      screeningRate: 61,
-      visitCompliance: 85,
-      commentResolutionDays: 4.2
-    }
-  ];
-
-  const defaultRecruitment = [
-    {
-      id: "REC-001",
-      source: "Referral",
-      screened: 42,
-      enrolled: 18,
-      conversionRate: 43,
-      site: "Apollo Hospital"
-    },
-    {
-      id: "REC-002",
-      source: "Advertisement",
-      screened: 28,
-      enrolled: 9,
-      conversionRate: 32,
-      site: "City Hospital"
-    },
-    {
-      id: "REC-003",
-      source: "Database",
-      screened: 35,
-      enrolled: 12,
-      conversionRate: 34,
-      site: "Fortis Healthcare"
-    }
-  ];
-
-  const defaultRegulatory = [
-    {
-      id: "REG-001",
-      document: "IRB Approval",
-      site: "Apollo Hospital",
-      expiryDate: "2026-12-01",
-      status: "Valid"
-    },
-    {
-      id: "REG-002",
-      document: "Investigator CV",
-      site: "City Hospital",
-      expiryDate: "2026-08-15",
-      status: "Expiring Soon"
-    },
-    {
-      id: "REG-003",
-      document: "Site Initiation Visit Report",
-      site: "Fortis Healthcare",
-      expiryDate: "2026-06-30",
-      status: "Pending Review"
-    }
-  ];
-
-  const defaultReports = [
-    {
-      id: "RPT-001",
-      name: "Enrollment Summary",
-      category: "Operations",
-      lastGenerated: "2026-06-14",
-      status: "Ready"
-    },
-    {
-      id: "RPT-002",
-      name: "Comment Aging Report",
-      category: "Quality",
-      lastGenerated: "2026-06-13",
-      status: "Ready"
-    },
-    {
-      id: "RPT-003",
-      name: "Site Performance Dashboard",
-      category: "Monitoring",
-      lastGenerated: "2026-06-10",
-      status: "Scheduled"
-    }
-  ];
-
-  seedIfEmpty(STORAGE_KEYS.sites, defaultSites);
   migrateLegacyQueriesStorage();
-  seedIfEmpty(STORAGE_KEYS.comments, defaultComments);
-  seedIfEmpty(STORAGE_KEYS.schedules, defaultSchedules);
-  seedIfEmpty(STORAGE_KEYS.notifications, defaultNotifications);
-
-  if (!localStorage.getItem(STORAGE_KEYS.settings)) {
-    writeJson(STORAGE_KEYS.settings, defaultSettings);
-  }
-
-  seedIfEmpty(STORAGE_KEYS.sitePerformance, defaultSitePerformance);
-  seedIfEmpty(STORAGE_KEYS.recruitment, defaultRecruitment);
-  seedIfEmpty(STORAGE_KEYS.regulatory, defaultRegulatory);
-  seedIfEmpty(STORAGE_KEYS.reports, defaultReports);
-
-  if (!localStorage.getItem(STORAGE_KEYS.compliance)) {
-    writeJson(STORAGE_KEYS.compliance, { score: 95 });
-  }
-
-  const defaultTrainingLogs = [
-    {
-      id: "TRN-001",
-      training: "GCP",
-      linkedDuties: "REQUIRED FOR ALL USERS",
-      site: "Apollo Hospital",
-      delegates: "8 delegates",
-      status: "Active"
-    },
-    {
-      id: "TRN-002",
-      training: "Physical Exam",
-      linkedDuties: "A2 - Physical Exam",
-      site: "Apollo Hospital",
-      delegates: "1 delegate",
-      status: "Active"
-    },
-    {
-      id: "TRN-003",
-      training: "GCP Refresher",
-      linkedDuties: "REQUIRED FOR ALL USERS",
-      site: "City Hospital",
-      delegates: "5 delegates",
-      status: "Expired"
-    }
-  ];
-
-  const defaultDelegationLogs = [
-    {
-      id: "DEL-001",
-      delegateName: "Megan Richards",
-      role: "Investigator",
-      duty: "A2",
-      description: "Physical Exam",
-      effectivePeriod: "1/27/2020 - Present",
-      site: "Apollo Hospital",
-      status: "Active"
-    },
-    {
-      id: "DEL-002",
-      delegateName: "Megan Richards",
-      role: "Investigator",
-      duty: "A3",
-      description: "Medical Review",
-      effectivePeriod: "2/10/2020 - Present",
-      site: "Apollo Hospital",
-      status: "Active"
-    },
-    {
-      id: "DEL-003",
-      delegateName: "Hannah Kulkarni",
-      role: "Coordinator",
-      duty: "2",
-      description: "eReg Access",
-      effectivePeriod: "1/27/2020 - 4/13/2020",
-      site: "Apollo Hospital",
-      status: "Inactive"
-    },
-    {
-      id: "DEL-004",
-      delegateName: "Chris Patel",
-      role: "Nurse",
-      duty: "A1",
-      description: "Vital Signs",
-      effectivePeriod: "3/01/2020 - Present",
-      site: "City Hospital",
-      status: "Active"
-    }
-  ];
-
-  seedIfEmpty(STORAGE_KEYS.trainingLogs, defaultTrainingLogs);
-  seedIfEmpty(STORAGE_KEYS.delegationLogs, defaultDelegationLogs);
 }
 
 export function getUsers() {
@@ -521,20 +174,6 @@ export function saveSites(sites) {
   writeJson(STORAGE_KEYS.sites, sites);
 }
 
-// UPDATED: migrate legacy localStorage key from "queries" to "comments"
-function migrateLegacyQueriesStorage() {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  const legacy = localStorage.getItem("queries");
-  const current = localStorage.getItem(STORAGE_KEYS.comments);
-
-  if (legacy && !current) {
-    localStorage.setItem(STORAGE_KEYS.comments, legacy);
-  }
-}
-
 // TODO: Comments code is yet to be completed — dynamic placeholder wired for now
 export function getComments(user = getCurrentUser()) {
   initializeAdminData();
@@ -566,43 +205,55 @@ export function getAllSchedules(user = getCurrentUser()) {
   return getMergedSchedules(user);
 }
 
+// UPDATED: Admin no longer keeps its own parallel notifications array.
+// getNotificationsForUser() reads the same shared "notifications" key that
+// CRO/Sponsor/PI notifications use, scoped to the current admin user, so a
+// notification created by any role/action shows up here without a separate
+// admin-only copy of the data.
 export function getNotifications() {
-  initializeAdminData();
-  return readJson(STORAGE_KEYS.notifications, []);
+  return getNotificationsForUser(getCurrentUser());
 }
 
-export const ADMIN_NOTIFICATIONS_EVENT = "admin-notifications-updated";
+// Kept as an alias of the shared event so existing imports of
+// ADMIN_NOTIFICATIONS_EVENT / dispatchAdminNotificationsUpdated keep working,
+// while actually dispatching the one shared event every role listens for.
+export const ADMIN_NOTIFICATIONS_EVENT = NOTIFICATIONS_UPDATED;
 
 export function dispatchAdminNotificationsUpdated() {
-  window.dispatchEvent(new CustomEvent(ADMIN_NOTIFICATIONS_EVENT));
+  window.dispatchEvent(new Event(NOTIFICATIONS_UPDATED));
 }
 
 export function markNotificationRead(notificationId) {
-  const notifications = getNotifications().map((item) =>
-    item.id === notificationId ? { ...item, read: true } : item
-  );
-  writeJson(STORAGE_KEYS.notifications, notifications);
-  dispatchAdminNotificationsUpdated();
-  return notifications;
+  return markSharedNotificationRead(notificationId, getCurrentUser());
 }
 
 export function markNotificationUnread(notificationId) {
-  const notifications = getNotifications().map((item) =>
+  const user = getCurrentUser();
+  const visibleIds = new Set(
+    getNotificationsForUser(user).map((item) => item.id)
+  );
+
+  if (!visibleIds.has(notificationId)) {
+    return getNotificationsForUser(user);
+  }
+
+  const all = readJson(STORAGE_KEYS.notifications, []);
+  const target = all.find((item) => item.id === notificationId);
+
+  if (!target || !target.read) {
+    return getNotificationsForUser(user);
+  }
+
+  const updated = all.map((item) =>
     item.id === notificationId ? { ...item, read: false } : item
   );
-  writeJson(STORAGE_KEYS.notifications, notifications);
+  writeJson(STORAGE_KEYS.notifications, updated);
   dispatchAdminNotificationsUpdated();
-  return notifications;
+  return getNotificationsForUser(user);
 }
 
 export function markAllNotificationsRead() {
-  const notifications = getNotifications().map((item) => ({
-    ...item,
-    read: true
-  }));
-  writeJson(STORAGE_KEYS.notifications, notifications);
-  dispatchAdminNotificationsUpdated();
-  return notifications;
+  return markAllNotificationsReadForUser(getCurrentUser());
 }
 
 export function getSettings() {
@@ -717,14 +368,31 @@ export function getReports() {
   return readJson(STORAGE_KEYS.reports, []);
 }
 
+// UPDATED: Compliance score is now derived entirely from real stored data —
+// no hardcoded baseline. Returns "—" when there is nothing yet to measure
+// (no comments and no regulatory docs recorded for any study), instead of a
+// fabricated percentage.
 export function getComplianceScore() {
   initializeAdminData();
+
   const comments = getComments();
+  const regulatoryDocs = getRegulatoryDocs();
+
+  if (comments.length === 0 && regulatoryDocs.length === 0) {
+    return "—";
+  }
+
   const openComments = comments.filter((c) => c.status === "Open").length;
-  const stored = readJson(STORAGE_KEYS.compliance, { score: 95 });
-  const baseScore = Number(stored.score) || 95;
-  const adjusted = Math.max(70, Math.min(100, baseScore - openComments));
-  return `${adjusted}%`;
+  const nonValidRegulatoryDocs = regulatoryDocs.filter(
+    (doc) => doc.status && doc.status !== "Valid"
+  ).length;
+
+  const score = Math.max(
+    0,
+    Math.min(100, 100 - openComments - nonValidRegulatoryDocs)
+  );
+
+  return `${score}%`;
 }
 
 export function getAdminDashboardData(siteFilter = "") {
@@ -766,15 +434,18 @@ export function getAdminDashboardData(siteFilter = "") {
     (user) => user.approvalStatus === "Pending"
   );
 
+  // UPDATED: no more fabricated fallback numbers (previously "index + 4")
+  // when a study/site has no recorded enrollment yet — real values only,
+  // defaulting to 0 rather than an invented figure.
   const studyData =
     studies.length > 0
       ? studies.slice(0, 6).map((study, index) => ({
           name: study.code || study.name || `Study ${index + 1}`,
-          value: Number(study.enrolled || study.subjects || index + 4)
+          value: Number(study.enrolled || study.subjects || 0)
         }))
       : sites.slice(0, 5).map((site, index) => ({
           name: site.name || `Site ${index + 1}`,
-          value: Number(site.subjectsEnrolled || index + 4)
+          value: Number(site.subjectsEnrolled || 0)
         }));
 
   const auditActivities = getRecentActivityLogs(5).map((log) => ({
@@ -860,9 +531,12 @@ export function getSiteStaffDashboardData(user = getCurrentUser()) {
     site: subject.site || "N/A"
   }));
 
+  // UPDATED: recruitment/site totals are still real, dynamically-derived
+  // fallbacks (used only when no subject records exist yet for this site) —
+  // not fabricated demo numbers.
   return {
-    screeningCount: screeningCount || getRecruitment().reduce((sum, r) => sum + r.screened, 0),
-    enrolledCount: enrolledCount || getSites().reduce((sum, s) => sum + (s.subjectsEnrolled || 0), 0),
+    screeningCount: screeningCount || getRecruitment(user).reduce((sum, r) => sum + Number(r.screened || 0), 0),
+    enrolledCount: enrolledCount || getSites(user).reduce((sum, s) => sum + Number(s.subjectsEnrolled || 0), 0),
     upcomingVisitsCount: upcomingVisits.length,
     openCommentsCount: comments.length,
     upcomingVisits,
@@ -904,23 +578,24 @@ export function getPIDashboardData() {
     String(s.status || "").toLowerCase().includes("active")
   ).length;
 
+  const completedVisitCount = schedules.filter((s) => s.status === "Completed").length;
+
+  // UPDATED: removed hardcoded fallback percentages ("92%", "88%") and the
+  // hardcoded enrollment-target fallback (150). Metrics now reflect actual
+  // stored data and show "—" when there is nothing yet to compute from.
   return {
     enrollmentCount: totalEnrolled,
-    enrollmentTarget: totalTarget || 150,
+    enrollmentTarget: totalTarget,
     activeSubjects: activeSubjects || totalEnrolled,
     pendingTasks: comments.length + getRegulatoryDocs().filter((d) => d.status !== "Valid").length,
     overdueDocuments: getRegulatoryDocs().filter((d) => d.status === "Expiring Soon").length,
     visitCompletion:
       schedules.length > 0
-        ? `${Math.round(
-            (schedules.filter((s) => s.status === "Completed").length /
-              schedules.length) *
-              100
-          )}%`
-        : "92%",
+        ? `${Math.round((completedVisitCount / schedules.length) * 100)}%`
+        : "—",
     consentRate: subjects.length
       ? `${Math.round((activeSubjects / subjects.length) * 100)}%`
-      : "88%",
+      : "—",
     recentSubjects: subjects.slice(0, 5).map((s) => ({
       subjectId: s.subjectId || s.id,
       status: s.status || "Unknown",

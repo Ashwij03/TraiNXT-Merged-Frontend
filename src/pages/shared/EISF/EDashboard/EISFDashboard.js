@@ -27,32 +27,31 @@ import Archiving from "../Archiving/Archiving";
 import InvestigationalProduct from "../InvestigationalProduct/InvestigationalProduct";
 
 const pageMap = {
-  "participating-site-team": ParticipatingSiteTeam,
-  "project-management": ProjectManagement,
-  protocol: Protocol,
-  "participant-consent": ParticipantConsent,
-  regulatory: Regulatory,
-  ethics: Ethics,
-  "research-governance": ResearchGovernance,
-  sop: SOP,
-  "site-intiation": SiteIntiation,
-  "site-training": SiteTraining,
-  recruitment: Recruitment,
-  randomization: Randomization,
-  "data-management": DataManagement,
-  safety: Safety,
-  monitoring: Monitoring,
-  laboratory: Laboratory,
-  supplies: Supplies,
-  legal: Legal,
-  finance: Finance,
-  "other-communication": OtherCommunication,
-  archiving: Archiving,
-  "investigational-product": InvestigationalProduct
+  "1.0": ParticipatingSiteTeam,
+  "2.0": ProjectManagement,
+  "3.0": Protocol,
+  "4.0": ParticipantConsent,
+  "5.0": Regulatory,
+  "6.0": Ethics,
+  "7.0": ResearchGovernance,
+  "8.0": SOP,
+  "9.0": SiteIntiation,
+  "10.0": SiteTraining,
+  "11.0": Recruitment,
+  "12.0": Randomization,
+  "13.0": DataManagement,
+  "14.0": Safety,
+  "15.0": Monitoring,
+  "16.0": Laboratory,
+  "17.0": Supplies,
+  "18.0": Legal,
+  "19.0": Finance,
+  "20.0": OtherCommunication,
+  "21.0": Archiving,
+  "22.0": InvestigationalProduct,
 };
-
 export default function EISFDashboard() {
-  const [selected, setSelected] = useState("participating-site-team");
+  const [selected, setSelected] = useState("1.0");
 
   const [expanded, setExpanded] = useState(() => {
     const state = {};
@@ -107,11 +106,17 @@ export default function EISFDashboard() {
             </div>
 
             {expanded[item.id] &&
-              item.children?.map((child) => (
-                <div key={child.id} className="eisf-child-item">
-                  {child.title}
-                </div>
-              ))}
+  item.children?.map((child) => (
+    <div
+      key={child.id}
+      className={`eisf-child-item ${
+        selected === child.id ? "active" : ""
+      }`}
+      onClick={() => setSelected(item.id)}
+    >
+      {child.title}
+    </div>
+  ))}
           </div>
         ))}
       </aside>

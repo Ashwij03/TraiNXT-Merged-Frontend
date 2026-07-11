@@ -1,6 +1,5 @@
 import "./ParticipatingSiteTeam.css";
-import { useState } from "react";
-
+import { useState, useMemo } from "react";
 import { getParticipatingSiteDocuments } from "../services/eisfService";
 import useDocuments from "../hooks/useDocuments";
 import useSearch from "../hooks/useSearch";
@@ -33,6 +32,23 @@ const {
   setSearch,
   filteredDocuments,
 } = useSearch(documents);
+
+const sections = [
+  { id: "1.1", name: "Contact List" },
+  { id: "1.2", name: "Signature & Delegation Log" },
+  { id: "1.3", name: "CVs" },
+  { id: "1.4", name: "GCP Training Certificates" },
+  { id: "1.5", name: "EDC Training Certifications" },
+  { id: "1.6", name: "Other Training Certificates" },
+];
+
+const [activeSection, setActiveSection] = useState("1.1");
+
+const sectionDocuments = useMemo(() => {
+  return filteredDocuments.filter(
+    (doc) => doc.section === activeSection
+  );
+}, [filteredDocuments, activeSection]);
 
   const handleUpload = (formData) => {
 
@@ -91,6 +107,7 @@ const handleSaveDocument = (updatedDocument) => {
   setSelectedDocument(null);
 };
 
+
   return (
     <div className="pst-page">
 
@@ -111,9 +128,38 @@ const handleSaveDocument = (updatedDocument) => {
     onSearch={setSearch}
     onUpload={() => setShowUpload(true)}
 />
+<div className="pst-sections">
 
+    {sections.map((section) => (
+
+        <button
+            key={section.id}
+            className={
+                activeSection === section.id
+                    ? "pst-section active"
+                    : "pst-section"
+            }
+            onClick={() => setActiveSection(section.id)}
+        >
+            <span>{section.id}</span>
+
+            {section.name}
+
+            <span className="count">
+                {
+                    documents.filter(
+                        d => d.section === section.id
+                    ).length
+                }
+            </span>
+
+        </button>
+
+    ))}
+
+</div>
   <DocumentTable
-    documents={filteredDocuments}
+    documents={sectionDocuments}
     onView={handleView}
     onHistory={handleHistory}
     onAudit={handleAudit}

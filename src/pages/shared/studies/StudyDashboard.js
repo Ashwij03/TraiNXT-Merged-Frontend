@@ -538,18 +538,8 @@ function StudyDashboard() {
             {activeTab === "Reports" && <StudyReports />}
 
             {activeTab === "eISF" && (
-              <div className="module-card">
-                <h2>eISF</h2>
-
-                <DocumentFolderManager
-                  sectionId="eISF"
-                  contextKey={id || "default"}
-                  title="eISF"
-                  studyCode={id}
-                  layout="vertical"
-                />
-              </div>
-            )}
+  <EISFWorkspace studyCode={id} />
+)}
             {activeTab === "Clinical Sites" && (
               <ClinicalSitesDashboard
               study={currentStudy}
@@ -597,9 +587,7 @@ function StudyDashboard() {
         {activeTab === "Reports" && (
           <StudyReports />
         )}
-        {activeTab === "eISF" && (
-  <EISFWorkspace studyCode={id} />
-)}
+    
 
         
 {activeTab === "Financials" && (

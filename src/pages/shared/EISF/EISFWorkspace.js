@@ -1,19 +1,10 @@
-import DocumentFolderManager from "../../../Components/common/DocumentFolderManager";
-
+import EISFDashboard from "./EDashboard/EISFDashboard";
 function EISFWorkspace({ studyCode }) {
   return (
-    <div className="module-card">
-      <h2>eISF</h2>
-
-      <DocumentFolderManager
-        sectionId="eISF"
-        contextKey={studyCode || "default"}
-        title="eISF"
-        studyCode={studyCode}
-        layout="vertical"
-      />
-    </div>
-  );
+  <div className="module-card">
+    <EISFDashboard studyCode={studyCode} />
+  </div>
+);
 }
 
 export default EISFWorkspace;
