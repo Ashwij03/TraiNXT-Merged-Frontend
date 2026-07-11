@@ -59,6 +59,8 @@ import { getCurrentUser } from "../../../services/roleService";
 import "../AccessPermissions.css";
 import "../../Admin/Dashboard.css";
 
+import ClinicalSitesDashboard from "./ClinicalSitesDashboard";
+
 function StudyDashboard() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -547,6 +549,11 @@ function StudyDashboard() {
                 />
               </div>
             )}
+            {activeTab === "Clinical Sites" && (
+              <ClinicalSitesDashboard
+              study={currentStudy}
+              />
+        )}
 
             {activeTab === "Financials" && (
               <div className="study-financials-tab">
