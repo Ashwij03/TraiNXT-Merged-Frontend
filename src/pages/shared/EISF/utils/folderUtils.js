@@ -1,4 +1,4 @@
-import EISFMenuConfig from "../constants/EISFMenuConfig";
+import EISFMenuConfig from "../Constants/EISFMenuConfig";
 
 /**
  * Find a section by section id (e.g. 1.0)

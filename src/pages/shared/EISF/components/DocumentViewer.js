@@ -3,7 +3,8 @@ import "./DocumentViewer.css";
 export default function DocumentViewer({
   open,
   document,
-  onClose
+  onClose,
+  onDownload
 }) {
 
   if (!open || !document) return null;
@@ -21,6 +22,7 @@ export default function DocumentViewer({
           </div>
 
           <button
+            type="button"
             className="viewer-close"
             onClick={onClose}
           >
@@ -67,14 +69,14 @@ export default function DocumentViewer({
 
           <div className="pdf-placeholder">
 
-              📄
+              <span className="pdf-placeholder-icon">PDF</span>
 
               <h3>
                   PDF Preview
               </h3>
 
               <p>
-                  Actual PDF Viewer will be connected later.
+                  Mock preview is shown because backend file storage is not connected.
               </p>
 
           </div>
@@ -83,11 +85,16 @@ export default function DocumentViewer({
 
         <div className="viewer-footer">
 
-          <button className="secondary-btn">
+          <button
+            type="button"
+            className="secondary-btn"
+            onClick={() => onDownload?.(document)}
+          >
             Download
           </button>
 
           <button
+            type="button"
             className="primary-btn"
             onClick={onClose}
           >

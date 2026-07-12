@@ -67,11 +67,9 @@ function useViewportMode() {
 function SiteStaffDashboardShell({ children }) {
   const location = useLocation();
   const contentRef = useRef(null);
-  const lastScrollTop = useRef(0);
   const viewportMode = useViewportMode();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [headerHidden, setHeaderHidden] = useState(false);
 
   useEffect(() => {
     const currentUser = getCurrentUser();
@@ -114,41 +112,6 @@ function SiteStaffDashboardShell({ children }) {
     setSidebarOpen((prev) => !prev);
   }, [viewportMode]);
 
-  const handleContentScroll = useCallback(() => {
-    const node = contentRef.current;
-
-    if (!node) {
-      return;
-    }
-
-    const currentTop = node.scrollTop;
-    const delta = currentTop - lastScrollTop.current;
-
-    if (currentTop <= 8) {
-      setHeaderHidden(false);
-    } else if (delta > 6) {
-      setHeaderHidden(true);
-    } else if (delta < -6) {
-      setHeaderHidden(false);
-    }
-
-    lastScrollTop.current = currentTop;
-  }, []);
-
-  useEffect(() => {
-    const node = contentRef.current;
-
-    if (!node) {
-      return undefined;
-    }
-
-    node.addEventListener("scroll", handleContentScroll, { passive: true });
-
-    return () => {
-      node.removeEventListener("scroll", handleContentScroll);
-    };
-  }, [handleContentScroll]);
-
   const sidebarWrapClass = [
     "dashboard-sidebar-wrap",
     viewportMode !== "desktop" && sidebarOpen ? "is-open" : "",
@@ -180,11 +143,7 @@ function SiteStaffDashboardShell({ children }) {
 
       <div className="dashboard-main">
         <div className="dashboard-main-scaled">
-          <div
-            className={`dashboard-header-wrap${
-              headerHidden ? " header-hidden" : ""
-            }`}
-          >
+          <div className="dashboard-header-wrap">
             <SiteStaffNavbar
               onToggleSidebar={handleToggleSidebar}
               sidebarOpen={sidebarIsOpen}

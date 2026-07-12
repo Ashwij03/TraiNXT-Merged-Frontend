@@ -1,11 +1,11 @@
-import { getParticipatingSiteDocuments } from "./eisfService";
-import DOCUMENT_STATUS from "../constants/documentStatus";
+import { getEISFModuleDocuments } from "./eisfService";
+import DOCUMENT_STATUS from "../Constants/documentStatus";
 
 /**
  * Returns all dashboard summary values.
  */
 export function getDashboardSummary() {
-  const documents = getParticipatingSiteDocuments();
+  const documents = getEISFModuleDocuments();
 
   const totalDocuments = documents.length;
 
@@ -24,7 +24,7 @@ export function getDashboardSummary() {
   ).length;
 
   const missingDocuments = documents.filter(
-    (doc) => doc.status === DOCUMENT_STATUS.DRAFT
+    (doc) => doc.status === DOCUMENT_STATUS.MISSING
   ).length;
 
   const completionPercentage =
@@ -46,7 +46,7 @@ export function getDashboardSummary() {
  * Returns document status counts.
  */
 export function getDocumentStatusSummary() {
-  const documents = getParticipatingSiteDocuments();
+  const documents = getEISFModuleDocuments();
 
   return {
     draft: documents.filter(
@@ -79,7 +79,7 @@ export function getDocumentStatusSummary() {
  * Documents pending approval.
  */
 export function getDocumentsUnderApproval() {
-  return getParticipatingSiteDocuments().filter(
+  return getEISFModuleDocuments().filter(
     (doc) =>
       doc.status === DOCUMENT_STATUS.PENDING ||
       doc.status === DOCUMENT_STATUS.UNDER_REVIEW
@@ -90,7 +90,7 @@ export function getDocumentsUnderApproval() {
  * Expired documents.
  */
 export function getExpiredDocuments() {
-  return getParticipatingSiteDocuments().filter(
+  return getEISFModuleDocuments().filter(
     (doc) => doc.status === DOCUMENT_STATUS.EXPIRED
   );
 }
@@ -99,8 +99,8 @@ export function getExpiredDocuments() {
  * Missing documents.
  */
 export function getMissingDocuments() {
-  return getParticipatingSiteDocuments().filter(
-    (doc) => doc.status === DOCUMENT_STATUS.DRAFT
+  return getEISFModuleDocuments().filter(
+    (doc) => doc.status === DOCUMENT_STATUS.MISSING
   );
 }
 
@@ -119,7 +119,7 @@ export function getCompletionPercentage() {
  * Returns documents by status.
  */
 export function getDocumentsByStatus(status) {
-  return getParticipatingSiteDocuments().filter(
+  return getEISFModuleDocuments().filter(
     (doc) => doc.status === status
   );
 }
@@ -128,7 +128,7 @@ export function getDocumentsByStatus(status) {
  * Returns total document count.
  */
 export function getTotalDocuments() {
-  return getParticipatingSiteDocuments().length;
+  return getEISFModuleDocuments().length;
 }
 
 /**

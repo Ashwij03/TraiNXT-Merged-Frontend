@@ -32,13 +32,15 @@ export default function useDashboard(documents = []) {
     );
 
     const expiredDocuments = safeDocuments.filter((document) => {
-      if (!document.expiryDate) return false;
+      if (document.status === DOCUMENT_STATUS.EXPIRED) return true;
+      if (!document.expiryDate || document.expiryDate === "-") return false;
 
       return new Date(document.expiryDate) < today;
     });
 
     const expiringSoonDocuments = safeDocuments.filter((document) => {
-      if (!document.expiryDate) return false;
+      if (!document.expiryDate || document.expiryDate === "-") return false;
+      if (document.status === DOCUMENT_STATUS.EXPIRED) return false;
 
       const expiryDate = new Date(document.expiryDate);
 

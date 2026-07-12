@@ -22,6 +22,526 @@ function documents(category, names) {
 }
 
 const EISF_ASSIGNED_MODULES = {
+  participatingSiteTeam: {
+    id: "1.0",
+    title: "Participating Site Team",
+    description: "Manage and maintain documents related to the participating site research team.",
+    sections: [
+      {
+        id: "1.1",
+        title: "Contact List",
+        description: "Site Contact List (current and superseded) including Name, Role, Phone and Email for the PI, Sub-Is/AIs, SC, Research Nurse and other key team staff.",
+        documents: documents("Contact List", [
+          "Site Contact List - Current",
+          "Site Contact List - Superseded",
+        ]),
+      },
+      {
+        id: "1.2",
+        title: "Signature and Delegation of Duties Log",
+        description: "Signature and Delegation of Duties Log completed and signed by all site staff assigned/involved with the study and signed and dated by the site Principal Investigator.",
+        documents: documents("Delegation Log", [
+          "Signature and Delegation of Duties Log",
+        ]),
+      },
+      {
+        id: "1.3",
+        title: "CVs (Include Copies of Medical Licenses)",
+        description: "Original Curriculum Vitae signed and dated within the last two years, along with copies of Medical Licenses where applicable.",
+        documents: documents("CV", [
+          "Investigator Short CV - PI",
+          "Investigator Short CV - Sub-Investigator",
+          "Medical License - PI",
+        ]),
+      },
+      {
+        id: "1.4",
+        title: "GCP Training Certificates",
+        description: "GCP training certificates from all staff listed in the delegation log. GCP training must be TransCelerate accredited and completed within the last three years.",
+        documents: documents("Training", [
+          "GCP Training Certificate - PI",
+          "GCP Training Certificate - Study Coordinator",
+        ]),
+      },
+      {
+        id: "1.5",
+        title: "EDC Training Certifications",
+        description: "Copies of site staff EDC Training Certificates/Certifications and completed CRF Exercises/Knowledge Assessments, if applicable.",
+        documents: documents("EDC Training", [
+          "EDC Training Certificate",
+          "CRF Knowledge Assessment",
+        ]),
+      },
+      {
+        id: "1.6",
+        title: "Other Training Certificates",
+        description: "Other training certificates from all site staff involved in the study.",
+        documents: documents("Training", [
+          "Other Training Certificate",
+        ]),
+      },
+    ],
+  },
+
+  projectManagement: {
+    id: "2.0",
+    title: "Project Management",
+    description: "Manage team communication, meeting minutes and significant correspondence relating to project management.",
+    sections: [
+      {
+        id: "2.1",
+        title: "Reserved - Sponsor-Investigator/CPI Maintained",
+        description: "This section is deliberately left blank as it is maintained by the Sponsor-Investigator/CPI and not used by sites. This section should not contain any files.",
+        documents: [],
+      },
+      {
+        id: "2.2",
+        title: "Team Communication",
+        description: "Copies of meeting minutes, emails and all other significant correspondence relating to project management.",
+        documents: documents("Communication", [
+          "Team Meeting Minutes",
+          "Project Management Email Correspondence",
+          "Significant Correspondence",
+        ]),
+      },
+    ],
+  },
+
+  protocol: {
+    id: "3.0",
+    title: "Protocol / Protocol Amendments",
+    description: "Manage study protocols, amendments, non-compliance records, serious breaches and CAPAs.",
+    sections: [
+      {
+        id: "3.1",
+        title: "Site Protocol Version Tracker",
+        description: "Site Protocol Version Tracker maintained by the Site Study Coordinator/Research Nurse to track approved protocol versions and subsequent amendments.",
+        documents: documents("Version Tracker", [
+          "Site Protocol Version Tracker",
+        ]),
+      },
+      {
+        id: "3.2",
+        title: "Current HREC Approved Study Protocol signed by PI",
+        description: "Current HREC/IRB and RGO approved and signed Final Protocol together with signed Protocol Signature Pages.",
+        documents: documents("Protocol", [
+          "Current Approved Study Protocol",
+          "Signed Protocol Signature Page - PI",
+          "Signed Protocol Signature Page - Sponsor",
+        ]),
+      },
+      {
+        id: "3.3",
+        title: "Superseded Study Protocols signed by PI",
+        description: "Superseded Protocol versions with signed Signature Pages. Ensure the first page is stamped 'Superseded' when filing.",
+        documents: documents("Protocol", [
+          "Superseded Study Protocol",
+          "Superseded Signed Signature Page",
+        ]),
+      },
+      {
+        id: "3.4",
+        title: "Local Site Non-Compliance Log",
+        description: "Site-Specific Non-Compliance Log capturing deviations from GCP or the protocol.",
+        documents: documents("Non-Compliance", [
+          "Site Non-Compliance Log",
+        ]),
+      },
+      {
+        id: "3.5",
+        title: "Non-Compliance Reports",
+        description: "Non-Compliance Report Forms completed and signed by the Site Principal Investigator.",
+        documents: documents("Non-Compliance", [
+          "Non-Compliance Report Form",
+        ]),
+      },
+      {
+        id: "3.6",
+        title: "Local Serious Breaches and CAPA Documents",
+        description: "Site-specific CAPA plans, CAPA reviews and CAPA tracking log for serious breaches encountered at site.",
+        documents: documents("CAPA", [
+          "Site Corrective and Preventive Action Plan",
+          "CAPA Plan Review",
+          "Site CAPA Tracking Log",
+        ]),
+      },
+      {
+        id: "3.7",
+        title: "Serious Breach Reports to Sponsor / RGO / Regulatory",
+        description: "Copies of site-specific Serious Breach Reports and related correspondence submitted to Sponsor, local RGO or Regulatory Authorities.",
+        documents: documents("Serious Breach", [
+          "Serious Breach Report to Sponsor",
+          "Serious Breach Report to RGO",
+          "Serious Breach Correspondence",
+        ]),
+      },
+      {
+        id: "3.8",
+        title: "Related Correspondence",
+        description: "All significant correspondence relating to protocol development, protocol amendments, serious breaches and CAPAs.",
+        documents: documents("Correspondence", [
+          "Protocol Related Correspondence",
+        ]),
+      },
+    ],
+  },
+
+  participantConsent: {
+    id: "4.0",
+    title: "Participant Information & Consent Forms",
+    description: "Manage site-specific PGICF/PICF versions, translations, superseded copies and signed participant consent forms.",
+    sections: [
+      {
+        id: "4.1",
+        title: "Site-Specific PGICF & PICF Version Tracker",
+        description: "Site-Specific PGICF & PICF Version Trackers to track version history and HREC/IRB, Regulatory and RGO approval dates.",
+        documents: documents("Version Tracker", [
+          "Site-Specific PICF Version Tracker",
+          "Biobanking Consent PICF Tracker",
+        ]),
+      },
+      {
+        id: "4.2",
+        title: "Site-Specific PGICF & PICFs - Current",
+        description: "Current Site-Specific PGICF and/or PICF and any translations with translation certificates where applicable.",
+        documents: documents("PICF", [
+          "Current Site-Specific PICF",
+          "Current Site-Specific PGICF",
+          "PICF Translation",
+          "Translation Certificate",
+        ]),
+      },
+      {
+        id: "4.3",
+        title: "Other Approved Participant Information",
+        description: "Site-specific authorised advertisements, participant diaries, telephone scripts, GP letters, templates, newsletters, cards and questionnaires.",
+        documents: documents("Participant Info", [
+          "Approved Advertisement",
+          "Participant Diary",
+          "Telephone Script",
+          "GP Letter Template",
+          "Participant Newsletter",
+          "Quality of Life Questionnaire",
+        ]),
+      },
+      {
+        id: "4.4",
+        title: "Site PGICF & PICFs - Superseded",
+        description: "Superseded copies of Site-Specific PGICF & PICFs.",
+        documents: documents("PICF", [
+          "Superseded Site-Specific PICF",
+          "Superseded Site-Specific PGICF",
+        ]),
+      },
+      {
+        id: "4.5",
+        title: "Other Authorised Site-Specific Participant Information - Superseded",
+        description: "Superseded copies of other authorised site-specific participant information (advertisements, diaries, scripts, GP letters, newsletters, cards, questionnaires).",
+        documents: documents("Participant Info", [
+          "Superseded Advertisement",
+          "Superseded Participant Diary",
+          "Superseded Questionnaire",
+        ]),
+      },
+      {
+        id: "4.6",
+        title: "Signed PGICF & PICFs",
+        description: "Signed and dated PGICF & PICFs. Best practice is to file these in the participant shadow files.",
+        documents: documents("Signed Consent", [
+          "Signed PICF",
+          "Signed PGICF",
+        ]),
+      },
+    ],
+  },
+
+  regulatory: {
+    id: "5.0",
+    title: "Regulatory",
+    description: "Manage regulatory authorisations, supplementary regulatory forms and reserved sponsor-maintained sections.",
+    sections: [
+      {
+        id: "5.1",
+        title: "Regulatory Authorisation or Acknowledgement",
+        description: "Current and superseded CTN/CTX and international regulatory authorisations from TGA, FDA IND, MHRA, Health Canada, MedSafe and related agencies.",
+        documents: documents("Regulatory", [
+          "CTN/CTX Authorisation - Current",
+          "CTN/CTX Authorisation - Superseded",
+          "FDA IND Authorisation",
+          "MHRA Authorisation",
+          "Regulatory Authority Correspondence",
+        ]),
+      },
+      {
+        id: "5.2",
+        title: "Supplementary Documents",
+        description: "Financial Disclosure Form (FDA 3454) and Statement of Investigator Form (FDA 1572) completed and signed by the Site PI, where applicable.",
+        documents: documents("Regulatory Form", [
+          "FDA 3454 Financial Disclosure Form",
+          "FDA 1572 Statement of Investigator Form",
+        ]),
+      },
+      {
+        id: "5.3",
+        title: "Reserved - Sponsor-Investigator/CPI Maintained",
+        description: "This section is deliberately left blank as it is maintained by the Sponsor-Investigator/CPI and not used by sites. This section should not contain any files.",
+        documents: [],
+      },
+    ],
+  },
+
+  ethics: {
+    id: "6.0",
+    title: "Ethics Committee / HREC / IRB / REB",
+    description: "Manage ethics approval letters, submissions, committee composition, progress reports and related correspondence.",
+    sections: [
+      {
+        id: "6.1",
+        title: "Ethics Approval Letters",
+        description: "EC/HREC/IRB/REB approval letters (current and superseded) for the original Protocol/PICF/IB and all subsequent amendments and project submissions.",
+        documents: documents("Ethics Approval", [
+          "Ethics Approval Letter - Current",
+          "Ethics Approval Letter - Superseded",
+          "Ethics Amendment Approval",
+        ]),
+      },
+      {
+        id: "6.2",
+        title: "Ethics Submission Documents",
+        description: "Initial and amendment ethics submissions including HREA responses, supporting documentation and additional project notifications.",
+        documents: documents("Ethics Submission", [
+          "Initial Ethics Application",
+          "HREA Response Document",
+          "Protocol Amendment Ethics Submission",
+          "Additional Project Notification",
+        ]),
+      },
+      {
+        id: "6.3",
+        title: "Ethics Committee Composition, Constitution & Statement of Compliance",
+        description: "EC/HREC/IRB/REB committee constitution, composition and statement of compliance evidence documents.",
+        documents: documents("Ethics Compliance", [
+          "Ethics Committee Constitution",
+          "Statement of Compliance",
+        ]),
+      },
+      {
+        id: "6.4",
+        title: "Interim / Annual / Final Reports to Ethics Committee",
+        description: "Evidence of submission and acknowledgment of receipt of Annual and Final Progress Reports submitted to EC/HREC/IRB/REB committees.",
+        documents: documents("Ethics Report", [
+          "Annual Progress Report - Ethics",
+          "Annual Progress Report Acknowledgement",
+          "Final Progress Report - Ethics",
+          "Final Progress Report Acknowledgement",
+        ]),
+      },
+      {
+        id: "6.5",
+        title: "Related Correspondence",
+        description: "All significant correspondence to and from the EC/HREC/IRB/REB committee regarding initial and subsequent submissions.",
+        documents: documents("Correspondence", [
+          "Ethics Related Correspondence",
+        ]),
+      },
+    ],
+  },
+
+  researchGovernance: {
+    id: "7.0",
+    title: "Research Governance Office (RGO)",
+    description: "Manage RGO authorisation letters, submissions, progress reports and related correspondence.",
+    sections: [
+      {
+        id: "7.1",
+        title: "Governance Authorisation Letters",
+        description: "Local Research Governance Office (RGO) approval/authorisation letters - current and superseded.",
+        documents: documents("RGO Approval", [
+          "RGO Authorisation Letter - Current",
+          "RGO Authorisation Letter - Superseded",
+        ]),
+      },
+      {
+        id: "7.2",
+        title: "RGO Submission Documentation",
+        description: "Local RGO submissions and application documents including responses to local RGO questions/queries.",
+        documents: documents("RGO Submission", [
+          "Initial RGO Submission",
+          "RGO Amendment Submission",
+          "RGO Query Response",
+        ]),
+      },
+      {
+        id: "7.3",
+        title: "Annual Project Progress Reports & Final Project Report",
+        description: "Evidence of submission and acknowledgement of receipt of Annual Progress Reports and Final Project Report to the local RGO.",
+        documents: documents("RGO Report", [
+          "Annual Progress Report - RGO",
+          "Annual Progress Report Acknowledgement - RGO",
+          "Final Project Report - RGO",
+          "Final Project Report Acknowledgement - RGO",
+        ]),
+      },
+      {
+        id: "7.4",
+        title: "Related Correspondence",
+        description: "All significant correspondence to and from the RGO regarding initial and subsequent submissions.",
+        documents: documents("Correspondence", [
+          "RGO Related Correspondence",
+        ]),
+      },
+    ],
+  },
+
+  sop: {
+    id: "8.0",
+    title: "Study-Specific Procedures / SOPs",
+    description: "Manage site-level manuals of procedures and trial-related standard operating procedures.",
+    sections: [
+      {
+        id: "8.1",
+        title: "Site-Level Manual of Procedures / Trial-Related SOPs - Current",
+        description: "Site-Specific Manual of Procedures Document and site-specific trial-related SOPs - current version.",
+        documents: documents("SOP", [
+          "Site Manual of Procedures - Current",
+          "Site-Specific Trial SOP - Current",
+        ]),
+      },
+      {
+        id: "8.2",
+        title: "Site-Level Manual of Procedures / Trial-Related SOPs - Superseded",
+        description: "Site-Specific Manual of Procedures Document and site-specific trial-related SOPs - superseded versions. Ensure the first page is stamped 'Superseded' when filing.",
+        documents: documents("SOP", [
+          "Site Manual of Procedures - Superseded",
+          "Site-Specific Trial SOP - Superseded",
+        ]),
+      },
+    ],
+  },
+
+  siteInitiation: {
+    id: "9.0",
+    title: "Site Initiation",
+    description: "Manage site initiation meeting documentation, follow-up letters and site activation notifications.",
+    sections: [
+      {
+        id: "9.1",
+        title: "Site Initiation Meeting Documentation",
+        description: "Essential Documents Request Letter, Site Initiation Booking Confirmation, Agenda, Presentation and Attendance Log for the Site Initiation Meeting.",
+        documents: documents("Site Initiation", [
+          "Essential Documents Request Letter",
+          "Site Initiation Booking Confirmation Letter",
+          "Site Initiation Agenda",
+          "Site Initiation Presentation",
+          "Site Initiation Attendance Log",
+        ]),
+      },
+      {
+        id: "9.2",
+        title: "Site Initiation Follow Up Letter",
+        description: "Site Initiation Follow-Up Letter to Site.",
+        documents: documents("Site Initiation", [
+          "Site Initiation Follow-Up Letter",
+        ]),
+      },
+      {
+        id: "9.3",
+        title: "Site Activation Documentation / Letter",
+        description: "Official Notification of Site Activation Letter.",
+        documents: documents("Site Activation", [
+          "Site Activation Notification Letter",
+        ]),
+      },
+    ],
+  },
+
+  siteTraining: {
+    id: "10.0",
+    title: "Site Training",
+    description: "Manage investigator meetings, presentations, training logs and other training resources.",
+    sections: [
+      {
+        id: "10.1",
+        title: "Investigator Meetings",
+        description: "Investigator Meeting presentation slide set and Investigator Meeting Attendance Log signed by all attendees.",
+        documents: documents("Investigator Meeting", [
+          "Investigator Meeting Presentation",
+          "Investigator Meeting Attendance Log",
+        ]),
+      },
+      {
+        id: "10.2",
+        title: "Other Presentations",
+        description: "Presentations other than the site-specific Site Initiation Visit presentation - for example, site re-training or study database training.",
+        documents: documents("Training Presentation", [
+          "Site Re-Training Presentation",
+          "Study Database Training Presentation",
+        ]),
+      },
+      {
+        id: "10.3",
+        title: "Site-Specific Training Log",
+        description: "Site Staff Training Logs (individual and study team) and other training attestation forms completed and signed by site personnel.",
+        documents: documents("Training Log", [
+          "Individual Site Staff Training Log",
+          "Study Team Training Log",
+          "Training Attestation Form",
+        ]),
+      },
+      {
+        id: "10.4",
+        title: "Other Training Resources",
+        description: "Copies of other site-specific training resources/materials provided by the Sponsor.",
+        documents: documents("Training Resource", [
+          "Sponsor-Provided Training Material",
+        ]),
+      },
+    ],
+  },
+
+  recruitment: {
+    id: "11.0",
+    title: "Participant Recruitment",
+    description: "Manage participant recruitment records including pre-screening, screening, enrolment and participant ID logs.",
+    sections: [
+      {
+        id: "11.1",
+        title: "Pre-Screening Log",
+        description: "Site-Specific Pre-Screening Log - current and superseded.",
+        documents: documents("Recruitment Log", [
+          "Site Pre-Screening Log - Current",
+          "Site Pre-Screening Log - Superseded",
+        ]),
+      },
+      {
+        id: "11.2",
+        title: "Consent, Screening & Enrolment Log",
+        description: "Site-Specific Consent, Screening & Enrolment Log - current and superseded.",
+        documents: documents("Recruitment Log", [
+          "Consent, Screening & Enrolment Log - Current",
+          "Consent, Screening & Enrolment Log - Superseded",
+        ]),
+      },
+      {
+        id: "11.3",
+        title: "Participant ID Log",
+        description: "Site-Specific Participant Registration Log - current and superseded.",
+        documents: documents("Recruitment Log", [
+          "Participant Registration Log - Current",
+          "Participant Registration Log - Superseded",
+        ]),
+      },
+      {
+        id: "11.4",
+        title: "Related Correspondence",
+        description: "All significant correspondence relating to participant recruitment.",
+        documents: documents("Correspondence", [
+          "Participant Recruitment Correspondence",
+        ]),
+      },
+    ],
+  },
+
   randomization: {
     id: "12.0",
     title: "Participant Randomisation / Registration Procedures",

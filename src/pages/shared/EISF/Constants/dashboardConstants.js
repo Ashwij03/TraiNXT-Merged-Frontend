@@ -76,6 +76,8 @@ export const EXPIRY_DAY_FILTERS = Object.freeze({
   NEXT_90_DAYS: 90,
 });
 
+export const DOCUMENT_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+
 /* -------------------------------------------------------------------------- */
 /*                            Dashboard Defaults                              */
 /* -------------------------------------------------------------------------- */
@@ -90,7 +92,7 @@ export const DASHBOARD_DEFAULT_VALUES = Object.freeze({
   completionPercentage: 0,
 });
 
-export default {
+const dashboardConstants = {
   DASHBOARD_WIDGETS,
   DASHBOARD_WIDGET_ORDER,
   DASHBOARD_WIDGET_CONFIG,
@@ -98,3 +100,5 @@ export default {
   EXPIRY_DAY_FILTERS,
   DASHBOARD_DEFAULT_VALUES,
 };
+
+export default dashboardConstants;

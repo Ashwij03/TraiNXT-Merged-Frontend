@@ -31,7 +31,9 @@ export const getDashboardSummary = (documents = []) => {
   );
 
   const expiredDocuments = documents.filter((doc) => {
-    if (!doc.expiryDate) return false;
+    if (doc.status === DOCUMENT_STATUS.EXPIRED) return true;
+
+    if (!doc.expiryDate || doc.expiryDate === "-") return false;
 
     return new Date(doc.expiryDate) < today;
   });
@@ -76,7 +78,8 @@ export const getExpiringSoonDocuments = (
   target.setDate(today.getDate() + days);
 
   return documents.filter((doc) => {
-    if (!doc.expiryDate) return false;
+    if (!doc.expiryDate || doc.expiryDate === "-") return false;
+    if (doc.status === DOCUMENT_STATUS.EXPIRED) return false;
 
     const expiry = new Date(doc.expiryDate);
 
@@ -121,6 +124,72 @@ export const buildDashboardCards = (
     ...card,
     value: summary[card.key] ?? 0,
   }));
+};
+
+/**
+ * Generic dashboard cards used by the eISF module workspace reference layout.
+ */
+export const buildReferenceDashboardCards = (
+  documents = [],
+  sections = []
+) => {
+  const summary = getDashboardSummary(documents);
+  const total = summary.totalDocuments;
+  const percent = (count) => (total ? `${Math.round((count / total) * 100)}%` : "0%");
+  const completedSections = sections.filter((section) => {
+    const sectionDocuments = documents.filter(
+      (document) => document.section === section.id || document.sectionId === section.id
+    );
+
+    return (
+      sectionDocuments.length > 0 &&
+      sectionDocuments.every((document) => document.status === DOCUMENT_STATUS.APPROVED)
+    );
+  }).length;
+
+  return [
+    {
+      key: "total",
+      title: "Total Documents",
+      value: total,
+      detail: "Across all sections",
+      icon: "□",
+      color: "#2f80ed",
+    },
+    {
+      key: "approved",
+      title: "Approved",
+      value: summary.approvedDocuments,
+      detail: percent(summary.approvedDocuments),
+      icon: "▤",
+      color: "#2bb673",
+    },
+    {
+      key: "underReview",
+      title: "Under Review",
+      value: summary.pendingDocuments,
+      detail: percent(summary.pendingDocuments),
+      icon: "◷",
+      color: "#f5a524",
+    },
+    {
+      key: "expired",
+      title: "Expired",
+      value: summary.expiredDocuments,
+      detail: percent(summary.expiredDocuments),
+      icon: "◴",
+      color: "#ef5b65",
+    },
+    {
+      key: "completion",
+      title: "Section Completion",
+      value: summary.completionPercentage,
+      suffix: "%",
+      caption: "Overall Completion",
+      detail: `${completedSections} / ${sections.length} sections`,
+      color: "#2f80ed",
+    },
+  ];
 };
 
 /**

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { DOCUMENT_TYPE_OPTIONS } from "../Constants/documentTypes";
 import "./UploadDocumentModal.css";
 
 export default function UploadDocumentModal({
@@ -15,21 +16,23 @@ export default function UploadDocumentModal({
     comments: "",
     file: null
   });
+  const [error, setError] = useState("");
 
   const categories = useMemo(() => {
     const options = Array.isArray(categoryOptions) ? categoryOptions : [];
 
     return options.length
       ? options
-      : ["Contact", "Delegation", "Training", "CV"];
+      : DOCUMENT_TYPE_OPTIONS;
   }, [categoryOptions]);
 
   useEffect(() => {
-    if (open && defaultCategory) {
+    if (open) {
       setForm((prev) => ({
         ...prev,
-        category: prev.category || defaultCategory
+        category: defaultCategory || prev.category
       }));
+      setError("");
     }
   }, [open, defaultCategory]);
 
@@ -37,10 +40,11 @@ export default function UploadDocumentModal({
 
   const submit = () => {
     if (!form.documentName || !form.category || !form.file) {
-      alert("Please fill all mandatory fields.");
+      setError("Please fill all mandatory fields.");
       return;
     }
 
+    setError("");
     onUpload(form);
 
     setForm({
@@ -64,6 +68,8 @@ export default function UploadDocumentModal({
         </div>
 
         <div className="upload-body">
+
+          {error && <div className="upload-error">{error}</div>}
 
           <label>Document Name *</label>
 
@@ -138,6 +144,7 @@ export default function UploadDocumentModal({
         <div className="upload-footer">
 
           <button
+            type="button"
             className="cancel-btn"
             onClick={onClose}
           >
@@ -145,6 +152,7 @@ export default function UploadDocumentModal({
           </button>
 
           <button
+            type="button"
             className="save-btn"
             onClick={submit}
           >
