@@ -220,7 +220,23 @@
   margin-top: 24px;
 }
 
-.financial-page .financial-modal-actions button,
+.financial-page .financial-modal-actions button:first-child {
+  background: #083eaa;   
+  color: #fff;
+}
+
+.financial-page .financial-modal-actions button:first-child:hover {
+  background: #083eaa; 
+}
+
+.financial-page .financial-modal-actions button:last-child {
+  background: #2563eb;   /* Blue */
+  color: #fff;
+}
+
+.financial-page .financial-modal-actions button:last-child:hover {
+  background: #1d4ed8;
+}
 .financial-page .financial-action-btn,
 .financial-page .financial-receivable-edit-btn,
 .financial-page .financial-receivable-delete-btn {
@@ -369,4 +385,116 @@
     align-items: flex-start;
     flex-direction: column;
   }
+}
+
+.financial-section-title {
+  margin: 25px 0 15px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.financial-delete-btn {
+  min-width: 85px;
+  height: 36px;
+  padding: 0 16px;
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.financial-delete-btn:hover {
+  background: #b91c1c;
+  transform: translateY(-2px);
+}
+.financial-modal {
+  width: 700px;
+  max-width: 90%;
+  border-radius: 16px;
+  padding: 30px;
+}
+.financial-form input,
+.financial-form select,
+.financial-form textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 15px;
+  margin-top: 6px;
+  margin-bottom: 14px;
+}
+.financial-form-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+.financial-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 25px;
+}
+
+.financial-modal-actions button {
+  min-width: 120px;
+  height: 42px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.financial-modal-actions button:last-child {
+  background: #2563eb;
+  color: white;
+}
+
+.financial-modal-actions button:last-child:hover {
+  background: #1d4ed8;
+}
+.financial-modal h2 {
+  margin-bottom: 25px;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1e293b;
+}
+td:last-child {
+  white-space: nowrap;
+}
+
+.financial-action-btn,
+.financial-delete-btn {
+  margin-right: 8px;
+}
+
+.financial-delete-btn {
+  margin-right: 0;
+}
+.budget-table th:last-child,
+.budget-table td:last-child {
+  text-align: center;
+}
+.budget-table td:nth-child(3),
+.payment-table td:nth-child(2),
+.financial-receivable-table td:nth-child(2) {
+  text-align: right;
+  font-weight: 600;
+}
+.budget-table tbody tr:hover,
+.payment-table tbody tr:hover,
+.financial-receivable-table tbody tr:hover {
+  background: #f8fbff;
+}
+.budget-table th:first-child {
+  border-top-left-radius: 10px;
+}
+
+.budget-table th:last-child {
+  border-top-right-radius: 10px;
 }

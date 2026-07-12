@@ -5,7 +5,12 @@ import { payments, receivables, invoiceData } from "./FinancialMockData";
 const INITIAL_BUDGET_FORM = {
   name: "",
   category: "",
-  amount: "",
+  costPerUnit: "",
+  units: "",
+  unitType: "Subjects",
+  totalCost: "",
+  version: "V1",
+  currency: "USD",
   startDate: "",
   endDate: "",
   status: "Active",
@@ -56,8 +61,16 @@ const getStatusClassName = (status) => {
   return statusMap[normalizedStatus] || "financial-status-upcoming";
 };
 
-const formatCurrency = (value) =>
-  `$${Number(value || 0).toLocaleString("en-US")}`;
+const formatCurrency = (value, currency = "USD") => {
+  const symbol =
+    currency === "INR"
+      ? "₹"
+      : currency === "EUR"
+      ? "€"
+      : "$";
+
+  return `${symbol}${Number(value || 0).toLocaleString("en-US")}`;
+};
 
 function StudyFinancials() {
   const [selectedFilter, setSelectedFilter] = useState("All");
@@ -68,17 +81,24 @@ function StudyFinancials() {
   const [sortDirection, setSortDirection] = useState("asc");
 
   const [budgets, setBudgets] = useState([
-    {
-      id: 1,
-      name: "Initial Study Budget",
-      category: "Clinical Operations",
-      amount: 2500000,
-      startDate: "2026-07-01",
-      endDate: "2027-06-30",
-      status: "Active",
-      description: "Initial approved study budget",
-    },
-  ]);
+  {
+    id: 1,
+    name: "Initial Study Budget",
+    studyName: "Diabetes Study",
+
+    category: "Clinical Operations",
+    costPerUnit: 5000,
+    units: 500,
+    unitType: "Subjects",
+    totalCost: 2500000,
+    version: "V1",
+    currency: "USD",
+    startDate: "2026-07-01",
+    endDate: "2027-06-30",
+    status: "Active",
+    description: "Initial approved study budget",
+  },
+]);
 
   const [paymentList, setPaymentList] = useState(payments);
   const [receivableList, setReceivableList] = useState(receivables);
@@ -89,6 +109,8 @@ function StudyFinancials() {
   const [showReceivableModal, setShowReceivableModal] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showBudgetPreview, setShowBudgetPreview] = useState(false);
+const [selectedBudget, setSelectedBudget] = useState(null);
 
   const [budgetForm, setBudgetForm] = useState(INITIAL_BUDGET_FORM);
   const [paymentForm, setPaymentForm] = useState(INITIAL_PAYMENT_FORM);
@@ -201,10 +223,14 @@ function StudyFinancials() {
     firstIndex + rowsPerPage,
   );
 
-  const totalBudget = useMemo(
-    () => budgets.reduce((sum, item) => sum + Number(item.amount || 0), 0),
-    [budgets],
-  );
+const totalBudget = useMemo(
+  () =>
+    budgets.reduce(
+      (sum, item) => sum + Number(item.totalCost || 0),
+      0
+    ),
+  [budgets]
+);
 
   const totalPayments = useMemo(
     () =>
@@ -245,6 +271,10 @@ function StudyFinancials() {
     setEditBudgetId(null);
     setShowBudgetModal(true);
   };
+  const handleBudgetPreview = (budget) => {
+  setSelectedBudget(budget);
+  setShowBudgetPreview(true);
+};
 
   const openNewPaymentModal = () => {
     setPaymentForm(INITIAL_PAYMENT_FORM);
@@ -265,38 +295,87 @@ function StudyFinancials() {
   };
 
   const handleEditBudget = (budget) => {
-    setBudgetForm({
-      name: budget.name || "",
-      category: budget.category || "",
-      amount: budget.amount || "",
-      startDate: budget.startDate || "",
-      endDate: budget.endDate || "",
-      status: budget.status || "Active",
-      description: budget.description || "",
-    });
+  setBudgetForm({
+    name: budget.name || "",
+    category: budget.category || "",
+    costPerUnit: budget.costPerUnit || "",
+    units: budget.units || "",
+    unitType: budget.unitType || "Subjects",
+    totalCost: budget.totalCost || "",
+    version: budget.version || "V1",
+    currency: budget.currency || "USD",
+    startDate: budget.startDate || "",
+    endDate: budget.endDate || "",
+    status: budget.status || "Active",
+    description: budget.description || "",
+  });
 
-    setEditBudgetId(budget.id);
-    setShowBudgetModal(true);
+  setEditBudgetId(budget.id);
+  setShowBudgetModal(true);
+};
+const updateBudgetField = (name, value) => {
+
+  const updatedForm = {
+    ...budgetForm,
+    [name]: value,
   };
 
-  const handleSaveBudget = () => {
-    if (
-      !budgetForm.name.trim() ||
-      !budgetForm.category.trim() ||
-      !budgetForm.amount ||
-      !budgetForm.startDate ||
-      !budgetForm.endDate
-    ) {
-      alert("Please fill all required budget fields.");
-      return;
-    }
+  const cost = Number(
+    name === "costPerUnit"
+      ? value
+      : updatedForm.costPerUnit
+  );
 
-    const preparedBudget = {
-      ...budgetForm,
-      name: budgetForm.name.trim(),
-      category: budgetForm.category.trim(),
-      amount: Number(budgetForm.amount),
-    };
+  const units = Number(
+    name === "units"
+      ? value
+      : updatedForm.units
+  );
+
+  updatedForm.totalCost = cost * units;
+
+  setBudgetForm(updatedForm);
+};
+
+  const handleSaveBudget = () => {
+   if (
+  !budgetForm.name.trim() ||
+  !budgetForm.category.trim() ||
+  !budgetForm.costPerUnit ||
+  !budgetForm.units ||
+  !budgetForm.startDate ||
+  !budgetForm.endDate
+) {
+  alert("Please fill all required budget fields.");
+  return;
+}
+let version = budgetForm.version;
+
+if (editBudgetId !== null) {
+  const currentVersion = Number(
+    budgetForm.version.replace("V", "")
+  );
+
+  version = `V${currentVersion + 1}`;
+}
+   const preparedBudget = {
+  ...budgetForm,
+
+  studyName: "Diabetes Study",
+
+  name: budgetForm.name.trim(),
+  category: budgetForm.category.trim(),
+  costPerUnit: Number(budgetForm.costPerUnit),
+  units: Number(budgetForm.units),
+  unitType: budgetForm.unitType,
+  totalCost: Number(budgetForm.totalCost),
+  version,
+  currency: budgetForm.currency,
+  startDate: budgetForm.startDate,
+  endDate: budgetForm.endDate,
+  status: budgetForm.status,
+  description: budgetForm.description.trim(),
+};
 
     if (editBudgetId !== null) {
       setBudgets((currentBudgets) =>
@@ -558,15 +637,32 @@ function StudyFinancials() {
   const exportToCSV = () => {
     const rows = [
       ["Study Budgets"],
-      ["Budget Name", "Category", "Amount", "Status", "Start Date", "End Date"],
-      ...filteredBudgets.map((budget) => [
-        budget.name,
-        budget.category,
-        budget.amount,
-        budget.status,
-        budget.startDate,
-        budget.endDate,
-      ]),
+      [
+  "Budget Name",
+  "Category",
+  "Cost Per Unit",
+  "Units",
+  "Unit Type",
+  "Total Cost",
+  "Version",
+  "Currency",
+  "Status",
+  "Start Date",
+  "End Date",
+],
+     ...filteredBudgets.map((budget) => [
+  budget.name,
+  budget.category,
+  budget.costPerUnit,
+  budget.units,
+  budget.unitType,
+  budget.totalCost,
+  budget.version,
+  budget.currency,
+  budget.status,
+  budget.startDate,
+  budget.endDate,
+]),
       [],
       ["Payments"],
       ["Milestone", "Amount", "Paid On", "Status", "Notes"],
@@ -629,11 +725,18 @@ function StudyFinancials() {
           </select>
         </div>
       </div>
-
+ <h3 className="financial-section-title">
+  Budget Overview
+</h3> 
       <div className="financial-cards">
         <div className="financial-card">
           <h4>Total Budget</h4>
-          <h2>{formatCurrency(totalBudget)}</h2>
+          <h2>
+{formatCurrency(
+   totalBudget,
+   budgets[0]?.currency
+)}
+</h2>
         </div>
 
         <div className="financial-card">
@@ -694,6 +797,19 @@ function StudyFinancials() {
       {showAllData && (
         <section className="financial-summary">
           <h2>Financial Summary</h2>
+          <h3>Budget Summary</h3>
+
+{budgets.map((budget) => (
+  <p key={budget.id}>
+    {budget.category} :
+    <b> {formatCurrency(budget.totalCost, budget.currency)}</b>
+  </p>
+))}
+
+<p>
+  <b>Grand Total : {formatCurrency(totalBudget)}</b>
+</p>
+
 
           <div className="financial-summary-card">
             <p>
@@ -729,9 +845,9 @@ function StudyFinancials() {
               <th onClick={() => handleSort("category")}>
                 Category{getSortIndicator("category")}
               </th>
-              <th onClick={() => handleSort("amount")}>
-                Amount{getSortIndicator("amount")}
-              </th>
+              <th onClick={() => handleSort("totalCost")}>
+  Total Cost{getSortIndicator("totalCost")}
+</th>
               <th onClick={() => handleSort("status")}>
                 Status{getSortIndicator("status")}
               </th>
@@ -742,6 +858,7 @@ function StudyFinancials() {
                 End Date{getSortIndicator("endDate")}
               </th>
               <th>Actions</th>
+              <th>Version</th>
             </tr>
           </thead>
 
@@ -755,7 +872,12 @@ function StudyFinancials() {
                 <tr key={budget.id}>
                   <td>{budget.name}</td>
                   <td>{budget.category}</td>
-                  <td>{formatCurrency(budget.amount)}</td>
+                 <td>
+  {formatCurrency(
+      budget.totalCost,
+      budget.currency
+  )}
+</td>
                   <td>
                     <span
                       className={`financial-status ${getStatusClassName(
@@ -766,24 +888,57 @@ function StudyFinancials() {
                     </span>
                   </td>
                   <td>{budget.startDate}</td>
-                  <td>{budget.endDate}</td>
-                  <td>
-                    <button
-                      type="button"
-                      className="financial-action-btn"
-                      onClick={() => handleEditBudget(budget)}
-                    >
-                      Edit
-                    </button>
+<td>{budget.endDate}</td>
 
-                    <button
-                      type="button"
-                      className="financial-delete-btn"
-                      onClick={() => openDeleteModal("budget", budget.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
+<td>
+  <button
+    type="button"
+    className="financial-action-btn"
+    onClick={() => handleEditBudget(budget)}
+  >
+    Edit
+  </button>
+
+  <button
+    type="button"
+    className="financial-action-btn"
+    onClick={() => handleBudgetPreview(budget)}
+  >
+    Preview
+  </button>
+
+  <button
+  type="button"
+  className="financial-delete-btn"
+  onClick={() => openDeleteModal("budget", budget.id)}
+>
+  Delete
+</button>
+</td>
+
+{showBudgetPreview && selectedBudget && (
+  <div className="financial-modal-overlay">
+    <div className="financial-modal">
+      <h2>Budget Preview</h2>
+
+      <p><b>Budget Name:</b> {selectedBudget.name}</p>
+      <p><b>Version:</b> {selectedBudget.version}</p>
+      <p><b>Status:</b> {selectedBudget.status}</p>
+      <p><b>Study Name:</b> {selectedBudget.studyName}</p>
+
+      <div className="financial-modal-actions">
+        <button
+          type="button"
+          onClick={() => setShowBudgetPreview(false)}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+<td>{budget.version}</td>
                 </tr>
               ))
             )}
@@ -838,7 +993,10 @@ function StudyFinancials() {
               filteredPaymentList.map((payment) => (
                 <tr key={payment.id}>
                   <td>{payment.milestone}</td>
-                  <td>{formatCurrency(payment.amount)}</td>
+                  <td>{formatCurrency(
+  payment.amount,
+  budgets[0]?.currency
+)}</td>
                   <td>{payment.paidOn}</td>
                   <td>
                     <span
@@ -896,7 +1054,10 @@ function StudyFinancials() {
               filteredReceivableList.map((receivable) => (
                 <tr key={receivable.id}>
                   <td>{receivable.payer}</td>
-                  <td>{formatCurrency(receivable.amount)}</td>
+                  <td>{formatCurrency(
+  receivable.amount,
+  budgets[0]?.currency
+)}</td>
                   <td>{receivable.dueDate}</td>
                   <td>
                     <span
@@ -961,7 +1122,10 @@ function StudyFinancials() {
                 <tr key={invoice.id}>
                   <td>{invoice.invoiceNo}</td>
                   <td>{invoice.payer}</td>
-                  <td>{formatCurrency(invoice.amount)}</td>
+                  <td>{formatCurrency(
+  invoice.amount,
+  budgets[0]?.currency
+)}</td>
                   <td>{invoice.issueDate}</td>
                   <td>{invoice.dueDate}</td>
                   <td>
@@ -1022,64 +1186,151 @@ function StudyFinancials() {
               />
 
               <label className="financial-form-label">Budget Category</label>
-              <input
-                type="text"
-                value={budgetForm.category}
-                onChange={(event) =>
-                  setBudgetForm((currentForm) => ({
-                    ...currentForm,
-                    category: event.target.value,
-                  }))
-                }
-              />
+              <select
+  value={budgetForm.category}
+  onChange={(event) =>
+    updateBudgetField(
+      "category",
+      event.target.value
+    )
+  }
+>
+  <option value="">Select Category</option>
+  <option value="Clinical Operations">Clinical Operations</option>
+  <option value="Site Management">Site Management</option>
+  <option value="Patient Recruitment">Patient Recruitment</option>
+  <option value="Laboratory">Laboratory</option>
+  <option value="Regulatory">Regulatory</option>
+  <option value="Pharmacy">Pharmacy</option>
+  <option value="Monitoring">Monitoring</option>
+  <option value="Data Management">Data Management</option>
+</select>
 
-              <label className="financial-form-label">Budget Amount</label>
-              <input
-                type="number"
-                min="0"
-                value={budgetForm.amount}
-                onChange={(event) =>
-                  setBudgetForm((currentForm) => ({
-                    ...currentForm,
-                    amount: event.target.value,
-                  }))
-                }
-              />
+             <label className="financial-form-label">Cost Per Unit</label>
 
+<input
+  type="number"
+  min="0"
+  value={budgetForm.costPerUnit}
+  onChange={(event) =>
+    setBudgetForm((currentForm) => ({
+      ...currentForm,
+      costPerUnit: event.target.value,
+      totalCost:
+        Number(event.target.value || 0) *
+        Number(currentForm.units || 0),
+    }))
+  }
+/>
+
+<label className="financial-form-label">Units</label>
+
+<input
+  type="number"
+  min="1"
+  value={budgetForm.units}
+  onChange={(event) =>
+    setBudgetForm((currentForm) => ({
+      ...currentForm,
+      units: event.target.value,
+      totalCost:
+        Number(currentForm.costPerUnit || 0) *
+        Number(event.target.value || 0),
+    }))
+  }
+/>
+
+<label className="financial-form-label">Unit Type</label>
+
+<select
+  value={budgetForm.unitType}
+  onChange={(event) =>
+    setBudgetForm((currentForm) => ({
+      ...currentForm,
+      unitType: event.target.value,
+    }))
+  }
+>
+  <option value="Subjects">Subjects</option>
+  <option value="Visits">Visits</option>
+  <option value="Sites">Sites</option>
+  <option value="Months">Months</option>
+</select>
+
+<label className="financial-form-label">
+Total Cost
+</label>
+
+<input
+   type="number"
+   value={budgetForm.totalCost}
+   readOnly
+/>
+<label className="financial-form-label">
+Currency
+</label>
+
+<select
+   value={budgetForm.currency}
+   onChange={(event)=>
+      updateBudgetField(
+         "currency",
+         event.target.value
+      )
+   }
+>
+
+<option>USD</option>
+
+<option>INR</option>
+
+<option>EUR</option>
+
+</select>
+
+<label className="financial-form-label">
+Version
+</label>
+
+<input
+   type="text"
+   value={budgetForm.version}
+   readOnly
+/>
               <label className="financial-form-label">Start Date</label>
-              <input
-                type="date"
-                value={budgetForm.startDate}
-                onChange={(event) =>
-                  setBudgetForm((currentForm) => ({
-                    ...currentForm,
-                    startDate: event.target.value,
-                  }))
-                }
-              />
+             <input
+   type="date"
+   value={budgetForm.startDate}
+   onChange={(event)=>
+      updateBudgetField(
+         "startDate",
+         event.target.value
+      )
+   }
+/>
 
               <label className="financial-form-label">End Date</label>
               <input
-                type="date"
-                value={budgetForm.endDate}
-                onChange={(event) =>
-                  setBudgetForm((currentForm) => ({
-                    ...currentForm,
-                    endDate: event.target.value,
-                  }))
-                }
-              />
+   type="date"
+   value={budgetForm.endDate}
+   onChange={(event)=>
+      updateBudgetField(
+         "endDate",
+         event.target.value
+      )
+   }
+/>
 
               <label className="financial-form-label">Budget Status</label>
               <select
-                value={budgetForm.status}
-                onChange={(event) =>
-                  setBudgetForm((currentForm) => ({
-                    ...currentForm,
-                    status: event.target.value,
-                  }))
-                }
-              >
+   value={budgetForm.status}
+   onChange={(event)=>
+      updateBudgetField(
+         "status",
+         event.target.value
+      )
+   }
+>
                 <option value="Active">Active</option>
                 <option value="Draft">Draft</option>
                 <option value="Closed">Closed</option>
@@ -1089,15 +1340,15 @@ function StudyFinancials() {
                 Budget Description
               </label>
               <textarea
-                rows="4"
-                value={budgetForm.description}
-                onChange={(event) =>
-                  setBudgetForm((currentForm) => ({
-                    ...currentForm,
-                    description: event.target.value,
-                  }))
-                }
-              />
+   rows="4"
+   value={budgetForm.description}
+   onChange={(event)=>
+      updateBudgetField(
+         "description",
+         event.target.value
+      )
+   }
+/>
             </div>
 
             <div className="financial-modal-actions">
