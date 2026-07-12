@@ -16,19 +16,13 @@ function ClinicalSitesDashboard({ study }) {
   const [quickViewSite, setQuickViewSite] = useState(null);
   const [selectedCountry, setSelectedCountry] = useState("All Countries");
   const [searchText, setSearchText] = useState("");
-
   const [selectedStatus, setSelectedStatus] = useState("All Status");
-
-const [selectedSite, setSelectedSite] = useState("All Sites");
-
+  const [selectedSite, setSelectedSite] = useState("All Sites");
   const [sortDirection, setSortDirection] = useState("asc");
-
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
-
   const [rankingPage, setRankingPage] = useState(1);
   const rankingRowsPerPage = 10;
-
   const [kpis, setKpis] = useState({
     total: 0,
     totalEnrolled: 0,

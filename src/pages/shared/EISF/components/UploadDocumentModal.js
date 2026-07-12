@@ -1,32 +1,55 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { DOCUMENT_TYPE_OPTIONS } from "../Constants/documentTypes";
 import "./UploadDocumentModal.css";
 
 export default function UploadDocumentModal({
   open,
   onClose,
-  onUpload
+  onUpload,
+  categoryOptions = [],
+  defaultCategory = ""
 }) {
   const [form, setForm] = useState({
     documentName: "",
-    category: "",
+    category: defaultCategory || "",
     version: "",
     comments: "",
     file: null
   });
+  const [error, setError] = useState("");
+
+  const categories = useMemo(() => {
+    const options = Array.isArray(categoryOptions) ? categoryOptions : [];
+
+    return options.length
+      ? options
+      : DOCUMENT_TYPE_OPTIONS;
+  }, [categoryOptions]);
+
+  useEffect(() => {
+    if (open) {
+      setForm((prev) => ({
+        ...prev,
+        category: defaultCategory || prev.category
+      }));
+      setError("");
+    }
+  }, [open, defaultCategory]);
 
   if (!open) return null;
 
   const submit = () => {
     if (!form.documentName || !form.category || !form.file) {
-      alert("Please fill all mandatory fields.");
+      setError("Please fill all mandatory fields.");
       return;
     }
 
+    setError("");
     onUpload(form);
 
     setForm({
       documentName: "",
-      category: "",
+      category: defaultCategory || "",
       version: "",
       comments: "",
       file: null
@@ -45,6 +68,8 @@ export default function UploadDocumentModal({
         </div>
 
         <div className="upload-body">
+
+          {error && <div className="upload-error">{error}</div>}
 
           <label>Document Name *</label>
 
@@ -70,10 +95,11 @@ export default function UploadDocumentModal({
             }
           >
             <option value="">Select</option>
-            <option>Contact</option>
-            <option>Delegation</option>
-            <option>Training</option>
-            <option>CV</option>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
           </select>
 
           <label>Version</label>
@@ -118,6 +144,7 @@ export default function UploadDocumentModal({
         <div className="upload-footer">
 
           <button
+            type="button"
             className="cancel-btn"
             onClick={onClose}
           >
@@ -125,6 +152,7 @@ export default function UploadDocumentModal({
           </button>
 
           <button
+            type="button"
             className="save-btn"
             onClick={submit}
           >

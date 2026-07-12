@@ -77,6 +77,22 @@
     text-align:center;
 }
 
+.pdf-placeholder-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 70px;
+    border: 1px solid #d8e0ea;
+    border-radius: 7px;
+    background:
+        linear-gradient(135deg, transparent 0 72%, #e7edf5 73% 100%),
+        #fff;
+    color: #ef4444;
+    font-size: 15px;
+    font-weight: 800;
+}
+
 .pdf-placeholder h3{
     margin-top:15px;
 }

@@ -416,42 +416,42 @@ const EISFMenuConfig = [
   },
   {
     id: "15.0",
-    title: "Study Quality Assurance / Monitoring",
+    title: "Study Quality Assurance, Monitoring, Audits & Inspections",
     path: "/eisf/monitoring",
     children: [
       {
         id: "15.1",
-        title: "Site Monitoring Visit Log",
-        path: "/eisf/monitoring/site-monitoring-visit-log",
+        title: "Reserved - Sponsor/CPI Maintained",
+        path: "/eisf/monitoring/reserved-15-1",
       },
       {
         id: "15.2",
-        title: "Monitoring Visit Reports",
-        path: "/eisf/monitoring/monitoring-visit-reports",
+        title: "Site Monitoring Log",
+        path: "/eisf/monitoring/site-monitoring-log",
       },
       {
         id: "15.3",
-        title: "Monitoring Follow-up Letters",
-        path: "/eisf/monitoring/monitoring-follow-up-letters",
+        title: "Reserved - Sponsor/CPI Maintained",
+        path: "/eisf/monitoring/reserved-15-3",
       },
       {
         id: "15.4",
-        title: "Monitoring Action Items",
-        path: "/eisf/monitoring/monitoring-action-items",
+        title: "Monitoring Visit Correspondence and Feedback",
+        path: "/eisf/monitoring/monitoring-visit-correspondence",
       },
       {
         id: "15.5",
-        title: "Monitoring CAPA Documentation",
-        path: "/eisf/monitoring/monitoring-capa",
+        title: "Trial Close-Out",
+        path: "/eisf/monitoring/trial-close-out",
       },
       {
         id: "15.6",
-        title: "Related Correspondence",
-        path: "/eisf/monitoring/related-correspondence",
+        title: "Local Research Governance Audit Reports and Correspondence",
+        path: "/eisf/monitoring/local-research-governance-audits",
       },
       {
         id: "15.7",
-        title: "Regulatory Inspections",
+        title: "Regulatory Inspections Reports and Correspondence",
         path: "/eisf/monitoring/regulatory-inspections",
       },
     ],
@@ -509,21 +509,6 @@ const EISFMenuConfig = [
         id: "17.1",
         title: "Documentation Relating to Provision of Study Supplies",
         path: "/eisf/supplies/provision-of-study-supplies",
-      },
-      {
-        id: "17.2",
-        title: "Shipping Documentation",
-        path: "/eisf/supplies/shipping-documentation",
-      },
-      {
-        id: "17.3",
-        title: "Receipt of Study Supplies",
-        path: "/eisf/supplies/receipt-of-study-supplies",
-      },
-      {
-        id: "17.4",
-        title: "Related Correspondence",
-        path: "/eisf/supplies/related-correspondence",
       },
     ],
   },
@@ -644,5 +629,72 @@ const EISFMenuConfig = [
   },
 
 ];
+
+/* -------------------------------------------------------------------------- */
+/*                             Reusable Helpers                               */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Total sections.
+ */
+export const TOTAL_SECTIONS = EISFMenuConfig.length;
+
+/**
+ * Total folders.
+ */
+export const TOTAL_FOLDERS = EISFMenuConfig.reduce(
+  (count, section) => count + (section.children?.length || 0),
+  0
+);
+
+/**
+ * Flat folder list.
+ */
+export const ALL_FOLDERS = EISFMenuConfig.flatMap(
+  (section) => section.children || []
+);
+
+/**
+ * Section ids.
+ */
+export const SECTION_IDS = EISFMenuConfig.map(
+  (section) => section.id
+);
+
+/**
+ * Section paths.
+ */
+export const SECTION_PATHS = EISFMenuConfig.map(
+  (section) => section.path
+);
+
+/**
+ * Folder paths.
+ */
+export const FOLDER_PATHS = ALL_FOLDERS.map(
+  (folder) => folder.path
+);
+
+/**
+ * Folder ids.
+ */
+export const FOLDER_IDS = ALL_FOLDERS.map(
+  (folder) => folder.id
+);
+
+/**
+ * Lookup maps.
+ */
+export const SECTION_MAP = Object.freeze(
+  Object.fromEntries(
+    EISFMenuConfig.map((section) => [section.id, section])
+  )
+);
+
+export const FOLDER_MAP = Object.freeze(
+  Object.fromEntries(
+    ALL_FOLDERS.map((folder) => [folder.id, folder])
+  )
+);
 
 export default EISFMenuConfig;

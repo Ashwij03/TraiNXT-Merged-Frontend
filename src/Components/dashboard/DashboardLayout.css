@@ -21,7 +21,7 @@
   flex-direction: column;
   min-width: 0;
   height: 100vh;
-  overflow:auto;
+  overflow: hidden;
   align-items:stretch;
   margin: 0;
   padding: 0;
@@ -64,7 +64,6 @@
 }
 
 .dashboard-header-wrap.header-hidden {
-  display: none;
   max-height: 0;
   opacity: 0;
   pointer-events: none;
