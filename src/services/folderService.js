@@ -30,13 +30,18 @@ function readJson(key, fallback) {
 }
 
 function writeJson(key, value) {
-  console.log("WRITING LOCAL STORAGE");
-  console.log("KEY =", key);
-  console.log("VALUE =", value);
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (error) {
+    if (error?.name === "QuotaExceededError") {
+      throw new Error(
+        "Storage limit reached. Remove large uploaded files or use smaller files."
+      );
+    }
 
-  localStorage.setItem(key, JSON.stringify(value));
-
-  console.log("AFTER WRITE =", localStorage.getItem(key));
+    throw error;
+  }
 }
 
 function getStorageKey(sectionId, contextKey) {
@@ -84,24 +89,38 @@ export function ensureSubjectFolderWithICF(sectionId, contextKey) {
     return null;
   }
 
-  // ICF already exists
-  const icfFolder = root.children?.find(
+  // Create Subject folder if it doesn't exist
+  if (!root.children || root.children.length === 0) {
+    const subjectFolder = {
+      id: createId("folder"),
+      name: "Subject",
+      children: [createICFFolder()]
+    };
+
+    root.children = [subjectFolder];
+    saveFolderTree(sectionId, contextKey, tree);
+
+    return subjectFolder;
+  }
+
+  const subjectFolder = root.children[0];
+
+  // Ensure ICF folder exists inside Subject
+  const hasICF = subjectFolder.children?.some(
     (child) => child.name === ICF_FOLDER_NAME
   );
 
-  if (icfFolder) {
-    return icfFolder;
+  if (!hasICF) {
+    subjectFolder.children = [
+      ...(subjectFolder.children || []),
+      createICFFolder()
+    ];
+
+    saveFolderTree(sectionId, contextKey, tree);
   }
 
-  const newICF = createICFFolder();
-
-  root.children = [...(root.children || []), newICF];
-
-  saveFolderTree(sectionId, contextKey, tree);
-
-  return newICF;
+  return subjectFolder;
 }
-
 function emitTreeUpdate(sectionId, contextKey) {
   window.dispatchEvent(
     new CustomEvent(FOLDER_TREE_EVENT, {
@@ -178,15 +197,9 @@ export function getFolderTree(sectionId, contextKey = "default") {
     }
   }
 
-  console.log("===== GET FOLDER TREE =====");
-  console.log("Storage Key :", key);
-  console.log("Trees From LocalStorage :", trees);
-  console.log("Returned Tree :", cloned);
-
   return cloned;
 }
 export function saveFolderTree(sectionId, contextKey, tree) {
-  console.log("SAVE FOLDER TREE CALLED");
   const trees = readJson(FOLDER_TREE_KEY, {});
   const key = getStorageKey(sectionId, contextKey);
 
@@ -198,12 +211,6 @@ export function saveFolderTree(sectionId, contextKey, tree) {
 }
 
 export function createFolder(sectionId, contextKey, parentId, name) {
-  console.log("===== CREATE FOLDER =====");
-  console.log("SECTION ID :", sectionId);
-  console.log("CONTEXT KEY :", contextKey);
-  console.log("PARENT ID :", parentId);
-  console.log("FOLDER NAME :", name);
-
   const trimmed = String(name || "").trim();
 
   if (!trimmed) {
@@ -212,11 +219,7 @@ export function createFolder(sectionId, contextKey, parentId, name) {
 
   const tree = getFolderTree(sectionId, contextKey);
 
-  console.log("TREE STRING =", JSON.stringify(tree, null, 2));
-
   const parent = parentId ? findFolderNode(tree, parentId) : tree[0];
-
-  console.log("FOUND PARENT =", parent);
 
   if (!parent) {
     return null;
@@ -229,8 +232,6 @@ export function createFolder(sectionId, contextKey, parentId, name) {
   };
 
   parent.children = [...(parent.children || []), newFolder];
-
-  
 
   saveFolderTree(sectionId, contextKey, tree);
 
@@ -301,10 +302,14 @@ function saveFolderDocuments(sectionId, contextKey, docs) {
   const allDocs = readJson(FOLDER_DOCS_KEY, {});
   const key = docsKey(sectionId, contextKey);
 
-  folderDocsStore[key] = docs;
   allDocs[key] = docs;
 
+  // Only update the in-memory cache once the write actually succeeds.
+  // Updating it beforehand would make getFolderDocuments() report data
+  // as "saved" even when a QuotaExceededError prevented persistence.
   writeJson(FOLDER_DOCS_KEY, allDocs);
+
+  folderDocsStore[key] = docs;
 }
 
 export function getDocumentsForFolder(sectionId, contextKey, folderId) {
@@ -466,15 +471,6 @@ export function saveCurrentFolderAsTemplate(
   return saveFolderTemplate(templateName, structure);
 }
 
-function readFileAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
 async function importStructureNode(
   sectionId,
   contextKey,
@@ -506,14 +502,11 @@ async function importStructureNode(
         continue;
       }
 
-      const dataUrl = await readFileAsDataUrl(file);
-
       importedDocs.push({
         id: createId("doc"),
         name: file.name,
         size: file.size,
-        uploadedAt: new Date().toISOString(),
-        dataUrl
+        uploadedAt: new Date().toISOString()
       });
     }
 
@@ -544,15 +537,23 @@ export async function importUploadedFolderStructure(
     return false;
   }
 
-  if (structure.name && structure.children?.length) {
-    for (const child of structure.children) {
-      await importStructureNode(sectionId, contextKey, parentId, child);
+  try {
+    if (structure.name && structure.children?.length) {
+      for (const child of structure.children) {
+        await importStructureNode(sectionId, contextKey, parentId, child);
+      }
+      return true;
     }
-    return true;
-  }
 
-  await importStructureNode(sectionId, contextKey, parentId, structure);
-  return true;
+    await importStructureNode(sectionId, contextKey, parentId, structure);
+    return true;
+  } catch (error) {
+    window.alert(
+      error?.message ||
+        "Unable to import this folder. Storage limit may have been reached."
+    );
+    return false;
+  }
 }
 
 export function collectFolderSubtree(tree, folderId) {

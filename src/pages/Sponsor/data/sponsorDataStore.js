@@ -1,17 +1,21 @@
-import { getFilteredStudies } from '../../../services/filterService';
-import { getStudies } from '../../../services/studyService';
+import { getFilteredStudies } from "../../../services/filterService";
+
 import {
   getNotifications as getAdminNotifications,
+  markNotificationRead as markAdminNotificationRead,
+  markAllNotificationsRead as markAllAdminNotificationsRead,
   getRecruitment as getAdminRecruitment,
   getRegulatoryDocs,
   getReports as getAdminReports,
-  getSitePerformance,
-  getSites as getAdminSites,
-} from '../../../services/adminService';
+  // getSitePerformance,
+  // getSites as getAdminSites,
+} from "../../../services/adminService";
 
-const STORAGE_PREFIX = 'sponsor_data_';
-const SETTINGS_KEY = 'sponsor_settings';
-const SUBSCRIPTION_KEY = 'sponsor_subscription';
+import { getStudies } from "../../../services/studyService";
+
+const STORAGE_PREFIX = "sponsor_data_";
+const SETTINGS_KEY = "sponsor_settings";
+const SUBSCRIPTION_KEY = "sponsor_subscription";
 const RISKS_KEY = `${STORAGE_PREFIX}risks`;
 
 function readJson(key, fallback = []) {
@@ -27,9 +31,9 @@ function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 
   window.dispatchEvent(
-    new CustomEvent('sponsor-data-updated', {
+    new CustomEvent("sponsor-data-updated", {
       detail: { key },
-    })
+    }),
   );
 }
 
@@ -37,18 +41,45 @@ function getSafeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+// function mapStudyToPortfolio(study = {}) {
+//   return {
+//     studyId: study.code || study.studyId || study.id || '',
+//     studyName: study.name || study.studyName || '',
+//     phase: study.phase || '',
+//     status: study.status || '',
+//     cro: study.cro || study.croName || '',
+//     sites: Number(study.sites || study.siteCount || 0),
+//     enrolled: Number(study.enrolled || study.enrolledSubjects || 0),
+//     target: Number(study.targetSubjects || study.target || 0),
+//     startDate: study.startDate || '',
+//     therapeuticArea: study.indication || study.therapeuticArea || '',
+//   };
+// }
 function mapStudyToPortfolio(study = {}) {
+  const subjectsByStudy =
+    JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
+
+  const enrolled = Array.isArray(subjectsByStudy[study.code])
+    ? subjectsByStudy[study.code].length
+    : 0;
+
   return {
-    studyId: study.code || study.studyId || study.id || '',
-    studyName: study.name || study.studyName || '',
-    phase: study.phase || '',
-    status: study.status || '',
-    cro: study.cro || study.croName || '',
+    studyId: study.code || study.studyId || study.id || "",
+    studyName: study.name || study.studyName || "",
+    phase: study.phase || "",
+    status: study.status || "",
+    cro: study.cro || study.croName || "",
+
     sites: Number(study.sites || study.siteCount || 0),
-    enrolled: Number(study.enrolled || study.enrolledSubjects || 0),
+
+    // Dynamic subject count
+    enrolled,
+
     target: Number(study.targetSubjects || study.target || 0),
-    startDate: study.startDate || '',
-    therapeuticArea: study.indication || study.therapeuticArea || '',
+
+    startDate: study.startDate || "",
+
+    therapeuticArea: study.indication || study.therapeuticArea || "",
   };
 }
 
@@ -78,17 +109,17 @@ export function getOversightStudies() {
       studyId: study.studyId,
       studyName: study.studyName,
       status:
-        study.status === 'Completed'
-          ? 'Completed'
+        study.status === "Completed"
+          ? "Completed"
           : progress >= 70
-            ? 'On Track'
+            ? "On Track"
             : study.enrolled > 0
-              ? 'Delayed'
-              : 'Planning',
+              ? "Delayed"
+              : "Planning",
       progress,
       enrollment: `${study.enrolled}/${study.target}`,
-      milestone: study.status || '',
-      nextReview: study.startDate || '',
+      milestone: study.status || "",
+      nextReview: study.startDate || "",
     };
   });
 }
@@ -112,8 +143,8 @@ export function getCROs() {
       studies: 0,
       sites: 0,
       performance: 0,
-      status: 'Active',
-      contact: '',
+      status: "Active",
+      contact: "",
     };
 
     existing.studies += 1;
@@ -122,10 +153,10 @@ export function getCROs() {
     croMap.set(study.cro, existing);
   });
 
-  const recruitedCROs = readJson('sponsorRecruitedCROs', []);
+  const recruitedCROs = readJson("sponsorRecruitedCROs", []);
 
   getSafeArray(recruitedCROs).forEach((cro) => {
-    const croName = typeof cro === 'string' ? cro : cro?.name;
+    const croName = typeof cro === "string" ? cro : cro?.name;
 
     if (!croName || croMap.has(croName)) {
       return;
@@ -137,8 +168,8 @@ export function getCROs() {
       studies: Number(cro?.studies || 0),
       sites: Number(cro?.sites || 0),
       performance: Number(cro?.performance || 0),
-      status: cro?.status || 'Active',
-      contact: cro?.contact || '',
+      status: cro?.status || "Active",
+      contact: cro?.contact || "",
     });
   });
 
@@ -149,30 +180,65 @@ export function saveCROs(data) {
   writeJson(`${STORAGE_PREFIX}cros`, data);
 }
 
+// export function getSites() {
+//   const adminSites = getSafeArray(getAdminSites());
+
+//   if (adminSites.length > 0) {
+//     return adminSites.map((site = {}) => ({
+//       id: site.id || site.siteNumber || '',
+//       name: site.name || '',
+//       study: site.study || site.studyCode || '',
+//       enrolled: Number(site.enrolled || 0),
+//       target: Number(site.target || 0),
+//       performance: Number(site.performance || 0),
+//       region: site.region || site.country || '',
+//     }));
+//   }
+
+//   return getSafeArray(getSitePerformance()).map((site = {}) => ({
+//     id: site.id || site.siteNumber || site.siteName || '',
+//     name: site.siteName || site.name || '',
+//     study: site.study || site.studyCode || '',
+//     enrolled: Number(site.enrolled || 0),
+//     target: Number(site.target || 0),
+//     performance: Number(site.performance || 0),
+//     region: site.region || site.country || '',
+//   }));
+// }
+
 export function getSites() {
-  const adminSites = getSafeArray(getAdminSites());
+  const studies = getStudies();
 
-  if (adminSites.length > 0) {
-    return adminSites.map((site = {}) => ({
-      id: site.id || site.siteNumber || '',
-      name: site.name || '',
-      study: site.study || site.studyCode || '',
-      enrolled: Number(site.enrolled || 0),
-      target: Number(site.target || 0),
-      performance: Number(site.performance || 0),
-      region: site.region || site.country || '',
-    }));
-  }
+  const subjectsByStudy =
+    JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
 
-  return getSafeArray(getSitePerformance()).map((site = {}) => ({
-    id: site.id || site.siteNumber || site.siteName || '',
-    name: site.siteName || site.name || '',
-    study: site.study || site.studyCode || '',
-    enrolled: Number(site.enrolled || 0),
-    target: Number(site.target || 0),
-    performance: Number(site.performance || 0),
-    region: site.region || site.country || '',
-  }));
+  return studies.map((study) => {
+    const subjects = subjectsByStudy[study.code] || [];
+
+    const enrolled = subjects.length;
+
+    const target = Number(study.targetSubjects || 0);
+
+    return {
+      id: study.code,
+
+      name: study.site || study.location || study.name,
+
+      sponsor: study.sponsor,
+
+      account: study.sponsor,
+
+      country: study.country,
+
+      status: study.status || "Active",
+
+      enrolled,
+
+      target,
+
+      performance: target > 0 ? Math.round((enrolled / target) * 100) : 0,
+    };
+  });
 }
 
 export function saveSites(data) {
@@ -181,13 +247,13 @@ export function saveSites(data) {
 
 export function getRecruitment() {
   return getSafeArray(getAdminRecruitment()).map((item = {}) => ({
-    id: item.id || '',
-    study: item.study || item.studyCode || '',
+    id: item.id || "",
+    study: item.study || item.studyCode || "",
     screened: Number(item.screened || 0),
     enrolled: Number(item.enrolled || 0),
     target: Number(item.target || 0),
     rate: Number(item.rate || 0),
-    status: item.status || '',
+    status: item.status || "",
   }));
 }
 
@@ -197,13 +263,13 @@ export function saveRecruitment(data) {
 
 export function getRegulatory() {
   return getSafeArray(getRegulatoryDocs()).map((doc = {}) => ({
-    id: doc.id || '',
-    study: doc.study || doc.studyCode || '',
-    document: doc.document || doc.name || '',
-    status: doc.status || '',
-    authority: doc.authority || '',
-    dueDate: doc.dueDate || '',
-    submittedDate: doc.submittedDate || '',
+    id: doc.id || "",
+    study: doc.study || doc.studyCode || "",
+    document: doc.document || doc.name || "",
+    status: doc.status || "",
+    authority: doc.authority || "",
+    dueDate: doc.dueDate || "",
+    submittedDate: doc.submittedDate || "",
   }));
 }
 
@@ -221,12 +287,12 @@ export function saveRisks(data) {
 
 export function getReports() {
   return getSafeArray(getAdminReports()).map((report = {}) => ({
-    id: report.id || '',
-    name: report.name || report.title || '',
-    type: report.type || '',
-    study: report.study || report.studyCode || '',
-    generatedDate: report.generatedDate || report.date || '',
-    status: report.status || '',
+    id: report.id || "",
+    name: report.name || report.title || "",
+    type: report.type || "",
+    study: report.study || report.studyCode || "",
+    generatedDate: report.generatedDate || report.date || "",
+    status: report.status || "",
   }));
 }
 
@@ -234,19 +300,76 @@ export function saveReports(data) {
   writeJson(`${STORAGE_PREFIX}reports`, data);
 }
 
+// Shared notification records (services/notificationService.js, written by
+// every role's subject/visit/document/report/comment/permission actions)
+// carry title/message/studyCode/createdAt/read -- not the type/severity/date
+// shape this page expects. This map derives a severity from the record's
+// title so the Critical/High/Medium/Low badges and filters here reflect
+// something real instead of always being blank.
+const NOTIFICATION_SEVERITY_BY_TITLE = {
+  'Permission request submitted': 'High',
+  'Permission request rejected': 'High',
+  'Permission request approved': 'Medium',
+  'Document added': 'Medium',
+  'Report created': 'Medium',
+  'Report updated': 'Medium',
+  'Visit scheduled': 'Medium',
+  'Visit updated': 'Medium',
+  'Subject added': 'Low',
+  'Subject updated': 'Low',
+  'New comment': 'Low',
+};
+
+function formatSponsorNotificationDate(isoString) {
+  const parsed = new Date(isoString);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return '';
+  }
+
+  return parsed.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
 export function getNotifications() {
   return getSafeArray(getAdminNotifications()).map((item = {}) => ({
     id: item.id || '',
-    type: item.type || '',
+    type: item.title || '',
     message: item.message || item.title || '',
-    severity: item.severity || '',
-    date: item.date || item.timestamp || '',
+    severity: NOTIFICATION_SEVERITY_BY_TITLE[item.title] || 'Medium',
+    date: formatSponsorNotificationDate(item.createdAt),
     read: Boolean(item.read),
   }));
 }
 
+// Diffs the incoming (page-local, optimistic) items against the shared
+// notification records and marks any newly-read ids through the shared
+// service, so "read" actually persists instead of being written to a
+// sponsor-only key that getNotifications() never reads back from.
 export function saveNotifications(data) {
-  writeJson(`${STORAGE_PREFIX}notifications`, data);
+  const items = getSafeArray(data);
+
+  const previouslyUnreadIds = new Set(
+    getSafeArray(getAdminNotifications())
+      .filter((item) => !item.read)
+      .map((item) => item.id)
+  );
+
+  items.forEach((item) => {
+    if (item.read && previouslyUnreadIds.has(item.id)) {
+      markAdminNotificationRead(item.id);
+    }
+  });
+}
+
+// Exposed for callers (e.g. a future "mark all read" action) that want to
+// go through the shared service directly rather than diffing a full item
+// list via saveNotifications().
+export function markAllNotificationsRead() {
+  markAllAdminNotificationsRead();
 }
 
 export function getAlerts() {
@@ -260,56 +383,56 @@ export function getAlerts() {
 
   if (regulatoryKPIs.overdue > 0) {
     alerts.push({
-      id: 'ALT-REG',
+      id: "ALT-REG",
       message: `${regulatoryKPIs.overdue} regulatory document${
-        regulatoryKPIs.overdue > 1 ? 's' : ''
+        regulatoryKPIs.overdue > 1 ? "s" : ""
       } overdue`,
-      severity: 'Critical',
-      module: 'Regulatory',
+      severity: "Critical",
+      module: "Regulatory",
     });
   }
 
   if (recruitmentKPIs.belowTarget > 0) {
     alerts.push({
-      id: 'ALT-REC',
+      id: "ALT-REC",
       message: `${recruitmentKPIs.belowTarget} ${
-        recruitmentKPIs.belowTarget > 1 ? 'studies' : 'study'
+        recruitmentKPIs.belowTarget > 1 ? "studies" : "study"
       } below enrollment target`,
-      severity: 'High',
-      module: 'Recruitment',
+      severity: "High",
+      module: "Recruitment",
     });
   }
 
   if (riskKPIs.open > 0) {
     alerts.push({
-      id: 'ALT-RISK',
+      id: "ALT-RISK",
       message: `${riskKPIs.open} open risk${
-        riskKPIs.open > 1 ? 's' : ''
+        riskKPIs.open > 1 ? "s" : ""
       } requiring attention`,
-      severity: riskKPIs.critical > 0 ? 'Critical' : 'High',
-      module: 'Risk Management',
+      severity: riskKPIs.critical > 0 ? "Critical" : "High",
+      module: "Risk Management",
     });
   }
 
   if (notificationKPIs.unread > 0) {
     alerts.push({
-      id: 'ALT-NOT',
+      id: "ALT-NOT",
       message: `${notificationKPIs.unread} unread notification${
-        notificationKPIs.unread > 1 ? 's' : ''
+        notificationKPIs.unread > 1 ? "s" : ""
       }`,
-      severity: notificationKPIs.critical > 0 ? 'Critical' : 'High',
-      module: 'Notifications',
+      severity: notificationKPIs.critical > 0 ? "Critical" : "High",
+      module: "Notifications",
     });
   }
 
   if (croKPIs.total > 0) {
     alerts.push({
-      id: 'ALT-CRO',
+      id: "ALT-CRO",
       message: `${croKPIs.active} active CRO partner${
-        croKPIs.active > 1 ? 's' : ''
+        croKPIs.active > 1 ? "s" : ""
       }`,
-      severity: 'Medium',
-      module: 'CRO Oversight',
+      severity: "Medium",
+      module: "CRO Oversight",
     });
   }
 
@@ -325,54 +448,54 @@ export function getQuickActions() {
 
   return [
     {
-      id: 'QA-001',
-      label: 'Create Study',
+      id: "QA-001",
+      label: "Create Study",
       value: String(kpis.portfolio),
-      subtitle: 'Portfolio studies',
-      icon: 'study',
-      color: '#2563eb',
-      bg: '#eff6ff',
-      route: '/portfolio',
+      subtitle: "Portfolio studies",
+      icon: "study",
+      color: "#2563eb",
+      bg: "#eff6ff",
+      route: "/portfolio",
     },
     {
-      id: 'QA-002',
-      label: 'Review Risks',
+      id: "QA-002",
+      label: "Review Risks",
       value: String(kpis.risks),
-      subtitle: 'Open risks',
-      icon: 'risk',
-      color: '#dc2626',
-      bg: '#fee2e2',
-      route: '/risk-management',
+      subtitle: "Open risks",
+      icon: "risk",
+      color: "#dc2626",
+      bg: "#fee2e2",
+      route: "/risk-management",
     },
     {
-      id: 'QA-003',
-      label: 'Generate Report',
+      id: "QA-003",
+      label: "Generate Report",
       value: String(kpis.reports),
-      subtitle: 'Ready reports',
-      icon: 'report',
-      color: '#7c3aed',
-      bg: '#ede9fe',
-      route: '/reports',
+      subtitle: "Ready reports",
+      icon: "report",
+      color: "#7c3aed",
+      bg: "#ede9fe",
+      route: "/reports",
     },
     {
-      id: 'QA-004',
-      label: 'View Recruitment',
+      id: "QA-004",
+      label: "View Recruitment",
       value: `${kpis.recruitment}%`,
-      subtitle: 'Enrollment rate',
-      icon: 'recruitment',
-      color: '#16a34a',
-      bg: '#ecfdf5',
-      route: '/recruitment',
+      subtitle: "Enrollment rate",
+      icon: "recruitment",
+      color: "#16a34a",
+      bg: "#ecfdf5",
+      route: "/recruitment",
     },
     {
-      id: 'QA-005',
-      label: 'CRO Dashboard',
+      id: "QA-005",
+      label: "CRO Dashboard",
       value: String(kpis.cros),
-      subtitle: 'Active CROs',
-      icon: 'cro',
-      color: '#d97706',
-      bg: '#fef3c7',
-      route: '/cro-oversight',
+      subtitle: "Active CROs",
+      icon: "cro",
+      color: "#d97706",
+      bg: "#fef3c7",
+      route: "/cro-oversight",
     },
   ];
 }
@@ -382,39 +505,39 @@ export function saveQuickActions(data) {
 }
 
 export function loadSettings() {
-  const currentUser = readJson('currentUser', {});
+  const currentUser = readJson("currentUser", {});
   const storedSettings = readJson(SETTINGS_KEY, {});
 
   return {
-    firstName: currentUser.firstName || '',
-    lastName: currentUser.lastName || '',
-    fullName: currentUser.name || '',
-    employeeId: currentUser.employeeId || '',
-    email: currentUser.email || '',
-    phone: currentUser.phone || '',
-    jobTitle: currentUser.jobTitle || '',
-    department: currentUser.department || '',
-    organization: currentUser.organization || '',
-    country: currentUser.country || '',
-    timeZone: currentUser.timeZone || '',
-    language: currentUser.language || '',
-    profilePhoto: currentUser.profilePhoto || '',
-    digitalSignature: currentUser.digitalSignature || '',
+    firstName: currentUser.firstName || "",
+    lastName: currentUser.lastName || "",
+    fullName: currentUser.name || "",
+    employeeId: currentUser.employeeId || "",
+    email: currentUser.email || "",
+    phone: currentUser.phone || "",
+    jobTitle: currentUser.jobTitle || "",
+    department: currentUser.department || "",
+    organization: currentUser.organization || "",
+    country: currentUser.country || "",
+    timeZone: currentUser.timeZone || "",
+    language: currentUser.language || "",
+    profilePhoto: currentUser.profilePhoto || "",
+    digitalSignature: currentUser.digitalSignature || "",
     emailAlerts: false,
     smsAlerts: false,
     criticalOnly: false,
     enrollmentAlerts: false,
     regulatoryAlerts: false,
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
     twoFactorEnabled: false,
     sessionTimeout: false,
-    defaultStudyView: '',
-    dashboardRefresh: '',
-    preferredTherapeuticArea: '',
+    defaultStudyView: "",
+    dashboardRefresh: "",
+    preferredTherapeuticArea: "",
     showCompletedStudies: false,
-    theme: '',
+    theme: "",
     ...storedSettings,
   };
 }
@@ -425,15 +548,15 @@ export function saveSettings(data) {
 
 export function getSubscription() {
   return readJson(SUBSCRIPTION_KEY, {
-    plan: '',
-    status: '',
-    startDate: '',
-    endDate: '',
-    maxUsers: '',
-    maxStudies: '',
-    storageLimit: '',
+    plan: "",
+    status: "",
+    startDate: "",
+    endDate: "",
+    maxUsers: "",
+    maxStudies: "",
+    storageLimit: "",
     autoRenewal: false,
-    notes: '',
+    notes: "",
   });
 }
 
@@ -442,7 +565,7 @@ export function saveSubscription(data) {
 }
 
 export function getAllSubjectsFromStorage() {
-  const subjects = readJson('subjects', []);
+  const subjects = readJson("subjects", []);
   return getSafeArray(subjects);
 }
 
@@ -451,27 +574,29 @@ export function syncQuickActionValues() {
 }
 
 export function getEnrollmentTrend() {
-  return getPortfolioStudies().slice(0, 6).map((study, index) => ({
-    month: study.studyId || `Study ${index + 1}`,
-    enrolled: Number(study.enrolled || 0),
-  }));
+  return getPortfolioStudies()
+    .slice(0, 6)
+    .map((study, index) => ({
+      month: study.studyId || `Study ${index + 1}`,
+      enrolled: Number(study.enrolled || 0),
+    }));
 }
 
 export function useSponsorDataRefresh(callback) {
   const handler = () => callback();
 
-  window.addEventListener('sponsor-data-updated', handler);
-  window.addEventListener('studies-updated', handler);
-  window.addEventListener('subjects-updated', handler);
-  window.addEventListener('reports-updated', handler);
-  window.addEventListener('notifications-updated', handler);
+  window.addEventListener("sponsor-data-updated", handler);
+  window.addEventListener("studies-updated", handler);
+  window.addEventListener("subjects-updated", handler);
+  window.addEventListener("reports-updated", handler);
+  window.addEventListener("notifications-updated", handler);
 
   return () => {
-    window.removeEventListener('sponsor-data-updated', handler);
-    window.removeEventListener('studies-updated', handler);
-    window.removeEventListener('subjects-updated', handler);
-    window.removeEventListener('reports-updated', handler);
-    window.removeEventListener('notifications-updated', handler);
+    window.removeEventListener("sponsor-data-updated", handler);
+    window.removeEventListener("studies-updated", handler);
+    window.removeEventListener("subjects-updated", handler);
+    window.removeEventListener("reports-updated", handler);
+    window.removeEventListener("notifications-updated", handler);
   };
 }
 
@@ -483,28 +608,28 @@ export function getDashboardKPIs() {
   const notifications = getNotifications();
 
   const activeStudies = portfolio.filter((study) =>
-    ['Active', 'Recruiting'].includes(study.status)
+    ["Active", "Recruiting"].includes(study.status),
   ).length;
 
   const totalEnrolled = portfolio.reduce(
     (sum, study) => sum + Number(study.enrolled || 0),
-    0
+    0,
   );
 
   const totalTarget = portfolio.reduce(
     (sum, study) => sum + Number(study.target || 0),
-    0
+    0,
   );
 
   return {
     portfolio: portfolio.length,
     studies: activeStudies,
-    cros: cros.filter((cro) => cro.status === 'Active').length,
+    cros: cros.filter((cro) => cro.status === "Active").length,
     recruitment:
       totalTarget > 0 ? Math.round((totalEnrolled / totalTarget) * 100) : 0,
     recruitmentCount: totalEnrolled,
-    risks: risks.filter((risk) => risk.status === 'Open').length,
-    reports: reports.filter((report) => report.status === 'Ready').length,
+    risks: risks.filter((risk) => risk.status === "Open").length,
+    reports: reports.filter((report) => report.status === "Ready").length,
     notifications: notifications.filter((notification) => !notification.read)
       .length,
     totalNotifications: notifications.length,
@@ -522,7 +647,7 @@ export function getStudyStatusData() {
   const counts = {};
 
   getPortfolioStudies().forEach((study) => {
-    const status = study.status || 'Unknown';
+    const status = study.status || "Unknown";
     counts[status] = (counts[status] || 0) + 1;
   });
 
@@ -536,7 +661,7 @@ export function getPhaseDistribution() {
   const counts = {};
 
   getPortfolioStudies().forEach((study) => {
-    const phase = study.phase || 'Unspecified';
+    const phase = study.phase || "Unspecified";
     counts[phase] = (counts[phase] || 0) + 1;
   });
 
@@ -553,9 +678,11 @@ export function getEnrollmentStatusPie() {
 
   getPortfolioStudies().forEach((study) => {
     const rate =
-      study.target > 0 ? (Number(study.enrolled) / Number(study.target)) * 100 : 0;
+      study.target > 0
+        ? (Number(study.enrolled) / Number(study.target)) * 100
+        : 0;
 
-    if (study.status === 'Completed') {
+    if (study.status === "Completed") {
       completed += 1;
     } else if (rate >= 70) {
       onTrack += 1;
@@ -565,9 +692,9 @@ export function getEnrollmentStatusPie() {
   });
 
   return [
-    { name: 'On Track', value: onTrack },
-    { name: 'Below Target', value: belowTarget },
-    { name: 'Completed', value: completed },
+    { name: "On Track", value: onTrack },
+    { name: "Below Target", value: belowTarget },
+    { name: "Completed", value: completed },
   ].filter((item) => item.value > 0);
 }
 
@@ -576,10 +703,10 @@ export function getPortfolioKPIs() {
 
   return {
     total: studies.length,
-    active: studies.filter((study) => study.status === 'Active').length,
-    recruiting: studies.filter((study) => study.status === 'Recruiting').length,
-    completed: studies.filter((study) => study.status === 'Completed').length,
-    planning: studies.filter((study) => study.status === 'Planning').length,
+    active: studies.filter((study) => study.status === "Active").length,
+    recruiting: studies.filter((study) => study.status === "Recruiting").length,
+    completed: studies.filter((study) => study.status === "Completed").length,
+    planning: studies.filter((study) => study.status === "Planning").length,
   };
 }
 
@@ -588,9 +715,9 @@ export function getOversightKPIs() {
 
   return {
     total: studies.length,
-    onTrack: studies.filter((study) => study.status === 'On Track').length,
-    delayed: studies.filter((study) => study.status === 'Delayed').length,
-    completed: studies.filter((study) => study.status === 'Completed').length,
+    onTrack: studies.filter((study) => study.status === "On Track").length,
+    delayed: studies.filter((study) => study.status === "Delayed").length,
+    completed: studies.filter((study) => study.status === "Completed").length,
   };
 }
 
@@ -600,21 +727,16 @@ export function getCROKPIs() {
   const averagePerformance =
     cros.length > 0
       ? Math.round(
-          cros.reduce(
-            (sum, cro) => sum + Number(cro.performance || 0),
-            0
-          ) / cros.length
+          cros.reduce((sum, cro) => sum + Number(cro.performance || 0), 0) /
+            cros.length,
         )
       : 0;
 
   return {
     total: cros.length,
-    active: cros.filter((cro) => cro.status === 'Active').length,
+    active: cros.filter((cro) => cro.status === "Active").length,
     avgPerformance: averagePerformance,
-    totalStudies: cros.reduce(
-      (sum, cro) => sum + Number(cro.studies || 0),
-      0
-    ),
+    totalStudies: cros.reduce((sum, cro) => sum + Number(cro.studies || 0), 0),
   };
 }
 
@@ -623,25 +745,21 @@ export function getRecruitmentKPIs() {
 
   const totalEnrolled = recruitment.reduce(
     (sum, item) => sum + Number(item.enrolled || 0),
-    0
+    0,
   );
 
   const totalTarget = recruitment.reduce(
     (sum, item) => sum + Number(item.target || 0),
-    0
+    0,
   );
 
   return {
     totalStudies: recruitment.length,
     enrolled: totalEnrolled,
     target: totalTarget,
-    rate:
-      totalTarget > 0
-        ? Math.round((totalEnrolled / totalTarget) * 100)
-        : 0,
-    belowTarget: recruitment.filter(
-      (item) => item.status === 'Below Target'
-    ).length,
+    rate: totalTarget > 0 ? Math.round((totalEnrolled / totalTarget) * 100) : 0,
+    belowTarget: recruitment.filter((item) => item.status === "Below Target")
+      .length,
   };
 }
 
@@ -650,10 +768,10 @@ export function getRegulatoryKPIs() {
 
   return {
     total: regulatory.length,
-    approved: regulatory.filter((item) => item.status === 'Approved').length,
-    inReview: regulatory.filter((item) => item.status === 'In Review').length,
-    submitted: regulatory.filter((item) => item.status === 'Submitted').length,
-    overdue: regulatory.filter((item) => item.status === 'Overdue').length,
+    approved: regulatory.filter((item) => item.status === "Approved").length,
+    inReview: regulatory.filter((item) => item.status === "In Review").length,
+    submitted: regulatory.filter((item) => item.status === "Submitted").length,
+    overdue: regulatory.filter((item) => item.status === "Overdue").length,
   };
 }
 
@@ -662,14 +780,13 @@ export function getRiskKPIs() {
 
   return {
     total: risks.length,
-    critical: risks.filter((risk) => risk.severity === 'Critical').length,
-    high: risks.filter((risk) => risk.severity === 'High').length,
-    medium: risks.filter((risk) => risk.severity === 'Medium').length,
-    low: risks.filter((risk) => risk.severity === 'Low').length,
-    open: risks.filter((risk) => risk.status === 'Open').length,
+    critical: risks.filter((risk) => risk.severity === "Critical").length,
+    high: risks.filter((risk) => risk.severity === "High").length,
+    medium: risks.filter((risk) => risk.severity === "Medium").length,
+    low: risks.filter((risk) => risk.severity === "Low").length,
+    open: risks.filter((risk) => risk.status === "Open").length,
     resolved: risks.filter(
-      (risk) =>
-        risk.status === 'Closed' || risk.status === 'Mitigated'
+      (risk) => risk.status === "Closed" || risk.status === "Mitigated",
     ).length,
   };
 }
@@ -679,8 +796,8 @@ export function getReportKPIs() {
 
   return {
     total: reports.length,
-    ready: reports.filter((report) => report.status === 'Ready').length,
-    pending: reports.filter((report) => report.status === 'Pending').length,
+    ready: reports.filter((report) => report.status === "Ready").length,
+    pending: reports.filter((report) => report.status === "Pending").length,
   };
 }
 
@@ -690,42 +807,63 @@ export function getNotificationKPIs() {
   return {
     total: notifications.length,
     critical: notifications.filter(
-      (notification) => notification.severity === 'Critical'
+      (notification) => notification.severity === "Critical",
     ).length,
     high: notifications.filter(
-      (notification) => notification.severity === 'High'
+      (notification) => notification.severity === "High",
     ).length,
     unread: notifications.filter((notification) => !notification.read).length,
     resolved: notifications.filter((notification) => notification.read).length,
   };
 }
 
+// export function getSiteKPIs() {
+//   const sites = getSites();
+
+//   const averagePerformance =
+//     sites.length > 0
+//       ? Math.round(
+//           sites.reduce(
+//             (sum, site) => sum + Number(site.performance || 0),
+//             0
+//           ) / sites.length
+//         )
+//       : 0;
+
+//   return {
+//     total: sites.length,
+//     avgPerformance: averagePerformance,
+//     totalEnrolled: sites.reduce(
+//       (sum, site) => sum + Number(site.enrolled || 0),
+//       0
+//     ),
+//   };
+// }
+
 export function getSiteKPIs() {
   const sites = getSites();
 
+  const totalSites = sites.length;
+
+  const totalEnrolled = sites.reduce((sum, site) => sum + site.enrolled, 0);
+
   const averagePerformance =
-    sites.length > 0
+    totalSites > 0
       ? Math.round(
-          sites.reduce(
-            (sum, site) => sum + Number(site.performance || 0),
-            0
-          ) / sites.length
+          sites.reduce((sum, site) => sum + site.performance, 0) / totalSites,
         )
       : 0;
 
   return {
-    total: sites.length,
+    total: totalSites,
+    totalEnrolled,
     avgPerformance: averagePerformance,
-    totalEnrolled: sites.reduce(
-      (sum, site) => sum + Number(site.enrolled || 0),
-      0
-    ),
   };
 }
 
 export const SEVERITY_COLORS = {
-  Critical: '#dc2626',
-  High: '#ea580c',
-  Medium: '#ca8a04',
-  Low: '#2563eb',
+  Critical: "#dc2626",
+  High: "#ea580c",
+  Medium: "#ca8a04",
+  Low: "#2563eb",
 };

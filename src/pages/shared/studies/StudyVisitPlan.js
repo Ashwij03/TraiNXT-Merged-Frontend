@@ -30,6 +30,15 @@ function StudyVisitPlan() {
   const canEdit = canEditStudyContent(getCurrentUser());
   const { plans, getPlanDetails, refresh } = useVisitPlans(studyCode);
   const { schedules } = useVisitSchedules({ studyCode });
+  const upcomingVisits = useMemo(() => {
+  return [...schedules]
+    .filter((item) => item.date)
+    .sort(
+      (a, b) =>
+        new Date(a.date) - new Date(b.date)
+    )
+    .slice(0, 5);
+}, [schedules]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showWizard, setShowWizard] = useState(false);
@@ -74,13 +83,21 @@ function StudyVisitPlan() {
     if (!String(draft.name || "").trim()) return;
 
     const saved = saveVisitPlan(studyCode, {
-      id: editingPlanId || undefined,
-      name: draft.name,
-      description: draft.description,
-      status: draft.status,
-      screeningWindow: draft.screeningWindow,
-      enrollmentWindow: draft.enrollmentWindow,
-    });
+  id: editingPlanId || undefined,
+
+  name: draft.name,
+  description: draft.description,
+
+  clinicalStudy: draft.clinicalStudy,
+  studyArm: draft.studyArm,
+  version: draft.version,
+  studyVisitGroup: draft.studyVisitGroup,
+
+  status: draft.status,
+
+  screeningWindow: draft.screeningWindow,
+  enrollmentWindow: draft.enrollmentWindow,
+});
 
     const planId = saved.id;
 
@@ -124,6 +141,7 @@ function StudyVisitPlan() {
             <RequestPermissionButton
               action="Edit Visit Plan"
               module="Visit Plan"
+              studyCode={studyCode}
               label="Request Edit Permission"
             />
           )}
@@ -136,6 +154,69 @@ function StudyVisitPlan() {
       </div>
 
       <div className="visit-plan-filters">
+        <div className="visit-plan-upcoming">
+
+<h3>Upcoming Visits</h3>
+
+{upcomingVisits.length === 0 ? (
+
+<p>No upcoming visits scheduled.</p>
+
+) : (
+  <>
+  <input
+    type="search"
+    placeholder="Search Procedure..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    className="planning-search"
+  />
+  
+
+<table className="planning-table">
+
+<thead>
+
+<tr>
+
+<th>Subject</th>
+
+<th>Visit</th>
+
+<th>Date</th>
+
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{upcomingVisits.map((visit,index)=>(
+
+<tr key={visit.id || index}>
+
+<td>{visit.subjectId || "—"}</td>
+
+<td>{visit.visit}</td>
+
+<td>{visit.date}</td>
+
+<td>{visit.status}</td>
+
+</tr>
+
+))}
+
+</tbody>
+
+</table>
+</>
+
+)}
+
+</div>
         <input
           type="search"
           placeholder="Search visit plans..."
@@ -223,9 +304,16 @@ function emptyDraft() {
   return {
     name: "",
     description: "",
-    status: "Draft",
+    status: "",
+
+    clinicalStudy: "",
+    studyArm: "",
+    version: "1.0",
+    studyVisitGroup: "",
+
     screeningWindow: "",
     enrollmentWindow: "",
+
     visits: [],
     procedures: [],
     syncToCalendar: false,
@@ -308,6 +396,61 @@ function VisitPlanWizard({
                   <option>Archived</option>
                 </select>
               </label>
+              <label>
+  Clinical Study
+  <input
+    value={draft.clinicalStudy}
+    disabled={!canEdit}
+    onChange={(e) =>
+      onChange({
+        ...draft,
+        clinicalStudy: e.target.value,
+      })
+    }
+  />
+</label>
+
+<label>
+  Study Arm
+  <input
+    value={draft.studyArm}
+    disabled={!canEdit}
+    onChange={(e) =>
+      onChange({
+        ...draft,
+        studyArm: e.target.value,
+      })
+    }
+  />
+</label>
+
+<label>
+  Version
+  <input
+    value={draft.version}
+    disabled={!canEdit}
+    onChange={(e) =>
+      onChange({
+        ...draft,
+        version: e.target.value,
+      })
+    }
+  />
+</label>
+
+<label>
+  Study Visit Group
+  <input
+    value={draft.studyVisitGroup}
+    disabled={!canEdit}
+    onChange={(e) =>
+      onChange({
+        ...draft,
+        studyVisitGroup: e.target.value,
+      })
+    }
+  />
+</label>
             </>
           )}
 
@@ -430,14 +573,27 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
   const addVisit = () => {
     onChange([
       ...list,
-      {
-        id: `vv-${Date.now()}`,
-        visitName: "",
-        windowStart: "",
-        windowEnd: "",
-        dayOffset: "",
-        required: true,
-      },
+     {
+id:`vv-${Date.now()}`,
+
+visitTemplateId:`VT-${Date.now()}`,
+
+sequence:list.length+1,
+
+visitName:"",
+
+visitType:"Scheduled",
+
+windowStart:"",
+windowStartUnit:"Days",
+
+windowEnd:"",
+windowEndUnit:"Days",
+
+dayOffset:"",
+
+required:true
+}
     ]);
   };
 
@@ -459,16 +615,42 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
         <table className="planning-table">
           <thead>
             <tr>
-              <th>Visit</th>
-              <th>Window Start</th>
-              <th>Window End</th>
-              <th>Day Offset</th>
-              {canEdit && <th>Actions</th>}
-            </tr>
+
+<th>Sequence</th>
+
+<th>Visit Template ID</th>
+
+<th>Visit</th>
+
+<th>Visit Type</th>
+
+<th>Window Start</th>
+
+<th>Start Unit</th>
+
+<th>Window End</th>
+
+<th>End Unit</th>
+
+<th>Day Offset</th>
+
+{canEdit && <th>Actions</th>}
+
+</tr>
           </thead>
           <tbody>
-            {list.map((visit) => (
+            {list.map((visit,index) => (
               <tr key={visit.id}>
+                <td>
+<input
+value={visit.sequence}
+disabled
+/>
+
+</td>
+                <td>
+    {visit.visitTemplateId || visit.id}
+</td>
                 <td>
                   <input
                     value={visit.visitName}
@@ -478,6 +660,35 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
                     }
                   />
                 </td>
+                <td>
+
+<select
+value={visit.visitType || "Scheduled"}
+disabled={!canEdit}
+onChange={(e)=>
+updateVisit(
+visit.id,
+"visitType",
+e.target.value
+)
+}
+>
+
+<option>Scheduled</option>
+
+<option>Screening</option>
+
+<option>Baseline</option>
+
+<option>Follow-up</option>
+
+<option>Unscheduled</option>
+
+<option>End of Study</option>
+
+</select>
+
+</td>
                 <td>
                   <input
                     type="date"
@@ -489,6 +700,29 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
                   />
                 </td>
                 <td>
+
+<select
+value={visit.windowStartUnit || "Days"}
+disabled={!canEdit}
+onChange={(e)=>
+updateVisit(
+visit.id,
+"windowStartUnit",
+e.target.value
+)
+}
+>
+
+<option>Days</option>
+
+<option>Hours</option>
+
+<option>Weeks</option>
+
+</select>
+
+</td>
+                <td>
                   <input
                     type="date"
                     value={visit.windowEnd || ""}
@@ -499,6 +733,29 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
                   />
                 </td>
                 <td>
+
+<select
+value={visit.windowEndUnit || "Days"}
+disabled={!canEdit}
+onChange={(e)=>
+updateVisit(
+visit.id,
+"windowEndUnit",
+e.target.value
+)
+}
+>
+
+<option>Days</option>
+
+<option>Hours</option>
+
+<option>Weeks</option>
+
+</select>
+
+</td>
+                <td>
                   <input
                     value={visit.dayOffset ?? ""}
                     disabled={!canEdit}
@@ -507,17 +764,59 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
                     }
                   />
                 </td>
-                {canEdit && (
-                  <td>
-                    <button
-                      type="button"
-                      className="link-btn danger"
-                      onClick={() => removeVisit(visit.id)}
-                    >
-                      Remove
-                    </button>
-                  </td>
-                )}
+               {canEdit && (
+<td>
+
+<button
+type="button"
+className="link-btn"
+disabled={index===0}
+onClick={()=>{
+const next=[...list];
+
+[next[index-1],next[index]]=
+[next[index],next[index-1]];
+
+next.forEach(
+(item,i)=>item.sequence=i+1
+);
+
+onChange(next);
+}}
+>
+↑
+</button>
+
+<button
+type="button"
+className="link-btn"
+disabled={index===list.length-1}
+onClick={()=>{
+const next=[...list];
+
+[next[index+1],next[index]]=
+[next[index],next[index+1]];
+
+next.forEach(
+(item,i)=>item.sequence=i+1
+);
+
+onChange(next);
+}}
+>
+↓
+</button>
+
+<button
+type="button"
+className="link-btn danger"
+onClick={()=>removeVisit(visit.id)}
+>
+Remove
+</button>
+
+</td>
+)}
               </tr>
             ))}
           </tbody>
@@ -534,17 +833,27 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
 
 function ProcedureDetailsTable({ visits, procedures, canEdit, onChange }) {
   const list = Array.isArray(procedures) ? procedures : [];
-
+const [search, setSearch] = useState("");
   const addProcedure = () => {
     onChange([
       ...list,
-      {
-        id: `vproc-${Date.now()}`,
-        visitId: visits?.[0]?.id || "",
-        procedureName: "",
-        category: "Assessment",
-        required: true,
-      },
+     {
+  id: `vproc-${Date.now()}`,
+
+  visitId: visits?.[0]?.id || "",
+
+  procedureCode: `PROC-${Date.now()}`,
+
+  procedureName: "",
+
+  taskOrder: list.length + 1,
+
+  sequence: list.length + 1,
+
+  category: "Assessment",
+
+  required: true,
+},
     ]);
   };
 
@@ -565,16 +874,41 @@ function ProcedureDetailsTable({ visits, procedures, canEdit, onChange }) {
       ) : (
         <table className="planning-table">
           <thead>
-            <tr>
-              <th>Visit</th>
-              <th>Procedure</th>
-              <th>Category</th>
-              {canEdit && <th>Actions</th>}
-            </tr>
+           <tr>
+
+<th>Sequence</th>
+
+<th>Visit</th>
+
+<th>Procedure Code</th>
+
+<th>Procedure</th>
+
+<th>Task Order</th>
+
+<th>Category</th>
+
+{canEdit && <th>Actions</th>}
+
+</tr>
           </thead>
           <tbody>
-            {list.map((proc) => (
+            {list
+.filter((proc)=>
+(proc.procedureName||"")
+.toLowerCase()
+.includes(search.toLowerCase())
+)
+.map((proc,index)=>(
               <tr key={proc.id}>
+                <td>
+
+<input
+value={proc.sequence}
+disabled
+/>
+
+</td>
                 <td>
                   <select
                     value={proc.visitId || ""}
@@ -592,6 +926,19 @@ function ProcedureDetailsTable({ visits, procedures, canEdit, onChange }) {
                   </select>
                 </td>
                 <td>
+  <input
+    value={proc.procedureCode || ""}
+    disabled={!canEdit}
+    onChange={(e) =>
+      updateProcedure(
+        proc.id,
+        "procedureCode",
+        e.target.value
+      )
+    }
+  />
+</td>
+                <td>
                   <input
                     value={proc.procedureName}
                     disabled={!canEdit}
@@ -600,6 +947,19 @@ function ProcedureDetailsTable({ visits, procedures, canEdit, onChange }) {
                     }
                   />
                 </td>
+                <td>
+  <input
+    value={proc.taskOrder || ""}
+    disabled={!canEdit}
+    onChange={(e) =>
+      updateProcedure(
+        proc.id,
+        "taskOrder",
+        e.target.value
+      )
+    }
+  />
+</td>
                 <td>
                   <input
                     value={proc.category}
@@ -627,6 +987,15 @@ function ProcedureDetailsTable({ visits, procedures, canEdit, onChange }) {
       )}
       {canEdit && (
         <button type="button" className="secondary-btn" onClick={addProcedure}>
+          <button
+type="button"
+className="secondary-btn"
+onClick={addProcedure}
+>
+
+Select Standard Procedure
+
+</button>
           + Add Procedure
         </button>
       )}
@@ -689,8 +1058,10 @@ function ScheduleMatrix({ visits, procedures, subjects }) {
         <thead>
           <tr>
             <th>Subject</th>
-            {visits.map((visit) => (
-              <th key={visit.id}>{visit.visitName || "Visit"}</th>
+            {visits.map((visit, index) => (
+              <th key={visit.id}>
+    {visit.visitName || `Visit ${index + 1}`}
+</th>
             ))}
           </tr>
         </thead>
@@ -699,14 +1070,32 @@ function ScheduleMatrix({ visits, procedures, subjects }) {
             <tr key={subject.subjectId || subject.id}>
               <td>{subject.subjectId || subject.id}</td>
               {visits.map((visit) => {
-                const count = procedures.filter(
-                  (proc) => !proc.visitId || proc.visitId === visit.id
-                ).length;
-                return (
-                  <td key={`${subject.subjectId}-${visit.id}`}>
-                    {count ? `${count} proc.` : "—"}
-                  </td>
-                );
+                const visitProcedures = procedures.filter(
+  (proc) =>
+    !proc.visitId || proc.visitId === visit.id
+);
+
+return (
+  <td key={`${subject.subjectId}-${visit.id}`}>
+   {visitProcedures.length ? (
+  <ul className="schedule-procedure-list">
+    {visitProcedures.map((proc, index) => (
+      <li key={proc.id}>
+        <strong>
+{proc.procedureCode || `PROC-${index + 1}`}
+</strong>
+        {" - "}
+        {proc.procedureName || "Procedure"}
+      </li>
+    ))}
+  </ul>
+) : (
+  <span className="no-procedure">
+    No Procedures
+  </span>
+)}
+  </td>
+);
               })}
             </tr>
           ))}

@@ -2,34 +2,64 @@
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    min-width:100px;
-    padding:6px 14px;
-    border-radius:30px;
-    font-size:13px;
-    font-weight:600;
+    min-width:96px;
+    padding:6px 12px;
+    border:0;
+    border-radius:999px;
+    box-shadow:none;
+    font-size:12px;
+    font-weight:700;
+    line-height:1.2;
+    white-space:nowrap;
 }
 
 .status-badge.approved{
-    background:#d8f5df;
-    color:#1b8f3c;
+    background:#dcfce7;
+    color:#166534;
 }
 
 .status-badge.pending{
-    background:#fde6d3;
-    color:#d97706;
+    background:#fef3c7;
+    color:#92400e;
 }
 
 .status-badge.expired{
-    background:#fde2e2;
-    color:#dc2626;
+    background:#fee2e2;
+    color:#991b1b;
 }
 
 .status-badge.draft{
-    background:#e8ecf3;
-    color:#475569;
+    background:#f1f5f9;
+    color:#334155;
 }
 
 .status-badge.pending-review{
-    background:#fff4d6;
-    color:#ca8a04;
+    background:#e0f2fe;
+    color:#075985;
+}
+
+.status-badge.under-review,
+.status-badge.under-approval {
+    background:#dbeafe;
+    color:#1e40af;
+}
+
+.status-badge.archived {
+    background:#e0e7ff;
+    color:#3730a3;
+}
+
+.status-badge.rejected {
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.status-badge.superseded {
+    background:#f1f5f9;
+    color:#475569;
+}
+
+.status-badge.missing {
+    background:#ffedd5;
+    color:#9a3412;
 }

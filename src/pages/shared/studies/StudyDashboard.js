@@ -40,6 +40,7 @@ import UpcomingVisitsWidget from "../../../Components/dashboard/UpcomingVisitsWi
 import PendingCommentsWidget from "../../../Components/dashboard/PendingCommentsWidget";
 import QuickActionsWidget from "../../../Components/dashboard/QuickActionsWidget";
 import DocumentFolderManager from "../../../Components/common/DocumentFolderManager";
+import EISFWorkspace from "../EISF/EISFWorkspace";
 import {
   FiUsers,
   FiClipboard,
@@ -58,6 +59,8 @@ import { submitAccessRequest } from "../../../services/accessPermissionService";
 import { getCurrentUser } from "../../../services/roleService";
 import "../AccessPermissions.css";
 import "../../Admin/Dashboard.css";
+
+import ClinicalSitesDashboard from "./ClinicalSitesDashboard";
 
 function StudyDashboard() {
   const navigate = useNavigate();
@@ -535,18 +538,13 @@ function StudyDashboard() {
             {activeTab === "Reports" && <StudyReports />}
 
             {activeTab === "eISF" && (
-              <div className="module-card">
-                <h2>eISF</h2>
-
-                <DocumentFolderManager
-                  sectionId="eISF"
-                  contextKey={id || "default"}
-                  title="eISF"
-                  studyCode={id}
-                  layout="vertical"
-                />
-              </div>
-            )}
+  <EISFWorkspace studyCode={id} />
+)}
+            {activeTab === "Clinical Sites" && (
+              <ClinicalSitesDashboard
+              study={currentStudy}
+              />
+        )}
 
             {activeTab === "Financials" && (
               <div className="study-financials-tab">
@@ -562,6 +560,51 @@ function StudyDashboard() {
               <div className="module-card">
                 <h2>Others</h2>
 
+        {activeTab === "Subjects" && (
+          <StudySubjects setActiveTab={setActiveTab} />
+        )}
+
+        {activeTab === "SubjectProfile" && (
+          <SubjectProfile setActiveTab={setActiveTab} />
+        )}
+
+        {activeTab === "Study Folder" && (
+          <StudyDocuments />
+        )}
+
+        {activeTab === "Comments" && (
+          <StudyComments />
+        )}
+
+        {activeTab === "Logs" && (
+          <StudyLogsTab />
+        )}
+
+        {activeTab === "Regulatory" && (
+          <StudyRegulatory />
+        )}
+
+        {activeTab === "Reports" && (
+          <StudyReports />
+        )}
+    
+
+        
+{activeTab === "Financials" && (
+  <StudyFinancials />
+)}
+        {activeTab === "Others" && (
+          <div className="module-card">
+            <h2>Others</h2>
+            <DocumentFolderManager
+              sectionId="others"
+              contextKey={id || "default"}
+              title="Others"
+              studyCode={id}
+              layout="vertical"
+            />
+          </div>
+        )}
                 <DocumentFolderManager
                   sectionId="others"
                   contextKey={id || "default"}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { DOCUMENT_STATUS_OPTIONS } from "../Constants/documentStatus";
 import "./EditDocumentModal.css";
 
 export default function EditDocumentModal({
@@ -46,9 +47,10 @@ export default function EditDocumentModal({
           <label>Category</label>
           <input
             value={form.category || ""}
-            onChange={(e) =>
-              handleChange("category", e.target.value)
-            }
+            onChange={(e) => {
+              handleChange("category", e.target.value);
+              handleChange("documentType", e.target.value);
+            }}
           />
 
           <label>Version</label>
@@ -67,10 +69,11 @@ export default function EditDocumentModal({
               handleChange("status", e.target.value)
             }
           >
-            <option>Approved</option>
-            <option>Pending</option>
-            <option>Draft</option>
-            <option>Expired</option>
+            {DOCUMENT_STATUS_OPTIONS.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
           </select>
 
         </div>
@@ -78,6 +81,7 @@ export default function EditDocumentModal({
         <div className="edit-footer">
 
           <button
+            type="button"
             className="cancel-btn"
             onClick={onClose}
           >
@@ -85,6 +89,7 @@ export default function EditDocumentModal({
           </button>
 
           <button
+            type="button"
             className="save-btn"
             onClick={() => onSave(form)}
           >

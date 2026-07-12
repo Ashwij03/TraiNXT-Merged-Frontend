@@ -42,10 +42,43 @@ import {
 } from "../../services/commentService";
 import { getStudyByCode } from "../../services/studyService";
 import { VISIT_STAGES } from "../../services/visitScheduleService";
+import { notifyDocumentAdded } from "../../services/notificationService";
+import {
+  getCurrentUser,
+  getEffectiveRole,
+  ROLE_LABELS,
+} from "../../services/roleService";
 import "./DocumentFolderManager.css";
 import FolderColumnView from "./FolderColumnView";
 
 const SUBJECT_ICF_FOLDER_NAME = "ICF";
+
+// Human-readable label for the notification's "in <section>" clause.
+// Falls back to the page's own title prop (e.g. a DOCUMENT_TABS label, or
+// "Subjects" for the subject folder view) when sectionId isn't one of the
+// known top-level sections.
+const SECTION_LABELS = {
+  subjects: "Subjects",
+  studyFolder: "Study Files",
+  regulatory: "Regulatory",
+  eISF: "eISF",
+  others: "Other Documents",
+  logs: "Logs",
+};
+
+function getSectionLabel(sectionId, title) {
+  if (SECTION_LABELS[sectionId]) {
+    return SECTION_LABELS[sectionId];
+  }
+
+  // Inside a subject's own folder (title is the subject ID, e.g. "SUB-03"),
+  // the meaningful section is still "Subjects".
+  if (sectionId === "subjects") {
+    return "Subjects";
+  }
+
+  return title || "Documents";
+}
 
 function findNodeById(nodes, nodeId) {
   for (const node of nodes || []) {
@@ -66,9 +99,7 @@ function findNodeById(nodes, nodeId) {
 }
 
 function buildBreadcrumb(tree, pathIds) {
-  return pathIds
-    .map((nodeId) => findNodeById(tree, nodeId))
-    .filter(Boolean);
+  return pathIds.map((nodeId) => findNodeById(tree, nodeId)).filter(Boolean);
 }
 
 function buildPathToNode(nodes, targetId, path = []) {
@@ -80,11 +111,7 @@ function buildPathToNode(nodes, targetId, path = []) {
     }
 
     if (node.children?.length) {
-      const nestedPath = buildPathToNode(
-        node.children,
-        targetId,
-        nextPath
-      );
+      const nestedPath = buildPathToNode(node.children, targetId, nextPath);
 
       if (nestedPath) {
         return nestedPath;
@@ -97,36 +124,13 @@ function buildPathToNode(nodes, targetId, path = []) {
 
 function getFolderNameMatch(folder, name) {
   return (
-    String(folder?.name || "").trim().toLowerCase() ===
-    String(name || "").trim().toLowerCase()
+    String(folder?.name || "")
+      .trim()
+      .toLowerCase() ===
+    String(name || "")
+      .trim()
+      .toLowerCase()
   );
-}
-
-function ensureSubjectIcfFolder(sectionId, contextKey, tree) {
-  if (sectionId !== "subjects") {
-    return tree;
-  }
-
-  const rootFolder = tree?.[0];
-
-  if (!rootFolder?.id) {
-    return tree;
-  }
-
-  const icfAlreadyExists = (rootFolder.children || []).some((folder) =>
-    getFolderNameMatch(folder, SUBJECT_ICF_FOLDER_NAME)
-  );
-
-  if (!icfAlreadyExists) {
-    createFolder(
-      sectionId,
-      contextKey,
-      rootFolder.id,
-      SUBJECT_ICF_FOLDER_NAME
-    );
-  }
-
-  return getFolderTree(sectionId, contextKey);
 }
 
 function FolderTreeNode({
@@ -235,11 +239,11 @@ function DocumentCommentsPanel({
 
     return getVisibleComments(
       { studyCode, subjectId, documentId, studyStage },
-      undefined
+      undefined,
     ).filter(
       (item) =>
         String(item.documentId) === String(documentId) ||
-        item.document === documentName
+        item.document === documentName,
     );
   }, [studyCode, subjectId, documentId, documentName, studyStage, refreshKey]);
 
@@ -289,9 +293,7 @@ function DocumentCommentsPanel({
 
       <ul className="dfm-comment-list">
         {comments.length === 0 && (
-          <li className="dfm-comment-empty">
-            No comments for this document.
-          </li>
+          <li className="dfm-comment-empty">No comments for this document.</li>
         )}
 
         {comments.map((comment) => (
@@ -315,10 +317,7 @@ function DocumentCommentsPanel({
               </span>
 
               {comment.status === "Open" && canResolveComments() && (
-                <button
-                  type="button"
-                  onClick={() => handleResolve(comment.id)}
-                >
+                <button type="button" onClick={() => handleResolve(comment.id)}>
                   Resolve
                 </button>
               )}
@@ -350,53 +349,124 @@ function DocumentFolderManager({
   const folderUploadInputRef = useRef(null);
   const uploadTargetFolderIdRef = useRef("");
   const selectedFolderIdRef = useRef("");
+  // Real file bytes are never written to localStorage (that's what caused
+  // the B4/B6 quota crashes) — but for a document uploaded or replaced in
+  // THIS browser session, we keep a temporary, in-memory object URL here so
+  // "View" can show the real content until the page is refreshed/closed.
+  // After a refresh only the metadata record survives, so preview correctly
+  // reverts to "stored as metadata only" for anything from a prior session.
+  const sessionFileUrlsRef = useRef(new Map());
+
+  useEffect(() => {
+    const urlMap = sessionFileUrlsRef.current;
+
+    return () => {
+      urlMap.forEach((url) => URL.revokeObjectURL(url));
+      urlMap.clear();
+    };
+  }, []);
+
+  const defaultFolderNames = useMemo(() => {
+    if (!Array.isArray(defaultFolders)) {
+      return [];
+    }
+
+    return defaultFolders
+      .map((folder) => String(folder?.name || "").trim())
+      .filter(Boolean)
+      .sort();
+  }, [defaultFolders]);
+
+  const defaultFolderNamesKey = useMemo(() => {
+    return defaultFolderNames.join("|");
+  }, [defaultFolderNames]);
 
   const getPreparedTree = useCallback(() => {
-    let nextTree = getFolderTree(sectionId, contextKey);
+    return getFolderTree(sectionId, contextKey);
+  }, [sectionId, contextKey]);
 
-    if (sectionId === "subjects") {
-      nextTree = ensureSubjectIcfFolder(sectionId, contextKey, nextTree);
-    }
+  // Ensures default folders (and the protected ICF folder for subjects)
+  // exist. This is the ONLY place folders are auto-created, and it only
+  // runs from a controlled effect - never during render or inside a
+  // useMemo/useCallback used by render. It depends only on stable,
+  // primitive values (sectionId, contextKey, defaultFolderNamesKey) so it
+  // cannot re-run just because a parent re-created an array/object prop.
+  useEffect(() => {
+    const namesToEnsure = defaultFolderNamesKey
+      ? defaultFolderNamesKey.split("|").filter(Boolean)
+      : [];
 
     if (
       sectionId === "subjects" &&
-      Array.isArray(defaultFolders) &&
-      defaultFolders.length > 0
+      !namesToEnsure.includes(SUBJECT_ICF_FOLDER_NAME)
     ) {
-      const rootFolder = nextTree?.[0];
-
-      if (rootFolder?.id) {
-        defaultFolders.forEach((folder) => {
-          const folderName = String(folder?.name || "").trim();
-
-          if (!folderName) {
-            return;
-          }
-
-          const exists = (rootFolder.children || []).some((child) =>
-            getFolderNameMatch(child, folderName)
-          );
-
-          if (!exists) {
-            createFolder(sectionId, contextKey, rootFolder.id, folderName);
-          }
-        });
-
-        nextTree = getFolderTree(sectionId, contextKey);
-      }
+      namesToEnsure.push(SUBJECT_ICF_FOLDER_NAME);
     }
 
-    return nextTree;
-  }, [sectionId, contextKey, defaultFolders]);
+    if (namesToEnsure.length === 0) {
+      return;
+    }
 
-  const initialTree = getPreparedTree();
-  const initialRootId = initialTree[0]?.id || "";
+    const currentTree = getFolderTree(sectionId, contextKey);
+    const rootFolder = currentTree?.[0];
 
-  const [tree, setTree] = useState(initialTree);
-  const [selectedFolderId, setSelectedFolderId] = useState(initialRootId);
-  const [navigationPath, setNavigationPath] = useState(
-    initialRootId ? [initialRootId] : []
+    if (!rootFolder?.id) {
+      return;
+    }
+
+    let workingChildren = rootFolder.children || [];
+    let didCreateFolder = false;
+
+    namesToEnsure.forEach((folderName) => {
+      const exists = workingChildren.some((child) =>
+        getFolderNameMatch(child, folderName),
+      );
+
+      if (!exists) {
+        const created = createFolder(
+          sectionId,
+          contextKey,
+          rootFolder.id,
+          folderName,
+        );
+
+        if (created) {
+          workingChildren = [...workingChildren, created];
+          didCreateFolder = true;
+        }
+      }
+    });
+
+    if (!didCreateFolder) {
+      return;
+    }
+
+    const refreshedTree = getFolderTree(sectionId, contextKey);
+
+    setTree((previousTree) => {
+      const previousValue = JSON.stringify(previousTree);
+      const nextValue = JSON.stringify(refreshedTree);
+
+      return previousValue === nextValue ? previousTree : refreshedTree;
+    });
+
+    const rootId = refreshedTree?.[0]?.id || "";
+
+    if (!selectedFolderIdRef.current && rootId) {
+      selectedFolderIdRef.current = rootId;
+      setSelectedFolderId(rootId);
+      setNavigationPath([rootId]);
+    }
+  }, [sectionId, contextKey, defaultFolderNamesKey]);
+
+  const [tree, setTree] = useState(() => getFolderTree(sectionId, contextKey));
+  const [selectedFolderId, setSelectedFolderId] = useState(
+    () => getFolderTree(sectionId, contextKey)[0]?.id || "",
   );
+  const [navigationPath, setNavigationPath] = useState(() => {
+    const rootId = getFolderTree(sectionId, contextKey)[0]?.id || "";
+    return rootId ? [rootId] : [];
+  });
   const [expandedIds, setExpandedIds] = useState(new Set());
   const [documents, setDocuments] = useState([]);
   const [pendingUpload, setPendingUpload] = useState(null);
@@ -409,9 +479,7 @@ function DocumentFolderManager({
   selectedFolderIdRef.current = selectedFolderId;
 
   const navigationTailId =
-    navigationPath.length > 0
-      ? navigationPath[navigationPath.length - 1]
-      : "";
+    navigationPath.length > 0 ? navigationPath[navigationPath.length - 1] : "";
 
   const refreshTree = useCallback(() => {
     const nextTree = getPreparedTree();
@@ -419,22 +487,35 @@ function DocumentFolderManager({
     const currentSelectedId = selectedFolderIdRef.current;
 
     const selectedStillExists = Boolean(
-      currentSelectedId && findNodeById(nextTree, currentSelectedId)
+      currentSelectedId && findNodeById(nextTree, currentSelectedId),
     );
 
-    setTree(nextTree);
+    setTree((previousTree) => {
+      const previousValue = JSON.stringify(previousTree);
+      const nextValue = JSON.stringify(nextTree);
+
+      return previousValue === nextValue ? previousTree : nextTree;
+    });
 
     if (!selectedStillExists) {
-      selectedFolderIdRef.current = rootId;
-      setSelectedFolderId(rootId);
-      setNavigationPath(rootId ? [rootId] : []);
+      if (currentSelectedId !== rootId) {
+        selectedFolderIdRef.current = rootId;
+        setSelectedFolderId(rootId);
+        setNavigationPath(rootId ? [rootId] : []);
+      }
+
       return;
     }
 
     const selectedPath = buildPathToNode(nextTree, currentSelectedId);
 
     if (selectedPath) {
-      setNavigationPath(selectedPath);
+      setNavigationPath((previousPath) => {
+        const previousValue = JSON.stringify(previousPath);
+        const nextValue = JSON.stringify(selectedPath);
+
+        return previousValue === nextValue ? previousPath : selectedPath;
+      });
     }
   }, [getPreparedTree]);
 
@@ -482,13 +563,13 @@ function DocumentFolderManager({
     selectedFolderIdRef.current = navigationTailId;
 
     setSelectedFolderId((currentId) =>
-      currentId === navigationTailId ? currentId : navigationTailId
+      currentId === navigationTailId ? currentId : navigationTailId,
     );
   }, [isExplorerLayout, navigationTailId]);
 
   const selectedFolderNode = useMemo(
     () => findNodeById(tree, selectedFolderId),
-    [tree, selectedFolderId]
+    [tree, selectedFolderId],
   );
 
   const selectedFolderName = selectedFolderNode?.name || title;
@@ -505,8 +586,7 @@ function DocumentFolderManager({
   const canModify = !readOnly;
 
   const matchedVisitStage = VISIT_STAGES.find(
-    (stage) =>
-      stage.toLowerCase() === String(selectedFolderName).toLowerCase()
+    (stage) => stage.toLowerCase() === String(selectedFolderName).toLowerCase(),
   );
 
   const canCompleteVisitStage =
@@ -517,7 +597,7 @@ function DocumentFolderManager({
 
   const breadcrumb = useMemo(
     () => buildBreadcrumb(tree, navigationPath),
-    [tree, navigationPath]
+    [tree, navigationPath],
   );
 
   const currentFolderChildren = selectedFolderNode?.children || [];
@@ -567,14 +647,23 @@ function DocumentFolderManager({
   };
 
   const persistDocuments = (nextDocuments) => {
-    saveDocumentsForFolder(
-      sectionId,
-      contextKey,
-      selectedFolderId,
-      nextDocuments
-    );
+    try {
+      saveDocumentsForFolder(
+        sectionId,
+        contextKey,
+        selectedFolderId,
+        nextDocuments,
+      );
 
-    setDocuments(nextDocuments);
+      setDocuments(nextDocuments);
+      return true;
+    } catch (error) {
+      window.alert(
+        error?.message ||
+          "Unable to save this change. Storage limit may have been reached.",
+      );
+      return false;
+    }
   };
 
   const handleAddFolder = (folderId = selectedFolderId) => {
@@ -596,11 +685,13 @@ function DocumentFolderManager({
       sectionId,
       contextKey,
       parentFolderId,
-      name.trim()
+      name.trim(),
     );
 
     if (created) {
-      setExpandedIds((previousIds) => new Set([...previousIds, parentFolderId]));
+      setExpandedIds(
+        (previousIds) => new Set([...previousIds, parentFolderId]),
+      );
       refreshTree();
 
       if (isExplorerLayout || isColumnLayout) {
@@ -675,8 +766,7 @@ function DocumentFolderManager({
   };
 
   const handleFolderUploadSelect = async (fileList) => {
-    const targetFolderId =
-      uploadTargetFolderIdRef.current || selectedFolderId;
+    const targetFolderId = uploadTargetFolderIdRef.current || selectedFolderId;
 
     if (!targetFolderId || !fileList?.length) {
       return;
@@ -689,7 +779,7 @@ function DocumentFolderManager({
       sectionId,
       contextKey,
       targetFolderId,
-      structure
+      structure,
     );
 
     refreshTree();
@@ -719,15 +809,6 @@ function DocumentFolderManager({
     }
   };
 
-  const readFileAsDataUrl = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-
   const handleFileSelect = async (fileList) => {
     const file = Array.from(fileList || [])[0];
 
@@ -748,6 +829,7 @@ function DocumentFolderManager({
       file,
       name: file.name,
       size: file.size,
+      type: file.type,
     });
 
     const steps = [20, 45, 70, 90, 100];
@@ -763,19 +845,44 @@ function DocumentFolderManager({
       return;
     }
 
-    const dataUrl = await readFileAsDataUrl(pendingUpload.file);
-
     const newDocument = {
       id: `doc-${Date.now()}`,
-      name: pendingUpload.name,
-      size: pendingUpload.size,
+      name: pendingUpload.name || "Untitled Document",
+      type: pendingUpload.type || "application/octet-stream",
+      size: Number(pendingUpload.size) || 0,
       uploadedAt: new Date().toISOString(),
-      dataUrl,
+      uploadedBy: localStorage.getItem("currentUserName") || "Current User",
+      status: pendingUpload.status || "Submitted",
+      documentType: pendingUpload.documentType || "General",
+      studyCode: studyCode || "",
+      subjectId: subjectId || "",
+      fileUrl: pendingUpload.fileUrl || "",
     };
 
-    persistDocuments([...documents, newDocument]);
-    setPendingUpload(null);
-    setUploadProgress(0);
+    const saved = persistDocuments([...documents, newDocument]);
+
+    if (saved) {
+      // In-memory only — never persisted, so this never risks a quota
+      // crash. Lets "View" show the real file for the rest of this
+      // session; gone (correctly) after a refresh since the bytes were
+      // never saved to localStorage.
+      if (pendingUpload.file) {
+        sessionFileUrlsRef.current.set(
+          newDocument.id,
+          URL.createObjectURL(pendingUpload.file),
+        );
+      }
+
+      setPendingUpload(null);
+      setUploadProgress(0);
+
+      const role = getEffectiveRole(getCurrentUser());
+      notifyDocumentAdded({
+        ...newDocument,
+        addedByRole: ROLE_LABELS[role] || role,
+        sectionLabel: getSectionLabel(sectionId, title),
+      });
+    }
   };
 
   const handleRenameDoc = (docId) => {
@@ -797,8 +904,8 @@ function DocumentFolderManager({
 
     persistDocuments(
       documents.map((item) =>
-        item.id === docId ? { ...item, name: name.trim() } : item
-      )
+        item.id === docId ? { ...item, name: name.trim() } : item,
+      ),
     );
   };
 
@@ -811,7 +918,7 @@ function DocumentFolderManager({
     input.type = "file";
     input.accept = "application/pdf,.pdf";
 
-    input.onchange = async () => {
+    input.onchange = () => {
       const file = input.files?.[0];
 
       if (!file) {
@@ -826,7 +933,11 @@ function DocumentFolderManager({
         return;
       }
 
-      const dataUrl = await readFileAsDataUrl(file);
+      const previousUrl = sessionFileUrlsRef.current.get(docId);
+      if (previousUrl) {
+        URL.revokeObjectURL(previousUrl);
+      }
+      sessionFileUrlsRef.current.set(docId, URL.createObjectURL(file));
 
       persistDocuments(
         documents.map((item) =>
@@ -835,11 +946,11 @@ function DocumentFolderManager({
                 ...item,
                 name: file.name,
                 size: file.size,
+                type: file.type,
                 uploadedAt: new Date().toISOString(),
-                dataUrl,
               }
-            : item
-        )
+            : item,
+        ),
       );
     };
 
@@ -856,18 +967,29 @@ function DocumentFolderManager({
     if (window.confirm("Delete this document?")) {
       markCommentsDocumentDeleted(docId, document?.name);
 
+      const previousUrl = sessionFileUrlsRef.current.get(docId);
+      if (previousUrl) {
+        URL.revokeObjectURL(previousUrl);
+        sessionFileUrlsRef.current.delete(docId);
+      }
+
       persistDocuments(documents.filter((item) => item.id !== docId));
     }
   };
 
-  const handleDownloadDoc = (document) => {
-    if (!document.dataUrl) {
+  const handleDownloadDoc = (doc) => {
+    const downloadUrl = doc.fileUrl || sessionFileUrlsRef.current.get(doc.id);
+
+    if (!downloadUrl) {
+      window.alert(
+        "No downloadable file is available for this document. Only its metadata is stored.",
+      );
       return;
     }
 
-    const link = document.createElement("a");
-    link.href = document.dataUrl;
-    link.download = document.name;
+    const link = window.document.createElement("a");
+    link.href = downloadUrl;
+    link.download = doc.name;
     link.click();
   };
 
@@ -1026,9 +1148,7 @@ function DocumentFolderManager({
               <nav className="dfm-breadcrumb" aria-label="Folder path">
                 {breadcrumb.map((node, index) => (
                   <span key={node.id} className="dfm-breadcrumb-item">
-                    {index > 0 && (
-                      <span className="dfm-breadcrumb-sep">›</span>
-                    )}
+                    {index > 0 && <span className="dfm-breadcrumb-sep">›</span>}
 
                     <button
                       type="button"
@@ -1062,7 +1182,8 @@ function DocumentFolderManager({
           <h3>{selectedFolderName}</h3>
 
           <span>
-            {currentFolderChildren.length} folder(s) • {documents.length} file(s)
+            {currentFolderChildren.length} folder(s) • {documents.length}{" "}
+            file(s)
           </span>
         </div>
 
@@ -1280,12 +1401,11 @@ function DocumentFolderManager({
           ))}
         </ul>
 
-        {documents.length === 0 && !pendingUpload && (
-          canModify ? (
+        {documents.length === 0 &&
+          !pendingUpload &&
+          (canModify ? (
             <div
-              className={`dfm-drop-zone${
-                dragOverEmpty ? " is-drag-over" : ""
-              }`}
+              className={`dfm-drop-zone${dragOverEmpty ? " is-drag-over" : ""}`}
               onClick={() => fileInputRef.current?.click()}
               onDragOver={(event) => {
                 event.preventDefault();
@@ -1306,8 +1426,7 @@ function DocumentFolderManager({
             </div>
           ) : (
             <p className="dfm-empty">No documents in this folder.</p>
-          )
-        )}
+          ))}
       </section>
 
       {viewDoc && (
@@ -1324,15 +1443,25 @@ function DocumentFolderManager({
               </button>
             </div>
 
-            {viewDoc.dataUrl ? (
-              <iframe
-                title={viewDoc.name}
-                src={viewDoc.dataUrl}
-                className="dfm-viewer-frame"
-              />
-            ) : (
-              <p>Preview unavailable.</p>
-            )}
+            {(() => {
+              const previewUrl =
+                viewDoc.fileUrl || sessionFileUrlsRef.current.get(viewDoc.id);
+
+              return previewUrl ? (
+                <iframe
+                  title={viewDoc.name}
+                  src={previewUrl}
+                  className="dfm-viewer-frame"
+                />
+              ) : (
+                <p>
+                  Preview unavailable. This document's file data isn't kept
+                  in browser storage (only its metadata is), and it wasn't
+                  uploaded/replaced in this browser session, so there's
+                  nothing left to render.
+                </p>
+              );
+            })()}
 
             <DocumentCommentsPanel
               documentId={viewDoc.id}

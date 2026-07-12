@@ -1,49 +1,237 @@
-// UPDATED: Reports page with dynamic report catalog from adminService
-
+import { useCallback, useEffect, useMemo, useState } from "react";
 import DashboardLayout from "../../Components/dashboard/DashboardLayout";
 import KPICard from "../../Components/dashboard/KPICard";
 import DataTable from "../../Components/dashboard/DataTable";
-import { getReports } from "../../services/adminService";
+import {
+  canManageReports,
+  createReport,
+  deleteReport,
+  getReportsForStudy,
+} from "../../services/reportService";
+import { getCurrentUser, getAccessibleStudies } from "../../services/roleService";
 import "./AdminPage.css";
 
+const REPORT_TYPE_OPTIONS = [
+  "Enrollment",
+  "Safety",
+  "Compliance",
+  "Operations",
+  "Monitoring",
+  "Executive",
+];
+
+const REPORT_STATUS_OPTIONS = ["Draft", "Pending", "Generated"];
+
 function Reports() {
-  const reports = getReports();
-  const readyReports = reports.filter((report) => report.status === "Ready").length;
+  const user = getCurrentUser();
+  const canManage = canManageReports(user);
+
+  const studies = useMemo(() => getAccessibleStudies(user), [user]);
+  const studyNameByCode = useMemo(
+    () =>
+      studies.reduce((map, study) => {
+        map[String(study.code)] = study.name || study.code;
+        return map;
+      }, {}),
+    [studies],
+  );
+
+  const [reports, setReports] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    reportType: REPORT_TYPE_OPTIONS[0],
+    status: REPORT_STATUS_OPTIONS[0],
+    studyCode: "",
+  });
+
+  const refresh = useCallback(() => {
+    const currentStudies = getAccessibleStudies(getCurrentUser());
+    setReports(
+      currentStudies.flatMap((study) =>
+        getReportsForStudy(study.code, getCurrentUser()),
+      ),
+    );
+  }, []);
+
+  useEffect(() => {
+    refresh();
+
+    window.addEventListener("reports-updated", refresh);
+    window.addEventListener("sponsor-data-updated", refresh);
+    window.addEventListener("studies-updated", refresh);
+
+    return () => {
+      window.removeEventListener("reports-updated", refresh);
+      window.removeEventListener("sponsor-data-updated", refresh);
+      window.removeEventListener("studies-updated", refresh);
+    };
+  }, [refresh]);
+
+  const readyReports = reports.filter(
+    (report) => report.status === "Generated",
+  ).length;
+  const pendingReports = reports.filter(
+    (report) => report.status === "Pending",
+  ).length;
+
+  const handleOpenForm = () => {
+    setForm({
+      name: "",
+      reportType: REPORT_TYPE_OPTIONS[0],
+      status: REPORT_STATUS_OPTIONS[0],
+      studyCode: studies[0]?.code || "",
+    });
+    setShowForm(true);
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    if (!form.name.trim() || !form.studyCode) {
+      return;
+    }
+
+    const created = createReport(
+      {
+        name: form.name.trim(),
+        reportType: form.reportType,
+        status: form.status,
+        studyCode: form.studyCode,
+      },
+      getCurrentUser(),
+    );
+
+    if (created) {
+      setShowForm(false);
+      refresh();
+    }
+  };
+
+  const handleDelete = (report) => {
+    if (deleteReport(report.id, getCurrentUser())) {
+      refresh();
+    }
+  };
 
   return (
     <DashboardLayout>
       <div className="admin-page">
         <div className="admin-page-title">
           <h1>Reports</h1>
-          <p>Available operational and monitoring reports</p>
+          <p>Study reports, scoped to your accessible studies</p>
         </div>
 
         <div className="admin-kpi-grid">
-          <KPICard
-            title="Total"
-            value={reports.length}
-            subtitle="Report Templates"
-            icon="📈"
-          />
-          <KPICard
-            title="Ready"
-            value={readyReports}
-            subtitle="Available Now"
-            icon="✅"
-          />
+          <KPICard title="Total" value={reports.length} subtitle="Reports" icon="📈" />
+          <KPICard title="Generated" value={readyReports} subtitle="Available Now" icon="✅" />
+          <KPICard title="Pending" value={pendingReports} subtitle="In Progress" icon="⏳" />
         </div>
+
+        {canManage && (
+          <div style={{ margin: "16px 0" }}>
+            {!showForm ? (
+              <button type="button" onClick={handleOpenForm}>
+                + New Report
+              </button>
+            ) : (
+              <form onSubmit={handleSubmit}>
+                <div className="admin-table-section" style={{ padding: 16 }}>
+                  <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                    <input
+                      type="text"
+                      placeholder="Report name"
+                      value={form.name}
+                      onChange={(event) =>
+                        setForm({ ...form, name: event.target.value })
+                      }
+                      required
+                    />
+
+                    <select
+                      value={form.reportType}
+                      onChange={(event) =>
+                        setForm({ ...form, reportType: event.target.value })
+                      }
+                    >
+                      {REPORT_TYPE_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={form.studyCode}
+                      onChange={(event) =>
+                        setForm({ ...form, studyCode: event.target.value })
+                      }
+                      required
+                    >
+                      <option value="" disabled>
+                        Select study
+                      </option>
+                      {studies.map((study) => (
+                        <option key={study.code} value={study.code}>
+                          {study.name || study.code}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={form.status}
+                      onChange={(event) =>
+                        setForm({ ...form, status: event.target.value })
+                      }
+                    >
+                      {REPORT_STATUS_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+
+                    <button type="submit">Save</button>
+                    <button type="button" onClick={() => setShowForm(false)}>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </form>
+            )}
+          </div>
+        )}
 
         <div className="admin-table-section">
           <DataTable
-            title="Report Catalog"
+            title="Reports"
             columns={[
               { key: "id", label: "Report ID" },
               { key: "name", label: "Name" },
-              { key: "category", label: "Category" },
-              { key: "lastGenerated", label: "Last Generated" },
-              { key: "status", label: "Status" }
+              { key: "reportType", label: "Type" },
+              {
+                key: "studyCode",
+                label: "Study",
+                render: (value) => studyNameByCode[String(value)] || value,
+              },
+              { key: "createdAt", label: "Created" },
+              { key: "status", label: "Status" },
+              ...(canManage
+                ? [
+                    {
+                      key: "actions",
+                      label: "Actions",
+                      render: (_value, row) => (
+                        <button type="button" onClick={() => handleDelete(row)}>
+                          Delete
+                        </button>
+                      ),
+                    },
+                  ]
+                : []),
             ]}
             data={reports}
+            emptyMessage="No reports yet for your accessible studies"
           />
         </div>
       </div>

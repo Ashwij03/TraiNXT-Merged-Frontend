@@ -17,6 +17,12 @@ export const STUDY_WORKSPACE_TABS = [
     id: "visit-plan",
     label: "Visit Plan",
   },
+  // ===== START G1 CHANGES =====
+  {
+    id: "clinical-sites",
+    label: "Clinical Sites",
+  },
+// ===== END G1 CHANGES =====
   {
     id: "eisf",
     label: "eISF",

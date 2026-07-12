@@ -33,22 +33,22 @@ const NotificationDetails = () => {
         <div className="kpi-grid">
           <div className="kpi-card">
             <h3>ID</h3>
-            <h2>{notification.id}</h2>
+            <h2>{notification.id || "—"}</h2>
           </div>
 
           <div className="kpi-card">
             <h3>Type</h3>
-            <h2>{notification.type}</h2>
+            <h2>{notification.type || "—"}</h2>
           </div>
 
           <div className="kpi-card">
-            <h3>Priority</h3>
-            <h2>{notification.priority}</h2>
+            <h3>Severity</h3>
+            <h2>{notification.severity || "—"}</h2>
           </div>
 
           <div className="kpi-card">
             <h3>Date</h3>
-            <h2>{notification.date}</h2>
+            <h2>{notification.date || "—"}</h2>
           </div>
         </div>
 
@@ -58,22 +58,22 @@ const NotificationDetails = () => {
           <div className="details-grid">
             <div>
               <strong>ID</strong>
-              <p>{notification.id}</p>
+              <p>{notification.id || "—"}</p>
             </div>
 
             <div>
               <strong>Type</strong>
-              <p>{notification.type}</p>
+              <p>{notification.type || "—"}</p>
             </div>
 
             <div>
-              <strong>Priority</strong>
-              <p>{notification.priority}</p>
+              <strong>Severity</strong>
+              <p>{notification.severity || "—"}</p>
             </div>
 
             <div>
               <strong>Message</strong>
-              <p>{notification.message}</p>
+              <p>{notification.message || "—"}</p>
             </div>
           </div>
         </div>
@@ -84,110 +84,24 @@ const NotificationDetails = () => {
           <div className="details-grid">
             <div>
               <strong>Study</strong>
-              <p>TRIA-003</p>
+              <p>{notification.studyCode || "—"}</p>
             </div>
 
             <div>
-              <strong>Triggered By</strong>
-              <p>Risk Engine</p>
+              <strong>Date</strong>
+              <p>{notification.date || "—"}</p>
             </div>
 
             <div>
-              <strong>Category</strong>
-              <p>Enrollment Risk</p>
+              <strong>Severity</strong>
+              <p>{notification.severity || "—"}</p>
             </div>
 
             <div>
               <strong>Status</strong>
-              <p>Unread</p>
+              <p>{notification.read ? "Read" : "Unread"}</p>
             </div>
           </div>
-        </div>
-
-        <div className="details-card">
-          <h2>Impact Assessment</h2>
-
-          <table className="sponsor-table">
-            <thead>
-              <tr>
-                <th>Area</th>
-                <th>Impact</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <tr>
-                <td>Enrollment</td>
-                <td>High</td>
-              </tr>
-
-              <tr>
-                <td>Timeline</td>
-                <td>Medium</td>
-              </tr>
-
-              <tr>
-                <td>Budget</td>
-                <td>Low</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div className="details-card">
-          <h2>Affected Sites</h2>
-
-          <table className="sponsor-table">
-            <thead>
-              <tr>
-                <th>Site</th>
-                <th>Status</th>
-                <th>Enrollment</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <tr>
-                <td>Apollo Hospital</td>
-                <td>Active</td>
-                <td>72%</td>
-              </tr>
-
-              <tr>
-                <td>Care Hospital</td>
-                <td>Delayed</td>
-                <td>65%</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div className="details-card">
-          <h2>Notification Timeline</h2>
-
-          <table className="sponsor-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Event</th>
-                <th>User</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <tr>
-                <td>17-Jun-2026</td>
-                <td>Notification Generated</td>
-                <td>System</td>
-              </tr>
-
-              <tr>
-                <td>17-Jun-2026</td>
-                <td>Assigned to Sponsor</td>
-                <td>Workflow Engine</td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       </div>
     </AppLayout>

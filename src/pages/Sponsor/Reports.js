@@ -1,109 +1,79 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "./AppLayout";
 import "./Reports.css";
 import "./SponsorShared.css";
 import KpiCard from "./KpiCard";
-import EnterpriseModal from "./EnterpriseModal";
+import RequestPermissionButton from "../../Components/common/RequestPermissionButton";
 import { FiFileText, FiCheckCircle, FiClock, FiDownload } from "react-icons/fi";
-import { getReports, saveReports, getReportKPIs } from "./data/sponsorDataStore";
 import { getSponsorDocumentReportCards } from "./data/sponsorDocumentReportService";
+import { getReportsForStudy } from "../../services/reportService";
+import { getCurrentUser, getAccessibleStudies } from "../../services/roleService";
 
-const RequestPermissionButton = ({
-  action,
-  module,
-  label,
-  className,
-  onClick,
-}) => {
-  const handleClick = () => {
-    window.dispatchEvent(
-      new CustomEvent("request-permission", {
-        detail: {
-          action,
-          module,
-        },
-      })
-    );
+// Reads reports through reportService's own study-scoped, permission-aware
+// getter rather than the old sponsorDataStore path. getReports()/saveReports()
+// in sponsorDataStore read from getAdminReports() but wrote to a completely
+// different, never-read storage key — so "generating" a report there
+// silently vanished and nothing here ever reflected reports created
+// elsewhere. getReportsForStudy() is the single shared source of truth
+// (see reportService.js), and unioning it only across this user's
+// accessible studies keeps another study's reports from ever leaking in.
+function loadReportsForCurrentUser() {
+  const user = getCurrentUser();
+  const accessibleStudies = getAccessibleStudies(user);
 
-    if (onClick) {
-      onClick();
-    }
+  return {
+    reports: accessibleStudies.flatMap((study) =>
+      getReportsForStudy(study.code, user),
+    ),
+    studyNameByCode: accessibleStudies.reduce((map, study) => {
+      map[String(study.code)] = study.name || study.code;
+      return map;
+    }, {}),
+    studies: accessibleStudies,
   };
-
-  return (
-    <button
-      type="button"
-      className={className}
-      onClick={handleClick}
-      aria-label={label || action}
-    >
-      {label || action}
-    </button>
-  );
-};
+}
 
 const Reports = () => {
   const navigate = useNavigate();
-  const [reports, setReports] = useState(getReports());
-  const [kpis, setKpis] = useState(getReportKPIs());
+  const [{ reports, studyNameByCode, studies }, setReportState] = useState(() =>
+    loadReportsForCurrentUser(),
+  );
   const [statusFilter, setStatusFilter] = useState("All");
-  const [showCreate, setShowCreate] = useState(false);
-  const [form, setForm] = useState({
-    name: "",
-    type: "Enrollment",
-    study: "All",
-  });
+  const [studyCode, setStudyCode] = useState("");
 
   const documentReportCards = useMemo(
     () => getSponsorDocumentReportCards(),
-    []
+    [],
   );
 
+  const refresh = useCallback(() => {
+    setReportState(loadReportsForCurrentUser());
+  }, []);
+
   useEffect(() => {
-    const refresh = () => {
-      setReports(getReports());
-      setKpis(getReportKPIs());
-    };
+    refresh();
 
     window.addEventListener("sponsor-data-updated", refresh);
     window.addEventListener("reports-updated", refresh);
+    window.addEventListener("studies-updated", refresh);
 
     return () => {
       window.removeEventListener("sponsor-data-updated", refresh);
       window.removeEventListener("reports-updated", refresh);
+      window.removeEventListener("studies-updated", refresh);
     };
-  }, []);
+  }, [refresh]);
+
+  const kpis = {
+    total: reports.length,
+    ready: reports.filter((report) => report.status === "Generated").length,
+    pending: reports.filter((report) => report.status === "Pending").length,
+  };
 
   const filteredReports = reports.filter(
-    (report) => statusFilter === "All" || report.status === statusFilter
+    (report) => statusFilter === "All" || report.status === statusFilter,
   );
-
-  const handleCreate = () => {
-    if (!form.name.trim()) {
-      return;
-    }
-
-    const updated = [
-      ...reports,
-      {
-        id: `RPT-${Date.now()}`,
-        ...form,
-        generatedDate: new Date().toISOString().split("T")[0],
-        status: "Pending",
-      },
-    ];
-
-    saveReports(updated);
-    setReports(updated);
-    setKpis(getReportKPIs());
-    setShowCreate(false);
-    setForm({
-      name: "",
-      type: "Enrollment",
-      study: "All",
-    });
-  };
 
   const reportTemplates = [
     {
@@ -168,7 +138,7 @@ const Reports = () => {
             icon={<FiCheckCircle size={24} />}
             iconBg="#ecfdf5"
             iconColor="#16a34a"
-            onClick={() => setStatusFilter("Ready")}
+            onClick={() => setStatusFilter("Generated")}
           />
 
           <KpiCard
@@ -192,13 +162,27 @@ const Reports = () => {
         </div>
 
         <div className="sponsor-toolbar">
-          <RequestPermissionButton
-            action="Generate Report"
-            module="Reports"
-            label="+ Generate Report"
-            className="sponsor-btn-primary"
-            onClick={() => setShowCreate(true)}
-          />
+          <select
+            value={studyCode}
+            onChange={(e) => setStudyCode(e.target.value)}
+            aria-label="Select study for new report"
+          >
+            <option value="">Select study…</option>
+            {studies.map((study) => (
+              <option key={study.code} value={study.code}>
+                {study.name || study.code}
+              </option>
+            ))}
+          </select>
+          {studyCode && (
+            <RequestPermissionButton
+              action="Generate Report"
+              module="Reports"
+              studyCode={studyCode}
+              label="+ Generate Report"
+              className="sponsor-btn-primary"
+            />
+          )}
         </div>
 
         <h2 className="reports-section-title">Sponsor Document Reports</h2>
@@ -277,7 +261,7 @@ const Reports = () => {
                 <th>Name</th>
                 <th>Type</th>
                 <th>Study</th>
-                <th>Generated</th>
+                <th>Created</th>
                 <th>Status</th>
                 <th>Action</th>
               </tr>
@@ -300,13 +284,16 @@ const Reports = () => {
                   >
                     <td>{report.id}</td>
                     <td>{report.name}</td>
-                    <td>{report.type}</td>
-                    <td>{report.study}</td>
-                    <td>{report.generatedDate}</td>
+                    <td>{report.reportType}</td>
+                    <td>
+                      {studyNameByCode[String(report.studyCode)] ||
+                        report.studyCode}
+                    </td>
+                    <td>{report.createdAt}</td>
                     <td>
                       <span
                         className={`status-badge ${
-                          report.status === "Ready" ? "active" : "planning"
+                          report.status === "Generated" ? "active" : "planning"
                         }`}
                       >
                         {report.status}
@@ -330,44 +317,6 @@ const Reports = () => {
           </table>
         </div>
       </div>
-
-      {showCreate && (
-        <EnterpriseModal
-          title="Generate Report"
-          onClose={() => setShowCreate(false)}
-          onSave={handleCreate}
-          saveLabel="Generate"
-        >
-          <input
-            placeholder="Report Name"
-            value={form.name}
-            onChange={(event) =>
-              setForm({ ...form, name: event.target.value })
-            }
-          />
-
-          <select
-            value={form.type}
-            onChange={(event) =>
-              setForm({ ...form, type: event.target.value })
-            }
-          >
-            <option>Enrollment</option>
-            <option>Safety</option>
-            <option>CRO</option>
-            <option>Operations</option>
-            <option>Compliance</option>
-          </select>
-
-          <input
-            placeholder="Study (or All)"
-            value={form.study}
-            onChange={(event) =>
-              setForm({ ...form, study: event.target.value })
-            }
-          />
-        </EnterpriseModal>
-      )}
     </AppLayout>
   );
 };

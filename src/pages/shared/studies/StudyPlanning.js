@@ -24,9 +24,14 @@ import {
 import "./StudyPlanning.css";
 
 function StudyPlanning() {
+  const [editingProtocol, setEditingProtocol] = useState(null);
+  const [editingMember, setEditingMember] = useState(null);
   const { id: studyCode } = useParams();
   const canEdit = canEditStudyContent(getCurrentUser());
   const [version, setVersion] = useState(0);
+  const [editingMilestone, setEditingMilestone] = useState(null);
+const [editingTask, setEditingTask] = useState(null);
+const [editingChecklistItem, setEditingChecklistItem] = useState(null);
 
   useEffect(() => {
     const refresh = () => setVersion((v) => v + 1);
@@ -52,13 +57,27 @@ function StudyPlanning() {
           <RequestPermissionButton
             action="Edit Planning"
             module="Study Planning"
+            studyCode={studyCode}
             label="Request Edit Permission"
           />
         )}
       </div>
 
       <section className="planning-section">
-        <h3>Project Management — Milestones</h3>
+
+  <div className="planning-section-header">
+    <h3>Project Management — Milestones</h3>
+
+    <button
+      type="button"
+      className="secondary-btn"
+      onClick={() => {
+        // navigate/open full milestone list
+      }}
+    >
+      View All
+    </button>
+  </div>
         {milestones.length === 0 ? (
           <p className="planning-empty">No planning milestones yet</p>
         ) : (
@@ -81,17 +100,25 @@ function StudyPlanning() {
                   <td>{item.status}</td>
                   {canEdit && (
                     <td>
-                      <button
-                        type="button"
-                        className="link-btn danger"
-                        onClick={() => {
-                          deletePlanningMilestone(studyCode, item.id);
-                          bump();
-                        }}
-                      >
-                        Delete
-                      </button>
-                    </td>
+  <button
+    type="button"
+    className="link-btn"
+    onClick={() => setEditingMilestone(item)}
+  >
+    Edit
+  </button>
+
+  <button
+    type="button"
+    className="link-btn danger"
+    onClick={() => {
+      deletePlanningMilestone(studyCode, item.id);
+      bump();
+    }}
+  >
+    Delete
+  </button>
+</td>
                   )}
                 </tr>
               ))}
@@ -100,51 +127,75 @@ function StudyPlanning() {
         )}
         {canEdit && (
           <PlanningMilestoneForm
-            onSave={(data) => {
-              savePlanningMilestone(studyCode, data);
-              bump();
-            }}
-          />
+    initialData={editingMilestone}
+    onSave={(data)=>{
+        savePlanningMilestone(studyCode,data);
+        setEditingMilestone(null);
+        bump();
+    }}
+/>
         )}
       </section>
 
       <section className="planning-section">
-        <h3>Tasks</h3>
+        <div className="planning-section-header">
+  <h3>Tasks</h3>
+
+  <button
+    type="button"
+    className="secondary-btn"
+    onClick={() => {
+      // navigate/open full task list
+    }}
+  >
+    View All
+  </button>
+</div>
         {tasks.length === 0 ? (
           <p className="planning-empty">No tasks yet</p>
         ) : (
           <table className="planning-table">
             <thead>
-              <tr>
-                <th>Task</th>
-                <th>Assignee</th>
-                <th>Due</th>
-                <th>Priority</th>
-                <th>Status</th>
-                {canEdit && <th>Actions</th>}
-              </tr>
-            </thead>
+  <tr>
+    <th>Task ID</th>
+    <th>Task</th>
+    <th>Assignee</th>
+    <th>Due</th>
+    <th>Priority</th>
+    <th>Status</th>
+    {canEdit && <th>Actions</th>}
+  </tr>
+</thead>
             <tbody>
               {tasks.map((item) => (
                 <tr key={item.id}>
-                  <td>{item.title}</td>
-                  <td>{item.assignee || "—"}</td>
-                  <td>{item.dueDate || "—"}</td>
-                  <td>{item.priority}</td>
-                  <td>{item.status}</td>
+                  <td>{item.taskId || item.id}</td>
+<td>{item.title}</td>
+<td>{item.assignee || "—"}</td>
+<td>{item.dueDate || "—"}</td>
+<td>{item.priority}</td>
+<td>{item.status}</td>
                   {canEdit && (
                     <td>
-                      <button
-                        type="button"
-                        className="link-btn danger"
-                        onClick={() => {
-                          deletePlanningTask(studyCode, item.id);
-                          bump();
-                        }}
-                      >
-                        Delete
-                      </button>
-                    </td>
+  <button
+    type="button"
+    className="link-btn"
+    onClick={() => setEditingTask(item)}
+  >
+    Edit
+  </button>
+
+  <button
+    type="button"
+    className="link-btn danger"
+    onClick={() => {
+      deletePlanningTask(studyCode, item.id);
+      bump();
+    }}
+  >
+    Delete
+  </button>
+</td>
                   )}
                 </tr>
               ))}
@@ -153,11 +204,13 @@ function StudyPlanning() {
         )}
         {canEdit && (
           <PlanningTaskForm
-            onSave={(data) => {
-              savePlanningTask(studyCode, data);
-              bump();
-            }}
-          />
+  initialData={editingTask}
+  onSave={(data) => {
+    savePlanningTask(studyCode, data);
+    setEditingTask(null);
+    bump();
+  }}
+/>
         )}
       </section>
 
@@ -171,6 +224,7 @@ function StudyPlanning() {
               <tr>
                 <th>Name</th>
                 <th>Role</th>
+                <th>Start Date</th>
                 <th>Organization</th>
                 <th>Email</th>
                 {canEdit && <th>Actions</th>}
@@ -181,20 +235,33 @@ function StudyPlanning() {
                 <tr key={member.id}>
                   <td>{member.name || "—"}</td>
                   <td>{member.role || "—"}</td>
+                  <td>{member.startDate || "—"}</td>
                   <td>{member.organization || "—"}</td>
                   <td>{member.email || "—"}</td>
                   {canEdit && (
-                    <td>
-                      <button
-                        type="button"
-                        className="link-btn danger"
-                        onClick={() => {
-                          deleteStudyTeamMember(studyCode, member.id);
-                          bump();
-                        }}
-                      >
-                        Delete
-                      </button>
+                    
+                      <td>
+
+<button
+type="button"
+className="link-btn"
+onClick={() => setEditingMember(member)}
+>
+Edit
+</button>
+
+<button
+type="button"
+className="link-btn danger"
+onClick={() => {
+deleteStudyTeamMember(studyCode, member.id);
+bump();
+}}
+>
+Delete
+</button>
+
+
                     </td>
                   )}
                 </tr>
@@ -204,11 +271,13 @@ function StudyPlanning() {
         )}
         {canEdit && (
           <StudyTeamForm
-            onSave={(data) => {
-              saveStudyTeamMember(studyCode, data);
-              bump();
-            }}
-          />
+  initialData={editingMember}
+  onSave={(data) => {
+    saveStudyTeamMember(studyCode, data);
+    setEditingMember(null);
+    bump();
+  }}
+/>
         )}
       </section>
 
@@ -220,47 +289,82 @@ function StudyPlanning() {
           <ul className="regulatory-checklist">
             {checklist.map((item) => (
               <li key={item.id}>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={Boolean(item.completed)}
-                    disabled={!canEdit}
-                    onChange={(e) => {
-                      saveRegulatoryChecklistItem(studyCode, {
-                        ...item,
-                        completed: e.target.checked,
-                      });
-                      bump();
-                    }}
-                  />
-                  <span>{item.label}</span>
-                </label>
-                <span className="checklist-meta">
-                  Due: {item.dueDate || "—"}
-                </span>
-                {canEdit && (
-                  <button
-                    type="button"
-                    className="link-btn danger"
-                    onClick={() => {
-                      deleteRegulatoryChecklistItem(studyCode, item.id);
-                      bump();
-                    }}
-                  >
-                    Remove
-                  </button>
-                )}
-              </li>
+
+             <div className="checklist-info">
+
+<strong>{item.label}</strong>
+
+<div>
+Document Date:
+{item.documentDate || "—"}
+</div>
+
+<div>
+Status:
+{item.status || "Pending"}
+</div>
+
+<div>
+Due:
+{item.dueDate || "—"}
+</div>
+
+{item.documentName && (
+<div>
+Uploaded:
+{item.documentName}
+</div>
+)}
+
+</div>
+
+<div className="checklist-actions">
+
+<button
+type="button"
+className="link-btn"
+onClick={() => setEditingChecklistItem(item)}
+>
+Edit
+</button>
+
+{item.documentUrl && (
+<button
+type="button"
+className="link-btn"
+onClick={() =>
+window.open(item.documentUrl, "_blank")
+}
+>
+View Document
+</button>
+)}
+
+<button
+type="button"
+className="link-btn danger"
+onClick={() => {
+deleteRegulatoryChecklistItem(studyCode, item.id);
+bump();
+}}
+>
+Remove
+</button>
+
+</div>
+</li>
             ))}
           </ul>
         )}
         {canEdit && (
-          <RegulatoryItemForm
-            onSave={(data) => {
-              saveRegulatoryChecklistItem(studyCode, data);
-              bump();
-            }}
-          />
+         <RegulatoryItemForm
+  initialData={editingChecklistItem}
+  onSave={(data) => {
+    saveRegulatoryChecklistItem(studyCode, data);
+    setEditingChecklistItem(null);
+    bump();
+  }}
+/>
         )}
       </section>
 
@@ -272,21 +376,48 @@ function StudyPlanning() {
           protocols.map((protocol) => (
             <div key={protocol.id} className="protocol-card">
               <div className="protocol-header">
-                <strong>{protocol.title}</strong>
-                <span>Current: v{protocol.currentVersion || "—"}</span>
-                {canEdit && (
-                  <button
-                    type="button"
-                    className="link-btn danger"
-                    onClick={() => {
-                      deleteProtocol(studyCode, protocol.id);
-                      bump();
-                    }}
-                  >
-                    Delete
-                  </button>
-                )}
-              </div>
+  <div>
+    <strong>{protocol.title}</strong>
+
+    <div>
+      <strong>Protocol Number:</strong>{" "}
+      {protocol.protocolNumber || "—"}
+    </div>
+
+    <div>
+      <strong>Current Version:</strong>{" "}
+      v{protocol.currentVersion || "—"}
+    </div>
+
+    <div>
+      <strong>Status:</strong>{" "}
+      {protocol.status || "Draft"}
+    </div>
+  </div>
+
+  {canEdit && (
+    <div>
+      <button
+        type="button"
+        className="link-btn"
+        onClick={() => setEditingProtocol(protocol)}
+      >
+        Edit
+      </button>
+
+      <button
+        type="button"
+        className="link-btn danger"
+        onClick={() => {
+          deleteProtocol(studyCode, protocol.id);
+          bump();
+        }}
+      >
+        Delete
+      </button>
+    </div>
+  )}
+</div>
               <ul className="protocol-versions">
                 {(protocol.versions || []).map((versionRow, index) => (
                   <li key={`${protocol.id}-v-${index}`}>
@@ -300,24 +431,34 @@ function StudyPlanning() {
         )}
         {canEdit && (
           <ProtocolForm
-            onSave={(data) => {
-              saveProtocol(studyCode, data);
-              bump();
-            }}
-          />
+initialData={editingProtocol}
+onSave={(data)=>{
+saveProtocol(studyCode,data);
+setEditingProtocol(null);
+bump();
+}}
+/>
         )}
       </section>
     </div>
   );
 }
 
-function PlanningMilestoneForm({ onSave }) {
+function PlanningMilestoneForm({
+    initialData,
+    onSave
+}) {
   const [form, setForm] = useState({
     title: "",
     dueDate: "",
     owner: "",
     status: "Not Started",
   });
+  useEffect(() => {
+  if (initialData) {
+    setForm(initialData);
+  }
+}, [initialData]);
 
   return (
     <form
@@ -345,13 +486,16 @@ function PlanningMilestoneForm({ onSave }) {
         onChange={(e) => setForm({ ...form, owner: e.target.value })}
       />
       <button type="submit" className="secondary-btn">
-        Add Milestone
+        {form.id ? "Update Milestone" : "Add Milestone"}
       </button>
     </form>
   );
 }
 
-function PlanningTaskForm({ onSave }) {
+function PlanningTaskForm({
+  initialData,
+  onSave,
+}) {
   const [form, setForm] = useState({
     title: "",
     assignee: "",
@@ -359,7 +503,11 @@ function PlanningTaskForm({ onSave }) {
     priority: "Medium",
     status: "Open",
   });
-
+useEffect(() => {
+  if (initialData) {
+    setForm(initialData);
+  }
+}, [initialData]);
   return (
     <form
       className="planning-inline-form"
@@ -391,20 +539,29 @@ function PlanningTaskForm({ onSave }) {
         value={form.dueDate}
         onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
       />
-      <button type="submit" className="secondary-btn">
-        Add Task
-      </button>
+     <button type="submit" className="secondary-btn">
+  {form.id ? "Update Task" : "Add Task"}
+</button>
     </form>
   );
 }
 
-function StudyTeamForm({ onSave }) {
+function StudyTeamForm({
+  initialData,
+  onSave,
+}) {
   const [form, setForm] = useState({
     name: "",
     role: "",
     email: "",
     organization: "",
+    startDate: "",
   });
+  useEffect(() => {
+  if (initialData) {
+    setForm(initialData);
+  }
+}, [initialData]);
 
   return (
     <form
@@ -413,7 +570,7 @@ function StudyTeamForm({ onSave }) {
         e.preventDefault();
         if (!form.name.trim()) return;
         onSave(form);
-        setForm({ name: "", role: "", email: "", organization: "" });
+        setForm({ name: "", role: "", email: "", organization: "", startDate: "" });
       }}
     >
       <input
@@ -427,6 +584,16 @@ function StudyTeamForm({ onSave }) {
         onChange={(e) => setForm({ ...form, role: e.target.value })}
       />
       <input
+  type="date"
+  value={form.startDate}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      startDate: e.target.value,
+    })
+  }
+/>
+      <input
         placeholder="Email"
         value={form.email}
         onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -437,30 +604,114 @@ function StudyTeamForm({ onSave }) {
         onChange={(e) => setForm({ ...form, organization: e.target.value })}
       />
       <button type="submit" className="secondary-btn">
-        Add Member
+        {form.id ? "Update Member" : "Add Member"}
       </button>
     </form>
   );
 }
 
-function RegulatoryItemForm({ onSave }) {
-  const [label, setLabel] = useState("");
+function RegulatoryItemForm({
+  initialData,
+  onSave,
+}) {
+  const [form, setForm] = useState({
+  label: "",
+  documentDate: "",
+  dueDate: "",
+  status: "Pending",
+  documentName: "",
+  documentUrl: "",
+});
+useEffect(() => {
+  if (initialData) {
+    setForm(initialData);
+  }
+}, [initialData]);
 
   return (
     <form
       className="planning-inline-form"
       onSubmit={(e) => {
         e.preventDefault();
-        if (!label.trim()) return;
-        onSave({ label, completed: false });
-        setLabel("");
+        if (!form.label.trim()) return;
+
+onSave({
+  ...form,
+  completed: false,
+});
+
+setForm({
+  label: "",
+  documentDate: "",
+  dueDate: "",
+  status: "Pending",
+  documentName: "",
+  documentUrl: "",
+});
       }}
     >
       <input
-        placeholder="Checklist item"
-        value={label}
-        onChange={(e) => setLabel(e.target.value)}
-      />
+  placeholder="Checklist Item"
+  value={form.label}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      label: e.target.value,
+    })
+  }
+/>
+
+<input
+  type="date"
+  value={form.documentDate}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      documentDate: e.target.value,
+    })
+  }
+/>
+
+<input
+  type="date"
+  value={form.dueDate}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      dueDate: e.target.value,
+    })
+  }
+/>
+
+<select
+  value={form.status}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      status: e.target.value,
+    })
+  }
+>
+  <option>Pending</option>
+  <option>Submitted</option>
+  <option>Approved</option>
+  <option>Rejected</option>
+</select>
+
+<input
+  type="file"
+  onChange={(e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    setForm({
+      ...form,
+      documentName: file.name,
+      documentUrl: URL.createObjectURL(file),
+    });
+  }}
+/>
       <button type="submit" className="secondary-btn">
         Add Item
       </button>
@@ -468,14 +719,23 @@ function RegulatoryItemForm({ onSave }) {
   );
 }
 
-function ProtocolForm({ onSave }) {
-  const [form, setForm] = useState({
-    title: "",
-    version: "1.0",
-    effectiveDate: "",
-    summary: "",
-    status: "Draft",
-  });
+function ProtocolForm({
+initialData,
+onSave
+}) {
+  const [form,setForm]=useState({
+title:"",
+protocolNumber:"",
+version:"1.0",
+effectiveDate:"",
+summary:"",
+status:"Draft"
+});
+useEffect(()=>{
+if(initialData){
+setForm(initialData);
+}
+},[initialData]);
 
   return (
     <form
@@ -485,12 +745,13 @@ function ProtocolForm({ onSave }) {
         if (!form.title.trim()) return;
         onSave(form);
         setForm({
-          title: "",
-          version: "1.0",
-          effectiveDate: "",
-          summary: "",
-          status: "Draft",
-        });
+title:"",
+protocolNumber:"",
+version:"1.0",
+effectiveDate:"",
+summary:"",
+status:"Draft"
+});
       }}
     >
       <input
@@ -498,6 +759,33 @@ function ProtocolForm({ onSave }) {
         value={form.title}
         onChange={(e) => setForm({ ...form, title: e.target.value })}
       />
+      <input
+placeholder="Protocol Number"
+value={form.protocolNumber}
+onChange={(e)=>
+setForm({
+...form,
+protocolNumber:e.target.value
+})
+}
+/>
+<select
+value={form.status}
+onChange={(e)=>
+setForm({
+...form,
+status:e.target.value
+})
+}
+>
+
+<option>Draft</option>
+<option>In Review</option>
+<option>Approved</option>
+<option>Active</option>
+<option>Archived</option>
+
+</select>
       <input
         placeholder="Version"
         value={form.version}
@@ -515,7 +803,7 @@ function ProtocolForm({ onSave }) {
         onChange={(e) => setForm({ ...form, summary: e.target.value })}
       />
       <button type="submit" className="secondary-btn">
-        Add Protocol
+        {form.id ? "Update Protocol" : "Add Protocol"}
       </button>
     </form>
   );

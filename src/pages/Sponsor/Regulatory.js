@@ -7,7 +7,7 @@ import KpiCard from './KpiCard';
 import RequestPermissionButton from '../../Components/common/RequestPermissionButton';
 import { FiCheckSquare, FiCheckCircle, FiClock, FiAlertTriangle } from 'react-icons/fi';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { getRegulatory, getRegulatoryKPIs } from './data/sponsorDataStore';
+import { getRegulatory, getRegulatoryKPIs, getPortfolioStudies } from './data/sponsorDataStore';
 
 const STATUS_COLORS = { Approved: '#22c55e', 'In Review': '#3b82f6', Submitted: '#f59e0b', Overdue: '#ef4444' };
 
@@ -16,9 +16,15 @@ const Regulatory = () => {
   const [documents, setDocuments] = useState(getRegulatory());
   const [kpis, setKpis] = useState(getRegulatoryKPIs());
   const [statusFilter, setStatusFilter] = useState('All');
+  const [studies, setStudies] = useState(getPortfolioStudies());
+  const [studyCode, setStudyCode] = useState('');
 
   useEffect(() => {
-    const refresh = () => { setDocuments(getRegulatory()); setKpis(getRegulatoryKPIs()); };
+    const refresh = () => {
+      setDocuments(getRegulatory());
+      setKpis(getRegulatoryKPIs());
+      setStudies(getPortfolioStudies());
+    };
     window.addEventListener('sponsor-data-updated', refresh);
     return () => window.removeEventListener('sponsor-data-updated', refresh);
   }, []);
@@ -71,7 +77,27 @@ const Regulatory = () => {
         </div>
 
         <div className="sponsor-toolbar">
-          <RequestPermissionButton action="Add Document" module="Regulatory" label="+ Add Document" className="sponsor-btn-primary" />
+          <select
+            value={studyCode}
+            onChange={(e) => setStudyCode(e.target.value)}
+            aria-label="Select study for new document"
+          >
+            <option value="">Select study…</option>
+            {studies.map((study) => (
+              <option key={study.studyId} value={study.studyId}>
+                {study.studyName || study.studyId}
+              </option>
+            ))}
+          </select>
+          {studyCode && (
+            <RequestPermissionButton
+              action="Add Document"
+              module="Regulatory"
+              studyCode={studyCode}
+              label="+ Add Document"
+              className="sponsor-btn-primary"
+            />
+          )}
         </div>
 
         <div className="sponsor-table-wrap">

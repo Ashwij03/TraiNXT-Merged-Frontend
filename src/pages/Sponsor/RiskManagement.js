@@ -6,7 +6,7 @@ import './SponsorShared.css';
 import KpiCard from './KpiCard';
 import { FiAlertTriangle, FiShield, FiCheckCircle, FiActivity } from 'react-icons/fi';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { getRisks, getRiskKPIs, SEVERITY_COLORS } from './data/sponsorDataStore';
+import { getRisks, getRiskKPIs, SEVERITY_COLORS, getPortfolioStudies } from './data/sponsorDataStore';
 import RequestPermissionButton from '../../Components/common/RequestPermissionButton';
 
 const RiskManagement = () => {
@@ -14,9 +14,15 @@ const RiskManagement = () => {
   const [risks, setRisks] = useState(getRisks());
   const [kpis, setKpis] = useState(getRiskKPIs());
   const [statusFilter, setStatusFilter] = useState('All');
+  const [studies, setStudies] = useState(getPortfolioStudies());
+  const [studyCode, setStudyCode] = useState('');
 
   useEffect(() => {
-    const refresh = () => { setRisks(getRisks()); setKpis(getRiskKPIs()); };
+    const refresh = () => {
+      setRisks(getRisks());
+      setKpis(getRiskKPIs());
+      setStudies(getPortfolioStudies());
+    };
     window.addEventListener('sponsor-data-updated', refresh);
     return () => window.removeEventListener('sponsor-data-updated', refresh);
   }, []);
@@ -70,7 +76,27 @@ const RiskManagement = () => {
         </div>
 
         <div className="sponsor-toolbar">
-          <RequestPermissionButton action="Add Risk" module="Risk Management" label="+ Add Risk" className="sponsor-btn-primary" />
+          <select
+            value={studyCode}
+            onChange={(e) => setStudyCode(e.target.value)}
+            aria-label="Select study for new risk"
+          >
+            <option value="">Select study…</option>
+            {studies.map((study) => (
+              <option key={study.studyId} value={study.studyId}>
+                {study.studyName || study.studyId}
+              </option>
+            ))}
+          </select>
+          {studyCode && (
+            <RequestPermissionButton
+              action="Add Risk"
+              module="Risk Management"
+              studyCode={studyCode}
+              label="+ Add Risk"
+              className="sponsor-btn-primary"
+            />
+          )}
         </div>
 
         <div className="sponsor-table-wrap">

@@ -1,4 +1,3 @@
-import EISFMenuConfig from "../../pages/shared/EISF/Constants/EISFMenuConfig";
 import {
   STUDY_SECTIONS,
   getStudyDisplayName,
@@ -15,18 +14,16 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
     studyBinderOpen,
     expandedStudies,
     expandedStudySections,
-    setExpandedStudySections,
     isCommentsRoute,
     handleStudyBinderClick,
     handleStudiesCommentsClick,
     toggleStudyNode,
     toggleStudySection,
     navigateToStudySection,
+    handleStudyNameClick,
     handleExpandableSectionLabelClick,
     handleSubjectClick,
-    getSubjectSidebarFolders,
     getSubjectsForStudy,
-    handleNav,
   } = useRoleStudiesSidebar({ onNavigate });
 
   if (!studiesOpen) {
@@ -91,9 +88,12 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                     <button
                       type="button"
                       className="study-label-block study-label-block-button"
-                      onClick={(event) => toggleStudyNode(studyKey, event)}
+                      onClick={(event) =>
+                        handleStudyNameClick(studyKey, event)
+                      }
                     >
                       <span className="study-label-name">{studyName}</span>
+
                       {studyMeta && (
                         <small className="study-label-meta">{studyMeta}</small>
                       )}
@@ -144,7 +144,6 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                                     handleExpandableSectionLabelClick(
                                       studyKey,
                                       sectionKey,
-                                      isSectionOpen,
                                       event,
                                     )
                                   }
@@ -168,144 +167,32 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                                   ) : (
                                     studySubjects.map((subject) => {
                                       const subjectKey = String(
-                                        subject.subjectId || subject.id,
-                                      );
+                                        subject?.subjectId || subject?.id || "",
+                                      ).trim();
 
-                                      const subjectFolders =
-                                        getSubjectSidebarFolders(
-                                          studyKey,
-                                          subject,
-                                        );
+                                      if (!subjectKey) {
+                                        return null;
+                                      }
 
                                       return (
-                                        <div
+                                        <button
                                           key={`${studyKey}-${subjectKey}`}
-                                          className="sidebar-subject-group"
+                                          type="button"
+                                          className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-subject-row sidebar-tree-row-button"
+                                          onClick={() =>
+                                            handleSubjectClick(
+                                              studyKey,
+                                              subject,
+                                            )
+                                          }
                                         >
-                                          <button
-                                            type="button"
-                                            className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-subject-row sidebar-tree-row-button"
-                                            onClick={() =>
-                                              handleSubjectClick(
-                                                studyKey,
-                                                subject,
-                                              )
-                                            }
-                                          >
-                                            <span className="sidebar-tree-label">
-                                              {subjectKey}
-                                            </span>
-                                          </button>
-
-                                          <div className="sidebar-subject-folders">
-                                            {subjectFolders.map((folder) => (
-                                              <button
-                                                key={`${subjectKey}-${folder.id}`}
-                                                type="button"
-                                                className="sidebar-tree-row sidebar-tree-row--folder-leaf sidebar-tree-row-button"
-                                                onClick={() => {
-                                                  localStorage.setItem(
-                                                    "selectedSubject",
-                                                    JSON.stringify({
-                                                      ...subject,
-                                                      studyId: studyKey,
-                                                    }),
-                                                  );
-
-                                                  handleNav(
-                                                    `/study-dashboard/${encodeURIComponent(
-                                                      studyKey,
-                                                    )}?tab=Subjects&subject=${encodeURIComponent(
-                                                      subjectKey,
-                                                    )}&folder=${encodeURIComponent(
-                                                      folder.id,
-                                                    )}`,
-                                                  );
-                                                }}
-                                              >
-                                                <span className="sidebar-tree-label">
-                                                  {folder.name}
-                                                </span>
-                                              </button>
-                                            ))}
-                                          </div>
-                                        </div>
+                                          <span className="sidebar-tree-label">
+                                            {subjectKey}
+                                          </span>
+                                        </button>
                                       );
                                     })
                                   )}
-                                </div>
-                              )}
-
-                              {isSectionOpen && sectionKey === "eisf" && (
-                                <div className="sidebar-tree-group sidebar-tree-group--nested">
-                                  {EISFMenuConfig.map((module) => {
-                                    const moduleKey = `${studyKey}__eisf__${module.id}`;
-                                    const isModuleOpen = Boolean(
-                                      expandedStudySections[moduleKey],
-                                    );
-
-                                    return (
-                                      <div key={module.id}>
-                                        <div className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-tree-row--expandable">
-                                          <button
-                                            type="button"
-                                            className="sidebar-expander"
-                                            aria-label={
-                                              isModuleOpen
-                                                ? `Collapse ${module.title}`
-                                                : `Expand ${module.title}`
-                                            }
-                                            onClick={() =>
-                                              setExpandedStudySections(
-                                                (previous) => ({
-                                                  ...previous,
-                                                  [moduleKey]:
-                                                    !previous[moduleKey],
-                                                }),
-                                              )
-                                            }
-                                          >
-                                            {isModuleOpen ? "−" : "+"}
-                                          </button>
-
-                                          <button
-                                            type="button"
-                                            className="sidebar-tree-label sidebar-tree-label-button"
-                                            onClick={() =>
-                                              setExpandedStudySections(
-                                                (previous) => ({
-                                                  ...previous,
-                                                  [moduleKey]:
-                                                    !previous[moduleKey],
-                                                }),
-                                              )
-                                            }
-                                          >
-                                            {module.id} {module.title}
-                                          </button>
-                                        </div>
-
-                                        {isModuleOpen && (
-                                          <div className="sidebar-tree-group sidebar-tree-group--nested">
-                                            {module.children.map((child) => (
-                                              <button
-                                                key={child.id}
-                                                type="button"
-                                                className="sidebar-tree-row sidebar-tree-row--folder-leaf eisf-module sidebar-tree-row-button"
-                                                onClick={() =>
-                                                  handleNav(child.path)
-                                                }
-                                              >
-                                                <span>
-                                                  {child.id} {child.title}
-                                                </span>
-                                              </button>
-                                            ))}
-                                          </div>
-                                        )}
-                                      </div>
-                                    );
-                                  })}
                                 </div>
                               )}
                             </div>
@@ -325,6 +212,7 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                               className="sidebar-tree-spacer"
                               aria-hidden="true"
                             />
+
                             <span className="sidebar-tree-label">
                               {section.label}
                             </span>
