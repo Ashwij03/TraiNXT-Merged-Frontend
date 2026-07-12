@@ -1,4 +1,4 @@
-import STORAGE_KEYS from "../constants/storageKeys";
+import STORAGE_KEYS from "../Constants/storageKeys";
 
 /**
  * Save value to localStorage

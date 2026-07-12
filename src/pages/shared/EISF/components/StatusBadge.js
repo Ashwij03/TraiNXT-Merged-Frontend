@@ -1,11 +1,12 @@
 import "./StatusBadge.css";
 
 export default function StatusBadge({ status }) {
-  const cls = status.toLowerCase().replace(/\s+/g, "-");
+  const label = status || "Draft";
+  const cls = label.toLowerCase().replace(/\s+/g, "-");
 
   return (
     <span className={`status-badge ${cls}`}>
-      {status}
+      {label}
     </span>
   );
 }

@@ -52,22 +52,22 @@
     border-bottom:1px solid #e5e5e5;
 }
 
-.status-badge{
+.pst-page .status-badge{
     padding:5px 10px;
     border-radius:14px;
     color:#fff;
     font-size:13px;
 }
 
-.status-badge.approved{
+.pst-page .status-badge.approved{
     background:#28a745;
 }
 
-.status-badge.draft{
+.pst-page .status-badge.draft{
     background:#ff9800;
 }
 
-.status-badge.pending{
+.pst-page .status-badge.pending{
     background:#dc3545;
 }
 

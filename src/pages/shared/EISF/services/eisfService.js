@@ -1,4 +1,5 @@
 import participatingSiteDocuments from "../mock/participatingSiteDocuments";
+import eisfModuleDocuments from "../mock/eisfModuleDocuments";
 
 /**
  * Returns all participating site documents.
@@ -11,14 +12,30 @@ export function getParticipatingSiteDocuments() {
  * Generic alias.
  */
 export function getAllDocuments() {
-  return getParticipatingSiteDocuments();
+  return eisfModuleDocuments;
+}
+
+/**
+ * Returns mock documents for every eISF module.
+ */
+export function getEISFModuleDocuments() {
+  return eisfModuleDocuments;
+}
+
+/**
+ * Returns mock documents for a specific eISF module.
+ */
+export function getDocumentsByModule(moduleId) {
+  return eisfModuleDocuments.filter(
+    (document) => document.moduleId === moduleId
+  );
 }
 
 /**
  * Returns document by id.
  */
 export function getDocumentById(documentId) {
-  return getParticipatingSiteDocuments().find(
+  return getAllDocuments().find(
     (document) => document.id === documentId
   );
 }
@@ -27,8 +44,8 @@ export function getDocumentById(documentId) {
  * Returns documents by section.
  */
 export function getDocumentsBySection(sectionId) {
-  return getParticipatingSiteDocuments().filter(
-    (document) => document.sectionId === sectionId
+  return getAllDocuments().filter(
+    (document) => document.sectionId === sectionId || document.section === sectionId
   );
 }
 
@@ -36,7 +53,7 @@ export function getDocumentsBySection(sectionId) {
  * Returns documents by folder.
  */
 export function getDocumentsByFolder(folderId) {
-  return getParticipatingSiteDocuments().filter(
+  return getAllDocuments().filter(
     (document) => document.folderId === folderId
   );
 }
@@ -45,7 +62,7 @@ export function getDocumentsByFolder(folderId) {
  * Returns documents by status.
  */
 export function getDocumentsByStatus(status) {
-  return getParticipatingSiteDocuments().filter(
+  return getAllDocuments().filter(
     (document) => document.status === status
   );
 }
@@ -54,7 +71,7 @@ export function getDocumentsByStatus(status) {
  * Returns documents by document type.
  */
 export function getDocumentsByType(documentType) {
-  return getParticipatingSiteDocuments().filter(
+  return getAllDocuments().filter(
     (document) => document.documentType === documentType
   );
 }
@@ -66,15 +83,18 @@ export function searchDocuments(searchText = "") {
   const keyword = searchText.trim().toLowerCase();
 
   if (!keyword) {
-    return getParticipatingSiteDocuments();
+    return getAllDocuments();
   }
 
-  return getParticipatingSiteDocuments().filter((document) =>
+  return getAllDocuments().filter((document) =>
     [
+      document.documentName,
       document.name,
       document.description,
       document.documentType,
       document.status,
+      document.fileName,
+      document.uploadedBy,
     ]
       .filter(Boolean)
       .some((value) => value.toLowerCase().includes(keyword))
@@ -85,7 +105,7 @@ export function searchDocuments(searchText = "") {
  * Returns total document count.
  */
 export function getDocumentCount() {
-  return getParticipatingSiteDocuments().length;
+  return getAllDocuments().length;
 }
 
 /**
@@ -99,8 +119,8 @@ export function filterDocuments(filters = {}) {
     documentType,
   } = filters;
 
-  return getParticipatingSiteDocuments().filter((document) => {
-    if (sectionId && document.sectionId !== sectionId) return false;
+  return getAllDocuments().filter((document) => {
+    if (sectionId && document.sectionId !== sectionId && document.section !== sectionId) return false;
     if (folderId && document.folderId !== folderId) return false;
     if (status && document.status !== status) return false;
     if (documentType && document.documentType !== documentType) return false;

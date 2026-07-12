@@ -9,6 +9,7 @@ export { default as DocumentViewer } from "./DocumentViewer";
 export { default as EditDocumentModal } from "./EditDocumentModal";
 export { default as ExpiredDocumentsWidget } from "./ExpiredDocumentsWidget";
 export { default as ExpiringSoonWidget } from "./ExpiringSoonWidget";
+export { default as FilingGuidelineModal } from "./FilingGuidelineModal";
 export { default as MissingDocumentsWidget } from "./MissingDocumentsWidget";
 export { default as StatusBadge } from "./StatusBadge";
 export { default as UploadDocumentModal } from "./UploadDocumentModal";

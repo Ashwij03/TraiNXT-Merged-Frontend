@@ -77,15 +77,15 @@
     border: 1px solid #edf1f7;
     border-radius: 0;
     box-shadow: none;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .reference-table-card .document-table thead {
-    background: #f7f9fc;
+    background: #082b3d;
 }
 
 .reference-table-card .document-table th {
-    color: whitesmoke;
+    color: #fff;
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0;
@@ -159,6 +159,28 @@
     gap: 10px;
 }
 
+.table-sort-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.table-sort-btn span {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 11px;
+}
+
+.table-sort-btn.active span {
+    color: #fff;
+}
+
 .icon-action-btn {
     display: inline-flex;
     align-items: center;
@@ -182,4 +204,48 @@
     border-color: #e5eaf2;
     background: #fff;
     color: #0f172a;
+}
+
+.document-row-menu {
+    position: relative;
+}
+
+.document-action-menu {
+    position: fixed;
+    z-index: 10000;
+    width: 210px;
+    min-width: 210px;
+    padding: 7px;
+    border: 1px solid #dbe3ef;
+    border-radius: 9px;
+    background: #fff;
+    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.16);
+}
+
+.document-action-menu button {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    padding: 9px 10px;
+    color: #1e293b;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+}
+
+.document-action-menu button:hover {
+    background: #f1f5f9;
+}
+
+.document-action-menu button.danger {
+    color: #dc2626;
+}
+
+.document-action-menu button.danger:hover {
+    background: #fef2f2;
 }

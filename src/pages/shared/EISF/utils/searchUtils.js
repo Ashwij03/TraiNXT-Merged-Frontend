@@ -5,12 +5,18 @@ export const searchDocuments = (
   documents = [],
   keyword = "",
   searchableFields = [
+    "documentName",
     "name",
     "status",
     "category",
     "documentType",
     "description",
     "createdBy",
+    "uploadedBy",
+    "approvedBy",
+    "fileName",
+    "section",
+    "sectionId",
     "version",
   ]
 ) => {
@@ -64,7 +70,7 @@ export const filterDocuments = (
  */
 export const sortDocuments = (
   documents = [],
-  field = "name",
+  field = "documentName",
   direction = "asc"
 ) => {
   return [...documents].sort((a, b) => {
@@ -73,6 +79,19 @@ export const sortDocuments = (
 
     if (valueA == null) return 1;
     if (valueB == null) return -1;
+
+    const shouldCompareAsDate =
+      field.toLowerCase().includes("date") &&
+      valueA !== "-" &&
+      valueB !== "-";
+    const dateA = shouldCompareAsDate ? new Date(valueA) : null;
+    const dateB = shouldCompareAsDate ? new Date(valueB) : null;
+
+    if (dateA && dateB && !Number.isNaN(dateA.valueOf()) && !Number.isNaN(dateB.valueOf())) {
+      return direction === "asc"
+        ? dateA - dateB
+        : dateB - dateA;
+    }
 
     if (
       typeof valueA === "string" &&
@@ -98,7 +117,7 @@ export const processDocuments = (
     keyword = "",
     filters = {},
     searchableFields,
-    sortField = "name",
+    sortField = "documentName",
     sortDirection = "asc",
   } = {}
 ) => {

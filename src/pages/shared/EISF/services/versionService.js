@@ -1,10 +1,10 @@
-import { getParticipatingSiteDocuments } from "./eisfService";
+import { getEISFModuleDocuments } from "./eisfService";
 
 /**
  * Returns all versions of a document.
  */
 export function getDocumentVersions(documentId) {
-  const document = getParticipatingSiteDocuments().find(
+  const document = getEISFModuleDocuments().find(
     (item) => item.id === documentId
   );
 
@@ -28,7 +28,7 @@ export function getCurrentVersion(documentId) {
  * Returns a version by version id.
  */
 export function getVersion(versionId) {
-  const documents = getParticipatingSiteDocuments();
+  const documents = getEISFModuleDocuments();
 
   for (const document of documents) {
     const version = document.versions?.find(

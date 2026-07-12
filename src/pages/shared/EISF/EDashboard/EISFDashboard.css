@@ -1,16 +1,24 @@
 .eisf-layout {
   display: flex;
   min-height: calc(100vh - 72px);
+  height: calc(100vh - 72px);
   background: #f6f8fb;
+  overflow: hidden;
 }
 
 .eisf-sidebar {
   width: 300px;
   flex: 0 0 300px;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 72px);
+  min-height: 0;
   background: #fff;
   border-right: 1px solid #e5eaf2;
-  overflow-y: auto;
-  max-height: calc(100vh - 72px);
+  overflow: hidden;
 }
 
 .eisf-sidebar-title {
@@ -26,6 +34,9 @@
 }
 
 .eisf-sidebar-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   padding: 10px 0;
 }
 
@@ -106,6 +117,7 @@
 .eisf-content {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   padding: 0;
   overflow-y: auto;
   background: #f6f8fb;
@@ -113,6 +125,7 @@
 .eisf-content{
     flex:1;
     min-width:0;
+    min-height:0;
     padding:0;
     overflow:auto;
 }
@@ -124,7 +137,8 @@
 
 .eisf-layout-reference {
   display: flex;
-  min-height: 100%;
+  min-height: calc(100vh - 72px);
+  height: calc(100vh - 72px);
 }
 
 .eisf-layout-reference .eisf-content {
@@ -141,10 +155,16 @@
 @media (max-width: 900px) {
   .eisf-layout-reference {
     flex-direction: column;
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
   }
 
   .eisf-sidebar {
+    position: relative;
+    top: auto;
     width: 100%;
+    height: auto;
     max-height: 260px;
     flex-basis: auto;
     border-right: 0;

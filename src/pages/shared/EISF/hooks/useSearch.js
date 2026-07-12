@@ -17,12 +17,15 @@ export default function useSearch(documents = []) {
 
     return safeDocuments.filter((document) =>
       [
+        document.documentName,
         document.name,
         document.status,
         document.category,
         document.documentType,
         document.description,
         document.createdBy,
+        document.uploadedBy,
+        document.fileName,
         document.version?.toString(),
       ]
         .filter(Boolean)

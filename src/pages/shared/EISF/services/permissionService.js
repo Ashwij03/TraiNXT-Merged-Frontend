@@ -1,4 +1,4 @@
-import { getParticipatingSiteDocuments } from "./eisfService";
+import { getEISFModuleDocuments } from "./eisfService";
 
 /**
  * Default roles allowed to upload documents.
@@ -77,7 +77,7 @@ export function canApproveDocument(user = {}) {
  * Returns documents accessible to the user.
  */
 export function getAccessibleDocuments(user = {}) {
-  return getParticipatingSiteDocuments().filter((document) =>
+  return getEISFModuleDocuments().filter((document) =>
     canViewDocument(document, user)
   );
 }

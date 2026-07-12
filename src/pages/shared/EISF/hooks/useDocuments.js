@@ -23,6 +23,7 @@ export default function useDocuments(documents = []) {
         [
           DOCUMENT_STATUS.PENDING,
           DOCUMENT_STATUS.UNDER_REVIEW,
+          DOCUMENT_STATUS.UNDER_APPROVAL,
         ].includes(document.status)
       ),
     [safeDocuments]
