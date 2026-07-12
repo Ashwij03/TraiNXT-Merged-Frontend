@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import ClinicalSiteQuickView from "./ClinicalSiteQuickView";
 
 
 import "./ClinicalSitesDashboard.css";
@@ -9,7 +11,9 @@ import KPICard from "../../../Components/dashboard/KPICard";
 import { FiHome, FiUsers, FiTrendingUp, FiActivity } from "react-icons/fi";
 
 function ClinicalSitesDashboard({ study }) {
+  const navigate = useNavigate();
   const [sites, setSites] = useState([]);
+  const [quickViewSite, setQuickViewSite] = useState(null);
   const [selectedCountry, setSelectedCountry] = useState("All Countries");
   const [searchText, setSearchText] = useState("");
 
@@ -283,6 +287,8 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
                 <th>Enrolled</th>
                 <th>Target</th>
                 <th>Performance</th>
+                <th>Quick View</th>
+                <th>Site Workspace</th>
               </tr>
             </thead>
 
@@ -311,6 +317,29 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
                   <td>{site.target ?? site.targetSubjects ?? 0}</td>
 
                   <td>{site.performance ?? site.enrollmentRate ?? 0}%</td>
+                  <td>
+                  <button
+                    type="button"
+                    className="sponsor-btn-secondary"
+                    onClick={() => setQuickViewSite(site)}
+                  >
+                    View
+                  </button>
+                  </td>
+                  <td>
+                   <button
+                     type="button"
+                     className="sponsor-btn-secondary"
+                     onClick={() =>
+                       navigate("/site-details", {
+                         state: site,
+                       })
+                     }
+                   >
+                     Open
+                   </button>
+                  </td>
+
                 </tr>
               ))}
             </tbody>
@@ -404,6 +433,13 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
                 Interactive Map component will be       integrated here.
             </div>
         </div>
+       {quickViewSite && (
+        <ClinicalSiteQuickView
+          site={quickViewSite}
+          study={study}
+          onClose={() => setQuickViewSite(null)}
+         />
+      )}
     </div>
   );
 }
