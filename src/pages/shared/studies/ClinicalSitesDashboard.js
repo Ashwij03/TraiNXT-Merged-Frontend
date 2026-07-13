@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import ClinicalSiteQuickView from "./ClinicalSiteQuickView";
 
 import ClinicalSitesMap from "./ClinicalSitesMap";
 
@@ -12,7 +14,9 @@ import { FiHome, FiUsers, FiTrendingUp, FiActivity } from "react-icons/fi";
 const CLINICAL_SITES_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 
 function ClinicalSitesDashboard({ study }) {
+  const navigate = useNavigate();
   const [sites, setSites] = useState([]);
+  const [quickViewSite, setQuickViewSite] = useState(null);
   const [selectedCountry, setSelectedCountry] = useState("All Countries");
   const [searchText, setSearchText] = useState("");
 
@@ -191,59 +195,69 @@ function ClinicalSitesDashboard({ study }) {
         />
       </div>
 
-      <div className="clinical-sites-card">
-        <h3>Clinical Site Filters</h3>
+     <div className="clinical-sites-card">
+       <h3>Clinical Site Filters</h3>
 
-        <div className="clinical-sites-toolbar">
-          <input
-            type="text"
-            placeholder="Search Site ID, Site Name, Country, Sponsor or Status"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
+       <div className="clinical-sites-toolbar">
+         <input
+           id="clinical-site-search"
+           name="clinicalSiteSearch"
+           type="text"
+           placeholder="Search Site ID, Site Name, Country, Sponsor or Status"
+           value={searchText}
+           onChange={(e) => setSearchText(e.target.value)}
+         />
 
-          <select
-            value={selectedCountry}
-            onChange={(e) => setSelectedCountry(e.target.value)}
-          >
-            {countries.map((country) => (
-              <option key={country} value={country}>
-                {country}
-              </option>
-            ))}
-          </select>
+         <select
+           id="clinical-site-country"
+           name="clinicalSiteCountry"
+           value={selectedCountry}
+           onChange={(e) => setSelectedCountry(e.target.value)}
+         >
+           {countries.map((country) => (
+             <option key={country} value={country}>
+               {country}
+             </option>
+           ))}
+         </select>
 
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-          >
-            {statuses.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
+         <select
+           id="clinical-site-status"
+           name="clinicalSiteStatus"
+           value={selectedStatus}
+           onChange={(e) => setSelectedStatus(e.target.value)}
+         >
+           {statuses.map((status) => (
+             <option key={status} value={status}>
+               {status}
+             </option>
+           ))}
+         </select>
 
-          <select
-            value={selectedSite}
-            onChange={(e) => setSelectedSite(e.target.value)}
-          >
-            {siteNames.map((siteName) => (
-              <option key={siteName} value={siteName}>
-                {siteName}
-              </option>
-            ))}
-          </select>
+         <select
+           id="clinical-site-filter"
+           name="clinicalSiteFilter"
+           value={selectedSite}
+           onChange={(e) => setSelectedSite(e.target.value)}
+         >
+           {siteNames.map((siteName) => (
+             <option key={siteName} value={siteName}>
+               {siteName}
+             </option>
+           ))}
+         </select>
 
-          <select
-            value={sortDirection}
-            onChange={(e) => setSortDirection(e.target.value)}
-          >
-            <option value="asc">Ascending</option>
-            <option value="desc">Descending</option>
-          </select>
-        </div>
-      </div>
+         <select
+           id="clinical-site-sort-direction"
+           name="clinicalSiteSortDirection"
+           value={sortDirection}
+           onChange={(e) => setSortDirection(e.target.value)}
+         >
+           <option value="asc">Ascending</option>
+           <option value="desc">Descending</option>
+         </select>
+       </div>
+</div>
 
       <div className="clinical-sites-card">
         <h3>Site Performance</h3>
@@ -262,6 +276,8 @@ function ClinicalSitesDashboard({ study }) {
                 <th>Enrolled</th>
                 <th>Target</th>
                 <th>Performance</th>
+                <th>Quick View</th>
+                <th>Site Workspace</th>
               </tr>
             </thead>
 
@@ -283,6 +299,29 @@ function ClinicalSitesDashboard({ study }) {
                   <td>{site.target ?? site.targetSubjects ?? 0}</td>
 
                   <td>{site.performance ?? site.enrollmentRate ?? 0}%</td>
+                  <td>
+                  <button
+                    type="button"
+                    className="sponsor-btn-secondary"
+                    onClick={() => setQuickViewSite(site)}
+                  >
+                    View
+                  </button>
+                  </td>
+                  <td>
+                   <button
+                     type="button"
+                     className="sponsor-btn-secondary"
+                     onClick={() =>
+                       navigate("/site-details", {
+                         state: site,
+                       })
+                     }
+                   >
+                     Open
+                   </button>
+                  </td>
+
                 </tr>
               ))}
             </tbody>
@@ -403,13 +442,22 @@ function ClinicalSitesDashboard({ study }) {
             </div>
           </div>
         )}
-      </div>
-      <div className="clinical-sites-card">
-        <h3>Interactive Map</h3>
-
-        <ClinicalSitesMap sites={filteredSites} />
-      </div>
-      
+        </div>
+        <div className="clinical-sites-card">
+    <h3>Interactive Map</h3>
+ <ClinicalSitesMap
+        sites={filteredSites}
+    />
+</div>
+         
+       {quickViewSite && (
+        <ClinicalSiteQuickView
+          site={quickViewSite}
+          study={study}
+          onClose={() => setQuickViewSite(null)}
+         />
+      )}
+   
     </div>
   );
 }

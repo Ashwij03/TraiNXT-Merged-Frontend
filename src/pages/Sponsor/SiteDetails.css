@@ -1,188 +1,630 @@
-/* ===========================
-   Site Details Page
-=========================== */
-
-.site-details-page{
-  width:100%;
-  padding:24px;
-  box-sizing:border-box;
+.site-details-page {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: 24px;
+  box-sizing: border-box;
+  display: block;
 }
 
-.site-details-page h1{
-  color:#1e3a8a;
-  margin-bottom:24px;
+/* =========================
+   HEADER
+========================= */
+
+.site-workspace-header {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  box-sizing: border-box;
 }
 
-/* ===========================
-   KPI Cards
-=========================== */
-
-.sponsor-kpi-grid{
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:20px;
-  margin-bottom:24px;
+.site-workspace-header h1 {
+  margin: 12px 0 6px;
+  color: #1e3a8a;
 }
 
-/* ===========================
-   Common Cards
-=========================== */
-
-.details-card{
-  width:100%;
-  background:#fff;
-  border-radius:16px;
-  padding:24px;
-  margin-bottom:24px;
-  border:1px solid #e2e8f0;
-  box-shadow:0 2px 10px rgba(0,0,0,.06);
-  box-sizing:border-box;
+.site-workspace-header p {
+  margin: 0;
+  color: #64748b;
 }
 
-.details-card h2{
-  margin:0 0 20px;
-  color:#1e3a8a;
-  font-size:22px;
+.site-workspace-status {
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: #dcfce7;
+  color: #15803d;
+  font-weight: 600;
 }
 
-/* ===========================
-   Grid
-=========================== */
-
-.details-grid{
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:24px;
-  width:100%;
+.back-btn {
+  border: none;
+  background: #2563eb;
+  color: #ffffff;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
 }
 
-.details-grid>div{
-  width:100%;
+.back-btn:hover {
+  background: #1d4ed8;
 }
 
-.details-grid strong{
-  display:block;
-  margin-bottom:6px;
-  color:#334155;
+/* =========================
+   TABS
+========================= */
+
+.site-workspace-tabs {
+  width: 100%;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 8px;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
 }
 
-.details-grid p{
-  margin:0;
-  color:#64748b;
+.site-workspace-tabs button {
+  border: none;
+  background: transparent;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #64748b;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-/* ===========================
-   Tables
-=========================== */
-
-.sponsor-table{
-  width:100%;
-  border-collapse:collapse;
+.site-workspace-tabs button.active {
+  background: #082b3d;
+  color: #ffffff;
 }
 
-.sponsor-table th{
-  background:#082b3d;
-  color:#fff;
-  padding:14px;
-  text-align:left;
+/* =========================
+   MAIN CARDS
+========================= */
+
+.details-card {
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0;
+  align-self: stretch;
+  padding: 24px;
+  margin: 0 0 24px 0;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
-.sponsor-table td{
-  padding:14px;
-  border-bottom:1px solid #e5e7eb;
+.site-details-page > .details-card {
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
-.sponsor-table tr:hover{
-  background:#f8fafc;
+.analytics-section {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
-/* ===========================
-   Buttons
-=========================== */
-
-.back-btn{
-  background:#2563eb;
-  color:#fff;
-  border:none;
-  padding:10px 18px;
-  border-radius:8px;
-  cursor:pointer;
-  font-weight:600;
-  margin-bottom:20px;
+.analytics-section .details-card {
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
-.back-btn:hover{
-  background:#1d4ed8;
+.details-card h2 {
+  margin: 0 0 20px;
+  color: #1e3a8a;
+  font-size: 22px;
 }
 
-/* ===========================
-   Status
-=========================== */
+/* =========================
+   DETAILS GRID
+========================= */
 
-.status-active{
-  display:inline-block;
-  padding:6px 12px;
-  border-radius:20px;
-  background:#dcfce7;
-  color:#15803d;
-  font-weight:600;
+.details-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(220px, 1fr)
+  );
+  gap: 16px;
+  box-sizing: border-box;
 }
 
-/* ===========================
-   Responsive
-=========================== */
+.details-grid > div {
+  width: 100%;
+  min-width: 0;
+  padding: 16px;
+  box-sizing: border-box;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
 
-@media(max-width:1024px){
+.details-grid strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #64748b;
+  font-size: 13px;
+}
 
-  .sponsor-kpi-grid{
-    grid-template-columns:repeat(2,1fr);
+.details-grid p {
+  margin: 0;
+  color: #1e293b;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* =========================
+   PROGRESS
+========================= */
+
+.site-progress-section {
+  width: 100%;
+  margin-top: 24px;
+  box-sizing: border-box;
+}
+
+.site-progress-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: #1e293b;
+}
+
+.site-progress-track {
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  background: #e2e8f0;
+  border-radius: 999px;
+}
+
+.site-progress-fill {
+  height: 100%;
+  background: #2563eb;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.site-progress-text {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+/* =========================
+   EMPTY STATES
+========================= */
+
+.site-activity-empty,
+.site-info-empty {
+  width: 100%;
+  padding: 24px;
+  box-sizing: border-box;
+  text-align: center;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  color: #64748b;
+}
+
+.site-activity-empty {
+  padding: 30px;
+}
+
+.site-activity-empty p,
+.site-info-empty p {
+  margin: 0;
+}
+
+/* =========================
+   SITE INFO SECTIONS
+========================= */
+
+.site-info-section {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin-top: 20px;
+  box-sizing: border-box;
+}
+
+.site-info-section h3 {
+  margin: 0 0 16px;
+  color: #1e293b;
+  font-size: 18px;
+}
+
+.site-info-section + .site-info-section {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* =========================
+   STUDY TEAM
+========================= */
+
+.site-team-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(240px, 1fr)
+  );
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.site-team-card {
+  width: 100%;
+  min-width: 0;
+  padding: 18px;
+  box-sizing: border-box;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.site-team-card > strong {
+  display: block;
+  margin-bottom: 16px;
+  color: #1e293b;
+  font-size: 16px;
+}
+
+.site-team-card p {
+  margin: 10px 0 0;
+  color: #1e293b;
+}
+
+.site-team-card p span {
+  display: block;
+  margin-bottom: 4px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+/* =========================
+   REGULATORY / KPI / RISK
+========================= */
+
+.site-regulatory-list {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(280px, 1fr)
+  );
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.site-regulatory-item {
+  width: 100%;
+  min-width: 0;
+  padding: 18px;
+  box-sizing: border-box;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.site-regulatory-item p {
+  margin: 10px 0 0;
+  color: #1e293b;
+  overflow-wrap: anywhere;
+}
+
+.site-regulatory-item p:first-child {
+  margin-top: 0;
+}
+
+.site-regulatory-item p span {
+  display: block;
+  margin-bottom: 4px;
+  color: #64748b;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.site-regulatory-item pre {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
+}
+
+/* =========================
+   ENROLLMENT ANALYTICS
+========================= */
+
+.site-enrollment-analytics-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(160px, 1fr)
+  );
+  gap: 16px;
+  margin-top: 20px;
+  box-sizing: border-box;
+}
+
+.site-enrollment-analytics-card {
+  width: 100%;
+  min-width: 0;
+  padding: 20px;
+  box-sizing: border-box;
+  text-align: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.site-enrollment-analytics-card span {
+  display: block;
+  margin-bottom: 10px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.site-enrollment-analytics-card strong {
+  color: #0f172a;
+  font-size: 28px;
+}
+
+/* =========================
+   ENROLLMENT STATISTICS
+========================= */
+
+.site-enrollment-statistics {
+  width: 100%;
+  max-width: 100%;
+  margin-top: 28px;
+  padding-top: 24px;
+  box-sizing: border-box;
+  border-top: 1px solid #e2e8f0;
+}
+
+.site-enrollment-statistics h3 {
+  margin: 0 0 16px;
+  color: #1e293b;
+  font-size: 18px;
+}
+
+.clinical-site-enrollment-section {
+  width: 100%;
+  max-width: 100%;
+  margin-top: 20px;
+  box-sizing: border-box;
+}
+
+.clinical-site-enrollment-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.clinical-site-enrollment-track {
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  background: #e2e8f0;
+  border-radius: 999px;
+}
+
+.clinical-site-enrollment-fill {
+  height: 100%;
+  background: #2563eb;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.clinical-site-enrollment-section p {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+/* =========================
+   SUBJECT ANALYTICS
+========================= */
+
+.site-subject-status-analytics {
+  width: 100%;
+  max-width: 100%;
+  margin-top: 28px;
+  padding-top: 24px;
+  box-sizing: border-box;
+  border-top: 1px solid #e2e8f0;
+}
+
+.site-subject-status-analytics h3 {
+  margin: 0 0 20px;
+  color: #1e293b;
+  font-size: 18px;
+}
+
+/* =========================
+   LARGE DESKTOP
+========================= */
+
+@media (min-width: 1200px) {
+  .details-grid {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(200px, 1fr)
+    );
   }
 
-  .details-grid{
-    grid-template-columns:repeat(2,1fr);
+  .site-enrollment-analytics-grid {
+    grid-template-columns: repeat(5, 1fr);
   }
 
-}
-
-@media(max-width:768px){
-
-  .sponsor-kpi-grid,
-  .details-grid{
-    grid-template-columns:1fr;
+  .site-team-grid {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(260px, 1fr)
+    );
   }
 
-}
-.site-details-page{
-    width:100% !important;
-    max-width:100% !important;
-    flex:1 !important;
-    display:block !important;
-    margin:0 !important;
-    box-sizing:border-box;
+  .site-regulatory-list {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(300px, 1fr)
+    );
+  }
 }
 
-.site-details-page > *{
-    width:100% !important;
-    max-width:100% !important;
+/* =========================
+   TABLET
+========================= */
+
+@media (max-width: 1024px) {
+  .details-grid {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(180px, 1fr)
+    );
+  }
+
+  .site-workspace-tabs {
+    overflow-x: auto;
+  }
 }
 
-.details-card{
-    width:100% !important;
-    max-width:none !important;
-    flex:none !important;
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 768px) {
+  .site-details-page {
+    padding: 16px;
+  }
+
+  .site-workspace-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .site-workspace-tabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .details-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 18px;
+  }
+
+  .details-grid,
+  .site-team-grid,
+  .site-enrollment-analytics-grid,
+  .site-regulatory-list {
+    grid-template-columns: 1fr;
+  }
+
+  .details-grid > div,
+  .site-team-card,
+  .site-enrollment-analytics-card,
+  .site-regulatory-item {
+    width: 100%;
+    min-width: 0;
+  }
+}
+.site-primary-btn {
+  margin-top: 18px;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 8px;
+  background: #0b2d45;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s;
 }
 
-.details-grid{
-    width:100% !important;
+.site-primary-btn:hover {
+  background: #154c73;
 }
 
-.main-layout{
-    width:100% !important;
-    max-width:100% !important;
-    flex:1 !important;
+.site-activity-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 170px;
+  text-align: center;
 }
 
-.dashboard-content{
-    width:100% !important;
-    max-width:100% !important;
+.site-activity-empty h3 {
+  margin-bottom: 8px;
+  color: #1e3a8a;
+}
+
+.site-activity-empty p {
+  margin-bottom: 18px;
+  color: #64748b;
+}
+
+/* ==========================
+   COMMON EMPTY STATE
+========================== */
+
+.site-empty-state {
+  width: 100%;
+  padding: 48px 24px;
+  text-align: center;
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+}
+
+.site-empty-state h4 {
+  margin: 0 0 10px;
+  color: #1e3a8a;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.site-empty-state p {
+  margin: 0 0 20px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.site-empty-btn {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.site-empty-btn:hover {
+  background: #1d4ed8;
 }
