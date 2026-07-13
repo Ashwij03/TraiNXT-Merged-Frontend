@@ -161,12 +161,20 @@ grid-template-columns:1fr;
 /* ---------- Pagination ---------- */
 
 .clinical-sites-pagination{
-    display:flex;
+    display:grid;
+    grid-template-columns:1fr auto 1fr;
     align-items:center;
-    justify-content:space-between;
-    flex-wrap:wrap;
     gap:12px;
     margin-top:16px;
+}
+
+.clinical-sites-pagination-controls{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    grid-column:2;
+    justify-self:center;
 }
 
 .clinical-sites-pagination span{
@@ -180,11 +188,14 @@ grid-template-columns:1fr;
     color:#475569;
     font-size:12px;
     font-weight:700;
+    justify-self:start;
+    width:fit-content;
 }
 
 .clinical-sites-page-size select{
+    width:60px;
     height:32px;
-    padding:0 24px 0 8px;
+    padding:0 20px 0 8px;
     border:1px solid #cbd5e1;
     border-radius:6px;
     background:#ffffff;

@@ -309,27 +309,29 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
             </select>
           </label>
 
-          <button
-            className="sponsor-btn-secondary"
-            type="button"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((page) => page - 1)}
-          >
-            ← Previous
-          </button>
+          <div className="clinical-sites-pagination-controls">
+            <button
+              className="sponsor-btn-secondary"
+              type="button"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((page) => page - 1)}
+            >
+              ← Previous
+            </button>
 
-          <span>
-            Page {currentPage} of {totalPages}
-          </span>
+            <span>
+              Page {currentPage} of {totalPages}
+            </span>
 
-          <button
-            className="sponsor-btn-secondary"
-            type="button"
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((page) => page + 1)}
-          >
-            Next →
-          </button>
+            <button
+              className="sponsor-btn-secondary"
+              type="button"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((page) => page + 1)}
+            >
+              Next →
+            </button>
+          </div>
         </div>
       </div>
       
@@ -381,27 +383,29 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
               </select>
             </label>
 
-            <button
-              className="sponsor-btn-secondary"
-              type="button"
-              disabled={rankingPage === 1}
-              onClick={() => setRankingPage((page) => page - 1)}
-            >
-              ← Previous
-            </button>
+            <div className="clinical-sites-pagination-controls">
+              <button
+                className="sponsor-btn-secondary"
+                type="button"
+                disabled={rankingPage === 1}
+                onClick={() => setRankingPage((page) => page - 1)}
+              >
+                ← Previous
+              </button>
 
-            <span>
-              Page {rankingPage} of {rankingTotalPages}
-            </span>
+              <span>
+                Page {rankingPage} of {rankingTotalPages}
+              </span>
 
-            <button
-              className="sponsor-btn-secondary"
-              type="button"
-              disabled={rankingPage === rankingTotalPages}
-              onClick={() => setRankingPage((page) => page + 1)}
-            >
-              Next →
-            </button>
+              <button
+                className="sponsor-btn-secondary"
+                type="button"
+                disabled={rankingPage === rankingTotalPages}
+                onClick={() => setRankingPage((page) => page + 1)}
+              >
+                Next →
+              </button>
+            </div>
           </div>
         )}
         </div>
