@@ -1000,50 +1000,60 @@ onClick={()=>setActiveTab("subjects")}
 Subject Costs
 </button>
 
-<button
-onClick={()=>setActiveTab("summary")}
->
-Summary
-</button>
 
 </div>
 
       {showAllData && (
-        <section className="financial-summary">
-          <h2>Financial Summary</h2>
-          <h3>Budget Summary</h3>
+  <section className="financial-summary">
 
-{budgets.map((budget) => (
-  <p key={budget.id}>
-    {budget.category} :
-    <b> {formatCurrency(budget.totalCost, budget.currency)}</b>
-  </p>
-))}
+    <h2>Financial Summary</h2>
 
-<p>
-  <b>Grand Total : {formatCurrency(totalBudget)}</b>
-</p>
+    <div className="financial-summary-grid">
 
+      <div className="summary-box">
+        <span>Total Budget</span>
+        <h3>{formatCurrency(totalBudget)}</h3>
+      </div>
 
-          <div className="financial-summary-card">
-            <p>
-              Total Budgets: <b>{budgets.length}</b>
-            </p>
+      <div className="summary-box">
+        <span>Total Payments</span>
+        <h3>{formatCurrency(totalPayments)}</h3>
+      </div>
 
-            <p>
-              Total Payments: <b>{paymentList.length}</b>
-            </p>
+      <div className="summary-box">
+        <span>Remaining Budget</span>
+        <h3>{formatCurrency(remainingBudget)}</h3>
+      </div>
 
-            <p>
-              Budget Utilized: <b>{formatCurrency(totalPayments)}</b>
-            </p>
+      <div className="summary-box">
+        <span>Subject Cost</span>
+        <h3>{formatCurrency(grandTotal)}</h3>
+      </div>
 
-            <p>
-              Remaining Budget: <b>{formatCurrency(remainingBudget)}</b>
-            </p>
-          </div>
-        </section>
-      )}
+      <div className="summary-box">
+        <span>Net Budget</span>
+        <h3>{formatCurrency(netBudgetCost)}</h3>
+      </div>
+
+      <div className="summary-box">
+        <span>Total Budgets</span>
+        <h3>{budgets.length}</h3>
+      </div>
+
+      <div className="summary-box">
+        <span>Total Payments</span>
+        <h3>{paymentList.length}</h3>
+      </div>
+
+      <div className="summary-box">
+        <span>Budget Utilized</span>
+        <h3>{utilizedPercentage.toFixed(1)}%</h3>
+      </div>
+
+    </div>
+
+  </section>
+)}
       
       {activeTab === "budget" && (
   <>
@@ -1334,52 +1344,9 @@ Summary
         ))}
       </tbody>
     </table>
-<div className="financial-summary-card">
-  <h3>
-    Grand Total: {formatCurrency(grandTotal)}
-  </h3>
-</div>
   </section>
 )}
-{activeTab==="summary" && (
-<section className="financial-summary">
 
-  <h3>Financial Summary</h3>
-
-  <p>
-    Grand Total :
-    <b>{formatCurrency(totalBudget)}</b>
-  </p>
-
-  <p>
-    Payments :
-    <b>{formatCurrency(totalPayments)}</b>
-  </p>
-
-  <p>
-    Receivables :
-    <b>
-      {formatCurrency(
-        receivableList.reduce(
-          (sum, item) => sum + Number(item.amount),
-          0
-        )
-      )}
-    </b>
-  </p>
-
-  <p>
-    Invoices :
-    <b>{invoiceList.length}</b>
-  </p>
-
-  <p>
-    Net Budget Cost :
-<b>{formatCurrency(netBudgetCost)}</b>
-  </p>
-
-</section>
-)}
       <section className="payment-table">
         <h3>Study Payments</h3>
 

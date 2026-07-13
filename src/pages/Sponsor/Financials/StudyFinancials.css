@@ -574,3 +574,43 @@ td:last-child {
   font-size:16px;
   color:#0f172a;
 }
+.financial-summary{
+    margin:25px 0;
+    padding:20px;
+    background:#fff;
+    border-radius:10px;
+    border:1px solid #e6e6e6;
+}
+
+.financial-summary h2{
+    margin-bottom:20px;
+    font-size:24px;
+    font-weight:700;
+}
+
+.financial-summary-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:18px;
+}
+
+.summary-box{
+    background:#f8fafc;
+    border:1px solid #dbe7ff;
+    border-radius:10px;
+    padding:18px;
+}
+
+.summary-box span{
+    display:block;
+    color:#6b7280;
+    font-size:14px;
+    margin-bottom:8px;
+}
+
+.summary-box h3{
+    margin:0;
+    color:#1d4ed8;
+    font-size:24px;
+    font-weight:700;
+}
