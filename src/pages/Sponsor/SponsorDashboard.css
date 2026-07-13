@@ -658,3 +658,83 @@ overflow-x: hidden;
   transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(37,99,235,.12);
 }
+.regulatory-stats{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:18px;
+    margin-top:20px;
+}
+
+.reg-item{
+    position:relative;
+    background:#ffffff;
+    border:1px solid #e5e7eb;
+    border-radius:14px;
+
+    padding:26px;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+
+    min-height:120px;
+
+    transition:.25s ease;
+}
+
+.reg-item:hover{
+    transform:translateY(-4px);
+    box-shadow:0 10px 24px rgba(15,23,42,.10);
+}
+
+.reg-item h2{
+    margin:0;
+    font-size:34px;
+    font-weight:700;
+    color:#0f172a;
+}
+
+.reg-item p{
+    margin-top:8px;
+    margin-bottom:0;
+    font-size:15px;
+    font-weight:600;
+    color:#64748b;
+}
+
+.reg-icon{
+    position:absolute;
+    top:18px;
+    right:18px;
+
+    width:44px;
+    height:44px;
+
+    border-radius:50%;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:20px;
+}
+
+.approved-icon{
+    background:#DCFCE7;
+    color:#16A34A;
+}
+
+.review-icon{
+    background:#DBEAFE;
+    color:#2563EB;
+}
+
+.submitted-icon{
+    background:#FEF3C7;
+    color:#D97706;
+}
+
+.overdue-icon{
+    background:#FEE2E2;
+    color:#DC2626;
+}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ClinicalSiteQuickView from "./ClinicalSiteQuickView";
 
+import ClinicalSitesMap from "./ClinicalSitesMap";
 
 import "./ClinicalSitesDashboard.css";
 
@@ -10,19 +11,25 @@ import { getSites, getSiteKPIs } from "../../Sponsor/data/sponsorDataStore";
 import KPICard from "../../../Components/dashboard/KPICard";
 import { FiHome, FiUsers, FiTrendingUp, FiActivity } from "react-icons/fi";
 
+const CLINICAL_SITES_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+
 function ClinicalSitesDashboard({ study }) {
   const navigate = useNavigate();
   const [sites, setSites] = useState([]);
   const [quickViewSite, setQuickViewSite] = useState(null);
   const [selectedCountry, setSelectedCountry] = useState("All Countries");
   const [searchText, setSearchText] = useState("");
+
   const [selectedStatus, setSelectedStatus] = useState("All Status");
-  const [selectedSite, setSelectedSite] = useState("All Sites");
+
+const [selectedSite, setSelectedSite] = useState("All Sites");
+
   const [sortDirection, setSortDirection] = useState("asc");
+
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 10;
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [rankingPage, setRankingPage] = useState(1);
-  const rankingRowsPerPage = 10;
+  const [rankingRowsPerPage, setRankingRowsPerPage] = useState(10);
   const [kpis, setKpis] = useState({
     total: 0,
     totalEnrolled: 0,
@@ -33,8 +40,8 @@ function ClinicalSitesDashboard({ study }) {
 
   useEffect(() => {
     const refresh = () => {
-      setSites(getSites());
-      setKpis(getSiteKPIs());
+      setSites(getSites(study));
+      setKpis(getSiteKPIs(study));
     };
 
     refresh();
@@ -42,7 +49,7 @@ function ClinicalSitesDashboard({ study }) {
     window.addEventListener("sponsor-data-updated", refresh);
 
     return () => window.removeEventListener("sponsor-data-updated", refresh);
-  }, []);
+  }, [study]);
 
   // Whenever a filter changes, jump both tables back to page 1 so we
   // never end up stuck on an empty page after the result set shrinks.
@@ -50,6 +57,14 @@ function ClinicalSitesDashboard({ study }) {
     setCurrentPage(1);
     setRankingPage(1);
   }, [selectedCountry, selectedStatus, selectedSite, searchText, sortDirection]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [rowsPerPage]);
+
+  useEffect(() => {
+    setRankingPage(1);
+  }, [rankingRowsPerPage]);
 
   const siteSummary = {
     totalSites: kpis.total,
@@ -114,40 +129,15 @@ function ClinicalSitesDashboard({ study }) {
   String(site.status || "")
     .toLowerCase()
     .includes(search);
-
-    // const matchesSearch =
-    //   (site.id || "").toLowerCase().includes(search) ||
-    //   (site.name || "").toLowerCase().includes(search) ||
-    //   (site.account || site.sponsor || "").toLowerCase().includes(search);
-
     return matchesCountry && matchesStatus && matchesSite && matchesSearch;
   });
 
   const sortedSites = [...filteredSites].sort((a, b) => {
-  const valueA = (a.name || "").toLowerCase();
-  const valueB = (b.name || "").toLowerCase();
+  const idA = Number(a.id) || 0;
+  const idB = Number(b.id) || 0;
 
-  if (valueA < valueB) return sortDirection === "asc" ? -1 : 1;
-  if (valueA > valueB) return sortDirection === "asc" ? 1 : -1;
-
-  return 0;
+  return sortDirection === "asc" ? idA - idB : idB - idA;
 });
-
-//   const sortedSites = [...filteredSites].sort((a, b) => {
-//     let valueA = a[sortField] ?? "";
-//     let valueB = b[sortField] ?? "";
-
-//     if (typeof valueA === "string") {
-//       valueA = valueA.toLowerCase();
-//       valueB = valueB.toLowerCase();
-//     }
-
-//     if (valueA < valueB) return sortDirection === "asc" ? -1 : 1;
-
-//     if (valueA > valueB) return sortDirection === "asc" ? 1 : -1;
-
-//     return 0;
-//   });
 
   const totalPages = Math.max(1, Math.ceil(sortedSites.length / rowsPerPage));
 
@@ -305,13 +295,6 @@ function ClinicalSitesDashboard({ study }) {
 
                   <td>{site.sponsor || study?.sponsor || "—"}</td>
 
-
-                  {/* <td>{site.name}</td>
-
-                  <td>
-                    {site.account || site.sponsor || study?.sponsor || "—"}
-                  </td> */}
-
                   <td>{site.status}</td>
 
                   <td>{site.enrolled ?? site.subjectsEnrolled ?? 0}</td>
@@ -348,28 +331,44 @@ function ClinicalSitesDashboard({ study }) {
           </table>
         )}
         <div className="clinical-sites-pagination">
-       
-          <button
-            className="sponsor-btn-secondary"
-            type="button"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((page) => page - 1)}
-          >
-            ← Previous
-          </button>
+          <label className="clinical-sites-page-size">
+            Rows
+            <select
+              value={rowsPerPage}
+              onChange={(event) => setRowsPerPage(Number(event.target.value))}
+              aria-label="Rows per page"
+            >
+              {CLINICAL_SITES_PAGE_SIZE_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
 
-          <span>
-            Page {currentPage} of {totalPages}
-          </span>
+          <div className="clinical-sites-pagination-controls">
+            <button
+              className="sponsor-btn-secondary"
+              type="button"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((page) => page - 1)}
+            >
+              ← Previous
+            </button>
 
-          <button
-            className="sponsor-btn-secondary"
-            type="button"
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((page) => page + 1)}
-          >
-            Next →
-          </button>
+            <span>
+              Page {currentPage} of {totalPages}
+            </span>
+
+            <button
+              className="sponsor-btn-secondary"
+              type="button"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((page) => page + 1)}
+            >
+              Next →
+            </button>
+          </div>
         </div>
       </div>
       
@@ -404,37 +403,56 @@ function ClinicalSitesDashboard({ study }) {
 
         {filteredSites.length > 0 && (
           <div className="clinical-sites-pagination">
-            <button
-              className="sponsor-btn-secondary"
-              type="button"
-              disabled={rankingPage === 1}
-              onClick={() => setRankingPage((page) => page - 1)}
-            >
-              ← Previous
-            </button>
+            <label className="clinical-sites-page-size">
+              Rows
+              <select
+                value={rankingRowsPerPage}
+                onChange={(event) =>
+                  setRankingRowsPerPage(Number(event.target.value))
+                }
+                aria-label="Rows per page"
+              >
+                {CLINICAL_SITES_PAGE_SIZE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-            <span>
-              Page {rankingPage} of {rankingTotalPages}
-            </span>
+            <div className="clinical-sites-pagination-controls">
+              <button
+                className="sponsor-btn-secondary"
+                type="button"
+                disabled={rankingPage === 1}
+                onClick={() => setRankingPage((page) => page - 1)}
+              >
+                ← Previous
+              </button>
 
-            <button
-              className="sponsor-btn-secondary"
-              type="button"
-              disabled={rankingPage === rankingTotalPages}
-              onClick={() => setRankingPage((page) => page + 1)}
-            >
-              Next →
-            </button>
+              <span>
+                Page {rankingPage} of {rankingTotalPages}
+              </span>
+
+              <button
+                className="sponsor-btn-secondary"
+                type="button"
+                disabled={rankingPage === rankingTotalPages}
+                onClick={() => setRankingPage((page) => page + 1)}
+              >
+                Next →
+              </button>
+            </div>
           </div>
         )}
         </div>
         <div className="clinical-sites-card">
-            <h3>Interactive Map</h3>
-
-            <div className="clinical-sites-map">
-                Interactive Map component will be       integrated here.
-            </div>
-        </div>
+    <h3>Interactive Map</h3>
+ <ClinicalSitesMap
+        sites={filteredSites}
+    />
+</div>
+         
        {quickViewSite && (
         <ClinicalSiteQuickView
           site={quickViewSite}
@@ -442,6 +460,7 @@ function ClinicalSitesDashboard({ study }) {
           onClose={() => setQuickViewSite(null)}
          />
       )}
+   
     </div>
   );
 }
