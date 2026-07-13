@@ -1,5 +1,3 @@
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 function escapeCsvCell(value) {
   const text = String(value ?? "");
   return `"${text.replace(/"/g, '""')}"`;

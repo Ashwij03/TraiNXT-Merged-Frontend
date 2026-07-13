@@ -8,6 +8,8 @@ import { getSites, getSiteKPIs } from "../../Sponsor/data/sponsorDataStore";
 import KPICard from "../../../Components/dashboard/KPICard";
 import { FiHome, FiUsers, FiTrendingUp, FiActivity } from "react-icons/fi";
 
+const CLINICAL_SITES_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+
 function ClinicalSitesDashboard({ study }) {
   const [sites, setSites] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("All Countries");
@@ -16,9 +18,9 @@ function ClinicalSitesDashboard({ study }) {
   const [selectedSite, setSelectedSite] = useState("All Sites");
   const [sortDirection, setSortDirection] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 10;
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [rankingPage, setRankingPage] = useState(1);
-  const rankingRowsPerPage = 10;
+  const [rankingRowsPerPage, setRankingRowsPerPage] = useState(10);
   const [kpis, setKpis] = useState({
     total: 0,
     totalEnrolled: 0,
@@ -46,6 +48,14 @@ function ClinicalSitesDashboard({ study }) {
     setCurrentPage(1);
     setRankingPage(1);
   }, [selectedCountry, selectedStatus, selectedSite, searchText, sortDirection]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [rowsPerPage]);
+
+  useEffect(() => {
+    setRankingPage(1);
+  }, [rankingRowsPerPage]);
 
   const siteSummary = {
     totalSites: kpis.total,
@@ -311,7 +321,21 @@ function ClinicalSitesDashboard({ study }) {
           </table>
         )}
         <div className="clinical-sites-pagination">
-       
+          <label className="clinical-sites-page-size">
+            Rows
+            <select
+              value={rowsPerPage}
+              onChange={(event) => setRowsPerPage(Number(event.target.value))}
+              aria-label="Rows per page"
+            >
+              {CLINICAL_SITES_PAGE_SIZE_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+
           <button
             className="sponsor-btn-secondary"
             type="button"
@@ -367,6 +391,23 @@ function ClinicalSitesDashboard({ study }) {
 
         {filteredSites.length > 0 && (
           <div className="clinical-sites-pagination">
+            <label className="clinical-sites-page-size">
+              Rows
+              <select
+                value={rankingRowsPerPage}
+                onChange={(event) =>
+                  setRankingRowsPerPage(Number(event.target.value))
+                }
+                aria-label="Rows per page"
+              >
+                {CLINICAL_SITES_PAGE_SIZE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+
             <button
               className="sponsor-btn-secondary"
               type="button"
