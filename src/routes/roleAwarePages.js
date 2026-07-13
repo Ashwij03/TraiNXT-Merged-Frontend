@@ -12,7 +12,7 @@ import AdminNotifications from "../pages/Admin/Notifications";
 import AdminSettings from "../pages/Admin/Settings";
 import SharedProgressNotes from "../pages/shared/operations/ProgressNotes";
 import SharedStudies from "../pages/shared/studies/Studies";
-import SharedSubjects from "../pages/shared/subjects/SubjectsDashboard";
+// import SharedSubjects from "../pages/shared/subjects/SubjectsDashboard";
 import SharedStudyDetails from "../pages/shared/studies/StudyDetails";
 import SponsorEnrollment from "../pages/Sponsor/Enrollment";
 import SponsorQueries from "../pages/Sponsor/Queries";
@@ -177,7 +177,7 @@ export function RoleAwareSubjects() {
     {
       [ROLES.SPONSOR]: SponsorSubjects
     },
-    SharedSubjects
+    // SharedSubjects
   );
   return <Component />;
 }

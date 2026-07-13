@@ -50,7 +50,6 @@ export const ROLE_BADGE_CLASSES = {
 
 export const QUICK_ACTIONS = [
   { label: "Studies", path: "/studies" },
-  { label: "Subjects", path: "/subjects" },
   { label: "Reports", path: "/reports" },
   { label: "User Management", path: "/user-management" },
   { label: "Access Permission", path: "/access-permission" },

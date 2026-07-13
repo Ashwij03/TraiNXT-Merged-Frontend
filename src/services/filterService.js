@@ -209,6 +209,14 @@ export function getSiteNumberOptions(user = getCurrentUser()) {
 
 export function getStudyOptions(user = getCurrentUser()) {
   const filters = getFilterState();
+
+  // Study options are only meaningful once the list has been narrowed down
+  // by Indication or Institution — otherwise every study across every site
+  // would show up at once. Require one of those two filters first.
+  if (!filters.indication && !filters.institution) {
+    return [];
+  }
+
   let studies = filterStudies(getBaseStudies(user), filters);
 
   if (filters.institution && isAdmin(user)) {
@@ -231,6 +239,15 @@ export function getStudyOptions(user = getCurrentUser()) {
 
 export function getSubjectOptions(user = getCurrentUser()) {
   const filters = getFilterState();
+
+  // Same rule as studies: don't surface subjects from every study across
+  // every site until the list has been narrowed by Indication or
+  // Institution (a specific Study selection also narrows things further
+  // down below, but that itself requires reaching this point first).
+  if (!filters.indication && !filters.institution) {
+    return [];
+  }
+
   const studies = filterStudies(getBaseStudies(user), filters);
   const studyCodes = new Set(studies.map((study) => String(study.code)));
   const subjectsByStudy = readSubjectsByStudy();
