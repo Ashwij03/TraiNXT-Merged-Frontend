@@ -41,6 +41,44 @@ const INITIAL_INVOICE_FORM = {
   status: "Pending",
 };
 
+const INITIAL_SUBJECT_COSTS = [
+  {
+    id: 1,
+    subject: "SUB001",
+    visit: "Visit 1",
+    procedure: "Blood Test",
+    cost: 50,
+    quantity: 2,
+    status: "Completed",
+  },
+  {
+    id: 2,
+    subject: "SUB001",
+    visit: "Visit 1",
+    procedure: "ECG",
+    cost: 100,
+    quantity: 1,
+    status: "Completed",
+  },
+  {
+    id: 3,
+    subject: "SUB002",
+    visit: "Visit 2",
+    procedure: "MRI",
+    cost: 500,
+    quantity: 1,
+    status: "Pending",
+  },
+];
+
+const INITIAL_SUBJECT_COST_FORM = {
+  subjectId: "",
+  visit: "",
+  procedure: "",
+  cost: "",
+  quantity: "",
+  status: "Pending",
+};
 const getStatusClassName = (status) => {
   const normalizedStatus = String(status || "")
     .trim()
@@ -79,6 +117,7 @@ function StudyFinancials() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortField, setSortField] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
+  const [activeTab, setActiveTab] = useState("budget");
 
   const [budgets, setBudgets] = useState([
   {
@@ -103,6 +142,13 @@ function StudyFinancials() {
   const [paymentList, setPaymentList] = useState(payments);
   const [receivableList, setReceivableList] = useState(receivables);
   const [invoiceList, setInvoiceList] = useState(invoiceData);
+  const [subjectCostForm, setSubjectCostForm] = useState(
+  INITIAL_SUBJECT_COST_FORM
+);
+
+const [subjectCosts, setSubjectCosts] = useState(INITIAL_SUBJECT_COSTS);
+const [showSubjectCostModal, setShowSubjectCostModal] = useState(false);
+const [editSubjectCostId, setEditSubjectCostId] = useState(null);
 
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -238,7 +284,18 @@ const totalBudget = useMemo(
     [paymentList],
   );
 
+  const grandTotal = useMemo(
+  () =>
+    subjectCosts.reduce(
+      (sum, item) => sum + Number(item.cost) * Number(item.quantity),
+      0
+    ),
+  [subjectCosts]
+);
+
   const remainingBudget = totalBudget - totalPayments;
+  const netBudgetCost =
+  totalBudget - totalPayments - grandTotal;
   const utilizedPercentage =
     totalBudget > 0 ? Math.min((totalPayments / totalBudget) * 100, 100) : 0;
 
@@ -336,9 +393,12 @@ const updateBudgetField = (name, value) => {
 
   setBudgetForm(updatedForm);
 };
-
+const resetSubjectCostModal = () => {
+  setSubjectCostForm(INITIAL_SUBJECT_COST_FORM);
+  setShowSubjectCostModal(false);
+};
   const handleSaveBudget = () => {
-   if (
+  if (
   !budgetForm.name.trim() ||
   !budgetForm.category.trim() ||
   !budgetForm.costPerUnit ||
@@ -349,12 +409,21 @@ const updateBudgetField = (name, value) => {
   alert("Please fill all required budget fields.");
   return;
 }
+
+if (
+  Number(budgetForm.endDate.replace(/-/g, "")) <
+  Number(budgetForm.startDate.replace(/-/g, ""))
+) {
+  alert("End Date should be after Start Date");
+  return;
+}
 let version = budgetForm.version;
 
 if (editBudgetId !== null) {
   const currentVersion = Number(
     budgetForm.version.replace("V", "")
   );
+  
 
   version = `V${currentVersion + 1}`;
 }
@@ -420,6 +489,10 @@ if (editBudgetId !== null) {
       alert("Please fill all required payment fields.");
       return;
     }
+    if (Number(paymentForm.amount) <= 0) {
+  alert("Amount should be greater than zero");
+  return;
+}
 
     const preparedPayment = {
       milestone: paymentForm.milestone.trim(),
@@ -515,6 +588,59 @@ if (editBudgetId !== null) {
     setShowInvoiceModal(true);
   };
 
+  const handleSaveSubjectCost = () => {
+  if (
+    !subjectCostForm.subjectId ||
+    !subjectCostForm.visit ||
+    !subjectCostForm.procedure ||
+    !subjectCostForm.cost ||
+    !subjectCostForm.quantity
+  ) {
+    alert("Please fill all required fields.");
+    return;
+  }
+
+  const newCost = {
+  id: editSubjectCostId ?? Date.now(),
+  subject: subjectCostForm.subjectId,
+  visit: subjectCostForm.visit,
+  procedure: subjectCostForm.procedure,
+  cost: Number(subjectCostForm.cost),
+  quantity: Number(subjectCostForm.quantity),
+  status: subjectCostForm.status,
+};
+
+if (editSubjectCostId !== null) {
+  setSubjectCosts((prev) =>
+    prev.map((item) =>
+      item.id === editSubjectCostId ? newCost : item
+    )
+  );
+} else {
+  setSubjectCosts((prev) => [...prev, newCost]);
+}
+
+setEditSubjectCostId(null);
+resetSubjectCostModal();
+};
+const handleEditSubjectCost = (item) => {
+  setEditSubjectCostId(item.id);
+
+  setSubjectCostForm({
+    subjectId: item.subject,
+    visit: item.visit,
+    procedure: item.procedure,
+    cost: item.cost,
+    quantity: item.quantity,
+    status: item.status,
+  });
+
+  setShowSubjectCostModal(true);
+};
+const handleDeleteSubjectCost = (id) => {
+  openDeleteModal("subjectCost", id);
+};
+
   const handleSaveInvoice = () => {
     if (
       !invoiceForm.invoiceNo.trim() ||
@@ -526,6 +652,8 @@ if (editBudgetId !== null) {
       alert("Please fill all required invoice fields.");
       return;
     }
+
+   
 
     const preparedInvoice = {
       invoiceNo: invoiceForm.invoiceNo.trim(),
@@ -600,6 +728,11 @@ if (editBudgetId !== null) {
         currentInvoices.filter((invoice) => invoice.id !== deleteId),
       );
     }
+    if (deleteType === "subjectCost") {
+  setSubjectCosts((current) =>
+    current.filter((item) => item.id !== deleteId)
+  );
+}
 
     closeDeleteModal();
   };
@@ -765,6 +898,42 @@ if (editBudgetId !== null) {
         </div>
       </div>
 
+     <div className="budget-info-card">
+  <h3>Budget Information</h3>
+
+  <div className="budget-info-grid">
+    <div>
+      <span>Study</span>
+      <strong>Diabetes Study</strong>
+    </div>
+
+    <div>
+      <span>Protocol</span>
+      <strong>DIA-001</strong>
+    </div>
+
+    <div>
+      <span>Sponsor</span>
+      <strong>TriaNXT</strong>
+    </div>
+
+    <div>
+      <span>Principal Investigator</span>
+      <strong>Dr. John</strong>
+    </div>
+
+    <div>
+      <span>Site</span>
+      <strong>Apollo Hospital</strong>
+    </div>
+
+    <div>
+      <span>Currency</span>
+      <strong>USD</strong>
+    </div>
+  </div>
+</div>
+
       <div className="financial-actions">
         <button type="button" onClick={openNewBudgetModal}>
           + New Budget
@@ -783,6 +952,16 @@ if (editBudgetId !== null) {
         </button>
 
         <button
+  type="button"
+  onClick={() => {
+    setSubjectCostForm(INITIAL_SUBJECT_COST_FORM);
+    setShowSubjectCostModal(true);
+  }}
+>
+  + New Subject Cost
+</button>
+
+        <button
           type="button"
           onClick={() => setShowAllData((currentValue) => !currentValue)}
         >
@@ -793,6 +972,39 @@ if (editBudgetId !== null) {
           Export CSV
         </button>
       </div>
+     <div className="financial-tabs">
+
+<button
+onClick={()=>setActiveTab("budget")}
+>
+Budget Info
+</button>
+
+<button
+onClick={()=>setActiveTab("grants")}
+>
+Investigator Grants
+</button>
+
+<button
+onClick={()=>setActiveTab("site")}
+>
+Site Management
+</button>
+
+<button
+onClick={()=>setActiveTab("subjects")}
+>
+Subject Costs
+</button>
+
+<button
+onClick={()=>setActiveTab("summary")}
+>
+Summary
+</button>
+
+</div>
 
       {showAllData && (
         <section className="financial-summary">
@@ -830,7 +1042,9 @@ if (editBudgetId !== null) {
           </div>
         </section>
       )}
-
+      
+      {activeTab === "budget" && (
+  <>
       <section className="budget-list">
         <h3>Study Budgets</h3>
       </section>
@@ -838,29 +1052,48 @@ if (editBudgetId !== null) {
       <div className="budget-table">
         <table>
           <thead>
-            <tr>
-              <th onClick={() => handleSort("name")}>
-                Budget Name{getSortIndicator("name")}
-              </th>
-              <th onClick={() => handleSort("category")}>
-                Category{getSortIndicator("category")}
-              </th>
-              <th onClick={() => handleSort("totalCost")}>
-  Total Cost{getSortIndicator("totalCost")}
+  <tr>
+    <th onClick={() => handleSort("name")}>
+      Budget Name{getSortIndicator("name")}
+    </th>
+
+    <th onClick={() => handleSort("category")}>
+      Category{getSortIndicator("category")}
+    </th>
+
+    <th onClick={() => handleSort("totalCost")}>
+      Total Cost{getSortIndicator("totalCost")}
+    </th>
+
+    <th onClick={() => handleSort("costPerUnit")}>
+  Cost / Unit{getSortIndicator("costPerUnit")}
 </th>
-              <th onClick={() => handleSort("status")}>
-                Status{getSortIndicator("status")}
-              </th>
-              <th onClick={() => handleSort("startDate")}>
-                Start Date{getSortIndicator("startDate")}
-              </th>
-              <th onClick={() => handleSort("endDate")}>
-                End Date{getSortIndicator("endDate")}
-              </th>
-              <th>Actions</th>
-              <th>Version</th>
-            </tr>
-          </thead>
+
+<th onClick={() => handleSort("units")}>
+   Units{getSortIndicator("units")}
+</th>
+
+<th onClick={() => handleSort("unitType")}>
+  Unit{getSortIndicator("unitType")}
+</th>
+
+    <th onClick={() => handleSort("status")}>
+      Status{getSortIndicator("status")}
+    </th>
+
+    <th onClick={() => handleSort("startDate")}>
+      Start Date{getSortIndicator("startDate")}
+    </th>
+
+    <th onClick={() => handleSort("endDate")}>
+      End Date{getSortIndicator("endDate")}
+    </th>
+
+    <th>Actions</th>
+
+    <th>Version</th>
+  </tr>
+</thead>
 
           <tbody>
             {currentBudgets.length === 0 ? (
@@ -871,13 +1104,26 @@ if (editBudgetId !== null) {
               currentBudgets.map((budget) => (
                 <tr key={budget.id}>
                   <td>{budget.name}</td>
-                  <td>{budget.category}</td>
-                 <td>
+
+<td>{budget.category}</td>
+
+<td>
   {formatCurrency(
-      budget.totalCost,
-      budget.currency
+    budget.totalCost,
+    budget.currency
   )}
 </td>
+
+<td>
+  {formatCurrency(
+    budget.costPerUnit,
+    budget.currency
+  )}
+</td>
+
+<td>{budget.units}</td>
+
+<td>{budget.unitType}</td>
                   <td>
                     <span
                       className={`financial-status ${getStatusClassName(
@@ -916,27 +1162,7 @@ if (editBudgetId !== null) {
 </button>
 </td>
 
-{showBudgetPreview && selectedBudget && (
-  <div className="financial-modal-overlay">
-    <div className="financial-modal">
-      <h2>Budget Preview</h2>
 
-      <p><b>Budget Name:</b> {selectedBudget.name}</p>
-      <p><b>Version:</b> {selectedBudget.version}</p>
-      <p><b>Status:</b> {selectedBudget.status}</p>
-      <p><b>Study Name:</b> {selectedBudget.studyName}</p>
-
-      <div className="financial-modal-actions">
-        <button
-          type="button"
-          onClick={() => setShowBudgetPreview(false)}
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-)}
 
 <td>{budget.version}</td>
                 </tr>
@@ -945,6 +1171,7 @@ if (editBudgetId !== null) {
           </tbody>
         </table>
       </div>
+      
 
       <div className="financial-pagination">
         <button
@@ -969,7 +1196,170 @@ if (editBudgetId !== null) {
           Next
         </button>
       </div>
+      </>
+      )}
+      {activeTab==="grants" && (
+<section className="payment-table">
 
+<h3>Investigator Grants</h3>
+
+<table>
+
+<thead>
+<tr>
+<th>Investigator</th>
+<th>Grant Type</th>
+<th>Amount</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr>
+<td>Dr. John</td>
+<td>Research Grant</td>
+<td>{formatCurrency(50000)}</td>
+<td>Approved</td>
+</tr>
+
+</tbody>
+
+</table>
+
+
+
+</section>
+)}
+        {activeTab==="site" && (
+<section className="payment-table">
+
+  <h3>Site Management</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Site</th>
+        <th>Budget</th>
+        <th>Spent</th>
+        <th>Remaining</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr>
+        <td>Apollo Hospital</td>
+        <td>$250000</td>
+        <td>$120000</td>
+        <td>$130000</td>
+        <td>Healthy</td>
+      </tr>
+    </tbody>
+  </table>
+
+</section>
+)}
+{activeTab === "subjects" && (
+  <section className="payment-table">
+
+    <h3>Subject Costs</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Visit</th>
+          <th>Procedure</th>
+          <th>Cost</th>
+          <th>Quantity</th>
+          <th>Total Cost</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {subjectCosts.map((item) => (
+          <tr key={item.id}>
+            <td>{item.subject}</td>
+            <td>{item.visit}</td>
+            <td>{item.procedure}</td>
+
+            <td>{formatCurrency(item.cost)}</td>
+
+            <td>{item.quantity}</td>
+
+            <td>
+              {formatCurrency(item.cost * item.quantity)}
+            </td>
+
+            <td>{item.status}</td>
+            <td>
+  <button
+    className="financial-action-btn"
+    onClick={() => handleEditSubjectCost(item)}
+  >
+    Edit
+  </button>
+
+  <button
+    className="financial-delete-btn"
+    onClick={() => handleDeleteSubjectCost(item.id)}
+  >
+    Delete
+  </button>
+</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+<div className="financial-summary-card">
+  <h3>
+    Grand Total: {formatCurrency(grandTotal)}
+  </h3>
+</div>
+  </section>
+)}
+{activeTab==="summary" && (
+<section className="financial-summary">
+
+  <h3>Financial Summary</h3>
+
+  <p>
+    Grand Total :
+    <b>{formatCurrency(totalBudget)}</b>
+  </p>
+
+  <p>
+    Payments :
+    <b>{formatCurrency(totalPayments)}</b>
+  </p>
+
+  <p>
+    Receivables :
+    <b>
+      {formatCurrency(
+        receivableList.reduce(
+          (sum, item) => sum + Number(item.amount),
+          0
+        )
+      )}
+    </b>
+  </p>
+
+  <p>
+    Invoices :
+    <b>{invoiceList.length}</b>
+  </p>
+
+  <p>
+    Net Budget Cost :
+<b>{formatCurrency(netBudgetCost)}</b>
+  </p>
+
+</section>
+)}
       <section className="payment-table">
         <h3>Study Payments</h3>
 
@@ -1115,7 +1505,7 @@ if (editBudgetId !== null) {
           <tbody>
             {filteredInvoiceList.length === 0 ? (
               <tr>
-                <td colSpan="7">No invoices found.</td>
+                <td colSpan="11">No invoices found.</td>
               </tr>
             ) : (
               filteredInvoiceList.map((invoice) => (
@@ -1626,6 +2016,121 @@ Version
         </div>
       )}
 
+      {showSubjectCostModal && (
+  <div className="financial-modal-overlay">
+    <div className="financial-modal">
+
+      <h2>New Subject Cost</h2>
+
+      <div className="financial-form">
+
+        <label>Subject ID</label>
+        <input
+          type="text"
+          value={subjectCostForm.subjectId}
+          onChange={(e)=>
+            setSubjectCostForm({
+              ...subjectCostForm,
+              subjectId:e.target.value
+            })
+          }
+        />
+
+        <label>Visit</label>
+        <input
+          type="text"
+          value={subjectCostForm.visit}
+          onChange={(e)=>
+            setSubjectCostForm({
+              ...subjectCostForm,
+              visit:e.target.value
+            })
+          }
+        />
+
+        <label>Procedure</label>
+        <input
+          type="text"
+          value={subjectCostForm.procedure}
+          onChange={(e)=>
+            setSubjectCostForm({
+              ...subjectCostForm,
+              procedure:e.target.value
+            })
+          }
+        />
+
+        <label>Cost</label>
+        <input
+          type="number"
+          value={subjectCostForm.cost}
+          onChange={(e)=>
+            setSubjectCostForm({
+              ...subjectCostForm,
+              cost:e.target.value
+            })
+          }
+        />
+
+        <label>Quantity</label>
+        <input
+          type="number"
+          value={subjectCostForm.quantity}
+          onChange={(e)=>
+            setSubjectCostForm({
+              ...subjectCostForm,
+              quantity:e.target.value
+            })
+          }
+        />
+
+        <label>Total</label>
+
+<input
+  readOnly
+  value={
+    Number(subjectCostForm.cost || 0) *
+    Number(subjectCostForm.quantity || 0)
+  }
+/>
+
+        <label>Status</label>
+        <select
+          value={subjectCostForm.status}
+          onChange={(e)=>
+            setSubjectCostForm({
+              ...subjectCostForm,
+              status:e.target.value
+            })
+          }
+        >
+          <option>Pending</option>
+          <option>Completed</option>
+        </select>
+
+      </div>
+
+      <div className="financial-modal-actions">
+
+        <button
+          onClick={resetSubjectCostModal}
+        >
+          Cancel
+        </button>
+
+       <button
+  onClick={handleSaveSubjectCost}
+>
+  Save
+</button>
+
+      </div>
+
+    </div>
+  </div>
+)}
+
+
       {showDeleteModal && (
         <div className="financial-modal-overlay">
           <div className="financial-modal" role="dialog" aria-modal="true">
@@ -1662,7 +2167,45 @@ Version
           </div>
         </div>
       )}
+      
+      {showBudgetPreview && selectedBudget && (
+  <div className="financial-modal-overlay">
+    <div className="financial-modal">
+      <h2>Budget Preview</h2>
+
+      <p><b>Budget Name:</b> {selectedBudget.name}</p>
+      <p><b>Version:</b> {selectedBudget.version}</p>
+      <p><b>Status:</b> {selectedBudget.status}</p>
+      <p><b>Study Name:</b> {selectedBudget.studyName}</p>
+      <p><b>Category:</b> {selectedBudget.category}</p>
+
+<p><b>Cost Per Unit:</b> {formatCurrency(selectedBudget.costPerUnit)}</p>
+
+<p><b>Units:</b> {selectedBudget.units}</p>
+
+<p><b>Total Cost:</b> {formatCurrency(selectedBudget.totalCost)}</p>
+
+<p><b>Currency:</b> {selectedBudget.currency}</p>
+
+<p><b>Start Date:</b> {selectedBudget.startDate}</p>
+
+<p><b>End Date:</b> {selectedBudget.endDate}</p>
+
+<p><b>Description:</b> {selectedBudget.description}</p>
+
+      <div className="financial-modal-actions">
+        <button
+          type="button"
+          onClick={() => setShowBudgetPreview(false)}
+        >
+          Close
+        </button>
+      </div>
     </div>
+  </div>
+)}
+    </div>
+    
   );
 }
 
