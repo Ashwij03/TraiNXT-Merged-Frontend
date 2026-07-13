@@ -111,7 +111,7 @@
 
 .financial-page .budget-table th {
   cursor: pointer;
-  user-select: none;
+  
 }
 
 .financial-page .budget-table th:hover {
