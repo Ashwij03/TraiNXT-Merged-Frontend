@@ -66,7 +66,7 @@ function Studies() {
   const [sponsorFilter, setSponsorFilter] = useState("");
   const [indicationFilter, setIndicationFilter] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
-  const [sortBy, setSortBy] = useState("name");
+  const [sortBy, setSortBy] = useState("studyId");
   const [currentPage, setCurrentPage] = useState(1);
 
   const [viewMode, setViewMode] = useState(() => {
@@ -162,7 +162,7 @@ function Studies() {
 
       default:
         return result.sort((a, b) =>
-          String(a.name || "").localeCompare(String(b.name || ""))
+          String(a.studyId || "").localeCompare(String(b.studyId || ""))
         );
     }
   }, [
@@ -472,8 +472,8 @@ function Studies() {
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value)}
             >
-              <option value="name">Study Name</option>
               <option value="studyId">Study ID</option>
+              <option value="name">Study Name</option>
               <option value="sponsor">Sponsor</option>
               <option value="startDate">Start Date</option>
             </select>

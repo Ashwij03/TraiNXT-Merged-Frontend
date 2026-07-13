@@ -26,7 +26,7 @@ import StudyHealthSummary from "../../../Components/studies/StudyHealthSummary";
 import useStudyOverview from "../../../hooks/useStudyOverview";
 import StudyFinancials from "../../Sponsor/Financials/StudyFinancials";
 import AlertsPanel from "../../../Components/dashboard/AlertsPanel";
-import SubjectProfile from "../subjects/SubjectProfile";
+// import SubjectProfile from "../subjects/SubjectProfile";
 import useStudiesDashboard from "../../../hooks/useStudiesDashboard";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
 import {
@@ -68,7 +68,7 @@ function StudyDashboard() {
   const [searchParams] = useSearchParams();
 
   const [activeTab, setActiveTab] = useState(
-    searchParams.get("tab") || "Overview"
+    searchParams.get("tab") || "Overview",
   );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -81,7 +81,7 @@ function StudyDashboard() {
 
     if (tabFromUrl) {
       setActiveTab((currentTab) =>
-        currentTab === tabFromUrl ? currentTab : tabFromUrl
+        currentTab === tabFromUrl ? currentTab : tabFromUrl,
       );
     }
   }, [searchParams]);
@@ -114,7 +114,7 @@ function StudyDashboard() {
         study?.studyId ??
         study?.title ??
         study?.name ??
-        ""
+        "",
     );
   }, []);
 
@@ -148,7 +148,7 @@ function StudyDashboard() {
 
       return possibleKeys.includes(currentStudyKey);
     },
-    [currentStudy, currentStudyKey]
+    [currentStudy, currentStudyKey],
   );
 
   const studySubjectsFromStorage = useMemo(() => {
@@ -194,7 +194,7 @@ function StudyDashboard() {
 
   const filteredPendingComments = useMemo(() => {
     return safeArray(data?.pendingComments || data?.pendingQueries).filter(
-      matchesCurrentStudy
+      matchesCurrentStudy,
     );
   }, [
     data?.pendingComments,
@@ -226,11 +226,7 @@ function StudyDashboard() {
       comments: filteredPendingComments.length,
       visits: filteredUpcomingVisits.length,
     };
-  }, [
-    filteredRecentSubjects,
-    filteredPendingComments,
-    filteredUpcomingVisits,
-  ]);
+  }, [filteredRecentSubjects, filteredPendingComments, filteredUpcomingVisits]);
 
   const handleRefreshStudy = () => {
     setIsRefreshing(true);
@@ -253,7 +249,7 @@ function StudyDashboard() {
         accessType: "Edit Access",
         notes: "Study overview edit request",
       },
-      currentUser
+      currentUser,
     );
 
     alert("Edit permission request submitted for admin review.");
@@ -519,9 +515,9 @@ function StudyDashboard() {
               <StudySubjects setActiveTab={setActiveTab} />
             )}
 
-            {activeTab === "SubjectProfile" && (
+            {/* {activeTab === "SubjectProfile" && (
               <SubjectProfile setActiveTab={setActiveTab} />
-            )}
+            )} */}
 
             {activeTab === "Planning" && <StudyPlanning />}
 
@@ -537,14 +533,10 @@ function StudyDashboard() {
 
             {activeTab === "Reports" && <StudyReports />}
 
-            {activeTab === "eISF" && (
-  <EISFWorkspace studyCode={id} />
-)}
+            {activeTab === "eISF" && <EISFWorkspace studyCode={id} />}
             {activeTab === "Clinical Sites" && (
-              <ClinicalSitesDashboard
-              study={currentStudy}
-              />
-        )}
+              <ClinicalSitesDashboard study={currentStudy} />
+            )}
 
             {activeTab === "Financials" && (
               <div className="study-financials-tab">
@@ -559,52 +551,6 @@ function StudyDashboard() {
             {activeTab === "Others" && (
               <div className="module-card">
                 <h2>Others</h2>
-
-        {activeTab === "Subjects" && (
-          <StudySubjects setActiveTab={setActiveTab} />
-        )}
-
-        {activeTab === "SubjectProfile" && (
-          <SubjectProfile setActiveTab={setActiveTab} />
-        )}
-
-        {activeTab === "Study Folder" && (
-          <StudyDocuments />
-        )}
-
-        {activeTab === "Comments" && (
-          <StudyComments />
-        )}
-
-        {activeTab === "Logs" && (
-          <StudyLogsTab />
-        )}
-
-        {activeTab === "Regulatory" && (
-          <StudyRegulatory />
-        )}
-
-        {activeTab === "Reports" && (
-          <StudyReports />
-        )}
-    
-
-        
-{activeTab === "Financials" && (
-  <StudyFinancials />
-)}
-        {activeTab === "Others" && (
-          <div className="module-card">
-            <h2>Others</h2>
-            <DocumentFolderManager
-              sectionId="others"
-              contextKey={id || "default"}
-              title="Others"
-              studyCode={id}
-              layout="vertical"
-            />
-          </div>
-        )}
                 <DocumentFolderManager
                   sectionId="others"
                   contextKey={id || "default"}
@@ -807,9 +753,7 @@ function StudyDashboard() {
           )}
         </>
       )}
-      {activeTab === "Activity" && (
-        <StudyActivity />
-      )}
+      {activeTab === "Activity" && <StudyActivity />}
     </DashboardLayout>
   );
 }
