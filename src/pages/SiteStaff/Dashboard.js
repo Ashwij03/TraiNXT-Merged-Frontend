@@ -97,9 +97,9 @@ function SiteStaffDashboard() {
           <QuickActions
             actions={[
               {
-                icon: "👥",
-                label: "Subjects",
-                path: "/subjects"
+                icon: "📁",
+                label: "Studies",
+                path: "/studies"
               },
               {
                 icon: "🔍",

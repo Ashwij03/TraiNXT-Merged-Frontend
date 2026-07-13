@@ -103,7 +103,27 @@ export function setStoredStudyFilter(value) {
 }
 
 export function getStoredSubjectFilter() {
-  return getStoredValue(SELECTED_SUBJECT_KEY);
+  const raw = getStoredValue(SELECTED_SUBJECT_KEY);
+
+  if (!raw) {
+    return "";
+  }
+
+  // The "selectedSubject" key is also used elsewhere in the app (subjects
+  // workspace, sidebar navigation, PI/CRO pages) to store a full subject
+  // object (e.g. { id, studyId }) rather than a plain id string. Support
+  // both shapes so the header filter stays in sync no matter who wrote it.
+  try {
+    const parsed = JSON.parse(raw);
+
+    if (parsed && typeof parsed === "object") {
+      return String(parsed.id || parsed.subjectId || "");
+    }
+  } catch {
+    // Not JSON — it's already a plain subject id string.
+  }
+
+  return raw;
 }
 
 export function setStoredSubjectFilter(value) {
