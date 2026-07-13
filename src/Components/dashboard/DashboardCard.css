@@ -4,7 +4,6 @@
   border-radius: var(--tnxt-radius-lg);
   padding: 20px;
   box-shadow: var(--tnxt-shadow-card);
-  height: 100%;
   min-width: 0;
   overflow: hidden;
   display: flex;
@@ -24,14 +23,13 @@
 }
 
 .dashboard-widget-body {
-  flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
 
 .dashboard-widget-body > * {
-  flex: 1;
+  flex: initial;
 }
 
 .upcoming-visits-full-width .dashboard-widget-body > .upcoming-visits-table {

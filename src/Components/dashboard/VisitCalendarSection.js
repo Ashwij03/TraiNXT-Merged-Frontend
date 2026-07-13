@@ -4,22 +4,32 @@ import CalendarWidget from "./CalendarWidget";
 import DataTable from "./DataTable";
 import { mapScheduleToTableRow } from "../../services/visitScheduleService";
 import useVisitSchedules from "../../hooks/useVisitSchedules";
+import "./VisitCalendarSection.css";
 
 const UPCOMING_COLUMNS = [
-  { key: "subjectid", label: "Subject ID", width: "16%" },
-  { key: "visit", label: "Visit", width: "18%" },
-  { key: "date", label: "Date", width: "14%" },
-  { key: "study", label: "Study", width: "16%" },
+  { key: "subjectid", label: "Subject ID", width: "18%" },
+  { key: "visit", label: "Visit", width: "20%" },
+  { key: "date", label: "Date", width: "16%" },
+  { key: "study", label: "Study", width: "18%" },
   { key: "site", label: "Site", width: "14%" },
   { key: "status", label: "Status", width: "14%" }
 ];
 
+/*
+  Unified Calendar + Table card.
+  Task 1 & 4: Both Calendar and Table live in ONE card, table sits BESIDE the
+  calendar, is reduced in size, and has consistent borders and spacing.
+  Task 2 & 3: Clicking a calendar date filters the adjacent table to only show
+  events belonging to that date. Any newly-created study, subject, enrollment,
+  screening, visit or follow-up date automatically appears in the calendar
+  because `useVisitSchedules` reads from the same live services and re-emits
+  on `SCHEDULES_EVENT`.
+*/
 function VisitCalendarSection({
   institutionFilter = "",
   studyCode = "",
   daysAhead = 30,
-  calendarClassName = "calendar-card-compact",
-  tableClassName = "upcoming-visits-full-width"
+  cardClassName = "calendar-table-unified-card"
 }) {
   const { schedules, upcomingWindow, getVisitsForDate } = useVisitSchedules({
     studyCode,
@@ -73,33 +83,38 @@ function VisitCalendarSection({
     : `Upcoming Visits (Next ${daysAhead} Days)`;
 
   return (
-    <div className="dashboard-grid-calendar-requests">
-      <DashboardCard title="Calendar" className={calendarClassName}>
-        <CalendarWidget
-          schedules={schedules}
-          selectedDate={selectedScheduleDate}
-          onDateSelect={handleDateSelect}
-        />
-        {selectedScheduleDate && selectedDaySchedules.length > 0 && (
-          <p className="visit-calendar-day-summary">
-            {selectedDaySchedules.length} visit
-            {selectedDaySchedules.length !== 1 ? "s" : ""} on {selectedScheduleDate}
-          </p>
-        )}
-      </DashboardCard>
+    <DashboardCard
+      title="Visit Calendar & Upcoming Visits"
+      className={cardClassName}
+    >
+      <div className="calendar-table-unified">
+        <div className="calendar-table-unified__calendar">
+          <CalendarWidget
+            schedules={schedules}
+            selectedDate={selectedScheduleDate}
+            onDateSelect={handleDateSelect}
+          />
+          {selectedScheduleDate && selectedDaySchedules.length > 0 && (
+            <p className="visit-calendar-day-summary">
+              {selectedDaySchedules.length} visit
+              {selectedDaySchedules.length !== 1 ? "s" : ""} on {selectedScheduleDate}
+            </p>
+          )}
+        </div>
 
-      <DashboardCard
-        title={tableTitle}
-        className={tableClassName}
-      >
-        <DataTable
-          className="upcoming-visits-table"
-          columns={UPCOMING_COLUMNS}
-          data={upcomingRows}
-          emptyMessage={tableEmptyMessage}
-        />
-      </DashboardCard>
-    </div>
+        <div className="calendar-table-unified__table">
+          <div className="calendar-table-unified__table-title">
+            {tableTitle}
+          </div>
+          <DataTable
+            className="upcoming-visits-table ctms-standard-table"
+            columns={UPCOMING_COLUMNS}
+            data={upcomingRows}
+            emptyMessage={tableEmptyMessage}
+          />
+        </div>
+      </div>
+    </DashboardCard>
   );
 }
 
