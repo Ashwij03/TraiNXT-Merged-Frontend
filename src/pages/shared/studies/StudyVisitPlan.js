@@ -833,7 +833,7 @@ Remove
 
 function ProcedureDetailsTable({ visits, procedures, canEdit, onChange }) {
   const list = Array.isArray(procedures) ? procedures : [];
-const [search, setSearch] = useState("");
+  const [search] = useState("");
   const addProcedure = () => {
     onChange([
       ...list,
