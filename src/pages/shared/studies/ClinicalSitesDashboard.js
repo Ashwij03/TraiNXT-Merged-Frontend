@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 
+import ClinicalSitesMap from "./ClinicalSitesMap";
 
 import "./ClinicalSitesDashboard.css";
 
@@ -12,13 +13,19 @@ function ClinicalSitesDashboard({ study }) {
   const [sites, setSites] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("All Countries");
   const [searchText, setSearchText] = useState("");
+
   const [selectedStatus, setSelectedStatus] = useState("All Status");
-  const [selectedSite, setSelectedSite] = useState("All Sites");
+
+const [selectedSite, setSelectedSite] = useState("All Sites");
+
   const [sortDirection, setSortDirection] = useState("asc");
+
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
+
   const [rankingPage, setRankingPage] = useState(1);
   const rankingRowsPerPage = 10;
+
   const [kpis, setKpis] = useState({
     total: 0,
     totalEnrolled: 0,
@@ -29,8 +36,8 @@ function ClinicalSitesDashboard({ study }) {
 
   useEffect(() => {
     const refresh = () => {
-      setSites(getSites());
-      setKpis(getSiteKPIs());
+      setSites(getSites(study));
+      setKpis(getSiteKPIs(study));
     };
 
     refresh();
@@ -38,7 +45,7 @@ function ClinicalSitesDashboard({ study }) {
     window.addEventListener("sponsor-data-updated", refresh);
 
     return () => window.removeEventListener("sponsor-data-updated", refresh);
-  }, []);
+  }, [study]);
 
   // Whenever a filter changes, jump both tables back to page 1 so we
   // never end up stuck on an empty page after the result set shrinks.
@@ -110,40 +117,15 @@ function ClinicalSitesDashboard({ study }) {
   String(site.status || "")
     .toLowerCase()
     .includes(search);
-
-    // const matchesSearch =
-    //   (site.id || "").toLowerCase().includes(search) ||
-    //   (site.name || "").toLowerCase().includes(search) ||
-    //   (site.account || site.sponsor || "").toLowerCase().includes(search);
-
     return matchesCountry && matchesStatus && matchesSite && matchesSearch;
   });
 
   const sortedSites = [...filteredSites].sort((a, b) => {
-  const valueA = (a.name || "").toLowerCase();
-  const valueB = (b.name || "").toLowerCase();
+  const idA = Number(a.id) || 0;
+  const idB = Number(b.id) || 0;
 
-  if (valueA < valueB) return sortDirection === "asc" ? -1 : 1;
-  if (valueA > valueB) return sortDirection === "asc" ? 1 : -1;
-
-  return 0;
+  return sortDirection === "asc" ? idA - idB : idB - idA;
 });
-
-//   const sortedSites = [...filteredSites].sort((a, b) => {
-//     let valueA = a[sortField] ?? "";
-//     let valueB = b[sortField] ?? "";
-
-//     if (typeof valueA === "string") {
-//       valueA = valueA.toLowerCase();
-//       valueB = valueB.toLowerCase();
-//     }
-
-//     if (valueA < valueB) return sortDirection === "asc" ? -1 : 1;
-
-//     if (valueA > valueB) return sortDirection === "asc" ? 1 : -1;
-
-//     return 0;
-//   });
 
   const totalPages = Math.max(1, Math.ceil(sortedSites.length / rowsPerPage));
 
@@ -291,13 +273,6 @@ function ClinicalSitesDashboard({ study }) {
 
                   <td>{site.sponsor || study?.sponsor || "—"}</td>
 
-
-                  {/* <td>{site.name}</td>
-
-                  <td>
-                    {site.account || site.sponsor || study?.sponsor || "—"}
-                  </td> */}
-
                   <td>{site.status}</td>
 
                   <td>{site.enrolled ?? site.subjectsEnrolled ?? 0}</td>
@@ -392,12 +367,12 @@ function ClinicalSitesDashboard({ study }) {
         )}
         </div>
         <div className="clinical-sites-card">
-            <h3>Interactive Map</h3>
+    <h3>Interactive Map</h3>
 
-            <div className="clinical-sites-map">
-                Interactive Map component will be       integrated here.
-            </div>
-        </div>
+    <ClinicalSitesMap
+        sites={filteredSites}
+    />
+</div>
     </div>
   );
 }
