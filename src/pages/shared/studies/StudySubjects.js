@@ -413,11 +413,14 @@ function StudySubjects({
 
       <div className="subject-search-bar">
         <input
+          id="subject-search"
+          name="subjectSearch"
           type="search"
           placeholder="Search by Subject ID, initials, PI, site, status, visit, date..."
           value={searchTerm}
           onChange={(event) => setSearchTerm(event.target.value)}
           aria-label="Search subjects"
+          autoComplete="off"
         />
       </div>
 

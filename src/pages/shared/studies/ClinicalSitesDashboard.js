@@ -208,60 +208,68 @@ function ClinicalSitesDashboard({ study }) {
         />
       </div>
 
-      <div className="clinical-sites-card">
-  <h3>Clinical Site Filters</h3>
+     <div className="clinical-sites-card">
+       <h3>Clinical Site Filters</h3>
 
-  <div className="clinical-sites-toolbar">
+       <div className="clinical-sites-toolbar">
+         <input
+           id="clinical-site-search"
+           name="clinicalSiteSearch"
+           type="text"
+           placeholder="Search Site ID, Site Name, Country, Sponsor or Status"
+           value={searchText}
+           onChange={(e) => setSearchText(e.target.value)}
+         />
 
-    <input
-      type="text"
-      placeholder="Search Site ID, Site Name, Country, Sponsor or Status"
-      value={searchText}
-      onChange={(e) => setSearchText(e.target.value)}
-    />
+         <select
+           id="clinical-site-country"
+           name="clinicalSiteCountry"
+           value={selectedCountry}
+           onChange={(e) => setSelectedCountry(e.target.value)}
+         >
+           {countries.map((country) => (
+             <option key={country} value={country}>
+               {country}
+             </option>
+           ))}
+         </select>
 
-    <select
-      value={selectedCountry}
-      onChange={(e) => setSelectedCountry(e.target.value)}
-    >
-      {countries.map((country) => (
-        <option key={country} value={country}>
-          {country}
-        </option>
-      ))}
-    </select>
+         <select
+           id="clinical-site-status"
+           name="clinicalSiteStatus"
+           value={selectedStatus}
+           onChange={(e) => setSelectedStatus(e.target.value)}
+         >
+           {statuses.map((status) => (
+             <option key={status} value={status}>
+               {status}
+             </option>
+           ))}
+         </select>
 
-    <select
-      value={selectedStatus}
-      onChange={(e) => setSelectedStatus(e.target.value)}
-    >
-      {statuses.map((status) => (
-        <option key={status} value={status}>
-          {status}
-        </option>
-      ))}
-    </select>
+         <select
+           id="clinical-site-filter"
+           name="clinicalSiteFilter"
+           value={selectedSite}
+           onChange={(e) => setSelectedSite(e.target.value)}
+         >
+           {siteNames.map((siteName) => (
+             <option key={siteName} value={siteName}>
+               {siteName}
+             </option>
+           ))}
+         </select>
 
-    <select
-      value={selectedSite}
-      onChange={(e) => setSelectedSite(e.target.value)}
-    >
-      {siteNames.map((siteName) => (
-        <option key={siteName} value={siteName}>
-          {siteName}
-        </option>
-      ))}
-    </select>
-
-    <select
-      value={sortDirection}
-      onChange={(e) => setSortDirection(e.target.value)}
-    >
-      <option value="asc">Ascending</option>
-      <option value="desc">Descending</option>
-    </select>
-
-  </div>
+         <select
+           id="clinical-site-sort-direction"
+           name="clinicalSiteSortDirection"
+           value={sortDirection}
+           onChange={(e) => setSortDirection(e.target.value)}
+         >
+           <option value="asc">Ascending</option>
+           <option value="desc">Descending</option>
+         </select>
+       </div>
 </div>
 
       <div className="clinical-sites-card">
