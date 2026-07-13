@@ -22,7 +22,7 @@ import {
 
 import "./Studies.css";
 
-const STUDIES_PER_PAGE = 10;
+const STUDIES_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 
 const initialForm = {
   code: "",
@@ -66,8 +66,9 @@ function Studies() {
   const [sponsorFilter, setSponsorFilter] = useState("");
   const [indicationFilter, setIndicationFilter] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
-  const [sortBy, setSortBy] = useState("name");
+  const [sortBy, setSortBy] = useState("studyId");
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem("studiesViewMode") || "grid";
@@ -162,7 +163,7 @@ function Studies() {
 
       default:
         return result.sort((a, b) =>
-          String(a.name || "").localeCompare(String(b.name || ""))
+          String(a.studyId || "").localeCompare(String(b.studyId || ""))
         );
     }
   }, [
@@ -177,7 +178,7 @@ function Studies() {
 
   const totalPages = Math.max(
     1,
-    Math.ceil(filteredStudies.length / STUDIES_PER_PAGE)
+    Math.ceil(filteredStudies.length / pageSize)
   );
 
   useEffect(() => {
@@ -190,6 +191,7 @@ function Studies() {
     countryFilter,
     sortBy,
     viewMode,
+    pageSize,
   ]);
 
   useEffect(() => {
@@ -211,21 +213,21 @@ function Studies() {
   }, [loadStudies]);
 
   const paginatedStudies = useMemo(() => {
-    const startIndex = (currentPage - 1) * STUDIES_PER_PAGE;
+    const startIndex = (currentPage - 1) * pageSize;
 
     return filteredStudies.slice(
       startIndex,
-      startIndex + STUDIES_PER_PAGE
+      startIndex + pageSize
     );
-  }, [filteredStudies, currentPage]);
+  }, [filteredStudies, currentPage, pageSize]);
 
   const pageStart =
     filteredStudies.length === 0
       ? 0
-      : (currentPage - 1) * STUDIES_PER_PAGE + 1;
+      : (currentPage - 1) * pageSize + 1;
 
   const pageEnd = Math.min(
-    currentPage * STUDIES_PER_PAGE,
+    currentPage * pageSize,
     filteredStudies.length
   );
 
@@ -312,6 +314,21 @@ function Studies() {
         </div>
 
         <div className="studies-pagination-controls">
+          <label className="studies-page-size">
+            Rows
+            <select
+              value={pageSize}
+              onChange={(event) => setPageSize(Number(event.target.value))}
+              aria-label="Rows per page"
+            >
+              {STUDIES_PAGE_SIZE_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+
           <button
             type="button"
             className="pagination-btn"
@@ -391,16 +408,6 @@ function Studies() {
             <h1>My Studies</h1>
             <p>Manage clinical studies and open study dashboards.</p>
           </div>
-
-          {canCreateStudy && (
-            <button
-              type="button"
-              className="add-study-btn"
-              onClick={() => setFormOpen(true)}
-            >
-              + Add Study
-            </button>
-          )}
         </div>
 
         <div className="studies-toolbar">
@@ -472,40 +479,11 @@ function Studies() {
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value)}
             >
-              <option value="name">Study Name</option>
               <option value="studyId">Study ID</option>
+              <option value="name">Study Name</option>
               <option value="sponsor">Sponsor</option>
               <option value="startDate">Start Date</option>
             </select>
-          </div>
-
-          <div className="studies-view-toggle">
-            <button
-              type="button"
-              className={viewMode === "grid" ? "active" : ""}
-              onClick={() => handleViewChange("grid")}
-            >
-              <FiGrid />
-              <span>Grid</span>
-            </button>
-
-            <button
-              type="button"
-              className={viewMode === "list" ? "active" : ""}
-              onClick={() => handleViewChange("list")}
-            >
-              <FiList />
-              <span>List</span>
-            </button>
-
-            <button
-              type="button"
-              className={viewMode === "table" ? "active" : ""}
-              onClick={() => handleViewChange("table")}
-            >
-              <FiColumns />
-              <span>Table</span>
-            </button>
           </div>
         </div>
 
@@ -516,6 +494,47 @@ function Studies() {
             subtitle="Accessible Studies"
             icon={<FiFolder />}
           />
+
+          <div className="studies-summary-actions">
+            <div className="studies-view-toggle">
+              <button
+                type="button"
+                className={viewMode === "grid" ? "active" : ""}
+                onClick={() => handleViewChange("grid")}
+              >
+                <FiGrid />
+                <span>Grid</span>
+              </button>
+
+              <button
+                type="button"
+                className={viewMode === "list" ? "active" : ""}
+                onClick={() => handleViewChange("list")}
+              >
+                <FiList />
+                <span>List</span>
+              </button>
+
+              <button
+                type="button"
+                className={viewMode === "table" ? "active" : ""}
+                onClick={() => handleViewChange("table")}
+              >
+                <FiColumns />
+                <span>Table</span>
+              </button>
+            </div>
+
+            {canCreateStudy && (
+              <button
+                type="button"
+                className="add-study-btn"
+                onClick={() => setFormOpen(true)}
+              >
+                + Add Study
+              </button>
+            )}
+          </div>
         </div>
 
         {filteredStudies.length === 0 && (

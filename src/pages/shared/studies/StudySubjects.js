@@ -1,8 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FiArrowLeft, FiFolder, FiPlus } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiChevronLeft,
+  FiChevronRight,
+  FiEdit2,
+  FiFolder,
+  FiPlus,
+  FiTrash2,
+} from "react-icons/fi";
 import DocumentFolderManager from "../../../Components/common/DocumentFolderManager";
-import { canAddSubject } from "../../../utils/contentAccess";
+import {
+  canAddSubject,
+  canEditSubjectContent,
+} from "../../../utils/contentAccess";
 import {
   getCurrentUser,
   getEffectiveRole,
@@ -13,6 +24,7 @@ import "./StudySubjects.css";
 
 const SUBJECTS_STORAGE_KEY = "subjectsByStudy";
 const SELECTED_SUBJECT_STORAGE_KEY = "selectedSubject";
+const SUBJECTS_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 
 const emptySubjectForm = {
   id: "",
@@ -168,9 +180,13 @@ function StudySubjects({
   const [showSubjectModal, setShowSubjectModal] = useState(false);
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
   const [newSubject, setNewSubject] = useState(emptySubjectForm);
+  const [editingSubjectId, setEditingSubjectId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const currentUser = getCurrentUser();
   const showAddSubject = canAddSubject(currentUser);
+  const canModifySubjects = canEditSubjectContent(currentUser);
 
   useEffect(() => {
     const refreshSubjects = () => {
@@ -227,6 +243,33 @@ function StudySubjects({
     });
   }, [searchTerm, subjectsData]);
 
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredSubjects.length / pageSize)
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, pageSize, studyId]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const paginatedSubjects = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredSubjects.slice(startIndex, startIndex + pageSize);
+  }, [filteredSubjects, currentPage, pageSize]);
+
+  const pageStart =
+    filteredSubjects.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const pageEnd = Math.min(
+    currentPage * pageSize,
+    filteredSubjects.length
+  );
+
   const selectedSubject = useMemo(() => {
     if (!selectedSubjectId) {
       return null;
@@ -250,7 +293,7 @@ function StudySubjects({
     );
   };
 
-  const handleAddSubject = () => {
+  const handleSaveSubject = () => {
     const subjectId = newSubject.id.trim();
 
     if (!studyId || !subjectId) {
@@ -258,44 +301,132 @@ function StudySubjects({
       return;
     }
 
-    const subjectAlreadyExists = subjectsData.some(
+    const isEditing = Boolean(editingSubjectId);
+
+    const duplicateExists = subjectsData.some(
       (subject) =>
-        normalizeValue(subject.id) === normalizeValue(subjectId)
+        normalizeValue(subject.id) === normalizeValue(subjectId) &&
+        normalizeValue(subject.id) !== normalizeValue(editingSubjectId || "")
     );
 
-    if (subjectAlreadyExists) {
+    if (duplicateExists) {
       window.alert("A subject with this Subject ID already exists.");
       return;
     }
 
-    const subjectToAdd = {
-      ...newSubject,
-      id: subjectId,
-      initials: newSubject.initials.trim(),
-      pi: newSubject.pi.trim(),
-      site: newSubject.site.trim(),
-      studyId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    const now = new Date().toISOString();
+
+    let updatedSubjectsForStudy;
+
+    if (isEditing) {
+      updatedSubjectsForStudy = subjectsData.map((subject) => {
+        if (normalizeValue(subject.id) !== normalizeValue(editingSubjectId)) {
+          return subject;
+        }
+
+        return {
+          ...subject,
+          ...newSubject,
+          id: subjectId,
+          initials: newSubject.initials.trim(),
+          pi: newSubject.pi.trim(),
+          site: newSubject.site.trim(),
+          studyId,
+          updatedAt: now,
+        };
+      });
+    } else {
+      const subjectToAdd = {
+        ...newSubject,
+        id: subjectId,
+        initials: newSubject.initials.trim(),
+        pi: newSubject.pi.trim(),
+        site: newSubject.site.trim(),
+        studyId,
+        createdAt: now,
+        updatedAt: now,
+      };
+      updatedSubjectsForStudy = [...subjectsData, subjectToAdd];
+    }
 
     saveSubjects({
       ...subjectsByStudy,
-      [studyId]: [...subjectsData, subjectToAdd],
+      [studyId]: updatedSubjectsForStudy,
     });
 
-    // notifySubjectCreated expects { subjectId, studyCode, addedByRole },
-    // while this page's own subject record uses { id, studyId } — adapt the
-    // field names here rather than renaming the stored record shape used by
-    // every other subject reader in the app.
-    notifySubjectCreated({
-      subjectId: subjectToAdd.id,
-      studyCode: studyId,
-      addedByRole: ROLE_LABELS[getEffectiveRole(currentUser)] || getEffectiveRole(currentUser),
-    });
+    if (!isEditing) {
+      // notifySubjectCreated expects { subjectId, studyCode, addedByRole },
+      // while this page's own subject record uses { id, studyId } — adapt the
+      // field names here rather than renaming the stored record shape used by
+      // every other subject reader in the app.
+      notifySubjectCreated({
+        subjectId,
+        studyCode: studyId,
+        addedByRole:
+          ROLE_LABELS[getEffectiveRole(currentUser)] ||
+          getEffectiveRole(currentUser),
+      });
+    }
 
     setNewSubject(emptySubjectForm);
+    setEditingSubjectId(null);
     setShowSubjectModal(false);
+  };
+
+  const openAddSubjectModal = () => {
+    setEditingSubjectId(null);
+    setNewSubject(emptySubjectForm);
+    setShowSubjectModal(true);
+  };
+
+  const openEditSubjectModal = (subject) => {
+    if (!subject) {
+      return;
+    }
+
+    setEditingSubjectId(subject.id);
+    setNewSubject({
+      id: subject.id || "",
+      initials: subject.initials || "",
+      status: subject.status || "",
+      screeningDate: subject.screeningDate || "",
+      enrollmentDate: subject.enrollmentDate || "",
+      currentVisit: subject.currentVisit || "",
+      pi: subject.pi || "",
+      site: subject.site || "",
+    });
+    setShowSubjectModal(true);
+  };
+
+  const handleDeleteSubject = (subject) => {
+    if (!subject) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete subject ${subject.id}? This cannot be undone.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const updatedSubjectsForStudy = subjectsData.filter(
+      (item) => normalizeValue(item.id) !== normalizeValue(subject.id)
+    );
+
+    saveSubjects({
+      ...subjectsByStudy,
+      [studyId]: updatedSubjectsForStudy,
+    });
+
+    if (
+      selectedSubjectId &&
+      normalizeValue(selectedSubjectId) === normalizeValue(subject.id)
+    ) {
+      localStorage.removeItem(SELECTED_SUBJECT_STORAGE_KEY);
+      setSelectedSubjectId(null);
+    }
   };
 
   const openSubjectFolder = (subject, shouldNavigate = false) => {
@@ -403,7 +534,7 @@ function StudySubjects({
           <button
             type="button"
             className="add-subject-btn"
-            onClick={() => setShowSubjectModal(true)}
+            onClick={openAddSubjectModal}
           >
             <FiPlus />
             Add Subject
@@ -434,12 +565,13 @@ function StudySubjects({
                 <th>Screening</th>
                 <th>Enrollment</th>
                 <th>Current Visit</th>
+                {canModifySubjects && <th>Actions</th>}
               </tr>
             </thead>
 
             <tbody>
-              {filteredSubjects.length > 0 ? (
-                filteredSubjects.map((subject) => (
+              {paginatedSubjects.length > 0 ? (
+                paginatedSubjects.map((subject) => (
                   <tr key={subject.id}>
                     <td>{subject.id || "—"}</td>
                     <td>{subject.initials || "—"}</td>
@@ -449,12 +581,36 @@ function StudySubjects({
                     <td>{subject.screeningDate || "—"}</td>
                     <td>{subject.enrollmentDate || "—"}</td>
                     <td>{subject.currentVisit || "—"}</td>
+                    {canModifySubjects && (
+                      <td>
+                        <div className="subject-row-actions">
+                          <button
+                            type="button"
+                            className="subject-action-btn subject-action-edit"
+                            onClick={() => openEditSubjectModal(subject)}
+                            aria-label={`Edit subject ${subject.id}`}
+                            title="Edit subject"
+                          >
+                            <FiEdit2 />
+                          </button>
+                          <button
+                            type="button"
+                            className="subject-action-btn subject-action-delete"
+                            onClick={() => handleDeleteSubject(subject)}
+                            aria-label={`Delete subject ${subject.id}`}
+                            title="Delete subject"
+                          >
+                            <FiTrash2 />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               ) : (
                 <tr>
                   <td
-                    colSpan="8"
+                    colSpan={canModifySubjects ? 9 : 8}
                     style={{
                       textAlign: "center",
                       padding: "30px",
@@ -480,21 +636,51 @@ function StudySubjects({
 
           {filteredSubjects.length > 0 ? (
             <div className="subjects-folder-grid">
-              {filteredSubjects.map((subject) => (
-                <button
-                  key={subject.id}
-                  type="button"
-                  className="subjects-folder-item"
-                  onClick={() => openSubjectFolder(subject)}
-                >
-                  <FiFolder className="subjects-folder-icon" />
+              {paginatedSubjects.map((subject) => (
+                <div key={subject.id} className="subjects-folder-card">
+                  <button
+                    type="button"
+                    className="subjects-folder-item"
+                    onClick={() => openSubjectFolder(subject)}
+                  >
+                    <FiFolder className="subjects-folder-icon" />
 
-                  <span className="subjects-folder-name">
-                    {subject.id || "Unnamed Subject"}
-                  </span>
+                    <span className="subjects-folder-name">
+                      {subject.id || "Unnamed Subject"}
+                    </span>
 
-                  <small>{subject.status || "No status"}</small>
-                </button>
+                    <small>{subject.status || "No status"}</small>
+                  </button>
+
+                  {canModifySubjects && (
+                    <div className="subjects-folder-actions">
+                      <button
+                        type="button"
+                        className="subject-action-btn subject-action-edit"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          openEditSubjectModal(subject);
+                        }}
+                        aria-label={`Edit subject ${subject.id}`}
+                        title="Edit subject"
+                      >
+                        <FiEdit2 />
+                      </button>
+                      <button
+                        type="button"
+                        className="subject-action-btn subject-action-delete"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleDeleteSubject(subject);
+                        }}
+                        aria-label={`Delete subject ${subject.id}`}
+                        title="Delete subject"
+                      >
+                        <FiTrash2 />
+                      </button>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           ) : (
@@ -505,10 +691,74 @@ function StudySubjects({
         </div>
       )}
 
+      {filteredSubjects.length > 0 && (
+        <div className="subjects-pagination">
+          <div className="subjects-pagination-info">
+            Showing {pageStart}-{pageEnd} of {filteredSubjects.length} subjects
+          </div>
+
+          <div className="subjects-pagination-controls">
+            <label className="subjects-page-size">
+              Rows
+              <select
+                value={pageSize}
+                onChange={(event) => setPageSize(Number(event.target.value))}
+                aria-label="Rows per page"
+              >
+                {SUBJECTS_PAGE_SIZE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <button
+              type="button"
+              className="subjects-pagination-btn"
+              onClick={() =>
+                setCurrentPage((page) => Math.max(1, page - 1))
+              }
+              disabled={currentPage === 1}
+              aria-label="Previous page"
+            >
+              <FiChevronLeft />
+            </button>
+
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+              (pageNumber) => (
+                <button
+                  type="button"
+                  key={pageNumber}
+                  className={`subjects-pagination-btn ${
+                    currentPage === pageNumber ? "active" : ""
+                  }`}
+                  onClick={() => setCurrentPage(pageNumber)}
+                >
+                  {pageNumber}
+                </button>
+              )
+            )}
+
+            <button
+              type="button"
+              className="subjects-pagination-btn"
+              onClick={() =>
+                setCurrentPage((page) => Math.min(totalPages, page + 1))
+              }
+              disabled={currentPage === totalPages}
+              aria-label="Next page"
+            >
+              <FiChevronRight />
+            </button>
+          </div>
+        </div>
+      )}
+
       {showSubjectModal && (
         <div className="subject-modal-overlay">
           <div className="subject-modal">
-            <h3>Add New Subject</h3>
+            <h3>{editingSubjectId ? "Edit Subject" : "Add New Subject"}</h3>
 
             <label htmlFor="subject-id">Subject ID</label>
             <input
@@ -640,8 +890,8 @@ function StudySubjects({
             </select>
 
             <div className="modal-actions">
-              <button type="button" onClick={handleAddSubject}>
-                Add Subject
+              <button type="button" onClick={handleSaveSubject}>
+                {editingSubjectId ? "Save Changes" : "Add Subject"}
               </button>
 
               <button
@@ -649,6 +899,7 @@ function StudySubjects({
                 onClick={() => {
                   setShowSubjectModal(false);
                   setNewSubject(emptySubjectForm);
+                  setEditingSubjectId(null);
                 }}
               >
                 Cancel
