@@ -2,6 +2,8 @@ import React, { useMemo, useState } from "react";
 import "./StudyFinancials.css";
 import { payments, receivables, invoiceData } from "./FinancialMockData";
 
+const FINANCIALS_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+
 const INITIAL_BUDGET_FORM = {
   name: "",
   category: "",
@@ -106,7 +108,7 @@ function StudyFinancials() {
   const [deleteType, setDeleteType] = useState("");
   const [deleteId, setDeleteId] = useState(null);
 
-  const rowsPerPage = 5;
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 
@@ -792,6 +794,24 @@ function StudyFinancials() {
       </div>
 
       <div className="financial-pagination">
+        <label className="financial-page-size">
+          Rows
+          <select
+            value={rowsPerPage}
+            onChange={(event) => {
+              setRowsPerPage(Number(event.target.value));
+              setCurrentPage(1);
+            }}
+            aria-label="Rows per page"
+          >
+            {FINANCIALS_PAGE_SIZE_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </label>
+
         <button
           type="button"
           disabled={safeCurrentPage === 1}

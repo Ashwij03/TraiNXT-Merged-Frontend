@@ -31,14 +31,11 @@ function StudyVisitPlan() {
   const { plans, getPlanDetails, refresh } = useVisitPlans(studyCode);
   const { schedules } = useVisitSchedules({ studyCode });
   const upcomingVisits = useMemo(() => {
-  return [...schedules]
-    .filter((item) => item.date)
-    .sort(
-      (a, b) =>
-        new Date(a.date) - new Date(b.date)
-    )
-    .slice(0, 5);
-}, [schedules]);
+    return [...schedules]
+      .filter((item) => item.date)
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .slice(0, 5);
+  }, [schedules]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showWizard, setShowWizard] = useState(false);
@@ -83,31 +80,31 @@ function StudyVisitPlan() {
     if (!String(draft.name || "").trim()) return;
 
     const saved = saveVisitPlan(studyCode, {
-  id: editingPlanId || undefined,
+      id: editingPlanId || undefined,
 
-  name: draft.name,
-  description: draft.description,
+      name: draft.name,
+      description: draft.description,
 
-  clinicalStudy: draft.clinicalStudy,
-  studyArm: draft.studyArm,
-  version: draft.version,
-  studyVisitGroup: draft.studyVisitGroup,
+      clinicalStudy: draft.clinicalStudy,
+      studyArm: draft.studyArm,
+      version: draft.version,
+      studyVisitGroup: draft.studyVisitGroup,
 
-  status: draft.status,
+      status: draft.status,
 
-  screeningWindow: draft.screeningWindow,
-  enrollmentWindow: draft.enrollmentWindow,
-});
+      screeningWindow: draft.screeningWindow,
+      enrollmentWindow: draft.enrollmentWindow,
+    });
 
     const planId = saved.id;
 
     if (editingPlanId) {
       const existing = getPlanDetails(planId);
       existing.visits.forEach((visit) =>
-        deleteVisitPlanVisit(planId, visit.id)
+        deleteVisitPlanVisit(planId, visit.id),
       );
       existing.procedures.forEach((proc) =>
-        deleteVisitPlanProcedure(planId, proc.id)
+        deleteVisitPlanProcedure(planId, proc.id),
       );
     }
 
@@ -146,7 +143,11 @@ function StudyVisitPlan() {
             />
           )}
           {canEdit && (
-            <button type="button" className="add-study-btn" onClick={openCreateWizard}>
+            <button
+              type="button"
+              className="add-study-btn"
+              onClick={openCreateWizard}
+            >
               + New Visit Plan
             </button>
           )}
@@ -155,68 +156,50 @@ function StudyVisitPlan() {
 
       <div className="visit-plan-filters">
         <div className="visit-plan-upcoming">
+          <h3>Upcoming Visits</h3>
 
-<h3>Upcoming Visits</h3>
+          {upcomingVisits.length === 0 ? (
+            <p>No upcoming visits scheduled.</p>
+          ) : (
+            <>
+              <input
+                type="search"
+                placeholder="Search Procedure..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="planning-search"
+              />
 
-{upcomingVisits.length === 0 ? (
+              <table className="planning-table">
+                <thead>
+                  <tr>
+                    <th>Subject</th>
 
-<p>No upcoming visits scheduled.</p>
+                    <th>Visit</th>
 
-) : (
-  <>
-  <input
-    type="search"
-    placeholder="Search Procedure..."
-    value={search}
-    onChange={(e) => setSearch(e.target.value)}
-    className="planning-search"
-  />
-  
+                    <th>Date</th>
 
-<table className="planning-table">
+                    <th>Status</th>
+                  </tr>
+                </thead>
 
-<thead>
+                <tbody>
+                  {upcomingVisits.map((visit, index) => (
+                    <tr key={visit.id || index}>
+                      <td>{visit.subjectId || "—"}</td>
 
-<tr>
+                      <td>{visit.visit}</td>
 
-<th>Subject</th>
+                      <td>{visit.date}</td>
 
-<th>Visit</th>
-
-<th>Date</th>
-
-<th>Status</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-{upcomingVisits.map((visit,index)=>(
-
-<tr key={visit.id || index}>
-
-<td>{visit.subjectId || "—"}</td>
-
-<td>{visit.visit}</td>
-
-<td>{visit.date}</td>
-
-<td>{visit.status}</td>
-
-</tr>
-
-))}
-
-</tbody>
-
-</table>
-</>
-
-)}
-
-</div>
+                      <td>{visit.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
+        </div>
         <input
           type="search"
           placeholder="Search visit plans..."
@@ -237,9 +220,15 @@ function StudyVisitPlan() {
       {filteredPlans.length === 0 ? (
         <div className="visit-plan-empty">
           <h3>No visit plans yet</h3>
-          <p>Create a visit plan to define study visit templates and procedures.</p>
+          <p>
+            Create a visit plan to define study visit templates and procedures.
+          </p>
           {canEdit && (
-            <button type="button" className="secondary-btn" onClick={openCreateWizard}>
+            <button
+              type="button"
+              className="secondary-btn"
+              onClick={openCreateWizard}
+            >
               Create Visit Plan
             </button>
           )}
@@ -252,7 +241,9 @@ function StudyVisitPlan() {
               <div key={plan.id} className="visit-plan-card">
                 <div className="visit-plan-card-header">
                   <strong>{plan.name}</strong>
-                  <span className={`status-pill status-${String(plan.status || "draft").toLowerCase()}`}>
+                  <span
+                    className={`status-pill status-${String(plan.status || "draft").toLowerCase()}`}
+                  >
                     {plan.status}
                   </span>
                 </div>
@@ -262,7 +253,11 @@ function StudyVisitPlan() {
                   <span>{details.procedures.length} procedures</span>
                 </div>
                 <div className="visit-plan-card-actions">
-                  <button type="button" className="secondary-btn" onClick={() => openEditWizard(plan.id)}>
+                  <button
+                    type="button"
+                    className="secondary-btn"
+                    onClick={() => openEditWizard(plan.id)}
+                  >
                     {canEdit ? "Edit" : "View"}
                   </button>
                   {canEdit && (
@@ -381,7 +376,9 @@ function VisitPlanWizard({
                   rows={3}
                   value={draft.description}
                   disabled={!canEdit}
-                  onChange={(e) => onChange({ ...draft, description: e.target.value })}
+                  onChange={(e) =>
+                    onChange({ ...draft, description: e.target.value })
+                  }
                 />
               </label>
               <label>
@@ -389,7 +386,9 @@ function VisitPlanWizard({
                 <select
                   value={draft.status}
                   disabled={!canEdit}
-                  onChange={(e) => onChange({ ...draft, status: e.target.value })}
+                  onChange={(e) =>
+                    onChange({ ...draft, status: e.target.value })
+                  }
                 >
                   <option>Draft</option>
                   <option>Active</option>
@@ -397,60 +396,60 @@ function VisitPlanWizard({
                 </select>
               </label>
               <label>
-  Clinical Study
-  <input
-    value={draft.clinicalStudy}
-    disabled={!canEdit}
-    onChange={(e) =>
-      onChange({
-        ...draft,
-        clinicalStudy: e.target.value,
-      })
-    }
-  />
-</label>
+                Clinical Study
+                <input
+                  value={draft.clinicalStudy}
+                  disabled={!canEdit}
+                  onChange={(e) =>
+                    onChange({
+                      ...draft,
+                      clinicalStudy: e.target.value,
+                    })
+                  }
+                />
+              </label>
 
-<label>
-  Study Arm
-  <input
-    value={draft.studyArm}
-    disabled={!canEdit}
-    onChange={(e) =>
-      onChange({
-        ...draft,
-        studyArm: e.target.value,
-      })
-    }
-  />
-</label>
+              <label>
+                Study Arm
+                <input
+                  value={draft.studyArm}
+                  disabled={!canEdit}
+                  onChange={(e) =>
+                    onChange({
+                      ...draft,
+                      studyArm: e.target.value,
+                    })
+                  }
+                />
+              </label>
 
-<label>
-  Version
-  <input
-    value={draft.version}
-    disabled={!canEdit}
-    onChange={(e) =>
-      onChange({
-        ...draft,
-        version: e.target.value,
-      })
-    }
-  />
-</label>
+              <label>
+                Version
+                <input
+                  value={draft.version}
+                  disabled={!canEdit}
+                  onChange={(e) =>
+                    onChange({
+                      ...draft,
+                      version: e.target.value,
+                    })
+                  }
+                />
+              </label>
 
-<label>
-  Study Visit Group
-  <input
-    value={draft.studyVisitGroup}
-    disabled={!canEdit}
-    onChange={(e) =>
-      onChange({
-        ...draft,
-        studyVisitGroup: e.target.value,
-      })
-    }
-  />
-</label>
+              <label>
+                Study Visit Group
+                <input
+                  value={draft.studyVisitGroup}
+                  disabled={!canEdit}
+                  onChange={(e) =>
+                    onChange({
+                      ...draft,
+                      studyVisitGroup: e.target.value,
+                    })
+                  }
+                />
+              </label>
             </>
           )}
 
@@ -573,33 +572,33 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
   const addVisit = () => {
     onChange([
       ...list,
-     {
-id:`vv-${Date.now()}`,
+      {
+        id: `vv-${Date.now()}`,
 
-visitTemplateId:`VT-${Date.now()}`,
+        visitTemplateId: `VT-${Date.now()}`,
 
-sequence:list.length+1,
+        sequence: list.length + 1,
 
-visitName:"",
+        visitName: "",
 
-visitType:"Scheduled",
+        visitType: "Scheduled",
 
-windowStart:"",
-windowStartUnit:"Days",
+        windowStart: "",
+        windowStartUnit: "Days",
 
-windowEnd:"",
-windowEndUnit:"Days",
+        windowEnd: "",
+        windowEndUnit: "Days",
 
-dayOffset:"",
+        dayOffset: "",
 
-required:true
-}
+        required: true,
+      },
     ]);
   };
 
   const updateVisit = (id, field, value) => {
     onChange(
-      list.map((item) => (item.id === id ? { ...item, [field]: value } : item))
+      list.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
     );
   };
 
@@ -615,42 +614,34 @@ required:true
         <table className="planning-table">
           <thead>
             <tr>
+              <th>Sequence</th>
 
-<th>Sequence</th>
+              <th>Visit Template ID</th>
 
-<th>Visit Template ID</th>
+              <th>Visit</th>
 
-<th>Visit</th>
+              <th>Visit Type</th>
 
-<th>Visit Type</th>
+              <th>Window Start</th>
 
-<th>Window Start</th>
+              <th>Start Unit</th>
 
-<th>Start Unit</th>
+              <th>Window End</th>
 
-<th>Window End</th>
+              <th>End Unit</th>
 
-<th>End Unit</th>
+              <th>Day Offset</th>
 
-<th>Day Offset</th>
-
-{canEdit && <th>Actions</th>}
-
-</tr>
+              {canEdit && <th>Actions</th>}
+            </tr>
           </thead>
           <tbody>
-            {list.map((visit,index) => (
+            {list.map((visit, index) => (
               <tr key={visit.id}>
                 <td>
-<input
-value={visit.sequence}
-disabled
-/>
-
-</td>
-                <td>
-    {visit.visitTemplateId || visit.id}
-</td>
+                  <input value={visit.sequence} disabled />
+                </td>
+                <td>{visit.visitTemplateId || visit.id}</td>
                 <td>
                   <input
                     value={visit.visitName}
@@ -661,34 +652,26 @@ disabled
                   />
                 </td>
                 <td>
+                  <select
+                    value={visit.visitType || "Scheduled"}
+                    disabled={!canEdit}
+                    onChange={(e) =>
+                      updateVisit(visit.id, "visitType", e.target.value)
+                    }
+                  >
+                    <option>Scheduled</option>
 
-<select
-value={visit.visitType || "Scheduled"}
-disabled={!canEdit}
-onChange={(e)=>
-updateVisit(
-visit.id,
-"visitType",
-e.target.value
-)
-}
->
+                    <option>Screening</option>
 
-<option>Scheduled</option>
+                    <option>Baseline</option>
 
-<option>Screening</option>
+                    <option>Follow-up</option>
 
-<option>Baseline</option>
+                    <option>Unscheduled</option>
 
-<option>Follow-up</option>
-
-<option>Unscheduled</option>
-
-<option>End of Study</option>
-
-</select>
-
-</td>
+                    <option>End of Study</option>
+                  </select>
+                </td>
                 <td>
                   <input
                     type="date"
@@ -700,28 +683,20 @@ e.target.value
                   />
                 </td>
                 <td>
+                  <select
+                    value={visit.windowStartUnit || "Days"}
+                    disabled={!canEdit}
+                    onChange={(e) =>
+                      updateVisit(visit.id, "windowStartUnit", e.target.value)
+                    }
+                  >
+                    <option>Days</option>
 
-<select
-value={visit.windowStartUnit || "Days"}
-disabled={!canEdit}
-onChange={(e)=>
-updateVisit(
-visit.id,
-"windowStartUnit",
-e.target.value
-)
-}
->
+                    <option>Hours</option>
 
-<option>Days</option>
-
-<option>Hours</option>
-
-<option>Weeks</option>
-
-</select>
-
-</td>
+                    <option>Weeks</option>
+                  </select>
+                </td>
                 <td>
                   <input
                     type="date"
@@ -733,28 +708,20 @@ e.target.value
                   />
                 </td>
                 <td>
+                  <select
+                    value={visit.windowEndUnit || "Days"}
+                    disabled={!canEdit}
+                    onChange={(e) =>
+                      updateVisit(visit.id, "windowEndUnit", e.target.value)
+                    }
+                  >
+                    <option>Days</option>
 
-<select
-value={visit.windowEndUnit || "Days"}
-disabled={!canEdit}
-onChange={(e)=>
-updateVisit(
-visit.id,
-"windowEndUnit",
-e.target.value
-)
-}
->
+                    <option>Hours</option>
 
-<option>Days</option>
-
-<option>Hours</option>
-
-<option>Weeks</option>
-
-</select>
-
-</td>
+                    <option>Weeks</option>
+                  </select>
+                </td>
                 <td>
                   <input
                     value={visit.dayOffset ?? ""}
@@ -764,59 +731,57 @@ e.target.value
                     }
                   />
                 </td>
-               {canEdit && (
-<td>
+                {canEdit && (
+                  <td>
+                    <button
+                      type="button"
+                      className="link-btn"
+                      disabled={index === 0}
+                      onClick={() => {
+                        const next = [...list];
 
-<button
-type="button"
-className="link-btn"
-disabled={index===0}
-onClick={()=>{
-const next=[...list];
+                        [next[index - 1], next[index]] = [
+                          next[index],
+                          next[index - 1],
+                        ];
 
-[next[index-1],next[index]]=
-[next[index],next[index-1]];
+                        next.forEach((item, i) => (item.sequence = i + 1));
 
-next.forEach(
-(item,i)=>item.sequence=i+1
-);
+                        onChange(next);
+                      }}
+                    >
+                      ↑
+                    </button>
 
-onChange(next);
-}}
->
-↑
-</button>
+                    <button
+                      type="button"
+                      className="link-btn"
+                      disabled={index === list.length - 1}
+                      onClick={() => {
+                        const next = [...list];
 
-<button
-type="button"
-className="link-btn"
-disabled={index===list.length-1}
-onClick={()=>{
-const next=[...list];
+                        [next[index + 1], next[index]] = [
+                          next[index],
+                          next[index + 1],
+                        ];
 
-[next[index+1],next[index]]=
-[next[index],next[index+1]];
+                        next.forEach((item, i) => (item.sequence = i + 1));
 
-next.forEach(
-(item,i)=>item.sequence=i+1
-);
+                        onChange(next);
+                      }}
+                    >
+                      ↓
+                    </button>
 
-onChange(next);
-}}
->
-↓
-</button>
-
-<button
-type="button"
-className="link-btn danger"
-onClick={()=>removeVisit(visit.id)}
->
-Remove
-</button>
-
-</td>
-)}
+                    <button
+                      type="button"
+                      className="link-btn danger"
+                      onClick={() => removeVisit(visit.id)}
+                    >
+                      Remove
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -837,29 +802,29 @@ function ProcedureDetailsTable({ visits, procedures, canEdit, onChange }) {
   const addProcedure = () => {
     onChange([
       ...list,
-     {
-  id: `vproc-${Date.now()}`,
+      {
+        id: `vproc-${Date.now()}`,
 
-  visitId: visits?.[0]?.id || "",
+        visitId: visits?.[0]?.id || "",
 
-  procedureCode: `PROC-${Date.now()}`,
+        procedureCode: `PROC-${Date.now()}`,
 
-  procedureName: "",
+        procedureName: "",
 
-  taskOrder: list.length + 1,
+        taskOrder: list.length + 1,
 
-  sequence: list.length + 1,
+        sequence: list.length + 1,
 
-  category: "Assessment",
+        category: "Assessment",
 
-  required: true,
-},
+        required: true,
+      },
     ]);
   };
 
   const updateProcedure = (id, field, value) => {
     onChange(
-      list.map((item) => (item.id === id ? { ...item, [field]: value } : item))
+      list.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
     );
   };
 
@@ -874,128 +839,119 @@ function ProcedureDetailsTable({ visits, procedures, canEdit, onChange }) {
       ) : (
         <table className="planning-table">
           <thead>
-           <tr>
+            <tr>
+              <th>Sequence</th>
 
-<th>Sequence</th>
+              <th>Visit</th>
 
-<th>Visit</th>
+              <th>Procedure Code</th>
 
-<th>Procedure Code</th>
+              <th>Procedure</th>
 
-<th>Procedure</th>
+              <th>Task Order</th>
 
-<th>Task Order</th>
+              <th>Category</th>
 
-<th>Category</th>
-
-{canEdit && <th>Actions</th>}
-
-</tr>
+              {canEdit && <th>Actions</th>}
+            </tr>
           </thead>
           <tbody>
             {list
-.filter((proc)=>
-(proc.procedureName||"")
-.toLowerCase()
-.includes(search.toLowerCase())
-)
-.map((proc,index)=>(
-              <tr key={proc.id}>
-                <td>
-
-<input
-value={proc.sequence}
-disabled
-/>
-
-</td>
-                <td>
-                  <select
-                    value={proc.visitId || ""}
-                    disabled={!canEdit}
-                    onChange={(e) =>
-                      updateProcedure(proc.id, "visitId", e.target.value)
-                    }
-                  >
-                    <option value="">All visits</option>
-                    {(visits || []).map((visit) => (
-                      <option key={visit.id} value={visit.id}>
-                        {visit.visitName || "Visit"}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td>
-  <input
-    value={proc.procedureCode || ""}
-    disabled={!canEdit}
-    onChange={(e) =>
-      updateProcedure(
-        proc.id,
-        "procedureCode",
-        e.target.value
-      )
-    }
-  />
-</td>
-                <td>
-                  <input
-                    value={proc.procedureName}
-                    disabled={!canEdit}
-                    onChange={(e) =>
-                      updateProcedure(proc.id, "procedureName", e.target.value)
-                    }
-                  />
-                </td>
-                <td>
-  <input
-    value={proc.taskOrder || ""}
-    disabled={!canEdit}
-    onChange={(e) =>
-      updateProcedure(
-        proc.id,
-        "taskOrder",
-        e.target.value
-      )
-    }
-  />
-</td>
-                <td>
-                  <input
-                    value={proc.category}
-                    disabled={!canEdit}
-                    onChange={(e) =>
-                      updateProcedure(proc.id, "category", e.target.value)
-                    }
-                  />
-                </td>
-                {canEdit && (
+              .filter((proc) =>
+                (proc.procedureName || "")
+                  .toLowerCase()
+                  .includes(search.toLowerCase()),
+              )
+              .map((proc, index) => (
+                <tr key={proc.id}>
                   <td>
-                    <button
-                      type="button"
-                      className="link-btn danger"
-                      onClick={() => removeProcedure(proc.id)}
-                    >
-                      Remove
-                    </button>
+                    <input value={proc.sequence} disabled />
                   </td>
-                )}
-              </tr>
-            ))}
+                  <td>
+                    <select
+                      value={proc.visitId || ""}
+                      disabled={!canEdit}
+                      onChange={(e) =>
+                        updateProcedure(proc.id, "visitId", e.target.value)
+                      }
+                    >
+                      <option value="">All visits</option>
+                      {(visits || []).map((visit) => (
+                        <option key={visit.id} value={visit.id}>
+                          {visit.visitName || "Visit"}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td>
+                    <input
+                      value={proc.procedureCode || ""}
+                      disabled={!canEdit}
+                      onChange={(e) =>
+                        updateProcedure(
+                          proc.id,
+                          "procedureCode",
+                          e.target.value,
+                        )
+                      }
+                    />
+                  </td>
+                  <td>
+                    <input
+                      value={proc.procedureName}
+                      disabled={!canEdit}
+                      onChange={(e) =>
+                        updateProcedure(
+                          proc.id,
+                          "procedureName",
+                          e.target.value,
+                        )
+                      }
+                    />
+                  </td>
+                  <td>
+                    <input
+                      value={proc.taskOrder || ""}
+                      disabled={!canEdit}
+                      onChange={(e) =>
+                        updateProcedure(proc.id, "taskOrder", e.target.value)
+                      }
+                    />
+                  </td>
+                  <td>
+                    <input
+                      value={proc.category}
+                      disabled={!canEdit}
+                      onChange={(e) =>
+                        updateProcedure(proc.id, "category", e.target.value)
+                      }
+                    />
+                  </td>
+                  {canEdit && (
+                    <td>
+                      <button
+                        type="button"
+                        className="link-btn danger"
+                        onClick={() => removeProcedure(proc.id)}
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              ))}
           </tbody>
         </table>
       )}
       {canEdit && (
         <button type="button" className="secondary-btn" onClick={addProcedure}>
           <button
-type="button"
-className="secondary-btn"
-onClick={addProcedure}
->
-
-Select Standard Procedure
-
-</button>
+            type="button"
+            className="secondary-btn"
+            onClick={addProcedure}
+          >
+            Select Standard Procedure
+          </button>
           + Add Procedure
         </button>
       )}
@@ -1007,13 +963,17 @@ function ScreeningEnrollmentSummary({ studyCode }) {
   let subjects = [];
   try {
     const byStudy = JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
-    subjects = Array.isArray(byStudy[String(studyCode)]) ? byStudy[String(studyCode)] : [];
+    subjects = Array.isArray(byStudy[String(studyCode)])
+      ? byStudy[String(studyCode)]
+      : [];
   } catch {
     subjects = [];
   }
 
   if (!subjects.length) {
-    return <p className="planning-empty">No subject screening/enrollment data yet</p>;
+    return (
+      <p className="planning-empty">No subject screening/enrollment data yet</p>
+    );
   }
 
   return (
@@ -1044,7 +1004,11 @@ function ScheduleMatrix({ visits, procedures, subjects }) {
   const handlePrint = () => window.print();
 
   if (!visits.length) {
-    return <p className="planning-empty">Add visits to preview the schedule matrix</p>;
+    return (
+      <p className="planning-empty">
+        Add visits to preview the schedule matrix
+      </p>
+    );
   }
 
   return (
@@ -1059,46 +1023,43 @@ function ScheduleMatrix({ visits, procedures, subjects }) {
           <tr>
             <th>Subject</th>
             {visits.map((visit, index) => (
-              <th key={visit.id}>
-    {visit.visitName || `Visit ${index + 1}`}
-</th>
+              <th key={visit.id}>{visit.visitName || `Visit ${index + 1}`}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {(subjects.length ? subjects : [{ subjectId: "—" }]).map((subject) => (
-            <tr key={subject.subjectId || subject.id}>
-              <td>{subject.subjectId || subject.id}</td>
-              {visits.map((visit) => {
-                const visitProcedures = procedures.filter(
-  (proc) =>
-    !proc.visitId || proc.visitId === visit.id
-);
+          {(subjects.length ? subjects : [{ subjectId: "—" }]).map(
+            (subject) => (
+              <tr key={subject.subjectId || subject.id}>
+                <td>{subject.subjectId || subject.id}</td>
+                {visits.map((visit) => {
+                  const visitProcedures = procedures.filter(
+                    (proc) => !proc.visitId || proc.visitId === visit.id,
+                  );
 
-return (
-  <td key={`${subject.subjectId}-${visit.id}`}>
-   {visitProcedures.length ? (
-  <ul className="schedule-procedure-list">
-    {visitProcedures.map((proc, index) => (
-      <li key={proc.id}>
-        <strong>
-{proc.procedureCode || `PROC-${index + 1}`}
-</strong>
-        {" - "}
-        {proc.procedureName || "Procedure"}
-      </li>
-    ))}
-  </ul>
-) : (
-  <span className="no-procedure">
-    No Procedures
-  </span>
-)}
-  </td>
-);
-              })}
-            </tr>
-          ))}
+                  return (
+                    <td key={`${subject.subjectId}-${visit.id}`}>
+                      {visitProcedures.length ? (
+                        <ul className="schedule-procedure-list">
+                          {visitProcedures.map((proc, index) => (
+                            <li key={proc.id}>
+                              <strong>
+                                {proc.procedureCode || `PROC-${index + 1}`}
+                              </strong>
+                              {" - "}
+                              {proc.procedureName || "Procedure"}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <span className="no-procedure">No Procedures</span>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ),
+          )}
         </tbody>
       </table>
     </div>
