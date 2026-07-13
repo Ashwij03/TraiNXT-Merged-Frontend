@@ -23,23 +23,24 @@
 }
 
 .subscription-modal-header{
-    background:linear-gradient(135deg,#2563eb,#1d4ed8);
-    color:#fff;
-}
-
-.subscription-modal-header h3{
-    color:#fff;
-    font-size:28px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 24px;
 }
 
 .subscription-modal-close{
-    background:rgba(255,255,255,.2);
-    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:36px;
+    height:36px;
+    border:none;
+    border-radius:50%;
+    cursor:pointer;
 }
 
-.subscription-modal-close:hover{
-    background:rgba(255,255,255,.3);
-}
+
 
 .subscription-modal-body {
   padding: 28px 30px;
@@ -53,12 +54,12 @@
   gap: 22px;
 }
 
-.subscription-form-field {
+.subscription-form-group {
   display: flex;
   flex-direction: column;
 }
 
-.subscription-form-field-wide {
+.subscription-form-group-wide {
   grid-column: 1 / -1;
   display: flex;
   flex-direction: row;
@@ -66,37 +67,36 @@
   gap: 18px;
 }
 
-.subscription-form-field label{
+.subscription-form-fiel.subscription-form-group label{
     font-size:15px;
     font-weight:600;
     color:#334155;
 }
 
-.subscription-form-field input,
-.subscription-form-field select,
-.subscription-form-field textarea{
-
-    border:2px solid #dbe4f0;
-
-    background:#f8fbff;
-
-    border-radius:14px;
+.subscription-form-group input,
+.subscription-form-group select,
+.subscription-form-group textarea{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid #d1d5db;
+    border-radius:8px;
+    font-size:14px;
+    background:#fff;
+    transition:0.2s;
+    box-sizing:border-box;
 }
 
-.subscription-form-field-wide textarea {
+.subscription-form-group-wide textarea {
   flex: 1;
   min-height: 120px;
 }
 
-.subscription-form-field input:focus,
-.subscription-form-field select:focus,
-.subscription-form-field textarea:focus{
-
+.subscription-form-group input:focus,
+.subscription-form-group select:focus,
+.subscription-form-group textarea:focus{
     border-color:#2563eb;
-
-    background:#fff;
-
-    box-shadow:0 0 0 5px rgba(37,99,235,.12);
+    outline:none;
+    box-shadow:0 0 0 3px rgba(37,99,235,.15);
 }
 
 .subscription-field-error {
@@ -292,4 +292,63 @@ flex-direction:column;
 
 width:100%;
 }
+}
+.subscription-form-group-wide{
+    grid-column:1/-1;
+}
+
+.subscription-form-group-wide textarea{
+    width:100%;
+    min-height:90px;
+    resize:vertical;
+}
+
+.subscription-form-group-checkbox{
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    margin-top:28px;
+     margin-left:-200px;
+}
+
+.checkbox-label{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:500;
+    cursor:pointer;
+}
+
+.checkbox-label input{
+    width:18px;
+    height:18px;
+}
+
+.subscription-btn-save{
+    background:#2563eb;
+    color:#fff;
+    border:none;
+    padding:10px 18px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.subscription-btn-save:hover{
+    background:#1d4ed8;
+}
+
+.subscription-btn-cancel{
+    background:#2563eb;
+    color:#fff;
+    border:none;
+    padding:10px 18px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+    transition:.2s;
+}
+
+.subscription-btn-cancel:hover{
+    background:#1d4ed8;
 }
