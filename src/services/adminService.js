@@ -1,3 +1,4 @@
+import { readJson } from "../utils/storageHelpers";
 // UPDATED: Central admin data service — localStorage-backed, fully dynamic (no default/seed data)
 
 import { getStudies, getRecentActivityLogs, getStudyByCode } from "./studyService";
@@ -34,19 +35,6 @@ const STORAGE_KEYS = {
   trainingLogs: "trainingLogs",
   delegationLogs: "delegationLogs"
 };
-
-function readJson(key, fallback = []) {
-  if (typeof window === "undefined") {
-    return fallback;
-  }
-
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-}
 
 function writeJson(key, value) {
   try {

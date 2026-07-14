@@ -1,4 +1,4 @@
-import RoleCommentsView from "../../Components/common/RoleCommentsView";
+import RoleCommentsView from "../../components/common/RoleCommentsView";
 
 // PIComments previously kept its own isolated "piCommentsData" localStorage
 // store (via piDashboardService.getCommentsData/saveCommentsData), completely

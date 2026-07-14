@@ -7,7 +7,7 @@ import KpiCard from './KpiCard';
 import { FiAlertTriangle, FiShield, FiCheckCircle, FiActivity } from 'react-icons/fi';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { getRisks, getRiskKPIs, SEVERITY_COLORS, getPortfolioStudies } from './data/sponsorDataStore';
-import RequestPermissionButton from '../../Components/common/RequestPermissionButton';
+import RequestPermissionButton from '../../components/common/RequestPermissionButton';
 
 const RiskManagement = () => {
   const navigate = useNavigate();

@@ -3,10 +3,10 @@ import StudyActivity from "./StudyActivity";
 // ===== END F2 CHANGES =====
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import DashboardLayout from "../../../Components/dashboard/DashboardLayout";
-import KPICard from "../../../Components/dashboard/KPICard";
-import SubjectAnalyticsSection from "../../../Components/dashboard/SubjectAnalyticsSection";
-import VisitCalendarSection from "../../../Components/dashboard/VisitCalendarSection";
+import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
+import KPICard from "../../../components/dashboard/shared/KPICard";
+import SubjectAnalyticsSection from "../../../components/dashboard/shared/SubjectAnalyticsSection";
+import VisitCalendarSection from "../../../components/dashboard/shared/VisitCalendarSection";
 import StudySubjects from "./StudySubjects";
 import StudyWorkspaceTabs from "./StudyWorkspaceTabs";
 import StudyDocuments from "./StudyDocuments";
@@ -16,16 +16,16 @@ import StudyRegulatory from "./StudyRegulatory";
 import StudyReports from "./StudyReports";
 import StudyPlanning from "./StudyPlanning";
 import StudyVisitPlan from "./StudyVisitPlan";
-import EssentialDocumentsWidget from "../../../Components/studies/EssentialDocumentsWidget";
-import StudyProgressSummary from "../../../Components/studies/StudyProgressSummary";
-import StudyMilestoneTimeline from "../../../Components/studies/StudyMilestoneTimeline";
-import SitePerformanceSummary from "../../../Components/studies/SitePerformanceSummary";
-import SiteActivationStatus from "../../../Components/studies/SiteActivationStatus";
-import GCPCertificationStatus from "../../../Components/studies/GCPCertificationStatus";
-import StudyHealthSummary from "../../../Components/studies/StudyHealthSummary";
+import EssentialDocumentsWidget from "../../../components/studies/EssentialDocumentsWidget";
+import StudyProgressSummary from "../../../components/studies/StudyProgressSummary";
+import StudyMilestoneTimeline from "../../../components/studies/StudyMilestoneTimeline";
+import SitePerformanceSummary from "../../../components/studies/SitePerformanceSummary";
+import SiteActivationStatus from "../../../components/studies/SiteActivationStatus";
+import GCPCertificationStatus from "../../../components/studies/GCPCertificationStatus";
+import StudyHealthSummary from "../../../components/studies/StudyHealthSummary";
 import useStudyOverview from "../../../hooks/useStudyOverview";
 import StudyFinancials from "../../Sponsor/Financials/StudyFinancials";
-import AlertsPanel from "../../../Components/dashboard/AlertsPanel";
+import AlertsPanel from "../../../components/dashboard/shared/AlertsPanel";
 // import SubjectProfile from "../subjects/SubjectProfile";
 import useStudiesDashboard from "../../../hooks/useStudiesDashboard";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
@@ -34,12 +34,12 @@ import {
   deleteStudy,
   updateStudy,
 } from "../../../services/studyService";
-import DeleteConfirmationModal from "../../../Components/DeleteConfirmationModal";
-import RecentSubjectsWidget from "../../../Components/dashboard/RecentSubjectsWidget";
-import UpcomingVisitsWidget from "../../../Components/dashboard/UpcomingVisitsWidget";
-import PendingCommentsWidget from "../../../Components/dashboard/PendingCommentsWidget";
-import QuickActionsWidget from "../../../Components/dashboard/QuickActionsWidget";
-import DocumentFolderManager from "../../../Components/common/DocumentFolderManager";
+import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
+import RecentSubjectsWidget from "../../../components/dashboard/shared/RecentSubjectsWidget";
+import UpcomingVisitsWidget from "../../../components/dashboard/shared/UpcomingVisitsWidget";
+import PendingCommentsWidget from "../../../components/dashboard/shared/PendingCommentsWidget";
+import QuickActionsWidget from "../../../components/dashboard/shared/QuickActionsWidget";
+import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
 import EISFWorkspace from "../EISF/EISFWorkspace";
 import {
   FiUsers,

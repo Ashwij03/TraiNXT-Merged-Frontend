@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import DataTable from "../../../Components/dashboard/DataTable";
+import DataTable from "../../../components/dashboard/shared/DataTable";
 import { getVisibleComments } from "../../../services/commentService";
 
 function SubjectComments({ subjectId }) {

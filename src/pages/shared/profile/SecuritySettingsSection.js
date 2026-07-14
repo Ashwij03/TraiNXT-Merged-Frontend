@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardCard from "../../../Components/dashboard/DashboardCard";
+import DashboardCard from "../../../components/dashboard/shared/DashboardCard";
 import {
   getAssignedSite,
   getCurrentUser,

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import CROSidebar from "./Components/CROSidebar";
-import CRONavbar from "./Components/CRONavbar";
-import RequestPermissionButton from "../../Components/common/RequestPermissionButton";
+import CROSidebar from "./CROSidebar";
+import CRONavbar from "./CRONavbar";
+import RequestPermissionButton from "../../components/common/RequestPermissionButton";
 import { getSitePerformance } from "../../services/adminService";
 
 function loadSites() {

@@ -1,17 +1,5 @@
+import { normalizeStatus } from "./normalizeStatus";
 import { SUBJECT_STATUS_ORDER } from "./subjectStatusAnalytics";
-
-function normalizeStatus(status) {
-  const value = String(status || "").trim().toLowerCase();
-
-  if (value.includes("screen")) return "Screening";
-  if (value.includes("enroll")) return "Enrolled";
-  if (value.includes("ongoing") || value.includes("active")) return "Ongoing";
-  if (value.includes("complete")) return "Completed";
-  if (value.includes("withdraw")) return "Withdrawn";
-  if (value.includes("drop")) return "Dropout";
-
-  return null;
-}
 
 export const ENROLLMENT_BAR_ORDER = [
   "Screening",

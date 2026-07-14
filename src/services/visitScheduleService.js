@@ -1,3 +1,4 @@
+import { readJson } from "../utils/storageHelpers";
 // Dynamic visit schedules from subject data, folder workflows, and header filters.
 
 import { getStudies } from "./studyService";
@@ -22,19 +23,6 @@ export const SCHEDULES_EVENT = "visitSchedulesChange";
 export const VISIT_PROGRESS_KEY = "subjectVisitProgress";
 const SCHEDULES_STORAGE_KEY = "adminSchedules";
 const SUBJECT_DETAILS_KEY = "subjectDetailsByStudy";
-
-function readJson(key, fallback = {}) {
-  if (typeof window === "undefined") {
-    return fallback;
-  }
-
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-}
 
 function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));

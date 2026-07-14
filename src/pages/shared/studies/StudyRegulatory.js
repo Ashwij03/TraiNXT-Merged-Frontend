@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import DocumentFolderManager from "../../../Components/common/DocumentFolderManager";
+import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
 
 function StudyRegulatory() {
   const { id } = useParams();

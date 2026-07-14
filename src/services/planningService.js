@@ -1,3 +1,4 @@
+import { readJson } from "../utils/storageHelpers";
 export const PLANNING_MILESTONES_KEY = "planningMilestonesByStudy";
 export const PLANNING_TASKS_KEY = "planningTasksByStudy";
 export const STUDY_TEAM_KEY = "studyTeamByStudy";
@@ -14,13 +15,6 @@ const DEFAULT_REGULATORY_ITEMS = [
   "Insurance / Indemnity",
 ];
 
-function readJson(key, fallback) {
-  try {
-    return JSON.parse(localStorage.getItem(key)) ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
 function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }

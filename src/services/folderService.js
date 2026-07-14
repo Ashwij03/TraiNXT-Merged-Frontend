@@ -1,3 +1,4 @@
+import { readJson } from "../utils/storageHelpers";
 export const FOLDER_TREE_EVENT = "trianxt-folder-tree-updated";
 export const FOLDER_TEMPLATES_EVENT = "trianxt-folder-templates-updated";
 const FOLDER_TREE_KEY = "trianxtFolderTrees";
@@ -21,14 +22,6 @@ let folderTemplatesStore = [];
 function createId(prefix = "folder") {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
-function readJson(key, fallback) {
-  try {
-    return JSON.parse(localStorage.getItem(key)) || fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 function writeJson(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));

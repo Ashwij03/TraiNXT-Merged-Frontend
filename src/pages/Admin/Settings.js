@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FaUser, FaBell, FaLock, FaCog } from "react-icons/fa";
-import DashboardLayout from "../../Components/dashboard/DashboardLayout";
-import DashboardCard from "../../Components/dashboard/DashboardCard";
+import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
+import DashboardCard from "../../components/dashboard/shared/DashboardCard";
 import ProfileSettingsSection from "../shared/profile/ProfileSettingsSection";
 import SecuritySettingsSection from "../shared/profile/SecuritySettingsSection";
 import { getSettings, saveSettings } from "../../services/adminService";

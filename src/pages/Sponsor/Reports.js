@@ -4,7 +4,7 @@ import AppLayout from "./AppLayout";
 import "./Reports.css";
 import "./SponsorShared.css";
 import KpiCard from "./KpiCard";
-import RequestPermissionButton from "../../Components/common/RequestPermissionButton";
+import RequestPermissionButton from "../../components/common/RequestPermissionButton";
 import { FiFileText, FiCheckCircle, FiClock, FiDownload } from "react-icons/fi";
 import { getSponsorDocumentReportCards } from "./data/sponsorDocumentReportService";
 import { getReportsForStudy } from "../../services/reportService";

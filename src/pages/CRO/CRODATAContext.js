@@ -1,3 +1,4 @@
+import { readStorageArray } from "../../utils/storageHelpers";
 import React, {
   createContext,
   useContext,
@@ -9,15 +10,6 @@ import React, {
 import { getStudies } from "../../services/studyService";
 
 const CRODataContext = createContext();
-
-function readStorageArray(key) {
-  try {
-    const value = JSON.parse(localStorage.getItem(key));
-    return Array.isArray(value) ? value : [];
-  } catch {
-    return [];
-  }
-}
 
 function getSharedStudies() {
   try {

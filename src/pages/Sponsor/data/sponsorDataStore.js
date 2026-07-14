@@ -1,3 +1,4 @@
+import { readJson } from "../../../utils/storageHelpers";
 import { getFilteredStudies } from "../../../services/filterService";
 
 import {
@@ -17,15 +18,6 @@ const STORAGE_PREFIX = "sponsor_data_";
 const SETTINGS_KEY = "sponsor_settings";
 const SUBSCRIPTION_KEY = "sponsor_subscription";
 const RISKS_KEY = `${STORAGE_PREFIX}risks`;
-
-function readJson(key, fallback = []) {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-}
 
 function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));

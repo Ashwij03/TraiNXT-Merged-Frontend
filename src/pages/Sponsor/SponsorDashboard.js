@@ -32,8 +32,8 @@ import AppLayout from './AppLayout.js';
 import EnrollmentChart from './EnrollmentChart';
 import StatusPieChart from './StatusPieChart';
 import KpiCard from './KpiCard';
-import AlertsPanel from './AlertsPanel';
-import QuickActions from './QuickActions';
+import AlertsPanel from './SponsorAlertsPanel';
+import QuickActions from './SponsorQuickActions';
 import SubscriptionEditModal from './SubscriptionEditModal';
 import {
   FaCheckCircle,

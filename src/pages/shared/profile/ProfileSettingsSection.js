@@ -1,5 +1,5 @@
 import { useState } from "react";
-import DashboardCard from "../../../Components/dashboard/DashboardCard";
+import DashboardCard from "../../../components/dashboard/shared/DashboardCard";
 import ProfilePhotoCard from "./ProfilePhotoCard";
 import {
   getAssignedSite,

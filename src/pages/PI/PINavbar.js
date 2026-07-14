@@ -1,5 +1,5 @@
 import ROLES from "../../constants/roles";
-import EnterpriseNavbarBase from "../../Components/dashboard/EnterpriseNavbarBase";
+import EnterpriseNavbarBase from "../../components/dashboard/shared/EnterpriseNavbarBase";
 
 function PINavbar(props) {
   console.log("PINavbar props =", props);

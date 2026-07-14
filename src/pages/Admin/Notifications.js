@@ -1,9 +1,9 @@
 // UPDATED: Role-aware notifications with categories and bulk actions
 
 import { useMemo, useState } from "react";
-import DashboardLayout from "../../Components/dashboard/DashboardLayout";
-import DashboardCard from "../../Components/dashboard/DashboardCard";
-import KPICard from "../../Components/dashboard/KPICard";
+import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
+import DashboardCard from "../../components/dashboard/shared/DashboardCard";
+import KPICard from "../../components/dashboard/shared/KPICard";
 import {
   getNotifications,
   markAllNotificationsRead,

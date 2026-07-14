@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import './Regulatory.css';
 import './SponsorShared.css';
 import KpiCard from './KpiCard';
-import RequestPermissionButton from '../../Components/common/RequestPermissionButton';
+import RequestPermissionButton from '../../components/common/RequestPermissionButton';
 import { FiCheckSquare, FiCheckCircle, FiClock, FiAlertTriangle } from 'react-icons/fi';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { getRegulatory, getRegulatoryKPIs, getPortfolioStudies } from './data/sponsorDataStore';

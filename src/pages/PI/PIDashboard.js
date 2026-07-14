@@ -34,7 +34,7 @@ import PISidebar from "./PISidebar";
 import PILiveChat from "./PILiveChat";
 import PICommentModal from "./PICommentModal";
 import PIReports from "./PIReports";
-import PIRecruitment from "./PIRecuritment";
+import PIRecruitment from "./PIRecruitment";
 import PIRegulatory from "./PIRegulatory";
 import PISettings from "./PISettings";
 import PINotifications from "./PINotifications";
@@ -43,7 +43,7 @@ import PIComments from "./PIComments";
 import PIEISFDashboard from "./PIEISFDashboard";
 import PIICFDashboard from "./PIICFDashboard";
 import StudyFolderDashboard from "./PIStudyFolderDashboard";
-import VisitCalendarSection from "../../Components/dashboard/VisitCalendarSection";
+import VisitCalendarSection from "../../components/dashboard/shared/VisitCalendarSection";
 
 import {
   getDashboardData,

@@ -3,8 +3,8 @@ import { useEnterpriseDashboardShell } from "../../hooks/useEnterpriseDashboardS
 import CROSidebar from "./CROSidebar";
 import CRONavbar from "./CRONavbar";
 import CROAlertHost from "./CROAlertHost";
-import LiveChatFab from "../../Components/common/LiveChatFab";
-import "../../Components/dashboard/DashboardLayout.css";
+import LiveChatFab from "../../components/common/LiveChatFab";
+import "../../components/dashboard/shared/DashboardLayout.css";
 import "./CROLayout.css";
 
 function CROLayout({ children }) {

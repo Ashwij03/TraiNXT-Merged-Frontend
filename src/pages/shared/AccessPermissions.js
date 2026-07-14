@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
-import DashboardLayout from "../../Components/dashboard/DashboardLayout";
-import DataTable from "../../Components/dashboard/DataTable";
+import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
+import DataTable from "../../components/dashboard/shared/DataTable";
 import {
   acceptAccessRequest,
   getAccessRequestHistory,
