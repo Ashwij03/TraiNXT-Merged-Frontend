@@ -22,7 +22,7 @@ function ClinicalSitesDashboard({ study }) {
 
   const [selectedStatus, setSelectedStatus] = useState("All Status");
 
-const [selectedSite, setSelectedSite] = useState("All Sites");
+  const [selectedSite, setSelectedSite] = useState("All Sites");
 
   const [sortDirection, setSortDirection] = useState("asc");
 
@@ -35,8 +35,6 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
     totalEnrolled: 0,
     avgPerformance: 0,
   });
-
-  
 
   useEffect(() => {
     const refresh = () => {
@@ -56,7 +54,13 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
   useEffect(() => {
     setCurrentPage(1);
     setRankingPage(1);
-  }, [selectedCountry, selectedStatus, selectedSite, searchText, sortDirection]);
+  }, [
+    selectedCountry,
+    selectedStatus,
+    selectedSite,
+    searchText,
+    sortDirection,
+  ]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -88,11 +92,9 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
   ];
 
   const siteNames = [
-  "All Sites",
-  ...new Set(
-    sites.map((site) => site.name || "Unknown")
-  ),
-];
+    "All Sites",
+    ...new Set(sites.map((site) => site.name || "Unknown")),
+  ];
 
   const filteredSites = sites.filter((site) => {
     const countryValue = site.country || site.region || site.location || "";
@@ -102,42 +104,37 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
 
     const matchesStatus =
       selectedStatus === "All Status" || (site.status || "") === selectedStatus;
-      
+
     const matchesSite =
-      selectedSite === "All Sites" ||
-      (site.name || "") === selectedSite;
+      selectedSite === "All Sites" || (site.name || "") === selectedSite;
 
     const search = searchText.toLowerCase();
 
     const matchesSearch =
-  String(site.id || "")
-    .toLowerCase()
-    .includes(search) ||
-
-  String(site.name || "")
-    .toLowerCase()
-    .includes(search) ||
-
-  String(site.country || "")
-    .toLowerCase()
-    .includes(search) ||
-
-  String(site.sponsor || "")
-    .toLowerCase()
-    .includes(search) ||
-
-  String(site.status || "")
-    .toLowerCase()
-    .includes(search);
+      String(site.id || "")
+        .toLowerCase()
+        .includes(search) ||
+      String(site.name || "")
+        .toLowerCase()
+        .includes(search) ||
+      String(site.country || "")
+        .toLowerCase()
+        .includes(search) ||
+      String(site.sponsor || "")
+        .toLowerCase()
+        .includes(search) ||
+      String(site.status || "")
+        .toLowerCase()
+        .includes(search);
     return matchesCountry && matchesStatus && matchesSite && matchesSearch;
   });
 
   const sortedSites = [...filteredSites].sort((a, b) => {
-  const idA = Number(a.id) || 0;
-  const idB = Number(b.id) || 0;
+    const idA = Number(a.id) || 0;
+    const idB = Number(b.id) || 0;
 
-  return sortDirection === "asc" ? idA - idB : idB - idA;
-});
+    return sortDirection === "asc" ? idA - idB : idB - idA;
+  });
 
   const totalPages = Math.max(1, Math.ceil(sortedSites.length / rowsPerPage));
 
@@ -164,8 +161,8 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
     rankingPage * rankingRowsPerPage,
   );
 
- return (
-  <div className="clinical-sites-page">
+  return (
+    <div className="clinical-sites-page">
       <h2>Clinical Sites</h2>
 
       <div className="studies-kpi-grid">
@@ -198,69 +195,69 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
         />
       </div>
 
-     <div className="clinical-sites-card">
-       <h3>Clinical Site Filters</h3>
+      <div className="clinical-sites-card">
+        <h3>Clinical Site Filters</h3>
 
-       <div className="clinical-sites-toolbar">
-         <input
-           id="clinical-site-search"
-           name="clinicalSiteSearch"
-           type="text"
-           placeholder="Search Site ID, Site Name, Country, Sponsor or Status"
-           value={searchText}
-           onChange={(e) => setSearchText(e.target.value)}
-         />
+        <div className="clinical-sites-toolbar">
+          <input
+            id="clinical-site-search"
+            name="clinicalSiteSearch"
+            type="text"
+            placeholder="Search Site ID, Site Name, Country, Sponsor or Status"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
 
-         <select
-           id="clinical-site-country"
-           name="clinicalSiteCountry"
-           value={selectedCountry}
-           onChange={(e) => setSelectedCountry(e.target.value)}
-         >
-           {countries.map((country) => (
-             <option key={country} value={country}>
-               {country}
-             </option>
-           ))}
-         </select>
+          <select
+            id="clinical-site-country"
+            name="clinicalSiteCountry"
+            value={selectedCountry}
+            onChange={(e) => setSelectedCountry(e.target.value)}
+          >
+            {countries.map((country) => (
+              <option key={country} value={country}>
+                {country}
+              </option>
+            ))}
+          </select>
 
-         <select
-           id="clinical-site-status"
-           name="clinicalSiteStatus"
-           value={selectedStatus}
-           onChange={(e) => setSelectedStatus(e.target.value)}
-         >
-           {statuses.map((status) => (
-             <option key={status} value={status}>
-               {status}
-             </option>
-           ))}
-         </select>
+          <select
+            id="clinical-site-status"
+            name="clinicalSiteStatus"
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+          >
+            {statuses.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
 
-         <select
-           id="clinical-site-filter"
-           name="clinicalSiteFilter"
-           value={selectedSite}
-           onChange={(e) => setSelectedSite(e.target.value)}
-         >
-           {siteNames.map((siteName) => (
-             <option key={siteName} value={siteName}>
-               {siteName}
-             </option>
-           ))}
-         </select>
+          <select
+            id="clinical-site-filter"
+            name="clinicalSiteFilter"
+            value={selectedSite}
+            onChange={(e) => setSelectedSite(e.target.value)}
+          >
+            {siteNames.map((siteName) => (
+              <option key={siteName} value={siteName}>
+                {siteName}
+              </option>
+            ))}
+          </select>
 
-         <select
-           id="clinical-site-sort-direction"
-           name="clinicalSiteSortDirection"
-           value={sortDirection}
-           onChange={(e) => setSortDirection(e.target.value)}
-         >
-           <option value="asc">Ascending</option>
-           <option value="desc">Descending</option>
-         </select>
-       </div>
-</div>
+          <select
+            id="clinical-site-sort-direction"
+            name="clinicalSiteSortDirection"
+            value={sortDirection}
+            onChange={(e) => setSortDirection(e.target.value)}
+          >
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+        </div>
+      </div>
 
       <div className="clinical-sites-card">
         <h3>Site Performance</h3>
@@ -303,28 +300,27 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
 
                   <td>{site.performance ?? site.enrollmentRate ?? 0}%</td>
                   <td>
-                  <button
-                    type="button"
-                    className="sponsor-btn-secondary"
-                    onClick={() => setQuickViewSite(site)}
-                  >
-                    View
-                  </button>
+                    <button
+                      type="button"
+                      className="sponsor-btn-secondary"
+                      onClick={() => setQuickViewSite(site)}
+                    >
+                      View
+                    </button>
                   </td>
                   <td>
-                   <button
-                     type="button"
-                     className="sponsor-btn-secondary"
-                     onClick={() =>
-                       navigate("/site-details", {
-                         state: site,
-                       })
-                     }
-                   >
-                     Open
-                   </button>
+                    <button
+                      type="button"
+                      className="sponsor-btn-secondary"
+                      onClick={() =>
+                        navigate("/site-details", {
+                          state: site,
+                        })
+                      }
+                    >
+                      Open
+                    </button>
                   </td>
-
                 </tr>
               ))}
             </tbody>
@@ -371,7 +367,7 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
           </div>
         </div>
       </div>
-      
+
       <div className="clinical-sites-card">
         <h3>Site Ranking</h3>
 
@@ -445,14 +441,19 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
             </div>
           </div>
         )}
-        </div>
-        <div className="clinical-sites-card">
-    <h3>Interactive Map</h3>
+      </div>
+      <div className="clinical-sites-card">
+        <h3>Interactive Map</h3>
+        <ClinicalSitesMap sites={filteredSites} />
+      </div>
 
-    <ClinicalSitesMap
-        sites={filteredSites}
-    />
-</div>
+      {quickViewSite && (
+        <ClinicalSiteQuickView
+          site={quickViewSite}
+          study={study}
+          onClose={() => setQuickViewSite(null)}
+        />
+      )}
     </div>
   );
 }
