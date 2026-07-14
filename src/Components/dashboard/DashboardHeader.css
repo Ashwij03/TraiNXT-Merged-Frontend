@@ -681,7 +681,7 @@
   }
 }
 
-@media screen and (max-width: 767px) {
+@media screen and (max-width: 1300px) {
   .header-unified-row {
     flex-wrap: wrap;
   }
@@ -737,7 +737,7 @@
   }
 }
 
-@media screen and (min-width: 768px) and (max-width: 1400px) {
+@media screen and (min-width: 1301px) and (max-width: 1400px) {
   .header-filters-grid {
     flex: 1 1 240px;
   }
@@ -747,7 +747,7 @@
   }
 }
 
-@media screen and (min-width: 768px) {
+@media screen and (min-width: 1301px) {
   .header-filters-grid {
     display: flex;
   }

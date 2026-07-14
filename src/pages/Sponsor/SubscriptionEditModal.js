@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { MdClose } from 'react-icons/md';
 import './SubscriptionEditModal.css';
 
 const PLAN_OPTIONS = ['Basic', 'Professional', 'Enterprise'];
@@ -87,9 +86,6 @@ const SubscriptionEditModal = ({ subscription, onSave, onClose }) => {
       <div className="subscription-modal" onClick={handleModalClick}>
         <div className="subscription-modal-header">
           <h3>Edit Subscription</h3>
-          <button type="button" className="subscription-modal-close" onClick={onClose}>
-            <MdClose size={22} />
-          </button>
         </div>
 
         <div className="subscription-modal-body">
@@ -174,13 +170,15 @@ const SubscriptionEditModal = ({ subscription, onSave, onClose }) => {
             </div>
 
             <div className="subscription-form-group subscription-form-group-checkbox">
-              <label>Auto Renewal</label>
-              <input
-                type="checkbox"
-                checked={!!formData.autoRenewal}
-                onChange={(e) => handleChange('autoRenewal', e.target.checked)}
-              />
-            </div>
+  <label className="checkbox-label">
+    <input
+      type="checkbox"
+      checked={!!formData.autoRenewal}
+      onChange={(e) => handleChange('autoRenewal', e.target.checked)}
+    />
+    <span>Auto Renewal</span>
+  </label>
+</div>
 
             <div className="subscription-form-group subscription-form-group-wide">
               <label>Notes</label>

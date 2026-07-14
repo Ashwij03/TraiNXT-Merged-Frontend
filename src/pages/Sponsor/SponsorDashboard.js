@@ -35,6 +35,12 @@ import KpiCard from './KpiCard';
 import AlertsPanel from './AlertsPanel';
 import QuickActions from './QuickActions';
 import SubscriptionEditModal from './SubscriptionEditModal';
+import {
+  FaCheckCircle,
+  FaSearch,
+  FaUpload,
+  FaExclamationTriangle,
+} from "react-icons/fa";
 
 import {
   getDashboardKPIs,
@@ -361,29 +367,48 @@ const SponsorDashboard = () => {
 
         <div className="bottom-grid bottom-grid-single">
           <div className="regulatory-card">
-            <h3>Regulatory Status Overview</h3>
+  <h3>Regulatory Status Overview</h3>
 
-            <div className="regulatory-stats">
-              <div className="reg-item">
-                <h2>{regKpis.approved}</h2>
-                <p>Approved</p>
-              </div>
+  <div className="regulatory-stats">
 
-              <div className="reg-item">
-                <h2>{regKpis.inReview}</h2>
-                <p>In Review</p>
-              </div>
+    <div className="reg-item">
+      <div className="reg-icon approved-icon">
+        <FaCheckCircle />
+      </div>
 
-              <div className="reg-item">
-                <h2>{regKpis.submitted}</h2>
-                <p>Submitted</p>
-              </div>
+      <h2>{regKpis.approved}</h2>
+      <p>Approved</p>
+    </div>
 
-              <div className="reg-item reg-overdue">
-                <h2>{regKpis.overdue}</h2>
-                <p>Overdue</p>
-              </div>
-            </div>
+    <div className="reg-item">
+      <div className="reg-icon review-icon">
+        <FaSearch />
+      </div>
+
+      <h2>{regKpis.inReview}</h2>
+      <p>In Review</p>
+    </div>
+
+    <div className="reg-item">
+      <div className="reg-icon submitted-icon">
+        <FaUpload />
+      </div>
+
+      <h2>{regKpis.submitted}</h2>
+      <p>Submitted</p>
+    </div>
+
+    <div className="reg-item">
+      <div className="reg-icon overdue-icon">
+        <FaExclamationTriangle />
+      </div>
+
+      <h2>{regKpis.overdue}</h2>
+      <p>Overdue</p>
+    </div>
+
+  </div>
+
 
             <div className="view-all-link">
               <span onClick={() => navigate('/regulatory')}>

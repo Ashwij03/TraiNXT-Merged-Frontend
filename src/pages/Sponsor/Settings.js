@@ -50,8 +50,8 @@ const Settings = () => {
   const [activeSection, setActiveSection] = useState(null);
   const [saved, setSaved] = useState(false);
   useEffect(() => {
-  if (location.state?.openModal === "profile") {
-    setActiveSection("profile");
+  if (location.state?.section) {
+    setActiveSection(location.state.section);
   }
 }, [location]);
 const [profilePhoto, setProfilePhoto] = useState(() => {

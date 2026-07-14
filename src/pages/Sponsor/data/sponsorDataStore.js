@@ -41,20 +41,7 @@ function getSafeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
-// function mapStudyToPortfolio(study = {}) {
-//   return {
-//     studyId: study.code || study.studyId || study.id || '',
-//     studyName: study.name || study.studyName || '',
-//     phase: study.phase || '',
-//     status: study.status || '',
-//     cro: study.cro || study.croName || '',
-//     sites: Number(study.sites || study.siteCount || 0),
-//     enrolled: Number(study.enrolled || study.enrolledSubjects || 0),
-//     target: Number(study.targetSubjects || study.target || 0),
-//     startDate: study.startDate || '',
-//     therapeuticArea: study.indication || study.therapeuticArea || '',
-//   };
-// }
+
 function mapStudyToPortfolio(study = {}) {
   const subjectsByStudy =
     JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
@@ -180,57 +167,88 @@ export function saveCROs(data) {
   writeJson(`${STORAGE_PREFIX}cros`, data);
 }
 
-// export function getSites() {
-//   const adminSites = getSafeArray(getAdminSites());
-
-//   if (adminSites.length > 0) {
-//     return adminSites.map((site = {}) => ({
-//       id: site.id || site.siteNumber || '',
-//       name: site.name || '',
-//       study: site.study || site.studyCode || '',
-//       enrolled: Number(site.enrolled || 0),
-//       target: Number(site.target || 0),
-//       performance: Number(site.performance || 0),
-//       region: site.region || site.country || '',
-//     }));
-//   }
-
-//   return getSafeArray(getSitePerformance()).map((site = {}) => ({
-//     id: site.id || site.siteNumber || site.siteName || '',
-//     name: site.siteName || site.name || '',
-//     study: site.study || site.studyCode || '',
-//     enrolled: Number(site.enrolled || 0),
-//     target: Number(site.target || 0),
-//     performance: Number(site.performance || 0),
-//     region: site.region || site.country || '',
-//   }));
-// }
-
-export function getSites() {
-  const studies = getStudies();
-
+export function getSites(study) {
   const subjectsByStudy =
     JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
 
-  return studies.map((study) => {
-    const subjects = subjectsByStudy[study.code] || [];
+  // SCOPED MODE — used by the per-study Clinical Sites tab.
+  // Studies that share the same Sponsor AND Indication as the currently
+  // open study are treated as one group — their sites all appear
+  // together here, so opening either study shows the combined set.
+  // Each study's own Site/Hospital name (its "Site / Hospital" form
+  // field, stored as study.site / study.location) is the site name.
+  if (study && study.code) {
+    const allStudies = getStudies();
+
+    const normalize = (value) => String(value || "").trim().toLowerCase();
+
+    const matchingStudies = allStudies.filter(
+      (candidate) =>
+        normalize(candidate.sponsor) === normalize(study.sponsor) &&
+        normalize(candidate.indication) === normalize(study.indication),
+    );
+
+    // Fallback to just the current study if sponsor/indication are blank
+    // and nothing matched.
+    const studiesToShow =
+      matchingStudies.length > 0 ? matchingStudies : [study];
+
+    return studiesToShow.map((matchedStudy, index) => {
+      const subjects = subjectsByStudy[matchedStudy.code] || [];
+
+      const enrolled = subjects.length;
+
+      const target = Number(matchedStudy.targetSubjects || 0);
+
+      return {
+        id: index + 1,
+
+        name:
+          matchedStudy.site ||
+          matchedStudy.location ||
+          matchedStudy.name ||
+          "Unnamed Site",
+
+        sponsor: matchedStudy.sponsor,
+
+        account: matchedStudy.sponsor,
+
+        country: matchedStudy.country,
+
+        status: matchedStudy.status || "Active",
+
+        enrolled,
+
+        target,
+
+        performance: target > 0 ? Math.round((enrolled / target) * 100) : 0,
+      };
+    });
+  }
+
+  // UNSCOPED MODE (unchanged) — used by portfolio-wide views like
+  // Sponsor > Site Performance, which intentionally show every study.
+  const studies = getStudies();
+
+  return studies.map((singleStudy) => {
+    const subjects = subjectsByStudy[singleStudy.code] || [];
 
     const enrolled = subjects.length;
 
-    const target = Number(study.targetSubjects || 0);
+    const target = Number(singleStudy.targetSubjects || 0);
 
     return {
-      id: study.code,
+      id: singleStudy.code,
 
-      name: study.site || study.location || study.name,
+      name: singleStudy.site || singleStudy.location || singleStudy.name,
 
-      sponsor: study.sponsor,
+      sponsor: singleStudy.sponsor,
 
-      account: study.sponsor,
+      account: singleStudy.sponsor,
 
-      country: study.country,
+      country: singleStudy.country,
 
-      status: study.status || "Active",
+      status: singleStudy.status || "Active",
 
       enrolled,
 
@@ -817,31 +835,8 @@ export function getNotificationKPIs() {
   };
 }
 
-// export function getSiteKPIs() {
-//   const sites = getSites();
-
-//   const averagePerformance =
-//     sites.length > 0
-//       ? Math.round(
-//           sites.reduce(
-//             (sum, site) => sum + Number(site.performance || 0),
-//             0
-//           ) / sites.length
-//         )
-//       : 0;
-
-//   return {
-//     total: sites.length,
-//     avgPerformance: averagePerformance,
-//     totalEnrolled: sites.reduce(
-//       (sum, site) => sum + Number(site.enrolled || 0),
-//       0
-//     ),
-//   };
-// }
-
-export function getSiteKPIs() {
-  const sites = getSites();
+export function getSiteKPIs(study) {
+  const sites = getSites(study);
 
   const totalSites = sites.length;
 

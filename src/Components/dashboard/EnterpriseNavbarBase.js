@@ -43,6 +43,7 @@ import {
   SELECTED_SITE_NUMBER_KEY,
   SELECTED_SPONSOR_KEY,
   SELECTED_STUDY_FILTER_KEY,
+  SELECTED_SUBJECT_KEY,
   getStoredCROFilter,
   getStoredIndicationFilter,
   getStoredInstitutionFilter,
@@ -341,11 +342,41 @@ function EnterpriseNavbarBase({
 
   const handleSubjectChange = (subjectId) => {
     setSelectedSubject(subjectId);
-    setStoredSubjectFilter(subjectId);
 
-    if (subjectId) {
-      navigate(`/subject/${subjectId}`);
+    if (!subjectId) {
+      setStoredSubjectFilter("");
+      return;
     }
+
+    // Subject options carry a "studyKey" (the study code they belong to) —
+    // see getSubjectOptions in filterService.js. Fall back to whatever study
+    // is currently selected in the header if a match isn't found.
+    const matchedOption = subjectOptions.find(
+      (option) => String(option.value) === String(subjectId)
+    );
+
+    const studyCode = matchedOption?.studyKey || selectedStudyCode;
+
+    if (!studyCode) {
+      // No study context to navigate into — just remember the raw id.
+      setStoredSubjectFilter(subjectId);
+      return;
+    }
+
+    // Store the same { id, studyId } shape that StudySubjects.js,
+    // DashboardSidebar.js and the PI/CRO subject pages already read from
+    // the "selectedSubject" key so the destination page opens directly
+    // on this subject.
+    localStorage.setItem(
+      SELECTED_SUBJECT_KEY,
+      JSON.stringify({ id: subjectId, studyId: studyCode })
+    );
+
+    navigate(
+      `/study-dashboard/${encodeURIComponent(
+        studyCode
+      )}?tab=Subjects&subject=${encodeURIComponent(subjectId)}`
+    );
   };
 
   const updateFilter = (key, value, setter) => {
@@ -464,7 +495,11 @@ function EnterpriseNavbarBase({
             value={selectedStudyCode}
             onChange={handleStudyChange}
             options={studyOptions}
-            placeholder="Select Study"
+            placeholder={
+              selectedIndication || selectedInstitution
+                ? "Select Study"
+                : "Select Study"
+            }
             searchPlaceholder="Search Study Number"
             className="header-dropdown"
           />
@@ -504,7 +539,11 @@ function EnterpriseNavbarBase({
             value={selectedSubject}
             onChange={handleSubjectChange}
             options={subjectOptions}
-            placeholder="Select Subject"
+            placeholder={
+              selectedIndication || selectedInstitution
+                ? "Select Subject"
+                : "Select Subject"
+            }
             searchPlaceholder="Search Subject"
             className="header-dropdown"
           />
