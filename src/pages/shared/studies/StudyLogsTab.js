@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
-import DataTable from "../../../Components/dashboard/DataTable";
-import DocumentFolderManager from "../../../Components/common/DocumentFolderManager";
-import DelegationLog from "../../../Components/DelegationLog";
+import DataTable from "../../../components/dashboard/shared/DataTable";
+import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
+import DelegationLog from "../../../components/DelegationLog";
 
 import { getStudyLogs, getDelegationLogs } from "../../../services/adminService";
 import { getStudyByCode } from "../../../services/studyService";

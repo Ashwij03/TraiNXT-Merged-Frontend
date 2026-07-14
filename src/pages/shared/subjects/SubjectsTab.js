@@ -3,7 +3,7 @@ import { useState } from "react";
 import "./SubjectsTab.css";
 import { Link, useParams } from "react-router-dom";
 import { deleteSubject } from "../../../services/studyService";
-import DeleteConfirmationModal from "../../../Components/DeleteConfirmationModal";
+import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
 import { FiTrash2 } from "react-icons/fi";
 
 export default function SubjectsTab() {

@@ -1,3 +1,4 @@
+import { readJson } from "../utils/storageHelpers";
 import {
   addOrUpdateVisitSchedule,
   rebuildSchedulesFromSubjects,
@@ -9,14 +10,6 @@ export const VISIT_PLAN_VISITS_KEY = "visitPlanVisitsByPlan";
 export const VISIT_PLAN_PROCEDURES_KEY = "visitPlanProceduresByPlan";
 export const VISIT_PLAN_TASKS_KEY = "visitPlanTasksByPlan";
 export const VISIT_PLANS_UPDATED_EVENT = "visit-plans-updated";
-
-function readJson(key, fallback) {
-  try {
-    return JSON.parse(localStorage.getItem(key)) ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
 
 function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));

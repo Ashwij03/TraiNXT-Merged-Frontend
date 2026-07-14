@@ -8,7 +8,7 @@ import "./ClinicalSitesDashboard.css";
 
 import { getSites, getSiteKPIs } from "../../Sponsor/data/sponsorDataStore";
 
-import KPICard from "../../../Components/dashboard/KPICard";
+import KPICard from "../../../components/dashboard/shared/KPICard";
 import { FiHome, FiUsers, FiTrendingUp, FiActivity } from "react-icons/fi";
 
 const CLINICAL_SITES_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];

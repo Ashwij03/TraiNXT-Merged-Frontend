@@ -1,3 +1,4 @@
+import { readJson } from "../utils/storageHelpers";
 import { getStudyByCode, getStudies } from "./studyService";
 import {
   getFolderTree,
@@ -24,14 +25,6 @@ const DEFAULT_MILESTONE_TITLES = [
   "50% Enrollment",
   "Close-Out",
 ];
-
-function readJson(key, fallback) {
-  try {
-    return JSON.parse(localStorage.getItem(key)) ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
 
 function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));

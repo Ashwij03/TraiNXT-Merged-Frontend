@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "../../Components/dashboard/DashboardLayout";
-import KPICard from "../../Components/dashboard/KPICard";
-import DataTable from "../../Components/dashboard/DataTable";
+import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
+import KPICard from "../../components/dashboard/shared/KPICard";
+import DataTable from "../../components/dashboard/shared/DataTable";
 import { getUsers } from "../../services/adminService";
 import { removeUserPermissions } from "../../services/accessPermissionService";
 import { ROLE_LABELS } from "../../services/roleService";

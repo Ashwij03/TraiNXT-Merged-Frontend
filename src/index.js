@@ -9,7 +9,7 @@ import { initializeAdminData } from "./services/adminService";
 import { initializeStudies } from "./services/studyService";
 
 // Friend imports
-import { CommentsProvider } from "./CommentsContext";
+import { CommentsProvider } from "./comments/CommentsContext";
 import { CROProvider } from "./pages/CRO/CRODATAContext";
 import { FolderProvider } from "./context/FolderContext";
 

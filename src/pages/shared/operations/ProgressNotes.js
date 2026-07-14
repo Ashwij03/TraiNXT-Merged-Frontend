@@ -1,5 +1,5 @@
 import "./ProgressNotes.css";
-import DashboardLayout from "../../../Components/dashboard/DashboardLayout";
+import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
 
 export default function ProgressNotes() {
   return (

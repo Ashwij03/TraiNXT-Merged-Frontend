@@ -1,8 +1,8 @@
 // UPDATED: Dynamic sites page wired to adminService localStorage data
 
-import DashboardLayout from "../../Components/dashboard/DashboardLayout";
-import KPICard from "../../Components/dashboard/KPICard";
-import DataTable from "../../Components/dashboard/DataTable";
+import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
+import KPICard from "../../components/dashboard/shared/KPICard";
+import DataTable from "../../components/dashboard/shared/DataTable";
 import { getSites } from "../../services/adminService";
 import "./AdminPage.css";
 

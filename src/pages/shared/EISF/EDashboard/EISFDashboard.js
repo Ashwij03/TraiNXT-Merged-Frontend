@@ -10,8 +10,8 @@ import ParticipantConsent from "../ParticipantConsent/ParticipantConsent";
 import Regulatory from "../Regulatory/Regulatory";
 import Ethics from "../Ethics/Ethics";
 import ResearchGovernance from "../ResearchGovernance/ResearchGovernance";
-import SOP from "../SOP/Sop";
-import SiteIntiation from "../SiteIntiation/SiteIntiation";
+import SOP from "../Sop/Sop";
+import SiteInitiation from "../SiteInitiation/SiteInitiation";
 import SiteTraining from "../SiteTraining/SiteTraining";
 import Recruitment from "../Recruitment/Recruitment";
 import Randomization from "../Randomization/Randomization";
@@ -35,7 +35,7 @@ const pageMap = {
   "6.0": Ethics,
   "7.0": ResearchGovernance,
   "8.0": SOP,
-  "9.0": SiteIntiation,
+  "9.0": SiteInitiation,
   "10.0": SiteTraining,
   "11.0": Recruitment,
   "12.0": Randomization,

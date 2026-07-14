@@ -11,8 +11,8 @@ import {
 } from "react-icons/fa";
 import "./PISidebar.css";
 import { getSidebarMenuData } from "./piDashboardService";
-import TriaNXTLogo from "../../Components/common/TriaNXTLogo";
-import RoleStudiesSidebarTree from "../../Components/common/RoleStudiesSidebarTree";
+import TriaNXTLogo from "../../components/common/TriaNXTLogo";
+import RoleStudiesSidebarTree from "../../components/common/RoleStudiesSidebarTree";
 import { useRoleStudiesSidebar } from "../../hooks/useRoleStudiesSidebar";
 
 const ICON_MAP = {

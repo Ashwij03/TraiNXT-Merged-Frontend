@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import './CROOversight.css';
 import './SponsorShared.css';
 import KpiCard from './KpiCard';
-import RequestPermissionButton from '../../Components/common/RequestPermissionButton';
+import RequestPermissionButton from '../../components/common/RequestPermissionButton';
 import { FiLayers, FiActivity, FiTrendingUp, FiBarChart2 } from 'react-icons/fi';
 import { getCROs, getCROKPIs } from './data/sponsorDataStore';
 

@@ -17,8 +17,8 @@ import {
   syncSubjectSchedules,
   VISIT_STAGES
 } from "../../../services/visitScheduleService";
-import NextVisitPromptModal from "../../../Components/common/NextVisitPromptModal";
-import DocumentFolderManager from "../../../Components/common/DocumentFolderManager";
+import NextVisitPromptModal from "../../../components/common/NextVisitPromptModal";
+import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
 import "./SubjectFolderWorkspace.css";
 
 const SUBJECT_DETAILS_KEY = "subjectDetailsByStudy";

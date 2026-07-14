@@ -1,6 +1,6 @@
 import { useState } from "react";
-import DashboardLayout from "../../../Components/dashboard/DashboardLayout";
-import DocumentFolderManager from "../../../Components/common/DocumentFolderManager";
+import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
+import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
 import "./EISFHub.css";
 
 const DOCUMENT_TABS = [

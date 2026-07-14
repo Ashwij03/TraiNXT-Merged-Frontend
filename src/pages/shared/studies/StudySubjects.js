@@ -1,3 +1,4 @@
+import { readStorage } from "../../../utils/storageHelpers";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -9,7 +10,7 @@ import {
   FiPlus,
   FiTrash2,
 } from "react-icons/fi";
-import DocumentFolderManager from "../../../Components/common/DocumentFolderManager";
+import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
 import {
   canAddSubject,
   canEditSubjectContent,
@@ -36,21 +37,6 @@ const emptySubjectForm = {
   pi: "",
   site: "",
 };
-
-function readStorage(key, fallbackValue) {
-  try {
-    const savedValue = localStorage.getItem(key);
-
-    if (!savedValue) {
-      return fallbackValue;
-    }
-
-    return JSON.parse(savedValue) ?? fallbackValue;
-  } catch (error) {
-    console.error(`Unable to read ${key}:`, error);
-    return fallbackValue;
-  }
-}
 
 function writeStorage(key, value, eventName) {
   localStorage.setItem(key, JSON.stringify(value));

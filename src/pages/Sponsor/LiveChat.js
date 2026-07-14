@@ -1,5 +1,5 @@
 import AppLayout from "./AppLayout";
-import RoleLiveChatPage from "../../Components/common/RoleLiveChatPage";
+import RoleLiveChatPage from "../../components/common/RoleLiveChatPage";
 import ROLES from "../../constants/roles";
 import useLiveChatNavigation from "../../hooks/useLiveChatNavigation";
 

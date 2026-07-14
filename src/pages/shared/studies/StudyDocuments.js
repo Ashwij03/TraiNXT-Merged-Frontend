@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useState } from "react";
-import DocumentFolderManager from "../../../Components/common/DocumentFolderManager";
+import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
 
 
 function StudyDocuments() {

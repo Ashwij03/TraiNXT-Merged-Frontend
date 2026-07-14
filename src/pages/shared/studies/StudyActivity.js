@@ -1,5 +1,5 @@
 
-import RecentActivity from "../../../Components/dashboard/RecentActivity";
+import RecentActivity from "../../../components/dashboard/shared/RecentActivity";
 // ===== END F2 CHANGES =====
 // ===== START F2 CHANGES =====
 import StudyComments from "./StudyComments";

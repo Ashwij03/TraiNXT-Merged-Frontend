@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "../../../Components/dashboard/DashboardLayout";
-import KPICard from "../../../Components/dashboard/KPICard";
+import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
+import KPICard from "../../../components/dashboard/shared/KPICard";
 import { createStudy, getStudies } from "../../../services/studyService";
 import {
   getAccessibleStudies,

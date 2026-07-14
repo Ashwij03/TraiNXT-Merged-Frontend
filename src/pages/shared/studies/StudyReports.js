@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import KPICard from "../../../Components/dashboard/KPICard";
-import DashboardPieChart from "../../../Components/dashboard/DashboardPieChart";
+import KPICard from "../../../components/dashboard/shared/KPICard";
+import DashboardPieChart from "../../../components/dashboard/shared/DashboardPieChart";
 import { getStudyByCode } from "../../../services/studyService";
 import { getSubjectStatusAnalytics } from "../../../utils/subjectStatusAnalytics";
 import { downloadCsvReport } from "../../../utils/exportReport";

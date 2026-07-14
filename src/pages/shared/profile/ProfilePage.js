@@ -1,4 +1,4 @@
-import DashboardLayout from "../../../Components/dashboard/DashboardLayout";
+import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
 import ProfileSettingsSection from "./ProfileSettingsSection";
 import "../../../pages/Admin/AdminPage.css";
 

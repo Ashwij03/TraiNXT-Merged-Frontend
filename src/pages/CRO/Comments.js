@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-import CROSidebar from "./Components/CROSidebar";
-import CRONavbar from "./Components/CRONavbar";
-import CommentModal from "./CommentModal";
+import CROSidebar from "./CROSidebar";
+import CRONavbar from "./CRONavbar";
+import CommentModal from "../../comments/CommentModal";
 import { getCurrentUser } from "../../services/roleService";
 import { useCROData } from "./CRODATAContext";
 

@@ -1,1 +1,1 @@
-export { default } from "../../Components/dashboard/CRONavbar";
+export { default } from "../../components/dashboard/cro/CRONavbar";

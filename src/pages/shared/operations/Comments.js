@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import DashboardLayout from "../../../Components/dashboard/DashboardLayout";
+import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
 import {
   addCommentRecord,
   canResolveComments,

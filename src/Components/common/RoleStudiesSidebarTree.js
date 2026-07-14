@@ -5,7 +5,7 @@ import {
   getStudyMeta,
   useRoleStudiesSidebar,
 } from "../../hooks/useRoleStudiesSidebar";
-import "../../Components/dashboard/DashboardSidebar.css";
+import "../dashboard/shared/DashboardSidebar.css";
 
 function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
   const {

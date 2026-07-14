@@ -3,7 +3,7 @@ import CROLayout from "./CROLayout";
 import { useCROData } from "./CRODATAContext";
 import CROStatusBadge from "./CROStatusBadge";
 import EmptyState from "./EmptyState";
-import RequestPermissionButton from "../../Components/common/RequestPermissionButton";
+import RequestPermissionButton from "../../components/common/RequestPermissionButton";
 import { downloadCsvReport } from "../../utils/exportReport";
 import { getReportsForStudy } from "../../services/reportService";
 import { getCurrentUser, getAccessibleStudies } from "../../services/roleService";
