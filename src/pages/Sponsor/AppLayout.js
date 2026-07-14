@@ -14,13 +14,13 @@ import {
   MdSettings,
 } from "react-icons/md";
 import "./AppLayout.css";
-import SponsorNavbar from "../../Components/dashboard/SponsorNavbar";
-import TriaNXTLogo from "../../Components/common/TriaNXTLogo";
-import RoleStudiesSidebarTree from "../../Components/common/RoleStudiesSidebarTree";
+import SponsorNavbar from "../../components/dashboard/sponsor/SponsorNavbar";
+import TriaNXTLogo from "../../components/common/TriaNXTLogo";
+import RoleStudiesSidebarTree from "../../components/common/RoleStudiesSidebarTree";
 import { useRoleStudiesSidebar } from "../../hooks/useRoleStudiesSidebar";
 import { useEnterpriseDashboardShell } from "../../hooks/useEnterpriseDashboardShell";
-import LiveChatFab from "../../Components/common/LiveChatFab";
-import "../../Components/dashboard/DashboardLayout.css";
+import LiveChatFab from "../../components/common/LiveChatFab";
+import "../../components/dashboard/shared/DashboardLayout.css";
 
 const MENU_ITEMS = [
   { name: "Dashboard", path: "/sponsor-dashboard", icon: MdDashboard },

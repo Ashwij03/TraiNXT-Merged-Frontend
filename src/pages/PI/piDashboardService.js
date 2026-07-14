@@ -1,3 +1,4 @@
+import { readStorage } from "../../utils/storageHelpers";
 // UPDATED: Central PI dashboard data layer (localStorage + dynamic study synchronization)
 
 // Notifications are intentionally NOT read from/written to their own
@@ -27,15 +28,6 @@ const STORAGE_KEYS = {
 
 export const dispatchNotificationsUpdated = () => {
   window.dispatchEvent(new CustomEvent("pi-notifications-updated"));
-};
-
-const readStorage = (key, fallback) => {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
 };
 
 const writeStorage = (key, data) => {

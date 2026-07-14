@@ -14,8 +14,8 @@ import {
   FaUserFriends,
   FaTimes,
 } from "react-icons/fa";
-import TriaNXTLogo from "../../Components/common/TriaNXTLogo";
-import RoleStudiesSidebarTree from "../../Components/common/RoleStudiesSidebarTree";
+import TriaNXTLogo from "../../components/common/TriaNXTLogo";
+import RoleStudiesSidebarTree from "../../components/common/RoleStudiesSidebarTree";
 import { useRoleStudiesSidebar } from "../../hooks/useRoleStudiesSidebar";
 import "./CRODashboard.css";
 

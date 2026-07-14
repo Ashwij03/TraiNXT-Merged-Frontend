@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "../../Components/dashboard/DashboardLayout";
+import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
 import { getCRODashboardData } from "../../services/adminService";
 import CROContracts from "./CROContracts";
 import CRODetails from "./CRODetails";

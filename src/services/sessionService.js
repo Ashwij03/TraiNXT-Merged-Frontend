@@ -1,3 +1,4 @@
+import { readJson } from "../utils/storageHelpers";
 import ROLES from "../constants/roles";
 import { getCurrentUser } from "./roleService";
 
@@ -5,15 +6,6 @@ const SESSION_KEY = "userSessionMeta";
 const SESSION_HISTORY_KEY = "userSessionHistory";
 const ACTIVE_SESSIONS_REGISTRY_KEY = "activeSessionsRegistry";
 export const SESSIONS_CHANGE_EVENT = "activeSessionsChange";
-
-function readJson(key, fallback) {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-}
 
 function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));

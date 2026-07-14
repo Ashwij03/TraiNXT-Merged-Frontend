@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "../../Components/dashboard/DashboardLayout";
+import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
 import { submitAccessRequest } from "../../services/accessPermissionService";
 import { getCurrentUser } from "../../services/roleService";
 import "./AccessPermissions.css";

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import RequestPermissionButton from "../../../Components/common/RequestPermissionButton";
+import RequestPermissionButton from "../../../components/common/RequestPermissionButton";
 import { canEditStudyContent } from "../../../utils/contentAccess";
 import { getCurrentUser } from "../../../services/roleService";
 import {

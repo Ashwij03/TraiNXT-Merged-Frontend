@@ -1,3 +1,4 @@
+import { readJson } from "../utils/storageHelpers";
 import {
   notifyPermissionRequestApproved,
   notifyPermissionRequestCreated,
@@ -10,15 +11,6 @@ const APPROVED_SCOPES_KEY = "approvedPermissionScopes";
 
 export const PERMISSION_REQUESTS_UPDATED = "permission-requests-updated";
 export const PERMISSIONS_UPDATED = "permissions-updated";
-
-function readJson(key, fallback = []) {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-}
 
 function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));

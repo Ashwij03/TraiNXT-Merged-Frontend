@@ -4,7 +4,7 @@ import { useCROData } from "./CRODATAContext";
 import StatusBadge from "./StatusBadge";
 import EmptyState from "./EmptyState";
 import CROModal from "./CROModal";
-import RequestPermissionButton from "../../Components/common/RequestPermissionButton";
+import RequestPermissionButton from "../../components/common/RequestPermissionButton";
 import { getAccessibleStudies, getCurrentUser } from "../../services/roleService";
 
 function CRORegulatoryDocuments() {

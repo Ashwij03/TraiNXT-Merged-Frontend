@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import DataTable from "../../../Components/dashboard/DataTable";
+import DataTable from "../../../components/dashboard/shared/DataTable";
 import {
   addCommentRecord,
   canResolveComments,

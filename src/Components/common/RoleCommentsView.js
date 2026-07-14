@@ -1,3 +1,4 @@
+import { normalizeStatus } from "../../utils/normalizeStatus";
 import React, { useEffect, useMemo, useState } from "react";
 import "../../pages/PI/PIComments.css";
 import {
@@ -18,18 +19,6 @@ const SORT_FIELDS = {
   date: "date",
   status: "status",
 };
-
-function normalizeStatus(status) {
-  if (status === "Resolved") {
-    return "resolved";
-  }
-
-  if (status === "Open") {
-    return "unresolved";
-  }
-
-  return "pending-review";
-}
 
 function toDisplayStatus(status) {
   if (status === "resolved") {
@@ -52,7 +41,7 @@ function mapCommentRecord(comment) {
     comment: comment.description || "—",
     createdBy: comment.createdBy || "—",
     date: comment.createdAt || "—",
-    status: normalizeStatus(comment.status),
+    status: normalizeStatus(comment.status, { type: "comment" }),
     study: comment.study || "",
     site: comment.site || "",
     rawStatus: comment.status,

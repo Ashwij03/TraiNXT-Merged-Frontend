@@ -1,9 +1,9 @@
 // UPDATED: Site Performance page with dynamic metrics from adminService
 
-import DashboardLayout from "../../Components/dashboard/DashboardLayout";
-import DashboardCard from "../../Components/dashboard/DashboardCard";
-import DashboardBarChart from "../../Components/dashboard/DashboardBarChart";
-import DataTable from "../../Components/dashboard/DataTable";
+import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
+import DashboardCard from "../../components/dashboard/shared/DashboardCard";
+import DashboardBarChart from "../../components/dashboard/shared/DashboardBarChart";
+import DataTable from "../../components/dashboard/shared/DataTable";
 import { getSitePerformance } from "../../services/adminService";
 import "./AdminPage.css";
 

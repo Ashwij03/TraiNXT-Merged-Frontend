@@ -1,4 +1,4 @@
-import DashboardLayout from "../../../Components/dashboard/DashboardLayout";
+import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
 import SecuritySettingsSection from "./SecuritySettingsSection";
 import "../../../pages/Admin/AdminPage.css";
 

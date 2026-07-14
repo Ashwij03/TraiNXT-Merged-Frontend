@@ -1,3 +1,4 @@
+import { readStorage } from "../../../utils/storageHelpers";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import ProgressNotes from "../operations/ProgressNotes";
@@ -5,26 +6,11 @@ import Comments from "../operations/Comments";
 import FileDetails from "../documents/FileDetails";
 import StudyLogs from "../operations/StudyLogs";
 import "./StudyDetails.css";
-import ERegSection from "../../../ERegSection.jsx";
+import ERegSection from "../../../ereg/ERegSection.js";
 import StudyFinancials from "../../Sponsor/Financials/StudyFinancials";
-import DashboardLayout from "../../../Components/dashboard/DashboardLayout";
+import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
 
 const STUDY_STORAGE_KEYS = ["studies", "studiesData", "studyData"];
-
-function readStorage(key, fallbackValue) {
-  try {
-    const savedValue = localStorage.getItem(key);
-
-    if (!savedValue) {
-      return fallbackValue;
-    }
-
-    return JSON.parse(savedValue) ?? fallbackValue;
-  } catch (error) {
-    console.error(`Unable to read ${key}:`, error);
-    return fallbackValue;
-  }
-}
 
 function getAllStudies() {
   for (const storageKey of STUDY_STORAGE_KEYS) {

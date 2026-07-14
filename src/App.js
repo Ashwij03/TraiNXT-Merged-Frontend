@@ -1,8 +1,8 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import Login from "./Login";
-import Register from "./Register";
+import Login from "./auth/Login";
+import Register from "./auth/Register";
 import Dashboard from "./Dashboard";
 import ProfilePage from "./pages/shared/profile/ProfilePage";
 import SecurityPage from "./pages/shared/profile/SecurityPage";
@@ -12,8 +12,8 @@ import VisitDetails from "./pages/shared/visits/VisitDetails";
 import CompletedVisit from "./pages/shared/visits/CompletedVisit";
 // import SubjectProfilePage from "./pages/shared/subjects/SubjectProfilePage";
 import SubjectPage from "./pages/shared/subjects/SubjectPage";
-import ProtectedRoute from "./ProtectedRoute";
-import ForgotPassword from "./ForgotPassword";
+import ProtectedRoute from "./auth/ProtectedRoute";
+import ForgotPassword from "./auth/ForgotPassword";
 import EISFHub from "./pages/shared/documents/EISFHub";
 
 import OperationsComments from "./pages/shared/operations/Comments";
@@ -85,7 +85,7 @@ import SponsorQueries from "./pages/Sponsor/Queries";
 
 import PIComments from "./pages/PI/PIComments";
 import PISitePerformance from "./pages/PI/PISitePerformance";
-import PIRecruitment from "./pages/PI/PIRecuritment";
+import PIRecruitment from "./pages/PI/PIRecruitment";
 import PIRegulatory from "./pages/PI/PIRegulatory";
 import PIReports from "./pages/PI/PIReports";
 import PINotifications from "./pages/PI/PINotifications";

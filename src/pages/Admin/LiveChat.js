@@ -1,5 +1,5 @@
-import AdminDashboardLayout from "../../Components/dashboard/AdminDashboardLayout";
-import RoleLiveChatPage from "../../Components/common/RoleLiveChatPage";
+import AdminDashboardLayout from "../../components/dashboard/admin/AdminDashboardLayout";
+import RoleLiveChatPage from "../../components/common/RoleLiveChatPage";
 import ROLES from "../../constants/roles";
 import useLiveChatNavigation from "../../hooks/useLiveChatNavigation";
 

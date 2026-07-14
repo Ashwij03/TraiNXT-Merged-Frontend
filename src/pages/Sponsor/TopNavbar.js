@@ -1,1 +1,1 @@
-export { default } from "../../Components/dashboard/SponsorNavbar";
+export { default } from "../../components/dashboard/sponsor/SponsorNavbar";

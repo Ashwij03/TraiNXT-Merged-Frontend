@@ -1,10 +1,10 @@
 // UPDATED: Logs hub — links to training and delegation logs in dashboard layout
 
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "../../../Components/dashboard/DashboardLayout";
-import DashboardCard from "../../../Components/dashboard/DashboardCard";
-import QuickActions from "../../../Components/dashboard/QuickActions";
-import DocumentFolderManager from "../../../Components/common/DocumentFolderManager";
+import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
+import DashboardCard from "../../../components/dashboard/shared/DashboardCard";
+import QuickActions from "../../../components/dashboard/shared/QuickActions";
+import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
 import { getTrainingLogs, getDelegationLogs } from "../../../services/adminService";
 import { filterBySite, getAssignedSite, isAdmin } from "../../../services/roleService";
 import "../../../pages/Admin/AdminPage.css";

@@ -2,14 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminDashboardLayout from "../../Components/dashboard/AdminDashboardLayout";
+import AdminDashboardLayout from "../../components/dashboard/admin/AdminDashboardLayout";
 
-import KPICard from "../../Components/dashboard/KPICard";
-import SubjectAnalyticsSection from "../../Components/dashboard/SubjectAnalyticsSection";
+import KPICard from "../../components/dashboard/shared/KPICard";
+import SubjectAnalyticsSection from "../../components/dashboard/shared/SubjectAnalyticsSection";
 import { getStudies } from "../../services/studyService";
-import AlertsPanel from "../../Components/dashboard/AlertsPanel";
-import QuickActions from "../../Components/dashboard/QuickActions";
-import VisitCalendarSection from "../../Components/dashboard/VisitCalendarSection";
+import AlertsPanel from "../../components/dashboard/shared/AlertsPanel";
+import QuickActions from "../../components/dashboard/shared/QuickActions";
+import VisitCalendarSection from "../../components/dashboard/shared/VisitCalendarSection";
 import {
   getAdminDashboardData,
   getSubjectsForAnalytics

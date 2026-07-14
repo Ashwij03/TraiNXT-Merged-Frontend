@@ -1,9 +1,9 @@
-import "../../../ERegSection.css";
+import "../../../ereg/ERegSection.css";
 
-import DelegationLog from "../../../Components/DelegationLog";
-import TrainingLog from "../../../Components/TrainingLog";
-import ERegComments from "../../../Components/ERegComments";
-import ERegDocuments from "../../../ERegDocuments";
+import DelegationLog from "../../../components/DelegationLog";
+import TrainingLog from "../../../components/TrainingLog";
+import ERegComments from "../../../components/ERegComments";
+import ERegDocuments from "../../../ereg/ERegDocuments";
 
 export default function SubjectPage() {
 

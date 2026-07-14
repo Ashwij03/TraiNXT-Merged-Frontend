@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./FileDetails.css";
-import DashboardLayout from "../../../Components/dashboard/DashboardLayout";
+import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
 
 export default function FileDetails() {
   const [showAnnotations, setShowAnnotations] = useState(false);

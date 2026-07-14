@@ -1,3 +1,4 @@
+import { normalizeStatus } from "./normalizeStatus";
 export const SUBJECT_STATUS_ORDER = [
   "Screening",
   "Enrolled",
@@ -6,19 +7,6 @@ export const SUBJECT_STATUS_ORDER = [
   "Withdrawn",
   "Dropout"
 ];
-
-function normalizeStatus(status) {
-  const value = String(status || "").trim().toLowerCase();
-
-  if (value.includes("screen")) return "Screening";
-  if (value.includes("enroll")) return "Enrolled";
-  if (value.includes("ongoing") || value.includes("active")) return "Ongoing";
-  if (value.includes("complete")) return "Completed";
-  if (value.includes("withdraw")) return "Withdrawn";
-  if (value.includes("drop")) return "Dropout";
-
-  return null;
-}
 
 export function getSubjectStatusAnalytics(subjects = []) {
   const counts = Object.fromEntries(
