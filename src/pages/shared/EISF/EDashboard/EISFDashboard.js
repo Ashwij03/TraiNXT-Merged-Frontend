@@ -60,7 +60,7 @@ function getParentSectionId(id) {
 
 export default function EISFDashboard({ studyCode } = {}) {
   const [selected, setSelected] = useState("1.0");
-  const [expanded, setExpanded] = useState({});
+  const [expandedModuleId, setExpandedModuleId] = useState(null);
 
   const selectedModuleId = useMemo(
     () => getParentSectionId(selected),
@@ -79,10 +79,9 @@ export default function EISFDashboard({ studyCode } = {}) {
   };
 
   const toggleModule = (moduleId) => {
-    setExpanded((prev) => ({
-      ...prev,
-      [moduleId]: !prev[moduleId],
-    }));
+    setExpandedModuleId((currentModuleId) =>
+      currentModuleId === moduleId ? null : moduleId
+    );
   };
 
   return (
@@ -112,14 +111,14 @@ export default function EISFDashboard({ studyCode } = {}) {
                     type="button"
                     className="eisf-expand-btn"
                     onClick={() => toggleModule(item.id)}
-                    aria-label={`${expanded[item.id] ? "Collapse" : "Expand"} ${item.title}`}
+                    aria-label={`${expandedModuleId === item.id ? "Collapse" : "Expand"} ${item.title}`}
                   >
-                    {expanded[item.id] ? "−" : "+"}
+                    {expandedModuleId === item.id ? "−" : "+"}
                   </button>
                 )}
               </div>
 
-              {expanded[item.id] &&
+              {expandedModuleId === item.id &&
                 item.children?.map((child) => (
                   <button
                     type="button"

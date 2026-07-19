@@ -1,4 +1,6 @@
 import React from "react";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 import "./CRODashboard.css";
 import "../shared/studies/StudyDashboard.css";
 import CROLayout from "./CROLayout";
@@ -189,7 +191,7 @@ function CRODashboard() {
                     <table>
                       <thead>
                         <tr>
-                          <th>Site Name</th>
+                          <th>Site</th>
                           <th>Study</th>
                           <th>Subjects</th>
                           <th>Status</th>
@@ -203,9 +205,13 @@ function CRODashboard() {
                           const siteSubjects = safeSubjects.filter(
                             (s) => String(s?.site ?? "") === site
                           );
+                          const siteDisplay = resolveSiteDisplay(site, {
+                            sources: getStudies(),
+                            fallback: site,
+                          });
                           return (
                             <tr key={site}>
-                              <td>{site} Hospital</td>
+                              <td>{siteDisplay}</td>
                               <td>
                                 {siteSubjects[0]?.study || "—"}
                               </td>

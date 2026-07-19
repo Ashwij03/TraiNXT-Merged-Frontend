@@ -2,10 +2,10 @@ import { FiBarChart2 } from "react-icons/fi";
 
 function StudyProgressSummary({ progress }) {
   const items = [
-    { label: "Sites", value: progress?.sites ?? 0 },
-    { label: "Subjects", value: progress?.subjects ?? 0 },
-    { label: "Visits", value: progress?.visits ?? 0 },
-    { label: "Documents", value: progress?.documents ?? 0 },
+    { label: "Subjects Screened", value: progress?.screened ?? 0 },
+    { label: "Subjects Enrolled", value: progress?.enrolled ?? 0 },
+    { label: "Subjects Ongoing", value: progress?.ongoing ?? 0 },
+    { label: "Subjects Completed", value: progress?.completed ?? 0 },
   ];
 
   const allZero = items.every((item) => item.value === 0);

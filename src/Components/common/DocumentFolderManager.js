@@ -809,21 +809,102 @@ function DocumentFolderManager({
     }
   };
 
-  const handleFileSelect = async (fileList) => {
-    const file = Array.from(fileList || [])[0];
+  // Item 18 — Bulk File Upload.
+  // The single-file behavior is preserved: when the user selects exactly one
+  // PDF the legacy `pendingUpload` preview + Save flow is used unchanged.
+  // When multiple PDFs are selected (via the file input, drag-and-drop of
+  // several files, or a folder drop), every valid PDF is added to the
+  // existing documents list in one batch. Non-PDF files are skipped so the
+  // existing document contract stays intact.
+  const isPdfFile = (file) => {
+    if (!file) return false;
+    return (
+      file.type === "application/pdf" ||
+      String(file.name || "").toLowerCase().endsWith(".pdf")
+    );
+  };
 
-    if (!file) {
+  const persistBulkFiles = (pdfFiles) => {
+    if (!pdfFiles.length || !selectedFolderId) {
       return;
     }
 
-    if (
-      file.type !== "application/pdf" &&
-      !file.name.toLowerCase().endsWith(".pdf")
-    ) {
+    const now = Date.now();
+    const uploader = localStorage.getItem("currentUserName") || "Current User";
+    const role = getEffectiveRole(getCurrentUser());
+    const roleLabel = ROLE_LABELS[role] || role;
+    const sectionLabel = getSectionLabel(sectionId, title);
+
+    const newDocuments = pdfFiles.map((file, index) => {
+      const id = `doc-${now}-${index}`;
+      const document = {
+        id,
+        name:
+          file.webkitRelativePath ||
+          file.relativePath ||
+          file.name ||
+          "Untitled Document",
+        type: file.type || "application/pdf",
+        size: Number(file.size) || 0,
+        uploadedAt: new Date(now + index).toISOString(),
+        uploadedBy: uploader,
+        status: "Submitted",
+        documentType: "General",
+        studyCode: studyCode || "",
+        subjectId: subjectId || "",
+        fileUrl: ""
+      };
+
+      try {
+        sessionFileUrlsRef.current.set(id, URL.createObjectURL(file));
+      } catch (err) {
+        /* no-op: some environments block object URLs */
+      }
+
+      return document;
+    });
+
+    const saved = persistDocuments([...documents, ...newDocuments]);
+    if (saved) {
+      newDocuments.forEach((doc) => {
+        notifyDocumentAdded({
+          ...doc,
+          addedByRole: roleLabel,
+          sectionLabel
+        });
+      });
+    }
+  };
+
+  const handleFileSelect = async (fileList) => {
+    const filesArray = Array.from(fileList || []);
+
+    if (!filesArray.length) {
+      return;
+    }
+
+    const pdfFiles = filesArray.filter(isPdfFile);
+
+    if (!pdfFiles.length) {
       window.alert("Only PDF files are allowed.");
       return;
     }
 
+    if (pdfFiles.length < filesArray.length) {
+      window.alert(
+        `${filesArray.length - pdfFiles.length} non-PDF file(s) were skipped.`
+      );
+    }
+
+    // Bulk upload path — multiple PDFs go straight into the existing
+    // document store, reusing persistDocuments.
+    if (pdfFiles.length > 1) {
+      persistBulkFiles(pdfFiles);
+      return;
+    }
+
+    // Legacy single-file path — unchanged behavior (preview + Save).
+    const file = pdfFiles[0];
     setUploadProgress(0);
     setPendingUpload({
       file,
@@ -838,6 +919,94 @@ function DocumentFolderManager({
       await new Promise((resolve) => setTimeout(resolve, 120));
       setUploadProgress(step);
     }
+  };
+
+  // Extract every file from a drag-and-drop DataTransfer, including files
+  // dragged from nested folders. Falls back gracefully when the browser
+  // does not support the webkitGetAsEntry directory-traversal API.
+  const collectFilesFromDataTransfer = async (dataTransfer) => {
+    if (!dataTransfer) return [];
+
+    const itemList = dataTransfer.items;
+    if (!itemList || !itemList.length) {
+      return Array.from(dataTransfer.files || []);
+    }
+
+    const supportsEntries =
+      typeof itemList[0].webkitGetAsEntry === "function";
+
+    if (!supportsEntries) {
+      return Array.from(dataTransfer.files || []);
+    }
+
+    const readAllEntries = (reader) =>
+      new Promise((resolve, reject) => {
+        const collected = [];
+        const readBatch = () => {
+          reader.readEntries((batch) => {
+            if (!batch.length) {
+              resolve(collected);
+              return;
+            }
+            collected.push(...batch);
+            readBatch();
+          }, reject);
+        };
+        readBatch();
+      });
+
+    const walkEntry = async (entry, pathPrefix = "") => {
+      if (!entry) return [];
+
+      if (entry.isFile) {
+        return new Promise((resolve) => {
+          entry.file(
+            (file) => {
+              try {
+                Object.defineProperty(file, "relativePath", {
+                  value: pathPrefix + (entry.name || file.name),
+                  configurable: true
+                });
+              } catch (err) {
+                /* some browsers seal File instances */
+              }
+              resolve([file]);
+            },
+            () => resolve([])
+          );
+        });
+      }
+
+      if (entry.isDirectory) {
+        const reader = entry.createReader();
+        try {
+          const entries = await readAllEntries(reader);
+          const nested = await Promise.all(
+            entries.map((child) =>
+              walkEntry(child, `${pathPrefix}${entry.name}/`)
+            )
+          );
+          return nested.flat();
+        } catch (err) {
+          return [];
+        }
+      }
+
+      return [];
+    };
+
+    const topEntries = Array.from(itemList)
+      .map((item) => item.webkitGetAsEntry && item.webkitGetAsEntry())
+      .filter(Boolean);
+
+    if (!topEntries.length) {
+      return Array.from(dataTransfer.files || []);
+    }
+
+    const filesPerEntry = await Promise.all(
+      topEntries.map((entry) => walkEntry(entry))
+    );
+    return filesPerEntry.flat();
   };
 
   const handleSaveUpload = async () => {
@@ -1195,6 +1364,7 @@ function DocumentFolderManager({
                 type="file"
                 accept="application/pdf,.pdf"
                 className="dfm-file-input"
+                multiple
                 onChange={(event) => {
                   handleFileSelect(event.target.files);
                   event.target.value = "";
@@ -1412,10 +1582,20 @@ function DocumentFolderManager({
                 setDragOverEmpty(true);
               }}
               onDragLeave={() => setDragOverEmpty(false)}
-              onDrop={(event) => {
+              onDrop={async (event) => {
                 event.preventDefault();
                 setDragOverEmpty(false);
-                handleFileSelect(event.dataTransfer.files);
+                // Support drag-and-drop of multiple files and (where
+                // browsers expose the entry API) whole folders. Fall
+                // back to the raw file list otherwise.
+                const collected = await collectFilesFromDataTransfer(
+                  event.dataTransfer
+                );
+                handleFileSelect(
+                  collected.length
+                    ? collected
+                    : event.dataTransfer.files
+                );
               }}
             >
               <FiUpload className="dfm-drop-zone-icon" />

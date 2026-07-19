@@ -1,12 +1,23 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AppLayout from "./AppLayout";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 
 
 function ScreeningDetails() {
 	const navigate = useNavigate();
 
   const { id } = useParams();
+
+  const siteSources = useMemo(() => getStudies(), []);
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   const screeningData = {
     id: id,
@@ -50,7 +61,7 @@ function ScreeningDetails() {
 		    <p><strong>Screening ID:</strong> {screeningData.id}</p>
 		    <p><strong>Subject ID:</strong> {screeningData.subjectId}</p>
 		    <p><strong>Study:</strong> {screeningData.study}</p>
-		    <p><strong>Site:</strong> {screeningData.site}</p>
+		    <p><strong>Site:</strong> {displaySite(screeningData.site)}</p>
 		  </div>
 
 		  <div>
@@ -67,7 +78,7 @@ function ScreeningDetails() {
           <p><strong>Screening ID:</strong> {screeningData.id}</p>
           <p><strong>Subject ID:</strong> {screeningData.subjectId}</p>
           <p><strong>Study:</strong> {screeningData.study}</p>
-          <p><strong>Site:</strong> {screeningData.site}</p>
+          <p><strong>Site:</strong> {displaySite(screeningData.site)}</p>
           <p><strong>PI:</strong> {screeningData.pi}</p>
 		  <p>
 		    <strong>Status:</strong>

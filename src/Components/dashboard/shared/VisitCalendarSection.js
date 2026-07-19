@@ -4,6 +4,8 @@ import CalendarWidget from "./CalendarWidget";
 import DataTable from "./DataTable";
 import { mapScheduleToTableRow } from "../../../services/visitScheduleService";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
+import { resolveSiteDisplay } from "../../../utils/siteDisplay";
+import { getStudies } from "../../../services/studyService";
 import "./VisitCalendarSection.css";
 
 const UPCOMING_COLUMNS = [
@@ -58,7 +60,7 @@ function VisitCalendarSection({
     [getVisitsForDate, selectedScheduleDate]
   );
 
-  const upcomingRows = useMemo(() => {
+  const baseRows = useMemo(() => {
     if (selectedScheduleDate) {
       return selectedDaySchedules;
     }
@@ -73,6 +75,23 @@ function VisitCalendarSection({
       .slice(0, 12)
       .map(mapScheduleToTableRow);
   }, [schedules, selectedDaySchedules, selectedScheduleDate, upcomingWindow]);
+
+  // Item 17 — Site column renders resolved Site Number (not stored Site Name).
+  // Authoritative schedule/site data is left untouched; this is display only.
+  const siteResolutionSources = useMemo(() => getStudies(), []);
+  const upcomingRows = useMemo(
+    () =>
+      baseRows.map((row) => ({
+        ...row,
+        site: row?.site
+          ? resolveSiteDisplay(row.site, {
+              sources: siteResolutionSources,
+              fallback: row.site || "—"
+            })
+          : "—"
+      })),
+    [baseRows, siteResolutionSources]
+  );
 
   const tableEmptyMessage = selectedScheduleDate
     ? `No visits on ${selectedScheduleDate}`

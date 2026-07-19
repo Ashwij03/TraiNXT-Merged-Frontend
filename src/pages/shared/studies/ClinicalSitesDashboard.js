@@ -7,6 +7,10 @@ import ClinicalSitesMap from "./ClinicalSitesMap";
 import "./ClinicalSitesDashboard.css";
 
 import { getSites, getSiteKPIs } from "../../Sponsor/data/sponsorDataStore";
+import {
+  resolveSiteDisplay,
+  formatSiteOption,
+} from "../../../utils/siteDisplay";
 
 import KPICard from "../../../components/dashboard/shared/KPICard";
 import { FiHome, FiUsers, FiTrendingUp, FiActivity } from "react-icons/fi";
@@ -91,9 +95,15 @@ function ClinicalSitesDashboard({ study }) {
     ...new Set(sites.map((site) => site.status || "Unknown")),
   ];
 
-  const siteNames = [
-    "All Sites",
-    ...new Set(sites.map((site) => site.name || "Unknown")),
+  // Selector options render as "SITE-001 — Apollo Clinical Research",
+  // while the underlying stored value remains the Site Number so the
+  // existing filter logic continues to work.
+  const siteFilterOptions = [
+    { value: "All Sites", label: "All Sites" },
+    ...sites.map((site) => ({
+      value: site.siteNumber || site.name || "Unknown",
+      label: formatSiteOption(site) || site.name || "Unknown",
+    })),
   ];
 
   const filteredSites = sites.filter((site) => {
@@ -106,7 +116,9 @@ function ClinicalSitesDashboard({ study }) {
       selectedStatus === "All Status" || (site.status || "") === selectedStatus;
 
     const matchesSite =
-      selectedSite === "All Sites" || (site.name || "") === selectedSite;
+      selectedSite === "All Sites" ||
+      (site.siteNumber || "") === selectedSite ||
+      (site.name || "") === selectedSite;
 
     const search = searchText.toLowerCase();
 
@@ -240,9 +252,9 @@ function ClinicalSitesDashboard({ study }) {
             value={selectedSite}
             onChange={(e) => setSelectedSite(e.target.value)}
           >
-            {siteNames.map((siteName) => (
-              <option key={siteName} value={siteName}>
-                {siteName}
+            {siteFilterOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
@@ -269,7 +281,7 @@ function ClinicalSitesDashboard({ study }) {
             <thead>
               <tr>
                 <th>Site ID</th>
-                <th>Site Name</th>
+                <th>Site</th>
                 <th>Country</th>
                 <th>Sponsor</th>
                 <th>Status</th>
@@ -284,9 +296,9 @@ function ClinicalSitesDashboard({ study }) {
             <tbody>
               {paginatedSites.map((site) => (
                 <tr key={site.id}>
-                  <td>{site.id}</td>
+                  <td>{site.siteNumber || site.id}</td>
 
-                  <td>{site.name}</td>
+                  <td>{resolveSiteDisplay(site)}</td>
 
                   <td>{site.country || "—"}</td>
 
@@ -378,7 +390,7 @@ function ClinicalSitesDashboard({ study }) {
             <thead>
               <tr>
                 <th>Rank</th>
-                <th>Site Name</th>
+                <th>Site</th>
                 <th>Enrolled</th>
                 <th>Performance</th>
               </tr>
@@ -388,7 +400,7 @@ function ClinicalSitesDashboard({ study }) {
               {paginatedRankedSites.map((site, index) => (
                 <tr key={site.id}>
                   <td>{(rankingPage - 1) * rankingRowsPerPage + index + 1}</td>
-                  <td>{site.name}</td>
+                  <td>{resolveSiteDisplay(site)}</td>
                   <td>{site.enrolled ?? site.subjectsEnrolled ?? 0}</td>
                   <td>{site.performance ?? site.enrollmentRate ?? 0}%</td>
                 </tr>

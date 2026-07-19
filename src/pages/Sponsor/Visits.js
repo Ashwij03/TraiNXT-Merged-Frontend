@@ -1,10 +1,20 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import AppLayout from './AppLayout';
 import "./Visits.css";
 import { useNavigate } from "react-router-dom";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 function Visits() {
 	const navigate = useNavigate();
 	const [inputValue, setInputValue] = useState("");
+	const siteSources = useMemo(() => getStudies(), []);
+	const displaySite = (value) =>
+	  value
+	    ? resolveSiteDisplay(value, {
+	        sources: siteSources,
+	        fallback: value
+	      })
+	    : "—";
 	
 
 	const visits = [
@@ -118,7 +128,7 @@ function Visits() {
 			<td>{item.visitId}</td>
 			<td>{item.studyId}</td>
 			<td>{item.subject}</td>
-			<td>{item.site}</td>
+			<td>{displaySite(item.site)}</td>
 			<td>{item.visit}</td>
 			<td>{item.scheduledDate}</td>
 			<td>{item.actualDate}</td>

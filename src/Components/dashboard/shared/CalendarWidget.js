@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { resolveSiteDisplay } from "../../../utils/siteDisplay";
+import { getStudies } from "../../../services/studyService";
 import "./CalendarWidget.css";
 
 function CalendarWidget({
@@ -114,6 +116,15 @@ function CalendarWidget({
   }
 
   const selectedSchedules = getSchedulesForDate(activeDate);
+
+  // Item 17 — resolve schedule.site to the actual Site Number for display.
+  const siteSources = useMemo(() => {
+    try {
+      return getStudies();
+    } catch {
+      return [];
+    }
+  }, []);
 
   return (
     <div className="calendar-widget">
@@ -255,7 +266,10 @@ function CalendarWidget({
 
                 <p>
                   <b>Site:</b>{" "}
-                  {schedule.site}
+                  {resolveSiteDisplay(schedule.site, {
+                    sources: siteSources,
+                    fallback: schedule.site || "—",
+                  })}
                 </p>
               </div>
             </div>

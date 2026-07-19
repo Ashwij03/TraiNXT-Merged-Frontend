@@ -1,9 +1,20 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import AppLayout from './AppLayout';
 import './Enrollment.css';
 import { useNavigate } from "react-router-dom";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 
 const Enrollment = () => {
+
+	const siteSources = useMemo(() => getStudies(), []);
+	const displaySite = (value) =>
+	  value
+	    ? resolveSiteDisplay(value, {
+	        sources: siteSources,
+	        fallback: value
+	      })
+	    : "—";
 
 	const enrollmentData = [
 	  {
@@ -121,7 +132,7 @@ const Enrollment = () => {
 
 				  <td>{study.studyName}</td>
 
-				  <td>{study.site}</td>
+				  <td>{displaySite(study.site)}</td>
 
 				  <td>{study.target}</td>
 

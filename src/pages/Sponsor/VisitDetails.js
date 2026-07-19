@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AppLayout from "./AppLayout";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 import "./VisitDetails.css";
 
 function VisitDetails() {
@@ -46,6 +48,14 @@ function VisitDetails() {
   };
 
   const visit = visitData[id];
+  const siteSources = useMemo(() => getStudies(), []);
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   if (!visit) {
     return (
@@ -74,7 +84,7 @@ function VisitDetails() {
           <p><strong>Visit ID:</strong> {id}</p>
           <p><strong>Study ID:</strong> {visit.studyId}</p>
           <p><strong>Subject ID:</strong> {visit.subjectId}</p>
-          <p><strong>Site:</strong> {visit.site}</p>
+          <p><strong>Site:</strong> {displaySite(visit.site)}</p>
           <p><strong>Visit Type:</strong> {visit.visitType}</p>
           <p><strong>Scheduled Date:</strong> {visit.scheduledDate}</p>
           <p><strong>Actual Date:</strong> {visit.actualDate}</p>
