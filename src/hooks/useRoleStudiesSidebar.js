@@ -8,6 +8,7 @@ export const STUDY_SECTIONS = [
   { key: "subjects", label: "Subjects", expandable: true },
   { key: "planning", label: "Planning" },
   { key: "visitPlan", label: "Visit Plan" },
+  { key: "clinicalSites", label: "Clinical Sites" },
   { key: "eisf", label: "eISF" },
   // ===== ITEM 16: Regulatory removed from Studies sidebar =====
   // { key: "regulatory", label: "Regulatory" },
@@ -253,6 +254,7 @@ export function useRoleStudiesSidebar({ onNavigate } = {}) {
       subjects: "Subjects",
       planning: "Planning",
       visitPlan: "Visit Plan",
+      clinicalSites: "Clinical Sites",
       eisf: "eISF",
       // ===== ITEM 16: Regulatory removed from Studies section tab map =====
       // regulatory: "Regulatory",

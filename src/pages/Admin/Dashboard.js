@@ -1,3 +1,4 @@
+
 // UPDATED: Admin dashboard — Phase 8 subject-status analytics and full-height Upcoming Visits
 
 import { useEffect, useMemo, useState } from "react";
@@ -14,6 +15,7 @@ import {
   getAdminDashboardData,
   getSubjectsForAnalytics
 } from "../../services/adminService";
+import { useComments } from "../../comments/CommentsContext";
 import {
   INSTITUTION_FILTER_EVENT,
   getStoredInstitutionFilter
@@ -23,7 +25,14 @@ import "./Dashboard.css";
 import "../shared/studies/StudyDashboard.css";
 import "../shared/AccessPermissions.css";
 
+// Ongoing studies = studies currently in Startup, Recruitment Phase,
+// or Conduct Phase (the statuses set on the study details form's
+// Study Status dropdown). Defined at module scope so it's a stable
+// reference for the useMemo dependency array below.
+const ONGOING_STUDY_STATUSES = ["Startup", "Recruitment Phase", "Conduct Phase"];
+
 function AdminDashboard() {
+  const { pendingCount: openCommentsCount } = useComments();
   const [institutionFilter, setInstitutionFilter] = useState(
     getStoredInstitutionFilter()
   );
@@ -53,7 +62,6 @@ function AdminDashboard() {
     users,
     studies,
     sites,
-    comments,
     pendingUsers,
     complianceScore
   } = dashboardData;
@@ -70,7 +78,13 @@ function AdminDashboard() {
 
   const portfolioStudies = useMemo(() => getStudies(), []);
 
-  const openComments = comments.filter((c) => c.status === "Open");
+  const ongoingStudiesCount = useMemo(
+    () =>
+      studies.filter((study) =>
+        ONGOING_STUDY_STATUSES.includes(study.status)
+      ).length,
+    [studies]
+  );
 
   return (
     <AdminDashboardLayout>
@@ -102,8 +116,8 @@ function AdminDashboard() {
 
           <KPICard
             title="Studies"
-            value={studies.length}
-            subtitle="Active Studies"
+            value={ongoingStudiesCount}
+            subtitle="Ongoing Studies"
             icon="📁"
             onClick={() => navigate("/studies")}
           />
@@ -118,7 +132,7 @@ function AdminDashboard() {
 
           <KPICard
             title="Comments"
-            value={openComments.length}
+            value={openCommentsCount}
             subtitle="Open Comments"
             icon="💬"
             onClick={() => navigate("/comments")}
@@ -152,7 +166,7 @@ function AdminDashboard() {
               {
                 type: "danger",
                 title: "Open Comments",
-                message: `${openComments.length} unresolved comments`
+                message: `${openCommentsCount} unresolved comments`
               },
               {
                 type: "info",

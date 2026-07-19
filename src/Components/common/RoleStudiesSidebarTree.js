@@ -5,6 +5,7 @@ import {
   getStudyMeta,
   useRoleStudiesSidebar,
 } from "../../hooks/useRoleStudiesSidebar";
+import { getEffectiveRole, ROLES } from "../../services/roleService";
 import "../dashboard/shared/DashboardSidebar.css";
 
 function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
@@ -25,6 +26,13 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
     handleSubjectClick,
     getSubjectsForStudy,
   } = useRoleStudiesSidebar({ onNavigate });
+  const effectiveRole = getEffectiveRole();
+  const visibleStudySections = STUDY_SECTIONS.filter(
+    (section) =>
+      section.key !== "clinicalSites" ||
+      effectiveRole === ROLES.SPONSOR ||
+      effectiveRole === ROLES.ADMIN,
+  );
 
   if (!studiesOpen) {
     return null;
@@ -102,7 +110,7 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
 
                   {isStudyOpen && (
                     <div className="sidebar-tree-group sidebar-tree-group--sections">
-                      {STUDY_SECTIONS.map((section) => {
+                      {visibleStudySections.map((section) => {
                         const sectionKey = section.key;
                         const compositeKey = `${studyKey}__${sectionKey}`;
                         const isSectionOpen = Boolean(

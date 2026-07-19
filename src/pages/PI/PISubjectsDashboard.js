@@ -5,8 +5,15 @@ import {
   FaFileAlt,
   FaEllipsisV,
 } from "react-icons/fa";
+import { getStudyByCode } from "../../services/studyService";
+import { STUDY_STATUS_COMPLETED } from "../../constants/studyStatus";
+
 import { resolveSiteDisplay } from "../../utils/siteDisplay";
 import { getStudies } from "../../services/studyService";
+
+const COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE =
+  "Subjects cannot be added because this study is completed.";
+  
 function PISubjectsDashboard({
   onProfileClick
 }) {
@@ -36,6 +43,17 @@ function PISubjectsDashboard({
       !newSubject.study
     ) {
       alert("Please fill required fields");
+      return;
+    }
+
+    // Item 7 (Stage 5A): resolve the authoritative study and refuse subject
+    // creation for Completed studies BEFORE any mutation.
+    const targetStudy = getStudyByCode(newSubject.study);
+    if (
+      targetStudy &&
+      targetStudy.status === STUDY_STATUS_COMPLETED
+    ) {
+      alert(COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE);
       return;
     }
 

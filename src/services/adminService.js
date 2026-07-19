@@ -13,12 +13,14 @@ import {
   getMergedSchedules,
   getUpcomingVisitsWindow
 } from "./visitScheduleService";
+import { isOpenComment } from "./commentService";
 import {
   getNotificationsForUser,
   markNotificationRead as markSharedNotificationRead,
   markAllNotificationsReadForUser,
   NOTIFICATIONS_UPDATED
 } from "./notificationService";
+import { getCanonicalSubjectStatus } from "../utils/subjectLifecycle";
 
 // UPDATED: queries storage key renamed to comments (legacy "queries" key migrated on read)
 const STORAGE_KEYS = {
@@ -39,6 +41,11 @@ const STORAGE_KEYS = {
 function writeJson(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    window.dispatchEvent(
+      new CustomEvent("admin-data-updated", {
+        detail: { key }
+      })
+    );
   } catch {
     // Swallow storage write failures (e.g. quota exceeded) rather than
     // crashing the caller; data simply will not persist for this write.
@@ -56,6 +63,48 @@ function getAllSubjectsFlat() {
         studyKey,
         subjectId: subject.subjectId || subject.id
       }))
+  );
+}
+
+function normalizeRelationshipValue(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+function resolveStudyForSubject(subject, studies) {
+  const studyReference = subject?.studyId || subject?.studyKey;
+
+  if (!studyReference) {
+    return null;
+  }
+
+  const normalizedReference = normalizeRelationshipValue(studyReference);
+
+  return (
+    studies.find((study) =>
+      [study.code, study.studyId, study.id].some(
+        (value) => normalizeRelationshipValue(value) === normalizedReference
+      )
+    ) || null
+  );
+}
+
+function resolveSiteForSubject(subject, sites) {
+  const siteReference = subject?.siteId || subject?.siteNumber || subject?.site;
+
+  if (!siteReference) {
+    return null;
+  }
+
+  const normalizedReference = normalizeRelationshipValue(siteReference);
+
+  return (
+    sites.find((site) =>
+      [site.siteNumber, site.id, site.name].some(
+        (value) => normalizeRelationshipValue(value) === normalizedReference
+      )
+    ) || null
   );
 }
 
@@ -370,7 +419,7 @@ export function getComplianceScore() {
     return "—";
   }
 
-  const openComments = comments.filter((c) => c.status === "Open").length;
+  const openComments = comments.filter(isOpenComment).length;
   const nonValidRegulatoryDocs = regulatoryDocs.filter(
     (doc) => doc.status && doc.status !== "Valid"
   ).length;
@@ -482,6 +531,8 @@ export function getSiteStaffDashboardData(user = getCurrentUser()) {
   initializeAdminData();
 
   const assignedSite = getAssignedSite(user);
+  const studies = getStudies();
+  const sites = getSites(user);
   const subjects = getAllSubjectsFlat().filter((subject) => {
     if (isAdmin(user) || !assignedSite) {
       return true;
@@ -497,7 +548,7 @@ export function getSiteStaffDashboardData(user = getCurrentUser()) {
     );
   });
 
-  const comments = getComments(user).filter((c) => c.status === "Open");
+  const comments = getComments(user).filter(isOpenComment);
   const schedules = getSchedules(user);
   const today = new Date();
 
@@ -513,11 +564,19 @@ export function getSiteStaffDashboardData(user = getCurrentUser()) {
     )
   ).length;
 
-  const subjectActivity = subjects.slice(0, 8).map((subject) => ({
-    subjectId: subject.subjectId || subject.id,
-    status: subject.status || "Unknown",
-    site: subject.site || "N/A"
-  }));
+  const subjectActivity = subjects.map((subject) => {
+    const study = resolveStudyForSubject(subject, studies);
+    const site = resolveSiteForSubject(subject, sites);
+    const studyId = subject.studyId || subject.studyKey;
+
+    return {
+      id: `${studyId || "study"}-${subject.subjectId || subject.id}`,
+      studyNumber: study?.code || "",
+      siteNumber: site?.siteNumber || site?.id || subject.siteNumber || "",
+      subjectId: subject.subjectId || subject.id,
+      status: getCanonicalSubjectStatus(subject, { studyId }) || ""
+    };
+  });
 
   // UPDATED: recruitment/site totals are still real, dynamically-derived
   // fallbacks (used only when no subject records exist yet for this site) —
@@ -551,7 +610,7 @@ export function getPIDashboardData() {
   initializeAdminData();
 
   const subjects = getAllSubjectsFlat();
-  const comments = getComments().filter((c) => c.status === "Open");
+  const comments = getComments().filter(isOpenComment);
   const schedules = getSchedules();
   const studies = getStudies();
   const totalTarget = studies.reduce(
@@ -632,7 +691,7 @@ export function getCRODashboardData() {
   return {
     sites,
     studies,
-    openComments: comments.filter((c) => c.status === "Open"),
+    openComments: comments.filter(isOpenComment),
     sitePerformance: getSitePerformance(),
     alerts: [
       {
@@ -643,7 +702,7 @@ export function getCRODashboardData() {
       {
         type: "danger",
         title: "Open Comments",
-        message: `${comments.filter((c) => c.status === "Open").length} unresolved comments across sites`
+        message: `${comments.filter(isOpenComment).length} unresolved comments across sites`
       }
     ]
   };

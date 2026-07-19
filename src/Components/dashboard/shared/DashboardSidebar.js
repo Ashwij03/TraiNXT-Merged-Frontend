@@ -33,6 +33,7 @@ const STUDY_SECTIONS = [
   { key: "subjects", label: "Subjects", expandable: true },
   { key: "planning", label: "Planning" },
   { key: "visitPlan", label: "Visit Plan" },
+  { key: "clinicalSites", label: "Clinical Sites" },
   { key: "eisf", label: "eISF" },
   // ===== ITEM 16: Regulatory removed from Studies sidebar sections =====
   // { key: "regulatory", label: "Regulatory" },
@@ -157,6 +158,12 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     effectiveUser?.role === "CRO" || effectiveUser?.role === "Sponsor";
 
   const roleExtraMenuItems = getRoleExtraMenuItems(effectiveUser?.role);
+  const visibleStudySections = STUDY_SECTIONS.filter(
+    (section) =>
+      section.key !== "clinicalSites" ||
+      effectiveUser?.role === "Sponsor" ||
+      effectiveUser?.role === "Admin",
+  );
 
   const sidebarClassName = [
     "enterprise-sidebar",
@@ -350,6 +357,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       subjects: "Subjects",
       planning: "Planning",
       visitPlan: "Visit Plan",
+      clinicalSites: "Clinical Sites",
       eisf: "eISF",
       // ===== ITEM 16: Regulatory removed from Studies section tab map =====
       // regulatory: "Regulatory",
@@ -577,7 +585,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
 
                     {isStudyOpen && (
                       <div className="sidebar-tree-group sidebar-tree-group--sections">
-                        {STUDY_SECTIONS.map((section) => {
+                        {visibleStudySections.map((section) => {
                           const sectionKey = section.key;
                           const compositeKey = `${studyKey}__${sectionKey}`;
                           const isSectionOpen = Boolean(

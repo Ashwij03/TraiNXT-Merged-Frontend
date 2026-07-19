@@ -33,6 +33,34 @@ function getSafeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeValue(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+function getAdminSiteRecords() {
+  return getSafeArray(readJson("sites", []));
+}
+
+function resolveAdminSiteByStudySite(study = {}) {
+  const siteReference = study.site || study.location;
+
+  if (!siteReference) {
+    return null;
+  }
+
+  const normalizedReference = normalizeValue(siteReference);
+
+  return (
+    getAdminSiteRecords().find((site) =>
+      [site.siteNumber, site.id, site.name].some(
+        (value) => normalizeValue(value) === normalizedReference
+      )
+    ) || null
+  );
+}
+
 
 function mapStudyToPortfolio(study = {}) {
   const subjectsByStudy =
@@ -187,6 +215,7 @@ export function getSites(study) {
 
     return studiesToShow.map((matchedStudy, index) => {
       const subjects = subjectsByStudy[matchedStudy.code] || [];
+      const adminSite = resolveAdminSiteByStudySite(matchedStudy);
 
       const enrolled = subjects.length;
 
@@ -204,7 +233,7 @@ export function getSites(study) {
         `SITE-${String(index + 1).padStart(3, "0")}`;
 
       return {
-        id: index + 1,
+        id: adminSite?.id || index + 1,
 
         // Site Number is now a first-class field used by
         // operational/reference displays.
@@ -240,6 +269,7 @@ export function getSites(study) {
 
   return studies.map((singleStudy, index) => {
     const subjects = subjectsByStudy[singleStudy.code] || [];
+    const adminSite = resolveAdminSiteByStudySite(singleStudy);
 
     const enrolled = subjects.length;
 
@@ -254,9 +284,10 @@ export function getSites(study) {
       `SITE-${String(index + 1).padStart(3, "0")}`;
 
     return {
-      id: singleStudy.code,
+      id: adminSite?.id || singleStudy.code,
 
       siteNumber,
+
       siteName,
 
       name: siteName,

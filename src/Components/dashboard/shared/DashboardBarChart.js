@@ -58,7 +58,7 @@ function DashboardBarChart({
           dataKey="name"
         />
 
-        <YAxis />
+        <YAxis allowDecimals={false} />
 
         <Tooltip />
 
