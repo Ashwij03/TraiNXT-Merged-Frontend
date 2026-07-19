@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from "react";
 import DashboardCard from "./DashboardCard";
 import CalendarWidget from "./CalendarWidget";
@@ -7,8 +8,39 @@ import {
   mapScheduleToTableRow
 } from "../../../services/visitScheduleService";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
-import { formatScheduleDisplayDate } from "../../../utils/formatScheduleDisplayDate";
+import { resolveSiteDisplay } from "../../../utils/siteDisplay";
+import { getStudies } from "../../../services/studyService";
 import "./VisitCalendarSection.css";
+
+/**
+ * Display-only formatter that renders a date as "yyyy-mm-dd", matching the
+ * Start Date column's format. Reads the calendar date directly off the
+ * stored string when possible so no timezone conversion can shift the day.
+ */
+function formatDateYYYYMMDD(dateValue) {
+  if (!dateValue) {
+    return "-";
+  }
+
+  const raw = String(dateValue).trim();
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if (match) {
+    const [, year, month, day] = match;
+    return `${year}-${month}-${day}`;
+  }
+
+  const parsed = new Date(raw);
+
+  if (!Number.isNaN(parsed.getTime())) {
+    const year = parsed.getFullYear();
+    const month = String(parsed.getMonth() + 1).padStart(2, "0");
+    const day = String(parsed.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  return raw;
+}
 
 const UPCOMING_COLUMNS = [
   { key: "subjectid", label: "Subject ID", width: "18%" },
@@ -17,7 +49,7 @@ const UPCOMING_COLUMNS = [
     key: "date",
     label: "Date",
     width: "16%",
-    render: (value) => formatScheduleDisplayDate(value),
+    render: (value) => formatDateYYYYMMDD(value),
   },
   { key: "study", label: "Study", width: "18%" },
   { key: "site", label: "Site", width: "14%" },
@@ -72,7 +104,8 @@ function VisitCalendarSection({
     [schedules]
   );
 
-  const upcomingRows = useMemo(() => {
+  
+  const baseRows = useMemo(() => {
     if (selectedScheduleDate) {
       return selectedDaySchedules;
     }
@@ -87,6 +120,23 @@ function VisitCalendarSection({
       .slice(0, 12)
       .map(mapScheduleToTableRow);
   }, [schedules, selectedDaySchedules, selectedScheduleDate, upcomingWindow]);
+
+  // Item 17 — Site column renders resolved Site Number (not stored Site Name).
+  // Authoritative schedule/site data is left untouched; this is display only.
+  const siteResolutionSources = useMemo(() => getStudies(), []);
+  const upcomingRows = useMemo(
+    () =>
+      baseRows.map((row) => ({
+        ...row,
+        site: row?.site
+          ? resolveSiteDisplay(row.site, {
+              sources: siteResolutionSources,
+              fallback: row.site || "—"
+            })
+          : "—"
+      })),
+    [baseRows, siteResolutionSources]
+  );
 
   const tableEmptyMessage = selectedScheduleDate
     ? `No visits on ${selectedScheduleDate}`
@@ -133,3 +183,11 @@ function VisitCalendarSection({
 }
 
 export default VisitCalendarSection;
+
+
+
+
+
+
+
+

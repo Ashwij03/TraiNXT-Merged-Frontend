@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
 import CROLayout from "./CROLayout";
 
@@ -11,6 +11,10 @@ import EmptyState from "./EmptyState";
 
 import CROModal from "./CROModal";
 
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+
+import { getStudies } from "../../services/studyService";
+
 
 
 function CROComments() {
@@ -20,6 +24,16 @@ function CROComments() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const [showAddModal, setShowAddModal] = useState(false);
+
+  const siteSources = useMemo(() => getStudies(), []);
+
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   const [newComment, setNewComment] = useState({
 
@@ -212,7 +226,7 @@ function CROComments() {
 
                     <td>{comment.subject}</td>
 
-                    <td>{comment.site}</td>
+                    <td>{displaySite(comment.site)}</td>
 
                     <td>{comment.author}</td>
 

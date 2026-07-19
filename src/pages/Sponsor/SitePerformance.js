@@ -8,6 +8,7 @@ import EnterpriseModal from './EnterpriseModal';
 import { FiHome, FiUsers, FiTrendingUp, FiBarChart2 } from 'react-icons/fi';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { getSites, getSiteKPIs } from './data/sponsorDataStore';
+import { resolveSiteDisplay, formatSiteOption } from '../../utils/siteDisplay';
 
 const SitePerformance = () => {
   const navigate = useNavigate();
@@ -72,7 +73,7 @@ const SitePerformance = () => {
             <thead>
               <tr>
                 <th>Site ID</th>
-                <th>Site Name</th>
+                <th>Site</th>
                 <th>Study</th>
                 <th>Enrolled</th>
                 <th>Target</th>
@@ -84,8 +85,8 @@ const SitePerformance = () => {
             <tbody>
               {sites.map((site) => (
                 <tr key={site.id} onClick={() => setViewSite(site)}>
-                  <td>{site.id}</td>
-                  <td>{site.name}</td>
+                  <td>{site.siteNumber || site.id}</td>
+                  <td>{resolveSiteDisplay(site)}</td>
                   <td>{site.study}</td>
                   <td>{site.enrolled}</td>
                   <td>{site.target}</td>
@@ -102,7 +103,7 @@ const SitePerformance = () => {
       </div>
 
       {viewSite && (
-        <EnterpriseModal title={viewSite.name} onClose={() => setViewSite(null)}>
+        <EnterpriseModal title={formatSiteOption(viewSite) || viewSite.name} onClose={() => setViewSite(null)}>
           <p><strong>Site ID:</strong> {viewSite.id}</p>
           <p><strong>Study:</strong> {viewSite.study}</p>
           <p><strong>Enrollment:</strong> {viewSite.enrolled} / {viewSite.target}</p>

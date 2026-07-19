@@ -16,6 +16,7 @@ import {
 } from "../../services/adminService";
 import { getAccessibleStudies, getAssignedSite } from "../../services/roleService";
 import { useComments } from "../../comments/CommentsContext";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
 
 import "../Admin/Dashboard.css";
 import "../shared/AccessPermissions.css";
@@ -61,6 +62,18 @@ function SiteStaffDashboard() {
     alerts
   } = dashboardData;
 
+  // Item 17 — operational Site column shows Site Number, not Site Name.
+  const siteResolvedSubjectActivity = useMemo(() => {
+    const list = Array.isArray(subjectActivity) ? subjectActivity : [];
+    return list.map((row) => ({
+      ...row,
+      site: resolveSiteDisplay(row?.site, {
+        sources: portfolioStudies,
+        fallback: row?.site || "—",
+      }),
+    }));
+  }, [subjectActivity, portfolioStudies]);
+
   return (
     <SiteStaffDashboardLayout>
       <div className="admin-dashboard site-dashboard">
@@ -68,7 +81,12 @@ function SiteStaffDashboard() {
           <h1>Site Staff Dashboard</h1>
           <p>
             Site Operations Overview
-            {assignedSite ? ` — ${assignedSite}` : ""}
+            {assignedSite
+              ? ` — ${resolveSiteDisplay(assignedSite, {
+                  sources: portfolioStudies,
+                  fallback: assignedSite,
+                })}`
+              : ""}
           </p>
         </div>
 
@@ -180,6 +198,7 @@ function SiteStaffDashboard() {
           ]}
           pagination
           initialPageSize={5}
+          data1={siteResolvedSubjectActivity}
         />
       </div>
     </SiteStaffDashboardLayout>

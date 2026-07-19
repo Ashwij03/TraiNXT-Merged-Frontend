@@ -1,6 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./StudyFinancials.css";
-import { payments, receivables, invoiceData } from "./FinancialMockData";
+import {
+  getStudyFinancials,
+  saveStudyFinancials,
+} from "../../../services/financialService";
+import { resolveSiteDisplay } from "../../../utils/siteDisplay";
 
 const FINANCIALS_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 
@@ -43,36 +47,6 @@ const INITIAL_INVOICE_FORM = {
   status: "Pending",
 };
 
-const INITIAL_SUBJECT_COSTS = [
-  {
-    id: 1,
-    subject: "SUB001",
-    visit: "Visit 1",
-    procedure: "Blood Test",
-    cost: 50,
-    quantity: 2,
-    status: "Completed",
-  },
-  {
-    id: 2,
-    subject: "SUB001",
-    visit: "Visit 1",
-    procedure: "ECG",
-    cost: 100,
-    quantity: 1,
-    status: "Completed",
-  },
-  {
-    id: 3,
-    subject: "SUB002",
-    visit: "Visit 2",
-    procedure: "MRI",
-    cost: 500,
-    quantity: 1,
-    status: "Pending",
-  },
-];
-
 const INITIAL_SUBJECT_COST_FORM = {
   subjectId: "",
   visit: "",
@@ -109,10 +83,51 @@ const formatCurrency = (value, currency = "USD") => {
       ? "€"
       : "$";
 
-  return `${symbol}${Number(value || 0).toLocaleString("en-US")}`;
+  return `${symbol}${safeNumber(value).toLocaleString("en-US")}`;
 };
 
-function StudyFinancials() {
+/**
+ * Item 19: safe numeric coercion. Any non-finite value (undefined, null,
+ * NaN, "", "abc") collapses to 0 so downstream totals never render NaN.
+ */
+const safeNumber = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+/**
+ * Item 19: Budget Category options for the New Budget form.
+ * The following categories were removed by requirement:
+ *   - Clinical Operations
+ *   - Regulatory
+ *   - Monitoring
+ *   - Data Management
+ * Historical records that still reference these categories are preserved
+ * (they continue to render in the budget table and in preview modals).
+ */
+const REMOVED_BUDGET_CATEGORIES = [
+  "Clinical Operations",
+  "Regulatory",
+  "Monitoring",
+  "Data Management",
+];
+const BUDGET_CATEGORY_OPTIONS = [
+  "Site Management",
+  "Patient Recruitment",
+  "Laboratory",
+  "Pharmacy",
+].filter((option) => !REMOVED_BUDGET_CATEGORIES.includes(option));
+
+function StudyFinancials({ study } = {}) {
+  const studyKey =
+    (study && (study.studyId || study.id || study.code || study.studyName)) ||
+    "default";
+
+  const initialFinancials = useMemo(
+    () => getStudyFinancials(studyKey),
+    [studyKey],
+  );
+
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [showAllData, setShowAllData] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -121,34 +136,20 @@ function StudyFinancials() {
   const [sortDirection, setSortDirection] = useState("asc");
   const [activeTab, setActiveTab] = useState("budget");
 
-  const [budgets, setBudgets] = useState([
-  {
-    id: 1,
-    name: "Initial Study Budget",
-    studyName: "Diabetes Study",
+  const [budgets, setBudgets] = useState(initialFinancials.budgets);
 
-    category: "Clinical Operations",
-    costPerUnit: 5000,
-    units: 500,
-    unitType: "Subjects",
-    totalCost: 2500000,
-    version: "V1",
-    currency: "USD",
-    startDate: "2026-07-01",
-    endDate: "2027-06-30",
-    status: "Active",
-    description: "Initial approved study budget",
-  },
-]);
-
-  const [paymentList, setPaymentList] = useState(payments);
-  const [receivableList, setReceivableList] = useState(receivables);
-  const [invoiceList, setInvoiceList] = useState(invoiceData);
+  const [paymentList, setPaymentList] = useState(initialFinancials.payments);
+  const [receivableList, setReceivableList] = useState(
+    initialFinancials.receivables,
+  );
+  const [invoiceList, setInvoiceList] = useState(initialFinancials.invoices);
   const [subjectCostForm, setSubjectCostForm] = useState(
   INITIAL_SUBJECT_COST_FORM
 );
 
-const [subjectCosts, setSubjectCosts] = useState(INITIAL_SUBJECT_COSTS);
+const [subjectCosts, setSubjectCosts] = useState(
+  initialFinancials.subjectCosts,
+);
 const [showSubjectCostModal, setShowSubjectCostModal] = useState(false);
 const [editSubjectCostId, setEditSubjectCostId] = useState(null);
 
@@ -177,6 +178,76 @@ const [selectedBudget, setSelectedBudget] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  /*
+    Reload state whenever the active study changes so each study has its
+    own persisted financial records.
+  */
+  const currentStudyKeyRef = useRef(studyKey);
+  useEffect(() => {
+    if (currentStudyKeyRef.current === studyKey) {
+      return;
+    }
+    currentStudyKeyRef.current = studyKey;
+
+    const next = getStudyFinancials(studyKey);
+    setBudgets(next.budgets);
+    setPaymentList(next.payments);
+    setReceivableList(next.receivables);
+    setInvoiceList(next.invoices);
+    setSubjectCosts(next.subjectCosts);
+  }, [studyKey]);
+
+  /*
+    Persist per-study financial records to localStorage whenever any
+    section changes.
+  */
+  useEffect(() => {
+    saveStudyFinancials(studyKey, {
+      budgets,
+      payments: paymentList,
+      receivables: receivableList,
+      invoices: invoiceList,
+      subjectCosts,
+    });
+  }, [
+    studyKey,
+    budgets,
+    paymentList,
+    receivableList,
+    invoiceList,
+    subjectCosts,
+  ]);
+
+  /*
+    Item 19 — Auto-refresh from the existing financial service when records
+    change elsewhere (other tabs, sibling views, or programmatic updates).
+    We reuse the "financials-updated" event that financialService dispatches;
+    no new event bus or store is introduced.
+  */
+  useEffect(() => {
+    const refreshFromStore = () => {
+      const next = getStudyFinancials(studyKey);
+      setBudgets((prev) => (prev === next.budgets ? prev : next.budgets));
+      setPaymentList((prev) =>
+        prev === next.payments ? prev : next.payments,
+      );
+      setReceivableList((prev) =>
+        prev === next.receivables ? prev : next.receivables,
+      );
+      setInvoiceList((prev) =>
+        prev === next.invoices ? prev : next.invoices,
+      );
+      setSubjectCosts((prev) =>
+        prev === next.subjectCosts ? prev : next.subjectCosts,
+      );
+    };
+
+    window.addEventListener("financials-updated", refreshFromStore);
+    return () => {
+      window.removeEventListener("financials-updated", refreshFromStore);
+    };
+  }, [studyKey]);
 
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 
@@ -271,35 +342,51 @@ const [selectedBudget, setSelectedBudget] = useState(null);
     firstIndex + rowsPerPage,
   );
 
+// Item 19 — Total Budget = sum of budget records (dynamic).
 const totalBudget = useMemo(
   () =>
-    budgets.reduce(
-      (sum, item) => sum + Number(item.totalCost || 0),
-      0
-    ),
+    budgets.reduce((sum, item) => sum + safeNumber(item.totalCost), 0),
   [budgets]
 );
 
+  // Item 19 — Total Spend = sum of expense (payment) records (dynamic).
   const totalPayments = useMemo(
     () =>
-      paymentList.reduce((sum, item) => sum + Number(item.amount || 0), 0),
+      paymentList.reduce((sum, item) => sum + safeNumber(item.amount), 0),
     [paymentList],
   );
+  const totalSpend = totalPayments;
 
+  // Item 19 — subject-cost aggregate with NaN-safe multiplication.
   const grandTotal = useMemo(
   () =>
     subjectCosts.reduce(
-      (sum, item) => sum + Number(item.cost) * Number(item.quantity),
+      (sum, item) => sum + safeNumber(item.cost) * safeNumber(item.quantity),
       0
     ),
   [subjectCosts]
 );
 
-  const remainingBudget = totalBudget - totalPayments;
-  const netBudgetCost =
-  totalBudget - totalPayments - grandTotal;
+  // Item 19 — Remaining Budget = Total Budget - Total Spend.
+  const remainingBudget = totalBudget - totalSpend;
+  const netBudgetCost = totalBudget - totalSpend - grandTotal;
   const utilizedPercentage =
-    totalBudget > 0 ? Math.min((totalPayments / totalBudget) * 100, 100) : 0;
+    totalBudget > 0
+      ? Math.min((totalSpend / totalBudget) * 100, 100)
+      : 0;
+
+  // Item 19 — dynamic per-category breakdown for the summary chart.
+  const budgetByCategory = useMemo(() => {
+    const map = new Map();
+    budgets.forEach((item) => {
+      const key = String(item.category || "Uncategorized");
+      map.set(key, safeNumber(map.get(key)) + safeNumber(item.totalCost));
+    });
+    return Array.from(map.entries()).map(([category, amount]) => ({
+      category,
+      amount,
+    }));
+  }, [budgets]);
 
   const resetBudgetModal = () => {
     setBudgetForm(INITIAL_BUDGET_FORM);
@@ -432,7 +519,8 @@ if (editBudgetId !== null) {
    const preparedBudget = {
   ...budgetForm,
 
-  studyName: "Diabetes Study",
+  studyName:
+    (study && (study.studyName || study.name || study.code)) || "",
 
   name: budgetForm.name.trim(),
   category: budgetForm.category.trim(),
@@ -906,32 +994,48 @@ const handleDeleteSubjectCost = (id) => {
   <div className="budget-info-grid">
     <div>
       <span>Study</span>
-      <strong>Diabetes Study</strong>
+      <strong>
+        {(study && (study.studyName || study.name)) || "—"}
+      </strong>
     </div>
 
     <div>
       <span>Protocol</span>
-      <strong>DIA-001</strong>
+      <strong>
+        {(study && (study.protocol || study.studyId || study.code)) || "—"}
+      </strong>
     </div>
 
     <div>
       <span>Sponsor</span>
-      <strong>TriaNXT</strong>
+      <strong>{(study && study.sponsor) || "—"}</strong>
     </div>
 
     <div>
       <span>Principal Investigator</span>
-      <strong>Dr. John</strong>
+      <strong>
+        {(study && (study.principalInvestigator || study.pi)) || "—"}
+      </strong>
     </div>
 
     <div>
       <span>Site</span>
-      <strong>Apollo Hospital</strong>
+      <strong>
+        {resolveSiteDisplay({
+          siteName:
+            (study && (study.siteName || study.site || study.location)) || "",
+          siteNumber: (study && (study.siteNumber || study.siteNo)) || "",
+        })}
+      </strong>
     </div>
 
     <div>
       <span>Currency</span>
-      <strong>USD</strong>
+      <strong>
+        {(budgets[0] && budgets[0].currency) ||
+          (study && study.currency) ||
+          "USD"}
+      </strong>
     </div>
   </div>
 </div>
@@ -1016,8 +1120,8 @@ Subject Costs
       </div>
 
       <div className="summary-box">
-        <span>Total Payments</span>
-        <h3>{formatCurrency(totalPayments)}</h3>
+        <span>Total Spend</span>
+        <h3>{formatCurrency(totalSpend)}</h3>
       </div>
 
       <div className="summary-box">
@@ -1050,6 +1154,112 @@ Subject Costs
         <h3>{utilizedPercentage.toFixed(1)}%</h3>
       </div>
 
+    </div>
+
+    {/* Item 19 — Dynamic charts driven entirely by the current
+        budgets / payments state. Values are NaN-safe and update
+        automatically when any financial record changes. */}
+    <div className="financial-charts">
+      <div className="financial-chart-card">
+        <h3>Budget vs Spend</h3>
+        {totalBudget === 0 && totalSpend === 0 ? (
+          <p className="financial-chart-empty">
+            No budget or spend data yet.
+          </p>
+        ) : (
+          <div className="financial-chart-bars">
+            {(() => {
+              const scaleMax = Math.max(totalBudget, totalSpend, 1);
+              const budgetPct = (totalBudget / scaleMax) * 100;
+              const spendPct = (totalSpend / scaleMax) * 100;
+              const remainPct =
+                remainingBudget > 0
+                  ? (remainingBudget / scaleMax) * 100
+                  : 0;
+              return (
+                <>
+                  <div className="financial-chart-row">
+                    <span className="financial-chart-label">Budget</span>
+                    <div className="financial-chart-track">
+                      <div
+                        className="financial-chart-fill budget"
+                        style={{ width: `${budgetPct}%` }}
+                      />
+                    </div>
+                    <span className="financial-chart-value">
+                      {formatCurrency(totalBudget)}
+                    </span>
+                  </div>
+                  <div className="financial-chart-row">
+                    <span className="financial-chart-label">Spend</span>
+                    <div className="financial-chart-track">
+                      <div
+                        className="financial-chart-fill spend"
+                        style={{ width: `${spendPct}%` }}
+                      />
+                    </div>
+                    <span className="financial-chart-value">
+                      {formatCurrency(totalSpend)}
+                    </span>
+                  </div>
+                  <div className="financial-chart-row">
+                    <span className="financial-chart-label">Remaining</span>
+                    <div className="financial-chart-track">
+                      <div
+                        className="financial-chart-fill remaining"
+                        style={{ width: `${remainPct}%` }}
+                      />
+                    </div>
+                    <span className="financial-chart-value">
+                      {formatCurrency(remainingBudget)}
+                    </span>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        )}
+      </div>
+
+      <div className="financial-chart-card">
+        <h3>Budget by Category</h3>
+        {budgetByCategory.length === 0 ? (
+          <p className="financial-chart-empty">
+            No budget categories yet.
+          </p>
+        ) : (
+          <div className="financial-chart-bars">
+            {(() => {
+              const scaleMax =
+                budgetByCategory.reduce(
+                  (m, row) => Math.max(m, row.amount),
+                  0,
+                ) || 1;
+              return budgetByCategory.map((row) => (
+                <div
+                  key={row.category}
+                  className="financial-chart-row"
+                >
+                  <span className="financial-chart-label">
+                    {row.category}
+                  </span>
+                  <div className="financial-chart-track">
+                    <div
+                      className="financial-chart-fill category"
+                      style={{
+                        width: `${(row.amount / scaleMax) * 100}%`,
+                      }}
+                    />
+                  </div>
+                  <span className="financial-chart-value">
+                    {formatCurrency(row.amount)}
+                  </span>
+                </div>
+              ));
+            })()}
+          </div>
+        )}
+      </div>
     </div>
 
   </section>
@@ -1110,7 +1320,7 @@ Subject Costs
           <tbody>
             {currentBudgets.length === 0 ? (
               <tr>
-                <td colSpan="7">No budgets found.</td>
+                <td colSpan="11">No budgets found for this study.</td>
               </tr>
             ) : (
               currentBudgets.map((budget) => (
@@ -1245,14 +1455,9 @@ Subject Costs
 </thead>
 
 <tbody>
-
 <tr>
-<td>Dr. John</td>
-<td>Research Grant</td>
-<td>{formatCurrency(50000)}</td>
-<td>Approved</td>
+<td colSpan="4">No investigator grants recorded for this study.</td>
 </tr>
-
 </tbody>
 
 </table>
@@ -1278,13 +1483,33 @@ Subject Costs
     </thead>
 
     <tbody>
-      <tr>
-        <td>Apollo Hospital</td>
-        <td>$250000</td>
-        <td>$120000</td>
-        <td>$130000</td>
-        <td>Healthy</td>
-      </tr>
+      {totalBudget === 0 && totalPayments === 0 ? (
+        <tr>
+          <td colSpan="5">No site management records for this study.</td>
+        </tr>
+      ) : (
+        <tr>
+          <td>
+            {resolveSiteDisplay({
+              siteName:
+                (study && (study.siteName || study.site || study.location)) ||
+                "",
+              siteNumber:
+                (study && (study.siteNumber || study.siteNo)) || "",
+            })}
+          </td>
+          <td>
+            {formatCurrency(totalBudget, budgets[0]?.currency)}
+          </td>
+          <td>
+            {formatCurrency(totalPayments, budgets[0]?.currency)}
+          </td>
+          <td>
+            {formatCurrency(remainingBudget, budgets[0]?.currency)}
+          </td>
+          <td>{remainingBudget >= 0 ? "Healthy" : "Exceeded"}</td>
+        </tr>
+      )}
     </tbody>
   </table>
 
@@ -1310,38 +1535,44 @@ Subject Costs
       </thead>
 
       <tbody>
-        {subjectCosts.map((item) => (
-          <tr key={item.id}>
-            <td>{item.subject}</td>
-            <td>{item.visit}</td>
-            <td>{item.procedure}</td>
-
-            <td>{formatCurrency(item.cost)}</td>
-
-            <td>{item.quantity}</td>
-
-            <td>
-              {formatCurrency(item.cost * item.quantity)}
-            </td>
-
-            <td>{item.status}</td>
-            <td>
-  <button
-    className="financial-action-btn"
-    onClick={() => handleEditSubjectCost(item)}
-  >
-    Edit
-  </button>
-
-  <button
-    className="financial-delete-btn"
-    onClick={() => handleDeleteSubjectCost(item.id)}
-  >
-    Delete
-  </button>
-</td>
+        {subjectCosts.length === 0 ? (
+          <tr>
+            <td colSpan="8">No subject costs recorded for this study.</td>
           </tr>
-        ))}
+        ) : (
+          subjectCosts.map((item) => (
+            <tr key={item.id}>
+              <td>{item.subject}</td>
+              <td>{item.visit}</td>
+              <td>{item.procedure}</td>
+
+              <td>{formatCurrency(item.cost)}</td>
+
+              <td>{item.quantity}</td>
+
+              <td>
+                {formatCurrency(item.cost * item.quantity)}
+              </td>
+
+              <td>{item.status}</td>
+              <td>
+                <button
+                  className="financial-action-btn"
+                  onClick={() => handleEditSubjectCost(item)}
+                >
+                  Edit
+                </button>
+
+                <button
+                  className="financial-delete-btn"
+                  onClick={() => handleDeleteSubjectCost(item.id)}
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))
+        )}
       </tbody>
     </table>
   </section>
@@ -1364,7 +1595,7 @@ Subject Costs
           <tbody>
             {filteredPaymentList.length === 0 ? (
               <tr>
-                <td colSpan="5">No payments found.</td>
+                <td colSpan="5">No payments recorded for this study.</td>
               </tr>
             ) : (
               filteredPaymentList.map((payment) => (
@@ -1425,7 +1656,7 @@ Subject Costs
           <tbody>
             {filteredReceivableList.length === 0 ? (
               <tr>
-                <td colSpan="5">No receivables found.</td>
+                <td colSpan="5">No receivables recorded for this study.</td>
               </tr>
             ) : (
               filteredReceivableList.map((receivable) => (
@@ -1492,7 +1723,7 @@ Subject Costs
           <tbody>
             {filteredInvoiceList.length === 0 ? (
               <tr>
-                <td colSpan="11">No invoices found.</td>
+                <td colSpan="7">No invoices recorded for this study.</td>
               </tr>
             ) : (
               filteredInvoiceList.map((invoice) => (
@@ -1563,25 +1794,34 @@ Subject Costs
               />
 
               <label className="financial-form-label">Budget Category</label>
+              {/*
+                Item 19 — Budget Categories are sourced from a single
+                constant. The following categories are intentionally
+                excluded from selection:
+                Clinical Operations, Regulatory, Monitoring, Data Management.
+                Historical records that already use a removed category are
+                preserved (rendered as a disabled option so the edit form
+                does not silently overwrite the stored value).
+              */}
               <select
-  value={budgetForm.category}
-  onChange={(event) =>
-    updateBudgetField(
-      "category",
-      event.target.value
-    )
-  }
->
-  <option value="">Select Category</option>
-  <option value="Clinical Operations">Clinical Operations</option>
-  <option value="Site Management">Site Management</option>
-  <option value="Patient Recruitment">Patient Recruitment</option>
-  <option value="Laboratory">Laboratory</option>
-  <option value="Regulatory">Regulatory</option>
-  <option value="Pharmacy">Pharmacy</option>
-  <option value="Monitoring">Monitoring</option>
-  <option value="Data Management">Data Management</option>
-</select>
+                value={budgetForm.category}
+                onChange={(event) =>
+                  updateBudgetField("category", event.target.value)
+                }
+              >
+                <option value="">Select Category</option>
+                {BUDGET_CATEGORY_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+                {budgetForm.category &&
+                  !BUDGET_CATEGORY_OPTIONS.includes(budgetForm.category) && (
+                    <option value={budgetForm.category} disabled>
+                      {budgetForm.category} (legacy)
+                    </option>
+                  )}
+              </select>
 
              <label className="financial-form-label">Cost Per Unit</label>
 

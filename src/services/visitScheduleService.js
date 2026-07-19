@@ -1,3 +1,4 @@
+
 import { readJson } from "../utils/storageHelpers";
 // Dynamic visit schedules from subject data, folder workflows, and header filters.
 
@@ -415,7 +416,7 @@ export function syncSubjectSchedules(studyId, subjectId, subject = {}) {
     const entry = createScheduleEntry({
       studyKey: studyId,
       subject: mergedSubject,
-      visit: "Screening",
+      visit: mergedSubject.currentVisit || "Screening",
       date: mergedSubject.screeningDate
     });
 

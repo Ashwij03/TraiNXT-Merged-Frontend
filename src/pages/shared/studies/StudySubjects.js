@@ -25,12 +25,17 @@ import {
   deriveSubjectLifecycleStatus,
   SUBJECT_TERMINAL_STATES,
 } from "../../../utils/subjectLifecycle";
+import { syncSubjectSchedules } from "../../../services/visitScheduleService";
 import {
   getStudyByCode,
   createSubject,
+  updateSubject,
   COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE,
+  COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE,
 } from "../../../services/studyService";
 import { STUDY_STATUS_COMPLETED } from "../../../constants/studyStatus";
+import { getStudies } from "../../../services/studyService";
+import { resolveSiteDisplay } from "../../../utils/siteDisplay";
 import "./StudySubjects.css";
 
 const SUBJECTS_STORAGE_KEY = "subjectsByStudy";
@@ -124,7 +129,14 @@ function getSubjectsForStudy(subjectsByStudy, studyId) {
   return [];
 }
 
-function getSubjectDetailCards(subject) {
+function getSubjectDetailCards(subject, siteSources = []) {
+  const siteDisplay = subject?.site
+    ? resolveSiteDisplay(subject.site, {
+        sources: siteSources,
+        fallback: subject.site || "—"
+      })
+    : "—";
+
   return [
     {
       label: "Initials",
@@ -140,7 +152,7 @@ function getSubjectDetailCards(subject) {
     },
     {
       label: "Site",
-      value: subject?.site || "—",
+      value: siteDisplay,
     },
     {
       label: "Screening Date",
@@ -328,12 +340,21 @@ function StudySubjects({
     const isEditing = Boolean(editingSubjectId);
 
     /*
-      Item 7 (Stage 5A): Completed-study subject creation guard.
-      Only NEW subject creation is blocked — editing an existing subject
-      of a Completed study remains permitted.
+      Item 7 (extension): Completed-study subject guard.
+      Both NEW subject creation and editing an existing subject are
+      blocked once the study is Completed.
       Validation happens BEFORE any subject mutation.
     */
-    if (!isEditing) {
+    if (isEditing) {
+      const authoritativeStudy = getStudyByCode(studyId);
+      if (
+        authoritativeStudy &&
+        authoritativeStudy.status === STUDY_STATUS_COMPLETED
+      ) {
+        window.alert(COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE);
+        return;
+      }
+    } else {
       const authoritativeStudy = getStudyByCode(studyId);
       if (
         authoritativeStudy &&
@@ -397,11 +418,41 @@ function StudySubjects({
           status: requestedManualStatus || derived || merged.status || "",
         };
       });
-
+      
       saveSubjects({
         ...subjectsByStudy,
         [studyId]: updatedSubjectsForStudy,
+
       });
+
+      const editedSubject = updatedSubjectsForStudy.find(
+        (subject) => normalizeValue(subject.id) === normalizeValue(subjectId)
+      );
+
+      /*
+        Item 7 (extension): route the authoritative subject-edit write
+        through the shared service, which re-checks the Completed-study
+        rule before mutating `subjectsByStudy`. This is the defense-in-depth
+        backstop for the UI guard above.
+      */
+      try {
+        updateSubject(studyId, editingSubjectId, editedSubject);
+      } catch (error) {
+        window.alert(
+          (error && error.message) || COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE
+        );
+        return;
+      }
+
+      setSubjectsByStudy((current) => ({
+        ...current,
+        [studyId]: updatedSubjectsForStudy,
+      }));
+
+      // Push the updated Screening/Enrollment dates into the shared visit
+      // schedule store so this change is reflected on every role's
+      // "Visit Calendar & Upcoming Visits" widget (Admin, Site Staff, PI).
+      syncSubjectSchedules(studyId, subjectId, editedSubject);
     } else {
       const baseSubject = {
         ...newSubject,
@@ -448,6 +499,13 @@ function StudySubjects({
         [studyId]: [...subjectsData, subjectToAdd],
       }));
 
+      // Push the new subject's Screening/Enrollment dates into the shared
+      // visit schedule store so this new subject immediately shows up on
+      // every role's "Visit Calendar & Upcoming Visits" widget (Admin,
+      // Site Staff, PI) — previously only the SubjectFolderWorkspace flow
+      // did this, so subjects added from this page never appeared there.
+      syncSubjectSchedules(studyId, subjectId, subjectToAdd);
+
       // notifySubjectCreated expects { subjectId, studyCode, addedByRole },
       // while this page's own subject record uses { id, studyId } — adapt the
       // field names here rather than renaming the stored record shape used by
@@ -482,6 +540,14 @@ function StudySubjects({
 
   const openEditSubjectModal = (subject) => {
     if (!subject) {
+      return;
+    }
+
+    // Item 7 (extension): prevent opening the Edit Subject flow at all when
+    // the target study is Completed. Shared service still enforces this
+    // as defense in depth if the flow is somehow reached.
+    if (isStudyCompleted) {
+      window.alert(COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE);
       return;
     }
 
@@ -562,7 +628,10 @@ function StudySubjects({
       selectedSubject.id
     );
 
-    const subjectDetailCards = getSubjectDetailCards(selectedSubject);
+    const subjectDetailCards = getSubjectDetailCards(
+      selectedSubject,
+      getStudies()
+    );
 
     return (
       <div className="subjects-module">
@@ -688,7 +757,14 @@ function StudySubjects({
                     <td>{subject.initials || "—"}</td>
                     <td>{subject.status || "—"}</td>
                     <td>{subject.pi || "—"}</td>
-                    <td>{subject.site || "—"}</td>
+                    <td>
+                      {subject.site
+                        ? resolveSiteDisplay(subject.site, {
+                            sources: getStudies(),
+                            fallback: subject.site
+                          })
+                        : "—"}
+                    </td>
                     <td>{subject.screeningDate || "—"}</td>
                     <td>{subject.enrollmentDate || "—"}</td>
                     <td>{subject.currentVisit || "—"}</td>
@@ -699,8 +775,14 @@ function StudySubjects({
                             type="button"
                             className="subject-action-btn subject-action-edit"
                             onClick={() => openEditSubjectModal(subject)}
+                            disabled={isStudyCompleted}
+                            aria-disabled={isStudyCompleted}
                             aria-label={`Edit subject ${subject.id}`}
-                            title="Edit subject"
+                            title={
+                              isStudyCompleted
+                                ? COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE
+                                : "Edit subject"
+                            }
                           >
                             <FiEdit2 />
                           </button>
@@ -772,8 +854,14 @@ function StudySubjects({
                           event.stopPropagation();
                           openEditSubjectModal(subject);
                         }}
+                        disabled={isStudyCompleted}
+                        aria-disabled={isStudyCompleted}
                         aria-label={`Edit subject ${subject.id}`}
-                        title="Edit subject"
+                        title={
+                          isStudyCompleted
+                            ? COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE
+                            : "Edit subject"
+                        }
                       >
                         <FiEdit2 />
                       </button>
@@ -911,17 +999,68 @@ function StudySubjects({
             />
 
             <label htmlFor="subject-site">Site</label>
-            <input
-              id="subject-site"
-              placeholder="Site"
-              value={newSubject.site}
-              onChange={(event) =>
-                setNewSubject({
-                  ...newSubject,
-                  site: event.target.value,
-                })
+            {(() => {
+              const availableSites = (getStudies() || []).filter(
+                (study) =>
+                  study && (study.siteNumber || study.site || study.location)
+              );
+
+              if (availableSites.length > 0) {
+                return (
+                  <select
+                    id="subject-site"
+                    value={newSubject.site}
+                    onChange={(event) =>
+                      setNewSubject({
+                        ...newSubject,
+                        site: event.target.value,
+                      })
+                    }
+                  >
+                    <option value="">Select Site</option>
+                    {availableSites.map((study) => {
+                      const number =
+                        study.siteNumber ||
+                        study.number ||
+                        study.siteNo ||
+                        "";
+                      const name =
+                        study.site ||
+                        study.siteName ||
+                        study.location ||
+                        "";
+                      const optionValue = number || name;
+                      const label =
+                        number && name
+                          ? `${number} — ${name}`
+                          : number || name;
+                      return (
+                        <option
+                          key={`${study.id || study.code || optionValue}`}
+                          value={optionValue}
+                        >
+                          {label}
+                        </option>
+                      );
+                    })}
+                  </select>
+                );
               }
-            />
+
+              return (
+                <input
+                  id="subject-site"
+                  placeholder="Site"
+                  value={newSubject.site}
+                  onChange={(event) =>
+                    setNewSubject({
+                      ...newSubject,
+                      site: event.target.value,
+                    })
+                  }
+                />
+              );
+            })()}
 
             <div className="form-group">
               <label htmlFor="subject-screening-date">
@@ -1041,3 +1180,4 @@ function StudySubjects({
 }
 
 export default StudySubjects;
+

@@ -1,11 +1,22 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import CROLayout from "./CROLayout";
 import { useCROData } from "./CRODATAContext";
 import StatusBadge from "./StatusBadge";
 import EmptyState from "./EmptyState";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 
 function CROMonitoring() {
   const { visits } = useCROData();
+
+  const siteSources = useMemo(() => getStudies(), []);
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -91,7 +102,7 @@ function CROMonitoring() {
                 {filteredVisits.map((visit) => (
                   <tr key={visit.id}>
                     <td>{visit.id}</td>
-                    <td>{visit.site}</td>
+                    <td>{displaySite(visit.site)}</td>
                     <td>{visit.cra}</td>
                     <td>{visit.visitType}</td>
                     <td>{visit.date}</td>

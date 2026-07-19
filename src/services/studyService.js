@@ -96,6 +96,13 @@ export function createStudy(study) {
   saveStoredStudies([...storedStudies, normalizedStudy]);
   notifyStudiesUpdated();
 
+  // Item 9 (Stage 5B): a brand-new study can be entered with a Completed
+  // Date already filled in on the study details form — notify the same
+  // way as an edit that adds one.
+  if (normalizedStudy.completedDate) {
+    notifyStudyCompleted(normalizedStudy);
+  }
+
   return normalizedStudy;
 }
 
@@ -120,13 +127,21 @@ export function updateStudy(studyCode, updates) {
     A transition into Completed is defined as:
       previousStatus !== "Completed" && requestedStatus === "Completed"
 
-    completedDate is stamped only on that transition.
     Existing completedDate is preserved on every other update path,
     including remaining Completed and moving away from Completed
     (historical completion record).
+
+    Item 9 (Stage 5B): the Completed Date field on the study details
+    form is user-editable. When a value is manually entered there, it
+    is authoritative and is saved exactly as typed rather than being
+    overwritten by an auto-generated timestamp. The auto-stamp (current
+    time) remains only as a fallback for a status transition into
+    Completed where no explicit completedDate was supplied.
   */
   const previousStudy = storedStudies[index];
   const previousStatus = previousStudy.status;
+  const previousCompletedDate = previousStudy.completedDate || null;
+
   const requestedStatus = Object.prototype.hasOwnProperty.call(
     updates || {},
     "status"
@@ -134,13 +149,19 @@ export function updateStudy(studyCode, updates) {
     ? updates.status
     : previousStatus;
 
+  const hasManualCompletedDate =
+    Object.prototype.hasOwnProperty.call(updates || {}, "completedDate") &&
+    String(updates.completedDate || "").trim() !== "";
+
   const isTransitionIntoCompleted =
     previousStatus !== STUDY_STATUS_COMPLETED &&
     requestedStatus === STUDY_STATUS_COMPLETED;
 
-  let nextCompletedDate = previousStudy.completedDate || null;
+  let nextCompletedDate = previousCompletedDate;
 
-  if (isTransitionIntoCompleted) {
+  if (hasManualCompletedDate) {
+    nextCompletedDate = updates.completedDate;
+  } else if (isTransitionIntoCompleted) {
     nextCompletedDate = new Date().toISOString();
   }
   // else: preserve previous completedDate exactly (remaining Completed
@@ -158,7 +179,17 @@ export function updateStudy(studyCode, updates) {
 
   saveStoredStudies(storedStudies);
 
-  if (isTransitionIntoCompleted) {
+  /*
+    Item 9 (Stage 5B): notify Admin, Site Staff, Principal Investigator,
+    and Sponsor whenever a Completed Date is newly entered or changed on
+    the study — whether that happened by the user typing a date directly
+    into the study details form, or via the auto-stamped status
+    transition above.
+  */
+  const completedDateWasEnteredOrChanged =
+    Boolean(nextCompletedDate) && nextCompletedDate !== previousCompletedDate;
+
+  if (completedDateWasEnteredOrChanged) {
     notifyStudyCompleted(updatedStudy);
   }
 
@@ -260,6 +291,65 @@ export function createSubject(studyCode, subject) {
   saveSubjectsByStudy(nextSubjectsByStudy);
 
   return subjectToStore;
+}
+
+/*
+  Item 7 (extension): shared authoritative subject edit guard.
+
+  Mirrors createSubject above — any code path that edits an existing
+  subject must route through this function so the Completed-study
+  business rule (no adding OR editing subjects once a study is
+  Completed) cannot be bypassed. Validation happens BEFORE any
+  mutation of `subjectsByStudy`.
+*/
+export const COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE =
+  "Subjects cannot be edited because this study is completed.";
+
+export function updateSubject(studyCode, subjectId, updatedFields) {
+  if (!studyCode) {
+    throw new Error("Study code is required to update a subject.");
+  }
+
+  if (!subjectId) {
+    throw new Error("Subject ID is required to update a subject.");
+  }
+
+  const study = getStoredStudies().find(
+    (item) => String(item.code) === String(studyCode)
+  );
+
+  if (!study) {
+    throw new Error("Study not found");
+  }
+
+  // Completed-study business rule — validated BEFORE any mutation.
+  if (study.status === STUDY_STATUS_COMPLETED) {
+    throw new Error(COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE);
+  }
+
+  const subjectsByStudy = readSubjectsByStudy();
+  const currentSubjectsForStudy = Array.isArray(subjectsByStudy[studyCode])
+    ? subjectsByStudy[studyCode]
+    : [];
+
+  const normalizedId = String(subjectId).trim().toLowerCase();
+
+  const nextSubjectsForStudy = currentSubjectsForStudy.map((existing) =>
+    String(existing.id || "").trim().toLowerCase() === normalizedId
+      ? { ...existing, ...updatedFields }
+      : existing
+  );
+
+  const nextSubjectsByStudy = {
+    ...subjectsByStudy,
+    [studyCode]: nextSubjectsForStudy,
+  };
+
+  saveSubjectsByStudy(nextSubjectsByStudy);
+
+  return nextSubjectsForStudy.find(
+    (item) => String(item.id || "").trim().toLowerCase() === normalizedId
+  );
 }
 
 export function isStudyCompletedByCode(studyCode) {

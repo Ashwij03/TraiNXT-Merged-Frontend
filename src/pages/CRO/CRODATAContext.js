@@ -305,8 +305,11 @@ export const CROProvider = ({ children }) => {
         status = "At Risk";
       }
 
+      const siteNumber = `SITE-${String(index + 1).padStart(3, "0")}`;
       return {
-        id: `SITE-${String(index + 1).padStart(3, "0")}`,
+        id: siteNumber,
+        siteNumber,
+        siteName: site,
         site,
         study: siteSubjects[0]?.study || "—",
         enrollment: `${enrollmentPct}%`,

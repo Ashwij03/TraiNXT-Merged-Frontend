@@ -221,17 +221,30 @@ export function getSites(study) {
 
       const target = Number(matchedStudy.targetSubjects || 0);
 
+      const siteName =
+        matchedStudy.site ||
+        matchedStudy.location ||
+        matchedStudy.name ||
+        "Unnamed Site";
+
+      const siteNumber =
+        matchedStudy.siteNumber ||
+        matchedStudy.siteNo ||
+        `SITE-${String(index + 1).padStart(3, "0")}`;
+
       return {
         id: adminSite?.id || index + 1,
 
-        siteNumber: adminSite?.siteNumber || adminSite?.id || "",
+        // Site Number is now a first-class field used by
+        // operational/reference displays.
+        siteNumber,
 
-        name:
-          adminSite?.name ||
-          matchedStudy.site ||
-          matchedStudy.location ||
-          matchedStudy.name ||
-          "Unnamed Site",
+        // Preserve Site Name as separate master-data semantic field.
+        siteName,
+
+        // Legacy `name` retained for existing consumers (filters,
+        // search text, etc.) — DO NOT drop.
+        name: siteName,
 
         sponsor: matchedStudy.sponsor,
 
@@ -254,7 +267,7 @@ export function getSites(study) {
   // Sponsor > Site Performance, which intentionally show every study.
   const studies = getStudies();
 
-  return studies.map((singleStudy) => {
+  return studies.map((singleStudy, index) => {
     const subjects = subjectsByStudy[singleStudy.code] || [];
     const adminSite = resolveAdminSiteByStudySite(singleStudy);
 
@@ -262,12 +275,22 @@ export function getSites(study) {
 
     const target = Number(singleStudy.targetSubjects || 0);
 
+    const siteName =
+      singleStudy.site || singleStudy.location || singleStudy.name;
+
+    const siteNumber =
+      singleStudy.siteNumber ||
+      singleStudy.siteNo ||
+      `SITE-${String(index + 1).padStart(3, "0")}`;
+
     return {
       id: adminSite?.id || singleStudy.code,
 
-      siteNumber: adminSite?.siteNumber || adminSite?.id || "",
+      siteNumber,
 
-      name: adminSite?.name || singleStudy.site || singleStudy.location || singleStudy.name,
+      siteName,
+
+      name: siteName,
 
       sponsor: singleStudy.sponsor,
 

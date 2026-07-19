@@ -35,7 +35,8 @@ const STUDY_SECTIONS = [
   { key: "visitPlan", label: "Visit Plan" },
   { key: "clinicalSites", label: "Clinical Sites" },
   { key: "eisf", label: "eISF" },
-  { key: "regulatory", label: "Regulatory" },
+  // ===== ITEM 16: Regulatory removed from Studies sidebar sections =====
+  // { key: "regulatory", label: "Regulatory" },
   { key: "reports", label: "Reports" },
   { key: "studyFiles", label: "Study Files" },
   { key: "logs", label: "Logs" },
@@ -358,7 +359,8 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       visitPlan: "Visit Plan",
       clinicalSites: "Clinical Sites",
       eisf: "eISF",
-      regulatory: "Regulatory",
+      // ===== ITEM 16: Regulatory removed from Studies section tab map =====
+      // regulatory: "Regulatory",
       reports: "Reports",
       studyFiles: "Study Files",
       logs: "Logs",

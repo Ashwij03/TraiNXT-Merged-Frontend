@@ -5,6 +5,7 @@ import DashboardCard from "../../components/dashboard/shared/DashboardCard";
 import DashboardBarChart from "../../components/dashboard/shared/DashboardBarChart";
 import DataTable from "../../components/dashboard/shared/DataTable";
 import { getSitePerformance } from "../../services/adminService";
+import { formatSiteLabel } from "../../utils/siteDisplay";
 import "./AdminPage.css";
 
 function SitePerformance() {
@@ -31,7 +32,11 @@ function SitePerformance() {
           <DataTable
             title="Performance Metrics"
             columns={[
-              { key: "siteName", label: "Site" },
+              {
+                key: "siteName",
+                label: "Site",
+                render: (_value, row) => formatSiteLabel(row) || "—"
+              },
               { key: "enrolled", label: "Enrolled" },
               { key: "enrollmentTarget", label: "Target" },
               { key: "screeningRate", label: "Screening %" },

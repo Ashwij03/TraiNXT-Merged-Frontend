@@ -1,6 +1,16 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 
 function Monitoring() {
+  const siteSources = useMemo(() => getStudies(), []);
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   const visits = [
     {
@@ -40,7 +50,7 @@ function Monitoring() {
         <tbody>
           {visits.map((visit, index) => (
             <tr key={index}>
-              <td>{visit.site}</td>
+              <td>{displaySite(visit.site)}</td>
               <td>{visit.type}</td>
               <td>{visit.date}</td>
               <td>{visit.status}</td>

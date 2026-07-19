@@ -9,8 +9,8 @@ import {
   getEffectiveRole,
 } from "../../../services/roleService";
 import { canAddStudy } from "../../../utils/contentAccess";
-import { formatScheduleDisplayDate } from "../../../utils/formatScheduleDisplayDate";
 import { readStorage } from "../../../utils/storageHelpers";
+import { resolveSiteDisplay } from "../../../utils/siteDisplay";
 import ROLES from "../../../constants/roles";
 import {
   STUDY_STATUS_OPTIONS,
@@ -47,6 +47,7 @@ const initialForm = {
   sponsor: "",
   cro: "",
   startDate: "",
+  completedDate: "",
   description: "",
 };
 
@@ -115,12 +116,42 @@ function getStudySiteNumber(study, sites) {
   return site?.siteNumber || site?.id || study?.siteNumber || "";
 }
 
+/**
+ * Display-only formatter that renders a date as "yyyy-mm-dd", matching the
+ * Start Date column's format. Reads the calendar date directly off the
+ * stored string when possible so no timezone conversion can shift the day.
+ */
+function formatDateYYYYMMDD(dateValue) {
+  if (!dateValue) {
+    return "-";
+  }
+
+  const raw = String(dateValue).trim();
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if (match) {
+    const [, year, month, day] = match;
+    return `${year}-${month}-${day}`;
+  }
+
+  const parsed = new Date(raw);
+
+  if (!Number.isNaN(parsed.getTime())) {
+    const year = parsed.getFullYear();
+    const month = String(parsed.getMonth() + 1).padStart(2, "0");
+    const day = String(parsed.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  return raw;
+}
+
 function getStoredCompletedDateDisplay(study) {
   if (study?.status !== "Completed" || !study?.completedDate) {
     return "";
   }
 
-  return formatScheduleDisplayDate(study.completedDate);
+  return formatDateYYYYMMDD(study.completedDate);
 }
 
 function Studies() {
@@ -229,15 +260,30 @@ function Studies() {
 
     switch (sortBy) {
       case "studyId":
+        return result.sort((a, b) => {
+          const numA = Number(a.code);
+          const numB = Number(b.code);
+
+          if (!Number.isNaN(numA) && !Number.isNaN(numB)) {
+            return numA - numB;
+          }
+
+          return String(a.code || "").localeCompare(String(b.code || ""));
+        });
+
+      case "name":
         return result.sort((a, b) =>
-          String(a.code || "").localeCompare(String(b.code || ""))
+          String(a.name || "").localeCompare(String(b.name || ""), undefined, {
+            numeric: true,
+            sensitivity: "base",
+          })
         );
 
       case "startDate":
         return result.sort(
           (a, b) =>
-            new Date(b.startDate || 0).getTime() -
-            new Date(a.startDate || 0).getTime()
+            new Date(a.startDate || 0).getTime() -
+            new Date(b.startDate || 0).getTime()
         );
 
       case "sponsor":
@@ -246,9 +292,16 @@ function Studies() {
         );
 
       default:
-        return result.sort((a, b) =>
-          String(a.studyId || "").localeCompare(String(b.studyId || ""))
-        );
+        return result.sort((a, b) => {
+          const numA = Number(a.code);
+          const numB = Number(b.code);
+
+          if (!Number.isNaN(numA) && !Number.isNaN(numB)) {
+            return numA - numB;
+          }
+
+          return String(a.code || "").localeCompare(String(b.code || ""));
+        });
     }
   }, [
     studies,
@@ -677,7 +730,7 @@ function Studies() {
 
                     <div>
                       <strong>Site:</strong>
-                      {study.location || "N/A"}
+                      {resolveSiteDisplay(study, { fallback: "N/A" })}
                     </div>
 
                     <div>
@@ -757,7 +810,7 @@ function Studies() {
 
                 <div className="study-list-field">
                   <label>Site</label>
-                  <span>{study.location || "-"}</span>
+                  <span>{resolveSiteDisplay(study, { fallback: "-" })}</span>
                 </div>
 
                 <div className="study-list-field">
@@ -810,10 +863,11 @@ function Studies() {
                   <th>Country</th>
                   <th>PI</th>
                   <th>Site Number</th>
+                  <th>Site Name</th>
                   <th>Subjects</th>
                   <th>Study Status</th>
+                  <th>Start Date</th>
                   <th>Completed Date</th>
-                  <th>Start</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -840,6 +894,7 @@ function Studies() {
                     <td>{study.country || "-"}</td>
                     <td>{study.principalInvestigator || "-"}</td>
                     <td>{getStudySiteNumber(study, sites) || "-"}</td>
+                    <td>{resolveSiteDisplay(study, { fallback: "-" })}</td>
                     <td>
                       {getSubjectsForStudy(subjectsByStudy, study).length}/{study.targetSubjects || 0}
                     </td>
@@ -857,6 +912,8 @@ function Studies() {
                     <td>{getStoredCompletedDateDisplay(study)}</td>
 
                     <td>{study.startDate || "-"}</td>
+
+                    <td>{getStoredCompletedDateDisplay(study) || "-"}</td>
 
                     <td>
                       <button
@@ -1045,6 +1102,16 @@ function Studies() {
                     value={form.startDate}
                     onChange={handleChange}
                     required
+                  />
+                </label>
+
+                <label>
+                  Completed Date
+                  <input
+                    name="completedDate"
+                    type="date"
+                    value={form.completedDate}
+                    onChange={handleChange}
                   />
                 </label>
 

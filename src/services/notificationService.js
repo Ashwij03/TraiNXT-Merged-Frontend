@@ -332,6 +332,36 @@ export function notifyPermissionRequestRejected(request) {
   });
 }
 
+// Formats a stored completedDate (either a plain "YYYY-MM-DD" from the
+// study details form's date input, or a full ISO timestamp from the
+// auto-stamped status-transition path) as "dd-mm-yyyy" for display in
+// the "Study Completed" notification message. Reads the calendar date
+// directly off the string so no timezone conversion can shift the day.
+function formatCompletedDateDDMMYYYY(dateValue) {
+  if (!dateValue) {
+    return "";
+  }
+
+  const raw = String(dateValue).trim();
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if (match) {
+    const [, year, month, day] = match;
+    return `${day}-${month}-${year}`;
+  }
+
+  const parsed = new Date(raw);
+
+  if (!Number.isNaN(parsed.getTime())) {
+    const day = String(parsed.getDate()).padStart(2, "0");
+    const month = String(parsed.getMonth() + 1).padStart(2, "0");
+    const year = parsed.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+
+  return raw;
+}
+
 export function notifyStudyCompleted(study) {
   const studyCode = study?.code || study?.studyCode || study?.id || "";
   const completedDate = study?.completedDate || "";
@@ -349,9 +379,9 @@ export function notifyStudyCompleted(study) {
 
   return createNotification({
     title: "Study Completed",
-    message: `Study ${studyName} has been completed.`,
+    message: `Study ${studyName} has been completed on ${formatCompletedDateDDMMYYYY(completedDate)}.`,
     studyCode,
-    targetRoles: [ROLES.SITE_STAFF, ROLES.PI],
+    targetRoles: [ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.PI, ROLES.SPONSOR],
     type: "study_completed",
     eventId,
     metadata: {
@@ -359,7 +389,6 @@ export function notifyStudyCompleted(study) {
       studyName,
       completedDate,
     },
-    createdAt: completedDate,
   });
 }
 

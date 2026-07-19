@@ -11,6 +11,22 @@
   gap: 12px;
 }
 
+.study-planning-site-ref {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #475569;
+}
+
+.study-planning-site-ref span {
+  color: #64748b;
+  margin-right: 4px;
+}
+
+.study-planning-site-ref strong {
+  color: #0f172a;
+  font-weight: 600;
+}
+
 .planning-section {
   background: #fff;
   border-radius: 12px;

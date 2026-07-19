@@ -1,14 +1,25 @@
-import React from "react";
+import React, { useMemo } from "react";
 import CROLayout from "./CROLayout";
 import { useCROData } from "./CRODATAContext";
 import CROStatusBadge from "./CROStatusBadge";
 import EmptyState from "./EmptyState";
 import { useNavigate } from "react-router-dom";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 
 
 function CROVisits() {
   const { subjects, visits } = useCROData();
   const navigate = useNavigate();
+
+  const siteSources = useMemo(() => getStudies(), []);
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   const subjectVisits = subjects.map((s) => ({
     id: s.id,
@@ -61,7 +72,7 @@ function CROVisits() {
                 {subjectVisits.map((v) => (
                   <tr key={v.id}>
                     <td>{v.subject}</td>
-                    <td>{v.site}</td>
+                    <td>{displaySite(v.site)}</td>
                     <td>{v.visit}</td>
                     <td>
                       <CROStatusBadge status={v.status} />

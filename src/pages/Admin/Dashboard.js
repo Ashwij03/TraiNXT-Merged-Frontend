@@ -1,3 +1,4 @@
+
 // UPDATED: Admin dashboard — Phase 8 subject-status analytics and full-height Upcoming Visits
 
 import { useEffect, useMemo, useState } from "react";
@@ -23,6 +24,12 @@ import {
 import "./Dashboard.css";
 import "../shared/studies/StudyDashboard.css";
 import "../shared/AccessPermissions.css";
+
+// Ongoing studies = studies currently in Startup, Recruitment Phase,
+// or Conduct Phase (the statuses set on the study details form's
+// Study Status dropdown). Defined at module scope so it's a stable
+// reference for the useMemo dependency array below.
+const ONGOING_STUDY_STATUSES = ["Startup", "Recruitment Phase", "Conduct Phase"];
 
 function AdminDashboard() {
   const { pendingCount: openCommentsCount } = useComments();
@@ -71,6 +78,14 @@ function AdminDashboard() {
 
   const portfolioStudies = useMemo(() => getStudies(), []);
 
+  const ongoingStudiesCount = useMemo(
+    () =>
+      studies.filter((study) =>
+        ONGOING_STUDY_STATUSES.includes(study.status)
+      ).length,
+    [studies]
+  );
+
   return (
     <AdminDashboardLayout>
       <div className="admin-dashboard">
@@ -101,8 +116,8 @@ function AdminDashboard() {
 
           <KPICard
             title="Studies"
-            value={studies.length}
-            subtitle="Active Studies"
+            value={ongoingStudiesCount}
+            subtitle="Ongoing Studies"
             icon="📁"
             onClick={() => navigate("/studies")}
           />
