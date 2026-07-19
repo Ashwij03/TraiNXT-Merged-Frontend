@@ -1,10 +1,6 @@
 import React, { useMemo, useState } from "react";
 import "./PISubjectsDashboard.css";
-import {
-  FaEye,
-  FaFileAlt,
-  FaEllipsisV,
-} from "react-icons/fa";
+import { FaEye, FaFileAlt, FaEllipsisV } from "react-icons/fa";
 import { getStudyByCode } from "../../services/studyService";
 import { STUDY_STATUS_COMPLETED } from "../../constants/studyStatus";
 
@@ -13,10 +9,8 @@ import { getStudies } from "../../services/studyService";
 
 const COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE =
   "Subjects cannot be added because this study is completed.";
-  
-function PISubjectsDashboard({
-  onProfileClick
-}) {
+
+function PISubjectsDashboard({ onProfileClick }) {
   const [search, setSearch] = useState("");
 
   const siteSources = useMemo(() => getStudies(), []);
@@ -24,24 +18,15 @@ function PISubjectsDashboard({
     value
       ? resolveSiteDisplay(value, {
           sources: siteSources,
-          fallback: value
+          fallback: value,
         })
       : "—";
 
   const [subjects, setSubjects] = useState(() => {
-    return (
-      JSON.parse(
-        localStorage.getItem("subjectsData")
-      ) || []
-    );
+    return JSON.parse(localStorage.getItem("subjectsData")) || [];
   });
   const handleAddSubject = () => {
-
-    if (
-      !newSubject.id ||
-      !newSubject.initials ||
-      !newSubject.study
-    ) {
+    if (!newSubject.id || !newSubject.initials || !newSubject.study) {
       alert("Please fill required fields");
       return;
     }
@@ -49,187 +34,160 @@ function PISubjectsDashboard({
     // Item 7 (Stage 5A): resolve the authoritative study and refuse subject
     // creation for Completed studies BEFORE any mutation.
     const targetStudy = getStudyByCode(newSubject.study);
-    if (
-      targetStudy &&
-      targetStudy.status === STUDY_STATUS_COMPLETED
-    ) {
+    if (targetStudy && targetStudy.status === STUDY_STATUS_COMPLETED) {
       alert(COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE);
       return;
     }
 
-    const updatedSubjects = [
-      ...subjects,
-      newSubject
-    ];
+    const updatedSubjects = [...subjects, newSubject];
 
     setSubjects(updatedSubjects);
 
-    localStorage.setItem(
-      "subjectsData",
-      JSON.stringify(updatedSubjects)
-    );
+    localStorage.setItem("subjectsData", JSON.stringify(updatedSubjects));
 
     setShowModal(false);
 
-	setNewSubject({
-	  id: "",
-	  initials: "",
-	  study: "",
-	  site: "",
-	  status: "Screening",
-	  enrollmentDate: "",
-	  lastVisit: "",
+    setNewSubject({
+      id: "",
+      initials: "",
+      study: "",
+      site: "",
+      status: "Screening",
+      enrollmentDate: "",
+      lastVisit: "",
 
-	  screening: {
-	    screeningDate: "",
-	    eligibility: "Pending",
-	    notes: ""
-	  },
+      screening: {
+        screeningDate: "",
+        eligibility: "Pending",
+        notes: "",
+      },
 
-	  enrollment: {
-	    enrolledDate: "",
-	    arm: "",
-	    consentStatus: "Pending"
-	  },
+      enrollment: {
+        enrolledDate: "",
+        arm: "",
+        consentStatus: "Pending",
+      },
 
-	  visits: [
-	    {
-	      visitName: "Screening",
-	      visitDate: "",
-	      status: "Scheduled"
-	    }
-	  ],
+      visits: [
+        {
+          visitName: "Screening",
+          visitDate: "",
+          status: "Scheduled",
+        },
+      ],
 
-	  documents: [],
-	  queries: [],
+      documents: [],
+      queries: [],
 
-	  auditTrail: [
-	    {
-	      action: "Subject Created",
-	      user: "PI",
-	      date: new Date().toLocaleDateString()
-	    }
-	  ]
-	});
-  };
-  const [selectedStatus, setSelectedStatus] =
-    useState("All");
-
-  const filteredSubjects =
-    subjects.filter((subject) => {
-
-      const matchesSearch =
-        subject.id
-          .toLowerCase()
-          .includes(search.toLowerCase());
-
-      const matchesStatus =
-        selectedStatus === "All" ||
-        subject.status === selectedStatus;
-
-      return (
-        matchesSearch &&
-        matchesStatus
-      );
+      auditTrail: [
+        {
+          action: "Subject Created",
+          user: "PI",
+          date: new Date().toLocaleDateString(),
+        },
+      ],
     });
+  };
+  const [selectedStatus, setSelectedStatus] = useState("All");
 
-  const enrolledCount =
-    subjects.filter((s) => s.status === "Enrolled").length;
+  const filteredSubjects = subjects.filter((subject) => {
+    const matchesSearch = subject.id
+      .toLowerCase()
+      .includes(search.toLowerCase());
 
-  const screeningCount =
-    subjects.filter((s) => s.status === "Screening").length;
+    const matchesStatus =
+      selectedStatus === "All" || subject.status === selectedStatus;
 
-  const completedCount =
-    subjects.filter((s) => s.status === "Completed").length;
+    return matchesSearch && matchesStatus;
+  });
 
-  const withdrawnCount =
-    subjects.filter((s) => s.status === "Withdrawn").length;
-	const [showModal, setShowModal] = useState(false);
+  const enrolledCount = subjects.filter((s) => s.status === "Enrolled").length;
 
-	const [newSubject, setNewSubject] = useState({
-	  id: "",
-	  initials: "",
-	  study: "",
-	  site: "",
-	  status: "Screening",
-	  enrollmentDate: "",
-	  lastVisit: "",
+  const screeningCount = subjects.filter(
+    (s) => s.status === "Screening",
+  ).length;
 
-	  screening: {
-	    screeningDate: "",
-	    eligibility: "Pending",
-	    notes: ""
-	  },
+  const completedCount = subjects.filter(
+    (s) => s.status === "Completed",
+  ).length;
 
-	  enrollment: {
-	    enrolledDate: "",
-	    arm: "",
-	    consentStatus: "Pending"
-	  },
+  const withdrawnCount = subjects.filter(
+    (s) => s.status === "Withdrawn",
+  ).length;
+  const [showModal, setShowModal] = useState(false);
 
-	  visits: [
-	    {
-	      visitName: "Screening",
-	      visitDate: "",
-	      status: "Scheduled"
-	    }
-	  ],
+  const [newSubject, setNewSubject] = useState({
+    id: "",
+    initials: "",
+    study: "",
+    site: "",
+    status: "Screening",
+    enrollmentDate: "",
+    lastVisit: "",
 
-	  documents: [],
+    screening: {
+      screeningDate: "",
+      eligibility: "Pending",
+      notes: "",
+    },
 
-	  queries: [],
+    enrollment: {
+      enrolledDate: "",
+      arm: "",
+      consentStatus: "Pending",
+    },
 
-	  auditTrail: [
-	    {
-	      action: "Subject Created",
-	      user: "PI",
-	      date: new Date().toLocaleDateString()
-	    }
-	  ]
-	});
-	const handleView = (subject) => {
-	  setSelectedSubject(subject);
-	  setShowViewModal(true);
-	};
+    visits: [
+      {
+        visitName: "Screening",
+        visitDate: "",
+        status: "Scheduled",
+      },
+    ],
 
-	const handleProfile = (subject) => {
+    documents: [],
 
-	  localStorage.setItem(
-	    "selectedSubject",
-	    JSON.stringify(subject)
-	  );
+    queries: [],
 
-	  if (onProfileClick) {
-	    onProfileClick(subject);
-	  }
+    auditTrail: [
+      {
+        action: "Subject Created",
+        user: "PI",
+        date: new Date().toLocaleDateString(),
+      },
+    ],
+  });
+  const handleView = (subject) => {
+    setSelectedSubject(subject);
+    setShowViewModal(true);
+  };
 
-	};
+  const handleProfile = (subject) => {
+    localStorage.setItem("selectedSubject", JSON.stringify(subject));
 
-	const handleMore = (subject) => {
-	  console.log("More:", subject);
-	};
+    if (onProfileClick) {
+      onProfileClick(subject);
+    }
+  };
 
+  const handleMore = (subject) => {
+    console.log("More:", subject);
+  };
 
-	const [showViewModal, setShowViewModal] =
-	  useState(false);
-	  const [selectedSubject, setSelectedSubject] =
-	    useState(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [selectedSubject, setSelectedSubject] = useState(null);
 
   return (
     <div className="subjects-dashboard">
-
       <div className="subjects-header">
         <div>
           <h2>Subjects</h2>
           <p>View and manage all subjects</p>
         </div>
 
-		<button
-		  className="add-subject-btn"
-		  onClick={() => setShowModal(true)}
-		>
-		  + Add Subject
-		</button>
+        <button className="add-subject-btn" onClick={() => setShowModal(true)}>
+          + Add Subject
+        </button>
       </div>
 
       <div className="subjects-filters">
@@ -237,26 +195,21 @@ function PISubjectsDashboard({
           type="text"
           placeholder="Search Subject ID..."
           value={search}
-          onChange={(e) =>
-            setSearch(e.target.value)
-          }
+          onChange={(e) => setSearch(e.target.value)}
         />
-		<select
-		  value={selectedStatus}
-		  onChange={(e) =>
-		    setSelectedStatus(e.target.value)
-		  }
-		>
-		  <option>All</option>
-		  <option>Screening</option>
-		  <option>Enrolled</option>
-		  <option>Completed</option>
-		  <option>Withdrawn</option>
-		</select>
+        <select
+          value={selectedStatus}
+          onChange={(e) => setSelectedStatus(e.target.value)}
+        >
+          <option>All</option>
+          <option>Screening</option>
+          <option>Enrolled</option>
+          <option>Completed</option>
+          <option>Withdrawn</option>
+        </select>
       </div>
 
       <div className="subjects-kpis">
-
         <div className="subject-kpi">
           <h4>Total Subjects</h4>
           <h2>{subjects.length}</h2>
@@ -281,13 +234,10 @@ function PISubjectsDashboard({
           <h4>Withdrawn</h4>
           <h2>{withdrawnCount}</h2>
         </div>
-
       </div>
 
       <div className="subjects-table-card">
-
         <table className="subjects-table">
-
           <thead>
             <tr>
               <th>Subject ID</th>
@@ -297,272 +247,207 @@ function PISubjectsDashboard({
               <th>Status</th>
               <th>Enrollment Date</th>
               <th>Last Visit</th>
-			  <th>Actions</th>
+              <th>Actions</th>
             </tr>
           </thead>
 
           <tbody>
-
             {filteredSubjects.map((subject) => (
               <tr key={subject.id}>
                 <td>{subject.id}</td>
                 <td>{subject.initials}</td>
                 <td>{subject.study}</td>
                 <td>{displaySite(subject.site)}</td>
-				
-				<td>
-				  <span
-				    className={`status-badge ${subject.status.toLowerCase()}`}
-				  >
-				    {subject.status}
-				  </span>
-				</td>
+
+                <td>
+                  <span
+                    className={`status-badge ${subject.status.toLowerCase()}`}
+                  >
+                    {subject.status}
+                  </span>
+                </td>
                 <td>{subject.enrollmentDate}</td>
                 <td>{subject.lastVisit}</td>
-				<td>
-				  <div className="action-buttons">
+                <td>
+                  <div className="action-buttons">
+                    <FaEye
+                      className="action-icon"
+                      title="View"
+                      onClick={() => handleView(subject)}
+                    />
 
-				    <FaEye
-				      className="action-icon"
-				      title="View"
-				      onClick={() =>
-				        handleView(subject)
-				      }
-				    />
+                    <FaFileAlt
+                      className="action-icon"
+                      title="Profile"
+                      onClick={() => handleProfile(subject)}
+                    />
 
-				    <FaFileAlt
-				      className="action-icon"
-				      title="Profile"
-				      onClick={() =>
-				        handleProfile(subject)
-				      }
-				    />
-
-				    <FaEllipsisV
-				      className="action-icon"
-				      title="More"
-				      onClick={() =>
-				        handleMore(subject)
-				      }
-				    />
-
-				  </div>
-				</td>
+                    <FaEllipsisV
+                      className="action-icon"
+                      title="More"
+                      onClick={() => handleMore(subject)}
+                    />
+                  </div>
+                </td>
               </tr>
             ))}
-
           </tbody>
-
         </table>
-
       </div>
-	  {showModal && (
-	    <div className="modal-overlay">
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <h3>Add Subject</h3>
 
-	      <div className="modal-box">
+            <input
+              placeholder="Subject ID"
+              value={newSubject.id}
+              onChange={(e) =>
+                setNewSubject({
+                  ...newSubject,
+                  id: e.target.value,
+                })
+              }
+            />
 
-	        <h3>Add Subject</h3>
+            <input
+              placeholder="Initials"
+              value={newSubject.initials}
+              onChange={(e) =>
+                setNewSubject({
+                  ...newSubject,
+                  initials: e.target.value,
+                })
+              }
+            />
 
-	        <input
-	          placeholder="Subject ID"
-	          value={newSubject.id}
-	          onChange={(e) =>
-	            setNewSubject({
-	              ...newSubject,
-	              id: e.target.value
-	            })
-	          }
-	        />
+            <input
+              placeholder="Study"
+              value={newSubject.study}
+              onChange={(e) =>
+                setNewSubject({
+                  ...newSubject,
+                  study: e.target.value,
+                })
+              }
+            />
 
-	        <input
-	          placeholder="Initials"
-	          value={newSubject.initials}
-	          onChange={(e) =>
-	            setNewSubject({
-	              ...newSubject,
-	              initials: e.target.value
-	            })
-	          }
-	        />
+            <input
+              placeholder="Site"
+              value={newSubject.site}
+              onChange={(e) =>
+                setNewSubject({
+                  ...newSubject,
+                  site: e.target.value,
+                })
+              }
+            />
+            <input
+              type="date"
+              value={newSubject.enrollmentDate}
+              onChange={(e) =>
+                setNewSubject({
+                  ...newSubject,
+                  enrollmentDate: e.target.value,
+                })
+              }
+            />
+            <input
+              placeholder="Last Visit"
+              value={newSubject.lastVisit}
+              onChange={(e) =>
+                setNewSubject({
+                  ...newSubject,
+                  lastVisit: e.target.value,
+                })
+              }
+            />
 
-	        <input
-	          placeholder="Study"
-	          value={newSubject.study}
-	          onChange={(e) =>
-	            setNewSubject({
-	              ...newSubject,
-	              study: e.target.value
-	            })
-	          }
-	        />
+            <select
+              value={newSubject.status}
+              onChange={(e) =>
+                setNewSubject({
+                  ...newSubject,
+                  status: e.target.value,
+                })
+              }
+            >
+              <option>Screening</option>
+              <option>Enrolled</option>
+              <option>Completed</option>
+              <option>Withdrawn</option>
+            </select>
 
-	        <input
-	          placeholder="Site"
-	          value={newSubject.site}
-	          onChange={(e) =>
-	            setNewSubject({
-	              ...newSubject,
-	              site: e.target.value
-	            })
-	          }
-	        />
-			<input
-			  type="date"
-			  value={newSubject.enrollmentDate}
-			  onChange={(e) =>
-			    setNewSubject({
-			      ...newSubject,
-			      enrollmentDate: e.target.value
-			    })
-			  }
-			/>
-			<input
-			  placeholder="Last Visit"
-			  value={newSubject.lastVisit}
-			  onChange={(e) =>
-			    setNewSubject({
-			      ...newSubject,
-			      lastVisit: e.target.value
-			    })
-			  }
-			/>
-			
+            <div className="modal-buttons">
+              <button onClick={() => setShowModal(false)}>Cancel</button>
 
-	        <select
-	          value={newSubject.status}
-	          onChange={(e) =>
-	            setNewSubject({
-	              ...newSubject,
-	              status: e.target.value
-	            })
-	          }
-	        >
-	          <option>Screening</option>
-	          <option>Enrolled</option>
-	          <option>Completed</option>
-	          <option>Withdrawn</option>
-	        </select>
+              <button onClick={handleAddSubject}>Save Subject</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showViewModal && selectedSubject && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <h3>Subject Details - {selectedSubject.id}</h3>
 
-	        <div className="modal-buttons">
+            <div className="subject-view-grid">
+              <div className="detail-card">
+                <span className="detail-label">Subject ID</span>
 
-	          <button
-	            onClick={() =>
-	              setShowModal(false)
-	            }
-	          >
-	            Cancel
-	          </button>
+                <span className="detail-value">{selectedSubject.id}</span>
+              </div>
+              <div className="detail-card">
+                <span className="detail-label">Initials</span>
 
-	          <button
-	            onClick={handleAddSubject}
-	          >
-	            Save Subject
-	          </button>
+                <span className="detail-value">{selectedSubject.initials}</span>
+              </div>
 
-	        </div>
+              <div className="detail-card">
+                <span className="detail-label">Study</span>
 
-	      </div>
+                <span className="detail-value">{selectedSubject.study}</span>
+              </div>
+              <div className="detail-card">
+                <span className="detail-label">Site</span>
 
-	    </div>
-	  )}
-	  {showViewModal && selectedSubject && (
-	    <div className="modal-overlay">
+                <span className="detail-value">
+                  {displaySite(selectedSubject.site)}
+                </span>
+              </div>
 
-	      <div className="modal-box">
+              <div className="detail-card">
+                <span className="detail-label">Status</span>
 
-		  <h3>
-		    Subject Details - {selectedSubject.id}
-		  </h3>
+                <span
+                  className={`status-badge ${selectedSubject.status.toLowerCase()}`}
+                >
+                  {selectedSubject.status}
+                </span>
+              </div>
+              <div className="detail-card">
+                <span className="detail-label">Enrollment Data</span>
 
-	        <div className="subject-view-grid">
+                <span className="detail-value">
+                  {selectedSubject.enrollmentDate}
+                </span>
+              </div>
 
-			<div className="detail-card">
-			  <span className="detail-label">
-			    Subject ID
-			  </span>
+              <div className="detail-card">
+                <span className="detail-label">Last Visit</span>
 
-			  <span className="detail-value">
-			    {selectedSubject.id}
-			  </span>
-			</div>
-			<div className="detail-card">
-			  <span className="detail-label">
-			    Initials
-			  </span>
+                <span className="detail-value">
+                  {selectedSubject.lastVisit || "Not Available"}
+                </span>
+              </div>
+            </div>
 
-			  <span className="detail-value">
-			    {selectedSubject.initials}
-			  </span>
-			</div>
-
-			<div className="detail-card">
-			  <span className="detail-label">
-			    Study
-			  </span>
-
-			  <span className="detail-value">
-			    {selectedSubject.study}
-			  </span>
-			</div>
-			<div className="detail-card">
-						  <span className="detail-label">
-						    Site
-						  </span>
-
-						  <span className="detail-value">
-						    {displaySite(selectedSubject.site)}
-						  </span>
-						</div>
-
-						<div className="detail-card">
-						  <span className="detail-label">
-						    Status
-						  </span>
-
-						  <span
-						    className={`status-badge ${selectedSubject.status.toLowerCase()}`}
-						  >
-						    {selectedSubject.status}
-						  </span>
-						</div>
-									<div className="detail-card">
-												  <span className="detail-label">
-												    Enrollment Data
-												  </span>
-
-												  <span className="detail-value">
-												  {selectedSubject.enrollmentDate}
-												  </span>
-												</div>
-
-												<div className="detail-card">
-															  <span className="detail-label">
-															    Last Visit 
-															  </span>
-
-															  <span className="detail-value">
-															    {selectedSubject.lastVisit || "Not Available"}
-															  </span>
-															</div>
-	        </div>
-
-	        <div className="modal-buttons">
-
-	          <button
-	            onClick={() =>
-	              setShowViewModal(false)
-	            }
-	          >
-	            Close
-	          </button>
-
-	        </div>
-
-	      </div>
-
-	    </div>
-	  )}
-
+            <div className="modal-buttons">
+              <button onClick={() => setShowViewModal(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

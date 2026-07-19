@@ -909,6 +909,8 @@ function Studies() {
                       </span>
                     </td>
 
+                    <td>{getStoredCompletedDateDisplay(study)}</td>
+
                     <td>{study.startDate || "-"}</td>
 
                     <td>{getStoredCompletedDateDisplay(study) || "-"}</td>

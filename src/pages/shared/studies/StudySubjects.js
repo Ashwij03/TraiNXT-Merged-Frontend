@@ -1,6 +1,3 @@
-
-
-
 import { readStorage } from "../../../utils/storageHelpers";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -420,6 +417,12 @@ function StudySubjects({
           ...merged,
           status: requestedManualStatus || derived || merged.status || "",
         };
+      });
+      
+      saveSubjects({
+        ...subjectsByStudy,
+        [studyId]: updatedSubjectsForStudy,
+
       });
 
       const editedSubject = updatedSubjectsForStudy.find(
