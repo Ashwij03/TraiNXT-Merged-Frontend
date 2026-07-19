@@ -2,14 +2,23 @@ import { useEffect, useMemo, useState } from "react";
 import DashboardCard from "./DashboardCard";
 import CalendarWidget from "./CalendarWidget";
 import DataTable from "./DataTable";
-import { mapScheduleToTableRow } from "../../../services/visitScheduleService";
+import {
+  isCompletedVisitSchedule,
+  mapScheduleToTableRow
+} from "../../../services/visitScheduleService";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
+import { formatScheduleDisplayDate } from "../../../utils/formatScheduleDisplayDate";
 import "./VisitCalendarSection.css";
 
 const UPCOMING_COLUMNS = [
   { key: "subjectid", label: "Subject ID", width: "18%" },
   { key: "visit", label: "Visit", width: "20%" },
-  { key: "date", label: "Date", width: "16%" },
+  {
+    key: "date",
+    label: "Date",
+    width: "16%",
+    render: (value) => formatScheduleDisplayDate(value),
+  },
   { key: "study", label: "Study", width: "18%" },
   { key: "site", label: "Site", width: "14%" },
   { key: "status", label: "Status", width: "14%" }
@@ -58,6 +67,11 @@ function VisitCalendarSection({
     [getVisitsForDate, selectedScheduleDate]
   );
 
+  const calendarSchedules = useMemo(
+    () => schedules.filter((item) => !isCompletedVisitSchedule(item)),
+    [schedules]
+  );
+
   const upcomingRows = useMemo(() => {
     if (selectedScheduleDate) {
       return selectedDaySchedules;
@@ -68,7 +82,7 @@ function VisitCalendarSection({
     }
 
     return schedules
-      .filter((item) => item.status !== "Completed")
+      .filter((item) => !isCompletedVisitSchedule(item))
       .sort((a, b) => new Date(a.date) - new Date(b.date))
       .slice(0, 12)
       .map(mapScheduleToTableRow);
@@ -90,7 +104,7 @@ function VisitCalendarSection({
       <div className="calendar-table-unified">
         <div className="calendar-table-unified__calendar">
           <CalendarWidget
-            schedules={schedules}
+            schedules={calendarSchedules}
             selectedDate={selectedScheduleDate}
             onDateSelect={handleDateSelect}
           />

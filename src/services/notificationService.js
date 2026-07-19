@@ -82,15 +82,38 @@ function isVisibleToUser(notification, user) {
   return accessibleStudyCodeSet(user).has(String(notification.studyCode));
 }
 
-// Internal — every public notify* helper below funnels through here so
+// Generic writer — every public notify* helper below funnels through here so
 // storage shape and the "only dispatch when something actually changed"
-// rule stay in one place.
-function createNotification({ title, message, studyCode = "", targetRoles = [] }) {
+// rule stay in one place. `eventId` is an optional stable identity for
+// transition/reminder events that must never duplicate on navigation/remount.
+export function createNotification({
+  title,
+  message,
+  studyCode = "",
+  targetRoles = [],
+  type = "",
+  eventId = "",
+  metadata = {},
+  createdAt = "",
+}) {
   const cleanTitle = String(title || "").trim();
   const cleanMessage = String(message || "").trim();
+  const cleanEventId = String(eventId || "").trim();
 
   if (!cleanTitle || !cleanMessage) {
     return null;
+  }
+
+  const existing = readNotifications();
+
+  if (cleanEventId) {
+    const duplicate = existing.find(
+      (notification) => notification.eventId === cleanEventId,
+    );
+
+    if (duplicate) {
+      return duplicate;
+    }
   }
 
   const record = {
@@ -99,11 +122,13 @@ function createNotification({ title, message, studyCode = "", targetRoles = [] }
     message: cleanMessage,
     studyCode: studyCode ? String(studyCode) : "",
     targetRoles: Array.isArray(targetRoles) ? targetRoles : [],
-    createdAt: new Date().toISOString(),
+    type: String(type || "").trim(),
+    eventId: cleanEventId,
+    metadata: metadata && typeof metadata === "object" ? metadata : {},
+    createdAt: createdAt ? String(createdAt) : new Date().toISOString(),
     read: false,
   };
 
-  const existing = readNotifications();
   const next = [record, ...existing].slice(0, MAX_STORED_NOTIFICATIONS);
 
   if (!writeNotifications(next)) {
@@ -304,6 +329,87 @@ export function notifyPermissionRequestRejected(request) {
     message: `Your request for "${request?.action || "access"}" on ${request?.studyCode || "a study"} was rejected.`,
     studyCode: request?.studyCode,
     targetRoles: [request?.role].filter(Boolean),
+  });
+}
+
+export function notifyStudyCompleted(study) {
+  const studyCode = study?.code || study?.studyCode || study?.id || "";
+  const completedDate = study?.completedDate || "";
+  const eventId = `study_completed:${studyCode}:${completedDate}`;
+  const studyName =
+    study?.name ||
+    study?.studyName ||
+    study?.protocol ||
+    studyCode ||
+    "the study";
+
+  if (!studyCode || !completedDate) {
+    return null;
+  }
+
+  return createNotification({
+    title: "Study Completed",
+    message: `Study ${studyName} has been completed.`,
+    studyCode,
+    targetRoles: [ROLES.SITE_STAFF, ROLES.PI],
+    type: "study_completed",
+    eventId,
+    metadata: {
+      studyCode,
+      studyName,
+      completedDate,
+    },
+    createdAt: completedDate,
+  });
+}
+
+export function notifyUpcomingVisitReminder({
+  schedule,
+  studyCode = "",
+  targetRoles = [ROLES.SITE_STAFF, ROLES.PI],
+  recipientKey = "",
+  occurrenceDate = "",
+}) {
+  const visitId = schedule?.id || "";
+  const scheduledDate = schedule?.date || "";
+  const visitName = schedule?.visit || "Scheduled visit";
+  const subjectId = schedule?.subjectId || schedule?.subject || "";
+  const resolvedStudyCode =
+    studyCode || schedule?.study || schedule?.studyKey || "";
+  const resolvedOccurrenceDate = occurrenceDate || scheduledDate;
+  const resolvedRecipientKey =
+    recipientKey ||
+    (Array.isArray(targetRoles) ? targetRoles.join("+") : String(targetRoles || ""));
+  const eventId = [
+    "upcoming_visit_reminder",
+    visitId,
+    resolvedOccurrenceDate,
+    resolvedStudyCode,
+    resolvedRecipientKey,
+  ]
+    .map((part) => String(part || "").trim())
+    .join(":");
+
+  if (!visitId || !scheduledDate || !resolvedStudyCode || !resolvedRecipientKey) {
+    return null;
+  }
+
+  return createNotification({
+    title: "Upcoming Visit Reminder",
+    message: `Visit ${visitName} for Subject ${subjectId || "—"} is scheduled for tomorrow.`,
+    studyCode: resolvedStudyCode,
+    targetRoles,
+    type: "upcoming_visit_reminder",
+    eventId,
+    metadata: {
+      visitId,
+      visitName,
+      subjectId,
+      studyCode: resolvedStudyCode,
+      site: schedule?.site || "",
+      scheduledDate,
+      occurrenceDate: resolvedOccurrenceDate,
+    },
   });
 }
 

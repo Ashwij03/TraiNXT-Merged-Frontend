@@ -8,7 +8,12 @@ import {
   isAdmin
 } from "./roleService";
 import { getFilterState } from "./filterService";
-import { notifyVisitCreated, notifyVisitUpdated } from "./notificationService";
+import ROLES from "../constants/roles";
+import {
+  notifyUpcomingVisitReminder,
+  notifyVisitCreated,
+  notifyVisitUpdated
+} from "./notificationService";
 
 export const VISIT_STAGES = [
   "Screening",
@@ -21,8 +26,11 @@ export const VISIT_STAGES = [
 
 export const SCHEDULES_EVENT = "visitSchedulesChange";
 export const VISIT_PROGRESS_KEY = "subjectVisitProgress";
+export const VISIT_STATUS_COMPLETED = "Completed";
 const SCHEDULES_STORAGE_KEY = "adminSchedules";
 const SUBJECT_DETAILS_KEY = "subjectDetailsByStudy";
+const UPCOMING_VISIT_REMINDER_ROLES = [ROLES.SITE_STAFF, ROLES.PI];
+let upcomingVisitReminderSyncInitialized = false;
 
 function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
@@ -34,6 +42,162 @@ function dispatchSchedulesChange() {
   }
 
   window.dispatchEvent(new CustomEvent(SCHEDULES_EVENT));
+}
+
+export function isCompletedVisitStatus(status) {
+  return (
+    String(status || "").trim().toLowerCase() ===
+    VISIT_STATUS_COMPLETED.toLowerCase()
+  );
+}
+
+export function isCompletedVisitSchedule(schedule) {
+  return isCompletedVisitStatus(schedule?.status);
+}
+
+function toLocalDateKey(date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0")
+  ].join("-");
+}
+
+function getCalendarDateKey(value) {
+  if (!value) {
+    return "";
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? "" : toLocalDateKey(value);
+  }
+
+  const raw = String(value).trim();
+  const isoDateMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if (isoDateMatch) {
+    return `${isoDateMatch[1]}-${isoDateMatch[2]}-${isoDateMatch[3]}`;
+  }
+
+  const parsed = new Date(raw);
+  return Number.isNaN(parsed.getTime()) ? "" : toLocalDateKey(parsed);
+}
+
+function addCalendarDays(dateKey, days) {
+  const parts = String(dateKey || "")
+    .split("-")
+    .map((part) => Number(part));
+
+  if (parts.length !== 3 || parts.some((part) => Number.isNaN(part))) {
+    return "";
+  }
+
+  const date = new Date(parts[0], parts[1] - 1, parts[2]);
+  date.setDate(date.getDate() + days);
+  return toLocalDateKey(date);
+}
+
+function isOneCalendarDayBefore(visitDateValue, referenceDate = new Date()) {
+  const visitDateKey = getCalendarDateKey(visitDateValue);
+  const referenceDateKey = getCalendarDateKey(referenceDate);
+
+  if (!visitDateKey || !referenceDateKey) {
+    return false;
+  }
+
+  return addCalendarDays(referenceDateKey, 1) === visitDateKey;
+}
+
+function resolveReminderRecipient(schedule) {
+  const studyCode = String(schedule?.study || schedule?.studyKey || "").trim();
+
+  if (!studyCode) {
+    return null;
+  }
+
+  return {
+    studyCode,
+    targetRoles: UPCOMING_VISIT_REMINDER_ROLES,
+    recipientKey: `${studyCode}:${UPCOMING_VISIT_REMINDER_ROLES.join("+")}`
+  };
+}
+
+export function synchronizeUpcomingVisitReminders(referenceDate = new Date()) {
+  if (typeof window === "undefined") {
+    return {
+      scanned: 0,
+      eligible: 0,
+      created: 0,
+      skippedCompleted: 0,
+      skippedInvalidDate: 0,
+      skippedRecipient: 0
+    };
+  }
+
+  const schedules = filterCalendarSchedules(readJson(SCHEDULES_STORAGE_KEY, []));
+  const result = {
+    scanned: schedules.length,
+    eligible: 0,
+    created: 0,
+    skippedCompleted: 0,
+    skippedInvalidDate: 0,
+    skippedRecipient: 0
+  };
+
+  schedules.forEach((schedule) => {
+    if (!schedule?.id) {
+      return;
+    }
+
+    if (isCompletedVisitSchedule(schedule)) {
+      result.skippedCompleted += 1;
+      return;
+    }
+
+    const occurrenceDate = getCalendarDateKey(schedule.date);
+
+    if (!occurrenceDate) {
+      result.skippedInvalidDate += 1;
+      return;
+    }
+
+    if (!isOneCalendarDayBefore(schedule.date, referenceDate)) {
+      return;
+    }
+
+    const recipient = resolveReminderRecipient(schedule);
+
+    if (!recipient) {
+      result.skippedRecipient += 1;
+      return;
+    }
+
+    result.eligible += 1;
+
+    const notification = notifyUpcomingVisitReminder({
+      schedule,
+      occurrenceDate: schedule.date,
+      ...recipient
+    });
+
+    if (notification) {
+      result.created += 1;
+    }
+  });
+
+  return result;
+}
+
+export function initializeUpcomingVisitReminderSynchronization() {
+  if (typeof window === "undefined" || upcomingVisitReminderSyncInitialized) {
+    return;
+  }
+
+  upcomingVisitReminderSyncInitialized = true;
+  const sync = () => synchronizeUpcomingVisitReminders();
+
+  sync();
+  window.addEventListener(SCHEDULES_EVENT, sync);
 }
 
 function normalizeStudy(study) {
@@ -487,11 +651,15 @@ export function getUpcomingVisitsForDate(schedules, date) {
   const targetDate = String(date || "").slice(0, 10);
 
   return schedules
-    .filter((item) => String(item.date || "").slice(0, 10) === targetDate)
+    .filter(
+      (item) =>
+        !isCompletedVisitSchedule(item) &&
+        String(item.date || "").slice(0, 10) === targetDate
+    )
     .map((item) => ({
       subjectid: item.subjectId,
       subject: item.subjectId,
-      visit: `${item.visit}${item.time ? ` • ${item.time}` : ""}`,
+      visit: item.visit,
       date: item.date,
       status: item.status,
       study: item.study,
@@ -506,7 +674,7 @@ export function mapScheduleToTableRow(item) {
     subjectId: item.subjectId,
     subject: item.subjectId,
     subjectName: item.subjectName || item.subjectId,
-    visit: item.time ? `${item.visit} • ${item.time}` : item.visit,
+    visit: item.visit,
     date: item.date,
     status: item.status || "Scheduled",
     study: item.study || item.studyKey || "—",
@@ -527,11 +695,14 @@ export function getUpcomingVisitsWindow(
   return schedules
     .filter((item) => {
       const visitDate = new Date(item.date);
+      if (Number.isNaN(visitDate.getTime()) || isCompletedVisitSchedule(item)) {
+        return false;
+      }
+
       visitDate.setHours(0, 0, 0, 0);
       return (
         visitDate >= start &&
-        visitDate <= endDate &&
-        item.status !== "Completed"
+        visitDate <= endDate
       );
     })
     .sort((a, b) => new Date(a.date) - new Date(b.date))

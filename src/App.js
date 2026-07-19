@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./auth/Login";
 import Register from "./auth/Register";
-import Dashboard from "./Dashboard";
 import ProfilePage from "./pages/shared/profile/ProfilePage";
 import SecurityPage from "./pages/shared/profile/SecurityPage";
 import ROLES from "./constants/roles";
@@ -17,8 +16,6 @@ import ForgotPassword from "./auth/ForgotPassword";
 import EISFHub from "./pages/shared/documents/EISFHub";
 
 import OperationsComments from "./pages/shared/operations/Comments";
-import StudyCommentsPage from "./pages/shared/studies/StudyCommentsPage";
-import StudyLogsPage from "./pages/shared/studies/StudyLogsPage";
 import FileDetails from "./pages/shared/documents/FileDetails";
 
 import AdminDashboard from "./pages/Admin/Dashboard";
@@ -52,7 +49,6 @@ import {
   RoleAwareSettings,
   RoleAwareSitePerformance,
   RoleAwareStudies,
-  RoleAwareStudyDetails,
   RoleAwareSubjects,
   RoleAwareEnrollment,
   RoleAwareQueries,
@@ -118,6 +114,7 @@ import CROLiveChat from "./pages/CRO/CROLiveChat";
 import SponsorLiveChat from "./pages/Sponsor/LiveChat";
 
 const SPONSOR_ROLES = [ROLES.SPONSOR];
+const SPONSOR_ADMIN_ROLES = [ROLES.SPONSOR, ROLES.ADMIN];
 const PI_ROLES = [ROLES.PI];
 const CRO_ROLES = [ROLES.CRO, ROLES.ADMIN];
 
@@ -184,33 +181,6 @@ function App() {
         element={
           <ProtectedRoute>
             <StudyDashboard />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/study/:code/logs"
-        element={
-          <ProtectedRoute>
-            <StudyLogsPage />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/study/:code/comments"
-        element={
-          <ProtectedRoute>
-            <StudyCommentsPage />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/study/:code"
-        element={
-          <ProtectedRoute>
-            <RoleAwareStudyDetails />
           </ProtectedRoute>
         }
       />
@@ -283,15 +253,6 @@ function App() {
         element={
           <ProtectedRoute>
             <FileDetails />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/study-logs"
-        element={
-          <ProtectedRoute>
-            <StudyLogsPage />
           </ProtectedRoute>
         }
       />
@@ -437,15 +398,6 @@ function App() {
             allowedRoles={[ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.CRO]}
           >
             <CROOverview />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
           </ProtectedRoute>
         }
       />
@@ -647,7 +599,7 @@ function App() {
       <Route
         path="/site-details"
         element={
-          <ProtectedRoute allowedRoles={SPONSOR_ROLES}>
+          <ProtectedRoute allowedRoles={SPONSOR_ADMIN_ROLES}>
             <SiteDetails />
           </ProtectedRoute>
         }

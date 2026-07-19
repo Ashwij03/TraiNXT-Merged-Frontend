@@ -23,6 +23,11 @@ import { notifyCommentAdded } from "./notificationService";
 const FINAL_STAGES = ["Final", "Closeout", "Completed"];
 const RESTRICTED_ROLES = [ROLES.CRO, ROLES.SPONSOR];
 
+export function isOpenComment(comment) {
+  const status = String(comment?.status || "").toLowerCase();
+  return status === "open" || status === "unresolved";
+}
+
 function isDocumentScopedComment(comment) {
   return Boolean(comment.documentId || comment.subjectId);
 }
@@ -128,6 +133,7 @@ export function addCommentRecord(payload, user = getCurrentUser()) {
   const comments = getComments(user);
   const newComment = {
     id: `C-${Date.now()}`,
+    visitId: payload.visitId || "",
     parentId,
     subjectId: payload.subjectId || "",
     document: payload.document || payload.documentName || "",

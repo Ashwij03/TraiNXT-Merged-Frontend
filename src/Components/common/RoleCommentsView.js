@@ -2,14 +2,13 @@ import { normalizeStatus } from "../../utils/normalizeStatus";
 import React, { useEffect, useMemo, useState } from "react";
 import "../../pages/PI/PIComments.css";
 import {
-  addCommentRecord,
   canResolveComments,
+  canViewComment,
   canWriteComments,
-  getVisibleComments,
-  resolveCommentRecord,
 } from "../../services/commentService";
 import { getAssignedSite, getCurrentUser } from "../../services/roleService";
 import { getComments, saveComments } from "../../services/adminService";
+import { useComments } from "../../comments/CommentsContext";
 
 const SORT_FIELDS = {
   id: "id",
@@ -51,12 +50,14 @@ function mapCommentRecord(comment) {
 export default function RoleCommentsView({ embedded = false }) {
   const currentUser = getCurrentUser();
   const assignedSite = getAssignedSite() || "All Sites";
-  const [refreshKey, setRefreshKey] = useState(0);
+  const { comments: authoritativeComments, resolveComment, refreshComments, addComment: createComment } =
+    useComments();
 
   const sourceComments = useMemo(() => {
-    void refreshKey;
-    return getVisibleComments({}, currentUser).map(mapCommentRecord);
-  }, [currentUser, refreshKey]);
+    return authoritativeComments
+      .filter((comment) => canViewComment(comment, currentUser))
+      .map(mapCommentRecord);
+  }, [authoritativeComments, currentUser]);
 
   const [filter, setFilter] = useState("unresolved");
   const [searchQuery, setSearchQuery] = useState("");
@@ -84,7 +85,7 @@ export default function RoleCommentsView({ embedded = false }) {
     }
   }, [availableStudies, selectedStudy]);
 
-  const refreshComments = () => setRefreshKey((value) => value + 1);
+  const refreshCommentList = () => refreshComments();
 
   const searchSuggestions = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
@@ -184,13 +185,11 @@ export default function RoleCommentsView({ embedded = false }) {
         item.id === comment.id ? { ...item, status: "Open" } : item
       );
       saveComments(updated);
-      refreshComments();
+      refreshCommentList();
       return;
     }
 
-    if (resolveCommentRecord(comment.id, currentUser)) {
-      refreshComments();
-    }
+    resolveComment(comment.id);
   };
 
   const addComment = () => {
@@ -203,16 +202,12 @@ export default function RoleCommentsView({ embedded = false }) {
       return;
     }
 
-    addCommentRecord(
-      {
-        description: text,
-        study: selectedStudy === "All Studies" ? "" : selectedStudy,
-        site: selectedSite,
-        stage: "Monitoring",
-      },
-      currentUser
-    );
-    refreshComments();
+    createComment("", {
+      text,
+      study: selectedStudy === "All Studies" ? "" : selectedStudy,
+      site: selectedSite,
+      stage: "Monitoring",
+    });
   };
 
   const totalComments = sourceComments.length;

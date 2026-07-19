@@ -50,9 +50,9 @@ import {
   saveDashboardData,
   syncKpisFromData,
   getNavbarData,
-  getCommentsData,
   buildDynamicAlerts,
 } from "./piDashboardService";
+import { useComments } from "../../comments/CommentsContext";
 
 import { getStudies } from "../../services/studyService";
 import {
@@ -65,10 +65,10 @@ import "../shared/studies/StudyDashboard.css";
 
 function PIDashboard({ embeddedInLayout = false }) {
   const navigate = useNavigate();
+  const { comments: liveComments, pendingCount: openCommentsCount } = useComments();
 
   const { studyCount } = useRoleStudiesSidebar();
 
-  const [comments, setComments] = useState([]);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [selectedPage, setSelectedPage] = useState("dashboard");
   const [settingsView, setSettingsView] = useState("security");
@@ -118,6 +118,7 @@ function PIDashboard({ embeddedInLayout = false }) {
 
     window.addEventListener("pi-study-change", handleStudyChange);
     window.addEventListener("pi-comments-updated", refreshDashboardData);
+    window.addEventListener("comments-updated", refreshDashboardData);
     window.addEventListener("pi-dashboard-updated", refreshDashboardData);
     window.addEventListener("studies-updated", refreshSharedData);
     window.addEventListener("subjects-updated", refreshSharedData);
@@ -126,6 +127,7 @@ function PIDashboard({ embeddedInLayout = false }) {
     return () => {
       window.removeEventListener("pi-study-change", handleStudyChange);
       window.removeEventListener("pi-comments-updated", refreshDashboardData);
+      window.removeEventListener("comments-updated", refreshDashboardData);
       window.removeEventListener("pi-dashboard-updated", refreshDashboardData);
       window.removeEventListener("studies-updated", refreshSharedData);
       window.removeEventListener("subjects-updated", refreshSharedData);
@@ -263,6 +265,8 @@ function PIDashboard({ embeddedInLayout = false }) {
     studiesCount: actualStudiesCount,
     consentRate,
     visitCompletion,
+    commentsCount: openCommentsCount,
+    openComments: openCommentsCount,
   };
 
   const navigateToPage = (page) => {
@@ -360,7 +364,7 @@ function PIDashboard({ embeddedInLayout = false }) {
       studies: sharedStudies,
       recentSubjects: realSubjects,
     },
-    getCommentsData(),
+    liveComments,
   );
 
   const enrollmentChartData = [
@@ -723,7 +727,7 @@ function PIDashboard({ embeddedInLayout = false }) {
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={enrollmentChartData}>
                     <XAxis dataKey="name" />
-                    <YAxis />
+                    <YAxis allowDecimals={false} />
                     <Tooltip />
                     <Bar
                       dataKey="value"
@@ -829,7 +833,7 @@ function PIDashboard({ embeddedInLayout = false }) {
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={dashboardData.visitData || []}>
                     <XAxis dataKey="visit" />
-                    <YAxis />
+                    <YAxis allowDecimals={false} />
                     <Tooltip />
                     <Bar
                       dataKey="completion"
@@ -1113,11 +1117,7 @@ function PIDashboard({ embeddedInLayout = false }) {
       </div>
 
       {showCommentModal && (
-        <PICommentModal
-          comments={comments}
-          setComments={setComments}
-          onClose={() => setShowCommentModal(false)}
-        />
+        <PICommentModal onClose={() => setShowCommentModal(false)} />
       )}
     </div>
   );

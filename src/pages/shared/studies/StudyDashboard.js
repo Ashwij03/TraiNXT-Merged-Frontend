@@ -29,11 +29,16 @@ import AlertsPanel from "../../../components/dashboard/shared/AlertsPanel";
 // import SubjectProfile from "../subjects/SubjectProfile";
 import useStudiesDashboard from "../../../hooks/useStudiesDashboard";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
+import { isCompletedVisitSchedule } from "../../../services/visitScheduleService";
 import {
   getStudyByCode,
   deleteStudy,
   updateStudy,
 } from "../../../services/studyService";
+import {
+  STUDY_STATUS_OPTIONS,
+  STUDY_STATUS_DEFAULT,
+} from "../../../constants/studyStatus";
 import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
 import RecentSubjectsWidget from "../../../components/dashboard/shared/RecentSubjectsWidget";
 import UpcomingVisitsWidget from "../../../components/dashboard/shared/UpcomingVisitsWidget";
@@ -57,6 +62,8 @@ import {
 } from "../../../utils/contentAccess";
 import { submitAccessRequest } from "../../../services/accessPermissionService";
 import { getCurrentUser } from "../../../services/roleService";
+import { useComments } from "../../../comments/CommentsContext";
+import { isOpenComment } from "../../../services/commentService";
 import "../AccessPermissions.css";
 import "../../Admin/Dashboard.css";
 
@@ -98,6 +105,7 @@ function StudyDashboard() {
   }, [id]);
 
   const { data } = useStudiesDashboard();
+  const { comments: liveComments } = useComments();
   const currentUser = getCurrentUser();
 
   const canEditStudy = canEditStudyContent(currentUser);
@@ -173,13 +181,13 @@ function StudyDashboard() {
       return upcomingWindow.map((item) => ({
         subject: item.subjectid || item.subjectId || item.subject,
         subjectId: item.subjectid || item.subjectId || item.subject,
-        visit: item.time ? `${item.visit} • ${item.time}` : item.visit,
+        visit: item.visit,
         date: item.date,
       }));
     }
 
     return studySchedules
-      .filter((item) => item.status !== "Completed")
+      .filter((item) => !isCompletedVisitSchedule(item))
       .sort((firstItem, secondItem) => {
         return new Date(firstItem.date) - new Date(secondItem.date);
       })
@@ -187,21 +195,26 @@ function StudyDashboard() {
       .map((item) => ({
         subject: item.subjectId,
         subjectId: item.subjectId,
-        visit: item.time ? `${item.visit} • ${item.time}` : item.visit,
+        visit: item.visit,
         date: item.date,
       }));
   }, [studySchedules, upcomingWindow]);
 
   const filteredPendingComments = useMemo(() => {
-    return safeArray(data?.pendingComments || data?.pendingQueries).filter(
-      matchesCurrentStudy,
-    );
-  }, [
-    data?.pendingComments,
-    data?.pendingQueries,
-    safeArray,
-    matchesCurrentStudy,
-  ]);
+    return liveComments
+      .filter(isOpenComment)
+      .filter(
+        (comment) =>
+          matchesCurrentStudy({ studyCode: comment.study }) ||
+          matchesCurrentStudy(comment),
+      )
+      .slice(0, 5)
+      .map((comment) => ({
+        id: comment.id,
+        subject: comment.subjectId,
+        status: comment.status,
+      }));
+  }, [liveComments, matchesCurrentStudy]);
 
   const filteredAlerts = useMemo(() => {
     return safeArray(data?.alerts).filter(matchesCurrentStudy);
@@ -291,7 +304,7 @@ function StudyDashboard() {
       country: currentStudy.country || "",
       enrolled: currentStudy.enrolled ?? "",
       targetSubjects: currentStudy.targetSubjects ?? "",
-      status: currentStudy.status || "Active",
+      status: currentStudy.status || STUDY_STATUS_DEFAULT,
       principalInvestigator: currentStudy.principalInvestigator || "",
       sponsor: currentStudy.sponsor || "",
       cro: currentStudy.cro || "",
@@ -662,15 +675,15 @@ function StudyDashboard() {
                     Study Status
                     <select
                       name="status"
-                      value={editForm.status || "Active"}
+                      value={editForm.status || STUDY_STATUS_DEFAULT}
                       onChange={handleEditFormChange}
                       required
                     >
-                      <option>Active</option>
-                      <option>Screening</option>
-                      <option>Enrollment</option>
-                      <option>Paused</option>
-                      <option>Completed</option>
+                      {STUDY_STATUS_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
                     </select>
                   </label>
 

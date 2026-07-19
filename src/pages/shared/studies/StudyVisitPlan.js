@@ -5,6 +5,7 @@ import useVisitSchedules from "../../../hooks/useVisitSchedules";
 import RequestPermissionButton from "../../../components/common/RequestPermissionButton";
 import { canEditStudyContent } from "../../../utils/contentAccess";
 import { getCurrentUser } from "../../../services/roleService";
+import { formatScheduleDisplayDate } from "../../../utils/formatScheduleDisplayDate";
 import {
   saveVisitPlan,
   deleteVisitPlan,
@@ -190,7 +191,7 @@ function StudyVisitPlan() {
 
                       <td>{visit.visit}</td>
 
-                      <td>{visit.date}</td>
+                      <td>{formatScheduleDisplayDate(visit.date)}</td>
 
                       <td>{visit.status}</td>
                     </tr>

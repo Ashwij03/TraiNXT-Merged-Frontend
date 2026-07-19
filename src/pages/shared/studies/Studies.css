@@ -295,6 +295,32 @@
   color: #dc2626;
 }
 
+/* Item 8 (Stage 5A): canonical study status badge palette. */
+.study-status.startup {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.study-status.recruitment-phase {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.study-status.conduct-phase {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.study-status.hold-suspension {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.study-status.early-termination {
+  background: #fde68a;
+  color: #92400e;
+}
+
 .study-code {
   margin-bottom: 6px;
   color: #64748b;

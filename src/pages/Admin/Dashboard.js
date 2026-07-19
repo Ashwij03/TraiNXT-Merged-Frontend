@@ -14,6 +14,7 @@ import {
   getAdminDashboardData,
   getSubjectsForAnalytics
 } from "../../services/adminService";
+import { useComments } from "../../comments/CommentsContext";
 import {
   INSTITUTION_FILTER_EVENT,
   getStoredInstitutionFilter
@@ -24,6 +25,7 @@ import "../shared/studies/StudyDashboard.css";
 import "../shared/AccessPermissions.css";
 
 function AdminDashboard() {
+  const { pendingCount: openCommentsCount } = useComments();
   const [institutionFilter, setInstitutionFilter] = useState(
     getStoredInstitutionFilter()
   );
@@ -53,7 +55,6 @@ function AdminDashboard() {
     users,
     studies,
     sites,
-    comments,
     pendingUsers,
     complianceScore
   } = dashboardData;
@@ -69,8 +70,6 @@ function AdminDashboard() {
   }, [institutionFilter]);
 
   const portfolioStudies = useMemo(() => getStudies(), []);
-
-  const openComments = comments.filter((c) => c.status === "Open");
 
   return (
     <AdminDashboardLayout>
@@ -118,7 +117,7 @@ function AdminDashboard() {
 
           <KPICard
             title="Comments"
-            value={openComments.length}
+            value={openCommentsCount}
             subtitle="Open Comments"
             icon="💬"
             onClick={() => navigate("/comments")}
@@ -152,7 +151,7 @@ function AdminDashboard() {
               {
                 type: "danger",
                 title: "Open Comments",
-                message: `${openComments.length} unresolved comments`
+                message: `${openCommentsCount} unresolved comments`
               },
               {
                 type: "info",

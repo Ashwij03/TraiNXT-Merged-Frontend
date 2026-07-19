@@ -9,7 +9,14 @@ import {
   getEffectiveRole,
 } from "../../../services/roleService";
 import { canAddStudy } from "../../../utils/contentAccess";
+import { formatScheduleDisplayDate } from "../../../utils/formatScheduleDisplayDate";
+import { readStorage } from "../../../utils/storageHelpers";
 import ROLES from "../../../constants/roles";
+import {
+  STUDY_STATUS_OPTIONS,
+  STUDY_STATUS_DEFAULT,
+  getStudyStatusClass,
+} from "../../../constants/studyStatus";
 import {
   FiFolder,
   FiGrid,
@@ -23,6 +30,7 @@ import {
 import "./Studies.css";
 
 const STUDIES_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+const SUBJECTS_STORAGE_KEY = "subjectsByStudy";
 
 const initialForm = {
   code: "",
@@ -34,13 +42,86 @@ const initialForm = {
   site: "",
   enrolled: "",
   targetSubjects: "",
-  status: "Active",
+  status: STUDY_STATUS_DEFAULT,
   principalInvestigator: "",
   sponsor: "",
   cro: "",
   startDate: "",
   description: "",
 };
+
+function normalizeValue(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+function readSubjectsByStudy() {
+  return readStorage(SUBJECTS_STORAGE_KEY, {});
+}
+
+function readSiteRecords() {
+  const sites = readStorage("sites", []);
+  return Array.isArray(sites) ? sites : [];
+}
+
+function getSubjectsForStudy(subjectsByStudy, study) {
+  if (!subjectsByStudy || typeof subjectsByStudy !== "object" || !study) {
+    return [];
+  }
+
+  const studyKey = study.code;
+  const normalizedStudyKey = normalizeValue(studyKey);
+  const matchedSubjects = [];
+
+  Object.entries(subjectsByStudy).forEach(([collectionKey, subjects]) => {
+    if (!Array.isArray(subjects)) {
+      return;
+    }
+
+    subjects.forEach((subject) => {
+      const subjectStudyReference = subject.studyId || collectionKey;
+
+      if (normalizeValue(subjectStudyReference) === normalizedStudyKey) {
+        matchedSubjects.push(subject);
+      }
+    });
+  });
+
+  return matchedSubjects;
+}
+
+function resolveStudySite(study, sites) {
+  const siteReference = study?.site || study?.location;
+
+  if (!siteReference) {
+    return null;
+  }
+
+  const normalizedReference = normalizeValue(siteReference);
+
+  return (
+    sites.find((site) =>
+      [site.siteNumber, site.id, site.name].some(
+        (value) => normalizeValue(value) === normalizedReference
+      )
+    ) || null
+  );
+}
+
+function getStudySiteNumber(study, sites) {
+  const site = resolveStudySite(study, sites);
+
+  return site?.siteNumber || site?.id || study?.siteNumber || "";
+}
+
+function getStoredCompletedDateDisplay(study) {
+  if (study?.status !== "Completed" || !study?.completedDate) {
+    return "";
+  }
+
+  return formatScheduleDisplayDate(study.completedDate);
+}
 
 function Studies() {
   const navigate = useNavigate();
@@ -61,6 +142,10 @@ function Studies() {
   }, []);
 
   const [studies, setStudies] = useState(() => loadStudies());
+  const [subjectsByStudy, setSubjectsByStudy] = useState(() =>
+    readSubjectsByStudy()
+  );
+  const [sites, setSites] = useState(() => readSiteRecords());
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [sponsorFilter, setSponsorFilter] = useState("");
@@ -84,10 +169,9 @@ function Studies() {
     localStorage.setItem("studiesViewMode", mode);
   };
 
-  const statusOptions = useMemo(
-    () => [...new Set(studies.map((study) => study.status).filter(Boolean))].sort(),
-    [studies]
-  );
+  // Item 8: the study status filter always exposes the six canonical values,
+  // regardless of what is currently present in the data set.
+  const statusOptions = useMemo(() => STUDY_STATUS_OPTIONS, []);
 
   const sponsorOptions = useMemo(
     () => [...new Set(studies.map((study) => study.sponsor).filter(Boolean))].sort(),
@@ -201,14 +285,27 @@ function Studies() {
   }, [currentPage, totalPages]);
 
   useEffect(() => {
-    const refreshStudies = () => setStudies(loadStudies());
+    const refreshStudies = () => {
+      setStudies(loadStudies());
+      setSites(readSiteRecords());
+    };
+
+    const refreshSubjects = () => {
+      setSubjectsByStudy(readSubjectsByStudy());
+    };
 
     window.addEventListener("studies-updated", refreshStudies);
     window.addEventListener("sponsor-data-updated", refreshStudies);
+    window.addEventListener("admin-data-updated", refreshStudies);
+    window.addEventListener("subjects-updated", refreshSubjects);
+    window.addEventListener("storage", refreshSubjects);
 
     return () => {
       window.removeEventListener("studies-updated", refreshStudies);
       window.removeEventListener("sponsor-data-updated", refreshStudies);
+      window.removeEventListener("admin-data-updated", refreshStudies);
+      window.removeEventListener("subjects-updated", refreshSubjects);
+      window.removeEventListener("storage", refreshSubjects);
     };
   }, [loadStudies]);
 
@@ -561,11 +658,11 @@ function Studies() {
               >
                 <div className="study-card-content">
                   <div
-                    className={`study-status ${(
-                      study.status || "active"
-                    ).toLowerCase()}`}
+                    className={`study-status ${getStudyStatusClass(
+                      study.status || STUDY_STATUS_DEFAULT
+                    )}`}
                   >
-                    {study.status || "Active"}
+                    {study.status || STUDY_STATUS_DEFAULT}
                   </div>
 
                   <h3>{study.name}</h3>
@@ -585,7 +682,7 @@ function Studies() {
 
                     <div>
                       <strong>Subjects:</strong>
-                      {study.enrolled || 0}
+                      {getSubjectsForStudy(subjectsByStudy, study).length}
                       {" / "}
                       {study.targetSubjects || 0}
                     </div>
@@ -666,7 +763,7 @@ function Studies() {
                 <div className="study-list-field">
                   <label>Subjects</label>
                   <span>
-                    {study.enrolled || 0}/{study.targetSubjects || 0}
+                    {getSubjectsForStudy(subjectsByStudy, study).length}/{study.targetSubjects || 0}
                   </span>
                 </div>
 
@@ -677,11 +774,11 @@ function Studies() {
 
                 <div className="study-list-status">
                   <span
-                    className={`study-status ${(
-                      study.status || "active"
-                    ).toLowerCase()}`}
+                    className={`study-status ${getStudyStatusClass(
+                      study.status || STUDY_STATUS_DEFAULT
+                    )}`}
                   >
-                    {study.status || "Active"}
+                    {study.status || STUDY_STATUS_DEFAULT}
                   </span>
 
                   <button
@@ -712,9 +809,10 @@ function Studies() {
                   <th>Indication</th>
                   <th>Country</th>
                   <th>PI</th>
-                  <th>Site</th>
+                  <th>Site Number</th>
                   <th>Subjects</th>
-                  <th>Status</th>
+                  <th>Study Status</th>
+                  <th>Completed Date</th>
                   <th>Start</th>
                   <th>Action</th>
                 </tr>
@@ -722,7 +820,18 @@ function Studies() {
 
               <tbody>
                 {paginatedStudies.map((study) => (
-                  <tr key={study.code}>
+                  <tr
+                    key={study.code}
+                    onClick={() => handleStudyCardClick(study)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        handleStudyCardClick(study);
+                      }
+                    }}
+                  >
                     <td>{study.code}</td>
                     <td>{study.name}</td>
                     <td>{study.sponsor || "-"}</td>
@@ -730,20 +839,22 @@ function Studies() {
                     <td>{study.indication || "-"}</td>
                     <td>{study.country || "-"}</td>
                     <td>{study.principalInvestigator || "-"}</td>
-                    <td>{study.location || "-"}</td>
+                    <td>{getStudySiteNumber(study, sites) || "-"}</td>
                     <td>
-                      {study.enrolled || 0}/{study.targetSubjects || 0}
+                      {getSubjectsForStudy(subjectsByStudy, study).length}/{study.targetSubjects || 0}
                     </td>
 
                     <td>
                       <span
-                        className={`study-status ${(
-                          study.status || "active"
-                        ).toLowerCase()}`}
+                        className={`study-status ${getStudyStatusClass(
+                          study.status || STUDY_STATUS_DEFAULT
+                        )}`}
                       >
-                        {study.status || "Active"}
+                        {study.status || STUDY_STATUS_DEFAULT}
                       </span>
                     </td>
+
+                    <td>{getStoredCompletedDateDisplay(study)}</td>
 
                     <td>{study.startDate || "-"}</td>
 
@@ -751,7 +862,10 @@ function Studies() {
                       <button
                         type="button"
                         className="open-study-btn"
-                        onClick={() => handleStudyCardClick(study)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleStudyCardClick(study);
+                        }}
                       >
                         Open
                       </button>
@@ -883,11 +997,11 @@ function Studies() {
                     onChange={handleChange}
                     required
                   >
-                    <option>Active</option>
-                    <option>Screening</option>
-                    <option>Enrollment</option>
-                    <option>Paused</option>
-                    <option>Completed</option>
+                    {STUDY_STATUS_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
                   </select>
                 </label>
 

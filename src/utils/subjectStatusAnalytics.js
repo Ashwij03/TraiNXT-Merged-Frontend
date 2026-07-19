@@ -1,6 +1,6 @@
 import { normalizeStatus } from "./normalizeStatus";
 export const SUBJECT_STATUS_ORDER = [
-  "Screening",
+  "Screened",
   "Enrolled",
   "Ongoing",
   "Completed",
