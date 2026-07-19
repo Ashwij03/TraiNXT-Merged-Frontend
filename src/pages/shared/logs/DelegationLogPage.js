@@ -110,6 +110,7 @@ function DelegationLogPage() {
                 { key: "userSignature", label: "User Signature" }
               ]}
               data={visibleDuties}
+              pagination
             />
           </div>
         )}

@@ -30,13 +30,10 @@ function StudyVisitPlan() {
   const { id: studyCode } = useParams();
   const canEdit = canEditStudyContent(getCurrentUser());
   const { plans, getPlanDetails, refresh } = useVisitPlans(studyCode);
-  const { schedules } = useVisitSchedules({ studyCode });
+  const { schedules, upcomingWindow } = useVisitSchedules({ studyCode });
   const upcomingVisits = useMemo(() => {
-    return [...schedules]
-      .filter((item) => item.date)
-      .sort((a, b) => new Date(a.date) - new Date(b.date))
-      .slice(0, 5);
-  }, [schedules]);
+    return upcomingWindow.slice(0, 5);
+  }, [upcomingWindow]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showWizard, setShowWizard] = useState(false);

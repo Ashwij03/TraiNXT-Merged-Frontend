@@ -13,6 +13,10 @@ import {
 import { getCurrentUser } from "../../services/roleService";
 import { getComments, saveComments } from "../../services/adminService";
 import {
+  getFilteredSchedules,
+  getUpcomingVisitsWindow
+} from "../../services/visitScheduleService";
+import {
   addCommentRecord,
   resolveCommentRecord,
 } from "../../services/commentService";
@@ -66,9 +70,23 @@ export const getDefaultDashboardData = () => ({
   lastUpdated: new Date().toLocaleString(),
 });
 
+const getDynamicUpcomingVisits = () => {
+  try {
+    return getUpcomingVisitsWindow(getFilteredSchedules(getCurrentUser()), 30).map(
+      (visit) => ({
+        ...visit,
+        subject: visit.subject || visit.subjectId || visit.subjectid
+      })
+    );
+  } catch {
+    return [];
+  }
+};
+
 export const getDashboardData = () => {
   const defaults = getDefaultDashboardData();
   const saved = readStorage(STORAGE_KEYS.dashboard, {});
+  const dynamicUpcomingVisits = getDynamicUpcomingVisits();
 
   const mergedData = {
     ...defaults,
@@ -77,9 +95,7 @@ export const getDashboardData = () => {
     recentSubjects: Array.isArray(saved.recentSubjects)
       ? saved.recentSubjects
       : defaults.recentSubjects,
-    upcomingVisits: Array.isArray(saved.upcomingVisits)
-      ? saved.upcomingVisits
-      : defaults.upcomingVisits,
+    upcomingVisits: dynamicUpcomingVisits,
     pendingQueries: Array.isArray(saved.pendingQueries)
       ? saved.pendingQueries
       : defaults.pendingQueries,
@@ -889,9 +905,7 @@ export const syncKpisFromData = (data = {}) => {
   const recentSubjects = Array.isArray(data.recentSubjects)
     ? data.recentSubjects
     : [];
-  const upcomingVisits = Array.isArray(data.upcomingVisits)
-    ? data.upcomingVisits
-    : [];
+  const upcomingVisits = getDynamicUpcomingVisits();
 
   const totalEnrolled = studies.reduce(
     (sum, study) => sum + Number(study.enrolled || 0),

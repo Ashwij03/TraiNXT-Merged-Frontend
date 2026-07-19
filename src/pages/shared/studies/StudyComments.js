@@ -28,6 +28,7 @@ function StudyComments() {
       )
       .map((comment) => ({
         id: comment.id,
+        studyId: comment.study || studyCode || "—",
         subjectDocument: comment.documentDeleted
           ? `${comment.subjectId} / ${comment.document || "Deleted document"}`
           : comment.document
@@ -93,6 +94,7 @@ function StudyComments() {
         title={`Comments — ${study?.name || studyCode}`}
         columns={[
           { key: "id", label: "ID" },
+          { key: "studyId", label: "Study ID" },
           { key: "subjectDocument", label: "Subject/Document" },
           { key: "comment", label: "Comment" },
           { key: "by", label: "By" },
@@ -104,6 +106,7 @@ function StudyComments() {
         ]}
         data={comments}
         emptyMessage="No comments for this study"
+        pagination
       />
     </div>
   );

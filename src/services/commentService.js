@@ -184,6 +184,39 @@ export function resolveCommentRecord(commentId, user = getCurrentUser()) {
   return true;
 }
 
+// Canonical reopen: mirrors resolveCommentRecord so a "Reopen" action from
+// any consumer flows through the same access checks and fires the same
+// comments-updated / sponsor-data-updated events every other view listens
+// for. Previously reopens were performed by writing via saveComments
+// directly, which only dispatched admin-data-updated — CommentsContext
+// (and every consumer that subscribes to it) would not refresh until the
+// next reload.
+export function reopenCommentRecord(commentId, user = getCurrentUser()) {
+  if (!canResolveComments(user)) {
+    return false;
+  }
+
+  const comments = getComments(user).map((item) => {
+    if (item.id !== commentId) {
+      return item;
+    }
+
+    // Preserve the rest of the record; just clear resolution metadata and
+    // restore canonical Open status.
+    const { resolvedAt, resolvedBy, ...rest } = item;
+    void resolvedAt;
+    void resolvedBy;
+    return {
+      ...rest,
+      status: "Open"
+    };
+  });
+
+  saveComments(comments);
+  notifyCommentsUpdated();
+  return true;
+}
+
 export function markCommentsDocumentDeleted(documentId, documentName) {
   const comments = getComments().map((item) => {
     const matches =

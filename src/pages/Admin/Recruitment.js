@@ -68,6 +68,7 @@ function Recruitment() {
               { key: "conversionRate", label: "Conversion %" }
             ]}
             data={recruitment}
+            pagination
           />
         </div>
       </div>

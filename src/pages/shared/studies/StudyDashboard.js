@@ -805,7 +805,6 @@ import AlertsPanel from "../../../components/dashboard/shared/AlertsPanel";
 // import SubjectProfile from "../subjects/SubjectProfile";
 import useStudiesDashboard from "../../../hooks/useStudiesDashboard";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
-import { isCompletedVisitSchedule } from "../../../services/visitScheduleService";
 import {
   getStudyByCode,
   deleteStudy,
@@ -954,33 +953,18 @@ function StudyDashboard() {
     }
   }, [currentStudyKey]);
 
-  const { schedules: studySchedules, upcomingWindow } = useVisitSchedules({
+  const { upcomingWindow } = useVisitSchedules({
     studyCode: id,
   });
 
   const filteredUpcomingVisits = useMemo(() => {
-    if (upcomingWindow.length > 0) {
-      return upcomingWindow.map((item) => ({
-        subject: item.subjectid || item.subjectId || item.subject,
-        subjectId: item.subjectid || item.subjectId || item.subject,
-        visit: item.visit,
-        date: item.date,
-      }));
-    }
-
-    return studySchedules
-      .filter((item) => !isCompletedVisitSchedule(item))
-      .sort((firstItem, secondItem) => {
-        return new Date(firstItem.date) - new Date(secondItem.date);
-      })
-      .slice(0, 12)
-      .map((item) => ({
-        subject: item.subjectId,
-        subjectId: item.subjectId,
-        visit: item.visit,
-        date: item.date,
-      }));
-  }, [studySchedules, upcomingWindow]);
+    return upcomingWindow.map((item) => ({
+      subject: item.subjectid || item.subjectId || item.subject,
+      subjectId: item.subjectid || item.subjectId || item.subject,
+      visit: item.visit,
+      date: item.date,
+    }));
+  }, [upcomingWindow]);
 
   const filteredPendingComments = useMemo(() => {
     return liveComments
@@ -1292,7 +1276,16 @@ function StudyDashboard() {
 
                 <div className="widget-grid">
                   <PendingCommentsWidget comments={filteredPendingComments} />
-                  <QuickActionsWidget />
+                  <QuickActionsWidget
+                    study={currentStudy}
+                    studyCode={id}
+                    onAddSubject={() => {
+                      setActiveTab("Subjects");
+                      navigate(
+                        `/study-dashboard/${encodeURIComponent(id)}?tab=Subjects`
+                      );
+                    }}
+                  />
                 </div>
 
                 <div className="study-dashboard-alerts">

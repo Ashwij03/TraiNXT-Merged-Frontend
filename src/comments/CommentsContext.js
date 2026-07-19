@@ -10,6 +10,7 @@ import { getComments } from "../services/adminService";
 import {
   addCommentRecord,
   isOpenComment,
+  reopenCommentRecord,
   resolveCommentRecord,
 } from "../services/commentService";
 import { getCurrentUser } from "../services/roleService";
@@ -73,6 +74,14 @@ export function CommentsProvider({ children }) {
     [currentUser, refreshComments]
   );
 
+  const reopenComment = useCallback(
+    (id) => {
+      reopenCommentRecord(id, currentUser);
+      refreshComments();
+    },
+    [currentUser, refreshComments]
+  );
+
   return (
     <CommentsContext.Provider
       value={{
@@ -80,6 +89,7 @@ export function CommentsProvider({ children }) {
         pendingCount,
         addComment,
         resolveComment,
+        reopenComment,
         refreshComments,
       }}
     >

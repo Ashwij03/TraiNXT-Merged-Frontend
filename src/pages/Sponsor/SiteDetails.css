@@ -628,3 +628,72 @@
 .site-empty-btn:hover {
   background: #1d4ed8;
 }
+
+.site-empty-btn:disabled,
+.site-empty-btn[disabled] {
+  background: #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+.site-empty-btn:disabled:hover,
+.site-empty-btn[disabled]:hover {
+  background: #cbd5e1;
+}
+
+/* ==========================
+   SITE WORKSPACE INLINE FORMS
+========================== */
+
+.site-inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.site-inline-form input,
+.site-inline-form select {
+  flex: 1 1 180px;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #ffffff;
+}
+
+.site-inline-form-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex: 1 1 100%;
+}
+
+.site-team-card-actions,
+.site-regulatory-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+}
+
+.link-btn.danger {
+  color: #dc2626;
+}

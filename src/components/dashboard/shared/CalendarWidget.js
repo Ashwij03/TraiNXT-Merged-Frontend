@@ -1,7 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { resolveSiteDisplay } from "../../../utils/siteDisplay";
 import { getStudies } from "../../../services/studyService";
+import { getCalendarDateKey } from "../../../services/visitScheduleService";
 import "./CalendarWidget.css";
+
+function parseCalendarDateKey(dateKey) {
+  const match = String(dateKey || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+  if (match) {
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  }
+
+  const parsed = new Date(dateKey);
+  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+}
 
 function CalendarWidget({
   schedules = [],
@@ -13,12 +25,12 @@ function CalendarWidget({
   const [internalSelectedDate, setInternalSelectedDate] = useState(null);
 
   const [currentMonth, setCurrentMonth] = useState(() => {
-    const baseDate = selectedDate ? new Date(selectedDate) : new Date();
+    const baseDate = selectedDate ? parseCalendarDateKey(selectedDate) : new Date();
     return baseDate.getMonth();
   });
 
   const [currentYear, setCurrentYear] = useState(() => {
-    const baseDate = selectedDate ? new Date(selectedDate) : new Date();
+    const baseDate = selectedDate ? parseCalendarDateKey(selectedDate) : new Date();
     return baseDate.getFullYear();
   });
 
@@ -26,11 +38,13 @@ function CalendarWidget({
 
   useEffect(() => {
     if (isControlled && selectedDate) {
-      const d = new Date(selectedDate);
+      const d = parseCalendarDateKey(selectedDate);
       setCurrentMonth(d.getMonth());
       setCurrentYear(d.getFullYear());
     }
   }, [isControlled, selectedDate]);
+
+  const todayDateKey = getCalendarDateKey(new Date());
 
   const weekDays = [
     "Sun",
@@ -82,9 +96,7 @@ function CalendarWidget({
       return [];
     }
 
-    return schedules.filter(
-      (schedule) => String(schedule.date || "").slice(0, 10) === date
-    );
+    return schedules.filter((schedule) => getCalendarDateKey(schedule.date) === date);
   };
 
   const changeMonth = (direction) => {
@@ -183,14 +195,19 @@ function CalendarWidget({
           const daySchedules = getSchedulesForDate(date);
           const hasSchedule = daySchedules.length > 0;
           const isSelected = activeDate === date;
+          const isToday = todayDateKey === date;
 
           return (
             <button
               key={date}
               type="button"
+              aria-label={`${date}${isToday ? " Today" : ""}${
+                hasSchedule ? ` ${daySchedules.length} scheduled visit${daySchedules.length !== 1 ? "s" : ""}` : ""
+              }`}
               className={[
                 "calendar-day",
                 hasSchedule ? "has-schedule" : "",
+                isToday ? "today" : "",
                 isSelected ? "selected" : "",
               ]
                 .filter(Boolean)
@@ -198,6 +215,12 @@ function CalendarWidget({
               onClick={() => handleDateSelect(date)}
             >
               <span>{day}</span>
+
+              {isToday && (
+                <em>
+                  Today
+                </em>
+              )}
 
               {hasSchedule && (
                 <small>

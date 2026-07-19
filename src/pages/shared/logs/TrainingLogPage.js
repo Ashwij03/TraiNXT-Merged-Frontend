@@ -69,6 +69,7 @@ function TrainingLogPage() {
               { key: "site", label: "Site" }
             ]}
             data={tableData}
+            pagination
           />
         </div>
 

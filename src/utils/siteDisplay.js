@@ -115,6 +115,23 @@ function findSite(reference, sources) {
 }
 
 /*
+  Public resolver for callers that need the canonical site record, while still
+  using this module's shared Item 17 matching rules and avoiding a parallel
+  site lookup implementation.
+*/
+export function resolveSiteRecord(reference, sources = []) {
+  return findSite(reference, sources);
+}
+
+export function getSiteDisplayName(site) {
+  return pickName(site);
+}
+
+export function getSiteDisplayNumber(site) {
+  return pickNumber(site);
+}
+
+/*
   Resolve a reference into an actual Site Number string.
 
   options:

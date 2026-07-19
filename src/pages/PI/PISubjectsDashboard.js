@@ -1,14 +1,16 @@
 import React, { useMemo, useState } from "react";
 import "./PISubjectsDashboard.css";
 import { FaEye, FaFileAlt, FaEllipsisV } from "react-icons/fa";
-import { getStudyByCode } from "../../services/studyService";
+import {
+  COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE,
+  createSubject,
+  getStudyByCode,
+  getSubjectStudyDefaults,
+  getStudies,
+} from "../../services/studyService";
 import { STUDY_STATUS_COMPLETED } from "../../constants/studyStatus";
 
 import { resolveSiteDisplay } from "../../utils/siteDisplay";
-import { getStudies } from "../../services/studyService";
-
-const COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE =
-  "Subjects cannot be added because this study is completed.";
 
 function PISubjectsDashboard({ onProfileClick }) {
   const [search, setSearch] = useState("");
@@ -21,6 +23,13 @@ function PISubjectsDashboard({ onProfileClick }) {
           fallback: value,
         })
       : "—";
+  const studyOptions = useMemo(
+    () =>
+      getStudies().filter(
+        (study) => study && study.status !== STUDY_STATUS_COMPLETED
+      ),
+    []
+  );
 
   const [subjects, setSubjects] = useState(() => {
     return JSON.parse(localStorage.getItem("subjectsData")) || [];
@@ -39,11 +48,49 @@ function PISubjectsDashboard({ onProfileClick }) {
       return;
     }
 
-    const updatedSubjects = [...subjects, newSubject];
+    const studyDerivedFields = getSubjectStudyDefaults(newSubject.study);
+    const subjectForCanonicalStore = {
+      id: newSubject.id.trim(),
+      initials: newSubject.initials.trim(),
+      studyId: newSubject.study,
+      pi: studyDerivedFields.pi,
+      site: studyDerivedFields.site,
+      status: newSubject.status,
+      enrollmentDate: newSubject.enrollmentDate,
+      currentVisit: newSubject.lastVisit,
+    };
+    let createdSubject;
+
+    try {
+      createdSubject = createSubject(
+        newSubject.study,
+        subjectForCanonicalStore
+      );
+    } catch (error) {
+      alert(
+        (error && error.message) ||
+          COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE
+      );
+      return;
+    }
+
+    const piSubjectRecord = {
+      ...newSubject,
+      id: createdSubject.id,
+      initials: createdSubject.initials || newSubject.initials,
+      study: createdSubject.studyId || newSubject.study,
+      pi: createdSubject.pi,
+      principalInvestigator: createdSubject.principalInvestigator,
+      site: createdSubject.site,
+      siteNumber: createdSubject.siteNumber,
+    };
+
+    const updatedSubjects = [...subjects, piSubjectRecord];
 
     setSubjects(updatedSubjects);
 
     localStorage.setItem("subjectsData", JSON.stringify(updatedSubjects));
+    window.dispatchEvent(new Event("subjects-updated"));
 
     setShowModal(false);
 
@@ -157,6 +204,12 @@ function PISubjectsDashboard({ onProfileClick }) {
       },
     ],
   });
+
+  const selectedStudyDefaults = useMemo(
+    () => getSubjectStudyDefaults(newSubject.study),
+    [newSubject.study]
+  );
+
   const handleView = (subject) => {
     setSelectedSubject(subject);
     setShowViewModal(true);
@@ -185,7 +238,16 @@ function PISubjectsDashboard({ onProfileClick }) {
           <p>View and manage all subjects</p>
         </div>
 
-        <button className="add-subject-btn" onClick={() => setShowModal(true)}>
+        <button
+          className="add-subject-btn"
+          onClick={() => setShowModal(true)}
+          disabled={studyOptions.length === 0}
+          title={
+            studyOptions.length === 0
+              ? "No non-completed studies are available for subject creation."
+              : undefined
+          }
+        >
           + Add Subject
         </button>
       </div>
@@ -321,26 +383,36 @@ function PISubjectsDashboard({ onProfileClick }) {
               }
             />
 
-            <input
-              placeholder="Study"
+            <select
               value={newSubject.study}
               onChange={(e) =>
                 setNewSubject({
                   ...newSubject,
                   study: e.target.value,
+                  site: getSubjectStudyDefaults(e.target.value).site,
                 })
               }
+            >
+              <option value="">Select active study</option>
+              {studyOptions.map((study) => (
+                <option key={study.code} value={study.code}>
+                  {study.code} — {study.name || study.protocol || "Untitled"}
+                </option>
+              ))}
+            </select>
+
+            <input
+              placeholder="Principal Investigator"
+              value={selectedStudyDefaults.pi || "—"}
+              readOnly
+              aria-readonly="true"
             />
 
             <input
               placeholder="Site"
-              value={newSubject.site}
-              onChange={(e) =>
-                setNewSubject({
-                  ...newSubject,
-                  site: e.target.value,
-                })
-              }
+              value={selectedStudyDefaults.siteDisplay || "—"}
+              readOnly
+              aria-readonly="true"
             />
             <input
               type="date"

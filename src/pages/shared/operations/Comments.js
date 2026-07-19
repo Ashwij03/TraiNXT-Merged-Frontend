@@ -123,6 +123,7 @@ export default function CommentsPage({ embedded = false }) {
         <thead>
           <tr>
             <th>ID</th>
+            <th>Study ID</th>
             <th>Subject</th>
             <th>Author</th>
             <th>Date</th>
@@ -133,7 +134,7 @@ export default function CommentsPage({ embedded = false }) {
         <tbody>
           {filteredComments.length === 0 ? (
             <tr>
-              <td colSpan="6" style={{ textAlign: "center" }}>
+              <td colSpan="7" style={{ textAlign: "center" }}>
                 No Comments Found
               </td>
             </tr>
@@ -141,6 +142,7 @@ export default function CommentsPage({ embedded = false }) {
             filteredComments.map((comment) => (
               <tr key={comment.id}>
                 <td>{comment.id}</td>
+                <td>{comment.study || studyCode || "—"}</td>
                 <td>{comment.subjectId || "—"}</td>
                 <td>
                   {comment.createdBy || "—"}

@@ -10,6 +10,11 @@ import React, {
 import { getStudies } from "../../services/studyService";
 import { addCommentRecord } from "../../services/commentService";
 import { getCurrentUser } from "../../services/roleService";
+import {
+  getFilteredSchedules,
+  getUpcomingVisitsWindow,
+  SCHEDULES_EVENT
+} from "../../services/visitScheduleService";
 
 const CRODataContext = createContext();
 
@@ -63,7 +68,23 @@ function getSharedSubjects() {
   If a key does not exist yet, CRO shows an empty list instead of demo data.
 */
 function getSharedVisits() {
-  return readStorageArray("visitSchedules");
+  try {
+    return getFilteredSchedules(getCurrentUser()).map((schedule) => ({
+      ...schedule,
+      id: schedule.id,
+      visitId: schedule.id,
+      visitType: schedule.visit || schedule.visitType || "Visit",
+      cra: schedule.cra || "—",
+      subject: schedule.subjectId,
+      subjectId: schedule.subjectId,
+      study: schedule.study || schedule.studyKey || "",
+      studyCode: schedule.study || schedule.studyKey || "",
+      date: schedule.date,
+      status: schedule.status || "Scheduled"
+    }));
+  } catch {
+    return [];
+  }
 }
 
 function getSharedDocuments() {
@@ -133,6 +154,7 @@ export const CROProvider = ({ children }) => {
     window.addEventListener("studies-updated", handleSharedDataUpdate);
     window.addEventListener("subjects-updated", handleSharedDataUpdate);
     window.addEventListener("visits-updated", handleSharedDataUpdate);
+    window.addEventListener(SCHEDULES_EVENT, handleSharedDataUpdate);
     window.addEventListener("documents-updated", handleSharedDataUpdate);
     window.addEventListener("reports-updated", handleSharedDataUpdate);
     window.addEventListener("comments-updated", handleSharedDataUpdate);
@@ -145,6 +167,7 @@ export const CROProvider = ({ children }) => {
       window.removeEventListener("studies-updated", handleSharedDataUpdate);
       window.removeEventListener("subjects-updated", handleSharedDataUpdate);
       window.removeEventListener("visits-updated", handleSharedDataUpdate);
+      window.removeEventListener(SCHEDULES_EVENT, handleSharedDataUpdate);
       window.removeEventListener("documents-updated", handleSharedDataUpdate);
       window.removeEventListener("reports-updated", handleSharedDataUpdate);
       window.removeEventListener("comments-updated", handleSharedDataUpdate);
@@ -321,13 +344,7 @@ export const CROProvider = ({ children }) => {
   }, [subjects, visits]);
 
   const upcomingVisits = useMemo(() => {
-    return [...visits]
-      .filter((visit) => visit.status !== "Completed")
-      .sort(
-        (firstVisit, secondVisit) =>
-          new Date(firstVisit.date) - new Date(secondVisit.date),
-      )
-      .slice(0, 8);
+    return getUpcomingVisitsWindow(visits, 30).slice(0, 8);
   }, [visits]);
 
   const globalSearch = useCallback(

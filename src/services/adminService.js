@@ -648,7 +648,7 @@ export function getPIDashboardData() {
       status: s.status || "Unknown",
       lastVisit: s.lastVisit || s.currentVisit || "N/A"
     })),
-    upcomingVisits: schedules.slice(0, 5).map((s) => ({
+    upcomingVisits: getUpcomingVisitsWindow(schedules, 30).slice(0, 5).map((s) => ({
       subjectId: s.subjectId,
       visit: s.visit,
       date: s.date

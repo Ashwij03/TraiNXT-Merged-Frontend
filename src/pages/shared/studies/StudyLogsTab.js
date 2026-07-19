@@ -285,6 +285,7 @@ const RESPONSIBILITY_MAP = {
         ]}
         data={studyLogs}
         emptyMessage="No log entries for this study"
+        pagination
       />
 
       {/* ---- MODIFIED: staff, history, and the edit/delete handlers are now

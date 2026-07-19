@@ -7,10 +7,43 @@ import {
   FiUpload,
   FiFileText
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import {
+  COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE,
+  isStudyCompletedByCode,
+} from "../../../services/studyService";
 
 import "./dashboard.css";
 
-function QuickActionsWidget() {
+function QuickActionsWidget({ study, studyCode, onAddSubject }) {
+  const navigate = useNavigate();
+
+  const resolvedStudyCode =
+    studyCode ||
+    study?.code ||
+    study?.studyId ||
+    study?.id ||
+    "";
+
+  const handleAddSubject = () => {
+    if (resolvedStudyCode && isStudyCompletedByCode(resolvedStudyCode)) {
+      window.alert(COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE);
+      return;
+    }
+
+    if (typeof onAddSubject === "function") {
+      onAddSubject();
+      return;
+    }
+
+    if (resolvedStudyCode) {
+      navigate(
+        `/study-dashboard/${encodeURIComponent(resolvedStudyCode)}?tab=Subjects`
+      );
+    } else {
+      navigate("/studies");
+    }
+  };
 
   return (
 
@@ -22,7 +55,7 @@ function QuickActionsWidget() {
 
       <div className="quick-grid">
 
-        <button>
+        <button type="button" onClick={handleAddSubject}>
           <FiUserPlus />
           Add Subject
         </button>

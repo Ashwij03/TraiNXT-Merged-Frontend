@@ -3,6 +3,12 @@ import {
   STUDY_STATUS_COMPLETED,
 } from "../constants/studyStatus";
 import { notifyStudyCompleted } from "./notificationService";
+import {
+  formatSiteOption,
+  getSiteDisplayName,
+  resolveSiteNumber,
+  resolveSiteRecord,
+} from "../utils/siteDisplay";
 
 const STUDIES_STORAGE_KEY = "trianxtStudies";
 const AUDIT_LOG_KEY = "auditLogs";
@@ -22,6 +28,19 @@ function getStoredStudies() {
 
 function saveStoredStudies(studies) {
   localStorage.setItem(STUDIES_STORAGE_KEY, JSON.stringify(studies));
+}
+
+function readJson(key, fallback) {
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+
+  try {
+    const value = JSON.parse(localStorage.getItem(key));
+    return value ?? fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 function notifyStudiesUpdated() {
@@ -79,6 +98,85 @@ export function getStudyByCode(code) {
   return getStudies().find(
     (study) => String(study.code) === String(code)
   );
+}
+
+function getSiteRecords() {
+  const sites = readJson("sites", []);
+  return Array.isArray(sites) ? sites : [];
+}
+
+function getStudySiteReference(study = {}) {
+  const siteName =
+    study.siteName ||
+    study.site ||
+    study.location ||
+    "";
+
+  return {
+    siteNumber:
+      study.siteNumber ||
+      study.siteNo ||
+      study.site_number ||
+      study.siteCode ||
+      "",
+    siteName,
+    name: siteName,
+    id: study.siteId || study.site || study.location || "",
+  };
+}
+
+function deriveStudySiteRelationship(study = {}) {
+  const siteRecords = getSiteRecords();
+  const siteReference = getStudySiteReference(study);
+  const matchedSite = resolveSiteRecord(siteReference, siteRecords);
+  const siteNumber = resolveSiteNumber(siteReference, {
+    sources: siteRecords,
+    fallback: "",
+  });
+  const siteName =
+    getSiteDisplayName(matchedSite) ||
+    study.siteName ||
+    study.site ||
+    study.location ||
+    "";
+  const siteId =
+    matchedSite?.id ||
+    matchedSite?.siteId ||
+    study.siteId ||
+    "";
+
+  return {
+    site: siteNumber || siteName,
+    siteNumber,
+    siteName,
+    siteId,
+  };
+}
+
+export function getSubjectStudyDefaults(studyCode) {
+  const study = getStudyByCode(studyCode);
+
+  if (!study) {
+    return {
+      pi: "",
+      principalInvestigator: "",
+      site: "",
+      siteNumber: "",
+      siteName: "",
+      siteId: "",
+      siteDisplay: "",
+    };
+  }
+
+  const siteRelationship = deriveStudySiteRelationship(study);
+  const principalInvestigator = study.principalInvestigator || "";
+
+  return {
+    ...siteRelationship,
+    pi: principalInvestigator,
+    principalInvestigator,
+    siteDisplay: formatSiteOption(siteRelationship),
+  };
 }
 
 export function createStudy(study) {
@@ -278,9 +376,22 @@ export function createSubject(studyCode, subject) {
     throw new Error("A subject with this Subject ID already exists.");
   }
 
+  /*
+    Stage 7A: PI and Site are authoritative study relationships, not
+    caller-controlled subject form values. Re-resolve them immediately before
+    persistence so direct routes, stale modals, and alternate role pages cannot
+    create a subject with a mismatched PI/Site.
+  */
+  const inheritedStudyFields = getSubjectStudyDefaults(studyCode);
+
   const subjectToStore = {
     ...subject,
     studyId: studyCode,
+    pi: inheritedStudyFields.pi,
+    principalInvestigator: inheritedStudyFields.principalInvestigator,
+    site: inheritedStudyFields.site,
+    siteNumber: inheritedStudyFields.siteNumber,
+    siteId: inheritedStudyFields.siteId,
   };
 
   const nextSubjectsByStudy = {
