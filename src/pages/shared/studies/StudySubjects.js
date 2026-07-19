@@ -37,6 +37,8 @@ import {
   COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE,
 } from "../../../services/studyService";
 import { STUDY_STATUS_COMPLETED } from "../../../constants/studyStatus";
+import { getStudies } from "../../../services/studyService";
+import { resolveSiteDisplay } from "../../../utils/siteDisplay";
 import "./StudySubjects.css";
 
 const SUBJECTS_STORAGE_KEY = "subjectsByStudy";
@@ -130,7 +132,14 @@ function getSubjectsForStudy(subjectsByStudy, studyId) {
   return [];
 }
 
-function getSubjectDetailCards(subject) {
+function getSubjectDetailCards(subject, siteSources = []) {
+  const siteDisplay = subject?.site
+    ? resolveSiteDisplay(subject.site, {
+        sources: siteSources,
+        fallback: subject.site || "—"
+      })
+    : "—";
+
   return [
     {
       label: "Initials",
@@ -146,7 +155,7 @@ function getSubjectDetailCards(subject) {
     },
     {
       label: "Site",
-      value: subject?.site || "—",
+      value: siteDisplay,
     },
     {
       label: "Screening Date",
@@ -616,7 +625,10 @@ function StudySubjects({
       selectedSubject.id
     );
 
-    const subjectDetailCards = getSubjectDetailCards(selectedSubject);
+    const subjectDetailCards = getSubjectDetailCards(
+      selectedSubject,
+      getStudies()
+    );
 
     return (
       <div className="subjects-module">
@@ -742,7 +754,14 @@ function StudySubjects({
                     <td>{subject.initials || "—"}</td>
                     <td>{subject.status || "—"}</td>
                     <td>{subject.pi || "—"}</td>
-                    <td>{subject.site || "—"}</td>
+                    <td>
+                      {subject.site
+                        ? resolveSiteDisplay(subject.site, {
+                            sources: getStudies(),
+                            fallback: subject.site
+                          })
+                        : "—"}
+                    </td>
                     <td>{subject.screeningDate || "—"}</td>
                     <td>{subject.enrollmentDate || "—"}</td>
                     <td>{subject.currentVisit || "—"}</td>
@@ -977,17 +996,68 @@ function StudySubjects({
             />
 
             <label htmlFor="subject-site">Site</label>
-            <input
-              id="subject-site"
-              placeholder="Site"
-              value={newSubject.site}
-              onChange={(event) =>
-                setNewSubject({
-                  ...newSubject,
-                  site: event.target.value,
-                })
+            {(() => {
+              const availableSites = (getStudies() || []).filter(
+                (study) =>
+                  study && (study.siteNumber || study.site || study.location)
+              );
+
+              if (availableSites.length > 0) {
+                return (
+                  <select
+                    id="subject-site"
+                    value={newSubject.site}
+                    onChange={(event) =>
+                      setNewSubject({
+                        ...newSubject,
+                        site: event.target.value,
+                      })
+                    }
+                  >
+                    <option value="">Select Site</option>
+                    {availableSites.map((study) => {
+                      const number =
+                        study.siteNumber ||
+                        study.number ||
+                        study.siteNo ||
+                        "";
+                      const name =
+                        study.site ||
+                        study.siteName ||
+                        study.location ||
+                        "";
+                      const optionValue = number || name;
+                      const label =
+                        number && name
+                          ? `${number} — ${name}`
+                          : number || name;
+                      return (
+                        <option
+                          key={`${study.id || study.code || optionValue}`}
+                          value={optionValue}
+                        >
+                          {label}
+                        </option>
+                      );
+                    })}
+                  </select>
+                );
               }
-            />
+
+              return (
+                <input
+                  id="subject-site"
+                  placeholder="Site"
+                  value={newSubject.site}
+                  onChange={(event) =>
+                    setNewSubject({
+                      ...newSubject,
+                      site: event.target.value,
+                    })
+                  }
+                />
+              );
+            })()}
 
             <div className="form-group">
               <label htmlFor="subject-screening-date">

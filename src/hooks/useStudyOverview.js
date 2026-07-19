@@ -11,6 +11,7 @@ import {
 } from "../services/studyOverviewService";
 import { FOLDER_TREE_EVENT } from "../services/folderService";
 import { SCHEDULES_EVENT } from "../services/visitScheduleService";
+import { EISF_DOCUMENTS_EVENT } from "../pages/shared/EISF/services/essentialDocumentsHealthService";
 
 export default function useStudyOverview(studyCode, refreshKey = 0) {
   const [version, setVersion] = useState(0);
@@ -22,6 +23,7 @@ export default function useStudyOverview(studyCode, refreshKey = 0) {
     window.addEventListener("studies-updated", bump);
     window.addEventListener("subjects-updated", bump);
     window.addEventListener(FOLDER_TREE_EVENT, bump);
+    window.addEventListener(EISF_DOCUMENTS_EVENT, bump);
     window.addEventListener(SCHEDULES_EVENT, bump);
     window.addEventListener("planning-updated", bump);
     window.addEventListener("visit-plans-updated", bump);
@@ -31,6 +33,7 @@ export default function useStudyOverview(studyCode, refreshKey = 0) {
       window.removeEventListener("studies-updated", bump);
       window.removeEventListener("subjects-updated", bump);
       window.removeEventListener(FOLDER_TREE_EVENT, bump);
+      window.removeEventListener(EISF_DOCUMENTS_EVENT, bump);
       window.removeEventListener(SCHEDULES_EVENT, bump);
       window.removeEventListener("planning-updated", bump);
       window.removeEventListener("visit-plans-updated", bump);

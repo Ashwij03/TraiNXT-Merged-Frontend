@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import "./PISubjectsDashboard.css";
 import {
   FaEye,
@@ -8,12 +8,25 @@ import {
 import { getStudyByCode } from "../../services/studyService";
 import { STUDY_STATUS_COMPLETED } from "../../constants/studyStatus";
 
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
+
 const COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE =
   "Subjects cannot be added because this study is completed.";
+  
 function PISubjectsDashboard({
   onProfileClick
 }) {
   const [search, setSearch] = useState("");
+
+  const siteSources = useMemo(() => getStudies(), []);
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   const [subjects, setSubjects] = useState(() => {
     return (
@@ -295,7 +308,7 @@ function PISubjectsDashboard({
                 <td>{subject.id}</td>
                 <td>{subject.initials}</td>
                 <td>{subject.study}</td>
-                <td>{subject.site}</td>
+                <td>{displaySite(subject.site)}</td>
 				
 				<td>
 				  <span
@@ -497,7 +510,7 @@ function PISubjectsDashboard({
 						  </span>
 
 						  <span className="detail-value">
-						    {selectedSubject.site}
+						    {displaySite(selectedSubject.site)}
 						  </span>
 						</div>
 

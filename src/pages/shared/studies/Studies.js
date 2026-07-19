@@ -1,5 +1,3 @@
-
-
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
@@ -12,6 +10,7 @@ import {
 } from "../../../services/roleService";
 import { canAddStudy } from "../../../utils/contentAccess";
 import { readStorage } from "../../../utils/storageHelpers";
+import { resolveSiteDisplay } from "../../../utils/siteDisplay";
 import ROLES from "../../../constants/roles";
 import {
   STUDY_STATUS_OPTIONS,
@@ -731,7 +730,7 @@ function Studies() {
 
                     <div>
                       <strong>Site:</strong>
-                      {study.location || "N/A"}
+                      {resolveSiteDisplay(study, { fallback: "N/A" })}
                     </div>
 
                     <div>
@@ -811,7 +810,7 @@ function Studies() {
 
                 <div className="study-list-field">
                   <label>Site</label>
-                  <span>{study.location || "-"}</span>
+                  <span>{resolveSiteDisplay(study, { fallback: "-" })}</span>
                 </div>
 
                 <div className="study-list-field">
@@ -864,6 +863,7 @@ function Studies() {
                   <th>Country</th>
                   <th>PI</th>
                   <th>Site Number</th>
+                  <th>Site Name</th>
                   <th>Subjects</th>
                   <th>Study Status</th>
                   <th>Start Date</th>
@@ -894,6 +894,7 @@ function Studies() {
                     <td>{study.country || "-"}</td>
                     <td>{study.principalInvestigator || "-"}</td>
                     <td>{getStudySiteNumber(study, sites) || "-"}</td>
+                    <td>{resolveSiteDisplay(study, { fallback: "-" })}</td>
                     <td>
                       {getSubjectsForStudy(subjectsByStudy, study).length}/{study.targetSubjects || 0}
                     </td>

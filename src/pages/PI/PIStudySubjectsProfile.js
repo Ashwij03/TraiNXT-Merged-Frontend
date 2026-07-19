@@ -1,8 +1,17 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 import "./PIStudySubjectProfile.css";
 
 function PIStudySubjectProfile({ subject }) {
+	const siteSources = useMemo(() => getStudies(), []);
+	const siteDisplayValue = subject?.site
+	  ? resolveSiteDisplay(subject.site, {
+	      sources: siteSources,
+	      fallback: subject.site
+	    })
+	  : "—";
 	const [editIndex, setEditIndex] = useState(null);
 	const [documentForm, setDocumentForm] = useState({
 	  name: "",
@@ -560,7 +569,7 @@ function PIStudySubjectProfile({ subject }) {
 
         <div className="summary-card">
           <h5>Site</h5>
-          <p>{subject.site}</p>
+          <p>{siteDisplayValue}</p>
         </div>
 
         <div className="summary-card">

@@ -787,7 +787,9 @@ import StudyWorkspaceTabs from "./StudyWorkspaceTabs";
 import StudyDocuments from "./StudyDocuments";
 import StudyComments from "./StudyComments";
 import StudyLogsTab from "./StudyLogsTab";
-import StudyRegulatory from "./StudyRegulatory";
+// ===== START ITEM 16: Regulatory removed from Studies module =====
+// import StudyRegulatory from "./StudyRegulatory";
+// ===== END ITEM 16 =====
 import StudyReports from "./StudyReports";
 import StudyPlanning from "./StudyPlanning";
 import StudyVisitPlan from "./StudyVisitPlan";
@@ -796,7 +798,6 @@ import StudyProgressSummary from "../../../components/studies/StudyProgressSumma
 import StudyMilestoneTimeline from "../../../components/studies/StudyMilestoneTimeline";
 import SitePerformanceSummary from "../../../components/studies/SitePerformanceSummary";
 import SiteActivationStatus from "../../../components/studies/SiteActivationStatus";
-import GCPCertificationStatus from "../../../components/studies/GCPCertificationStatus";
 import StudyHealthSummary from "../../../components/studies/StudyHealthSummary";
 import useStudyOverview from "../../../hooks/useStudyOverview";
 import StudyFinancials from "../../Sponsor/Financials/StudyFinancials";
@@ -849,9 +850,12 @@ function StudyDashboard() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState(
-    searchParams.get("tab") || "Overview",
-  );
+  // ===== START ITEM 16: Regulatory tab removed - fallback to Overview =====
+  const [activeTab, setActiveTab] = useState(() => {
+    const initialTab = searchParams.get("tab") || "Overview";
+    return initialTab === "Regulatory" ? "Overview" : initialTab;
+  });
+  // ===== END ITEM 16 =====
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editForm, setEditForm] = useState({});
@@ -862,8 +866,11 @@ function StudyDashboard() {
     const tabFromUrl = searchParams.get("tab");
 
     if (tabFromUrl) {
+      // ===== ITEM 16: Redirect Regulatory tab to Overview =====
+      const resolvedTab = tabFromUrl === "Regulatory" ? "Overview" : tabFromUrl;
+
       setActiveTab((currentTab) =>
-        currentTab === tabFromUrl ? currentTab : tabFromUrl,
+        currentTab === resolvedTab ? currentTab : resolvedTab,
       );
     }
   }, [searchParams]);
@@ -1028,6 +1035,7 @@ function StudyDashboard() {
 
   const handleNavigateToEisf = () => {
     setActiveTab("eISF");
+    navigate(`/study-dashboard/${encodeURIComponent(id)}?tab=eISF`);
   };
 
   const handleRequestEditPermission = () => {
@@ -1252,8 +1260,9 @@ function StudyDashboard() {
 
                   <SiteActivationStatus counts={overview.siteActivation} />
 
-                  <GCPCertificationStatus counts={overview.gcpCertification} />
-
+                  {/* Item 14 — GCP Certification Status removed;
+                      the existing Site Performance Summary widget is
+                      reused in its place (single instance, live data). */}
                   <SitePerformanceSummary records={overview.sitePerformance} />
                 </div>
 
@@ -1318,7 +1327,8 @@ function StudyDashboard() {
 
             {activeTab === "Logs" && <StudyLogsTab />}
 
-            {activeTab === "Regulatory" && <StudyRegulatory />}
+            {/* ===== ITEM 16: Regulatory tab removed from Studies module ===== */}
+            {/* {activeTab === "Regulatory" && <StudyRegulatory />} */}
 
             {activeTab === "Reports" && <StudyReports />}
 

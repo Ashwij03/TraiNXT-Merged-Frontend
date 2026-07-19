@@ -1,6 +1,17 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 
 function Recruitment() {
+
+  const siteSources = useMemo(() => getStudies(), []);
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   const recruitmentData = [
     {
@@ -45,7 +56,7 @@ function Recruitment() {
         <tbody>
           {recruitmentData.map((item, index) => (
             <tr key={index}>
-              <td>{item.site}</td>
+              <td>{displaySite(item.site)}</td>
               <td>{item.target}</td>
               <td>{item.enrolled}</td>
               <td>{item.percentage}</td>

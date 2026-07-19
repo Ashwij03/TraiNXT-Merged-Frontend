@@ -1,5 +1,7 @@
 // newly added
 
+import { resolveSiteDisplay } from "../../../utils/siteDisplay";
+
 function RecentActivity({ activities = [] }) {
 
   return (
@@ -21,7 +23,7 @@ function RecentActivity({ activities = [] }) {
               </strong>
 
               <div className="activity-details">
-                {item.site}
+                {resolveSiteDisplay(item.site)}
               </div>
 
             </div>
