@@ -7,7 +7,6 @@ import {
   canWriteComments,
 } from "../../services/commentService";
 import { getAssignedSite, getCurrentUser } from "../../services/roleService";
-import { getComments, saveComments } from "../../services/adminService";
 import { useComments } from "../../comments/CommentsContext";
 
 const SORT_FIELDS = {
@@ -50,8 +49,12 @@ function mapCommentRecord(comment) {
 export default function RoleCommentsView({ embedded = false }) {
   const currentUser = getCurrentUser();
   const assignedSite = getAssignedSite() || "All Sites";
-  const { comments: authoritativeComments, resolveComment, refreshComments, addComment: createComment } =
-    useComments();
+  const {
+    comments: authoritativeComments,
+    resolveComment,
+    reopenComment,
+    addComment: createComment,
+  } = useComments();
 
   const sourceComments = useMemo(() => {
     return authoritativeComments
@@ -84,8 +87,6 @@ export default function RoleCommentsView({ embedded = false }) {
       setSelectedStudy(defaultStudy);
     }
   }, [availableStudies, selectedStudy]);
-
-  const refreshCommentList = () => refreshComments();
 
   const searchSuggestions = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
@@ -181,11 +182,13 @@ export default function RoleCommentsView({ embedded = false }) {
 
   const toggleStatus = (comment) => {
     if (comment.status === "resolved") {
-      const updated = getComments(currentUser).map((item) =>
-        item.id === comment.id ? { ...item, status: "Open" } : item
-      );
-      saveComments(updated);
-      refreshCommentList();
+      // Reopen goes through the canonical commentService entry point so it
+      // fires the same comments-updated / sponsor-data-updated events every
+      // other consumer subscribes to (Study/Subject/Operations Comments,
+      // dashboard KPI widgets, PendingCommentsWidget). Previously this
+      // wrote via saveComments directly, which only dispatched
+      // admin-data-updated and left other views stale until reload.
+      reopenComment(comment.id);
       return;
     }
 

@@ -5,18 +5,8 @@ import CROStatusBadge from "./CROStatusBadge";
 import EmptyState from "./EmptyState";
 import { resolveSiteDisplay } from "../../utils/siteDisplay";
 import { getStudies } from "../../services/studyService";
+import { formatScheduleDisplayDate } from "../../utils/formatScheduleDisplayDate";
 import "./UpcomingMonitoringVisits.css";
-
-function formatDate(dateStr) {
-  if (!dateStr) return "—";
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return dateStr;
-  return d.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
 
 function UpcomingMonitoringVisits() {
   const { upcomingVisits } = useCROData();
@@ -68,7 +58,7 @@ function UpcomingMonitoringVisits() {
                   <td>{visit.id}</td>
                   <td>{displaySite(visit.site)}</td>
                   <td>{visit.visitType}</td>
-                  <td>{formatDate(visit.date)}</td>
+                  <td>{formatScheduleDisplayDate(visit.date)}</td>
                   <td>
                     <CROStatusBadge status={visit.status} />
                   </td>

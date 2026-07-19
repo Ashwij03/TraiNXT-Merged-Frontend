@@ -219,6 +219,7 @@ function AccessPermissions() {
             columns={signupColumns}
             data={signupData}
             emptyMessage="No pending signup approvals"
+            pagination
           />
         ) : activeTab === "pending" ? (
           <DataTable
@@ -226,6 +227,7 @@ function AccessPermissions() {
             columns={pendingColumns}
             data={pendingData}
             emptyMessage="No pending access requests"
+            pagination
           />
         ) : (
           <DataTable
@@ -233,6 +235,7 @@ function AccessPermissions() {
             columns={historyColumns}
             data={historyData}
             emptyMessage="No request history yet"
+            pagination
           />
         )}
       </div>

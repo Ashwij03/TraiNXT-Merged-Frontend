@@ -5,6 +5,8 @@ import StatusBadge from "./StatusBadge";
 import EmptyState from "./EmptyState";
 import { resolveSiteDisplay } from "../../utils/siteDisplay";
 import { getStudies } from "../../services/studyService";
+import { formatScheduleDisplayDate } from "../../utils/formatScheduleDisplayDate";
+import { isPastCalendarDate } from "../../services/visitScheduleService";
 
 function CROMonitoring() {
   const { visits } = useCROData();
@@ -22,7 +24,9 @@ function CROMonitoring() {
   const [statusFilter, setStatusFilter] = useState("All");
 
   const filteredVisits = visits.filter((visit) => {
-    const matchesSearch = visit.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = String(visit.id || "")
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "All" || visit.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -31,7 +35,7 @@ function CROMonitoring() {
   const pendingCount = visits.filter((v) => v.status === "Pending").length;
   const overdueCount = visits.filter((v) => {
     if (v.status === "Completed") return false;
-    return new Date(v.date) < new Date();
+    return isPastCalendarDate(v.date);
   }).length;
 
   return (
@@ -105,7 +109,7 @@ function CROMonitoring() {
                     <td>{displaySite(visit.site)}</td>
                     <td>{visit.cra}</td>
                     <td>{visit.visitType}</td>
-                    <td>{visit.date}</td>
+                    <td>{formatScheduleDisplayDate(visit.date)}</td>
                     <td><StatusBadge status={visit.status} /></td>
                   </tr>
                 ))}

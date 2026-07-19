@@ -28,13 +28,14 @@ import {
 import { syncSubjectSchedules } from "../../../services/visitScheduleService";
 import {
   getStudyByCode,
+  getSubjectStudyDefaults,
   createSubject,
   updateSubject,
   COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE,
   COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE,
+  getStudies,
 } from "../../../services/studyService";
 import { STUDY_STATUS_COMPLETED } from "../../../constants/studyStatus";
-import { getStudies } from "../../../services/studyService";
 import { resolveSiteDisplay } from "../../../utils/siteDisplay";
 import "./StudySubjects.css";
 
@@ -223,6 +224,17 @@ function StudySubjects({
 
   const isStudyCompleted =
     currentStudy?.status === STUDY_STATUS_COMPLETED;
+
+  const inheritedSubjectFields = getSubjectStudyDefaults(studyId);
+
+  const getStudyDerivedSubjectFormFields = () => {
+    const latestDefaults = getSubjectStudyDefaults(studyId);
+
+    return {
+      pi: latestDefaults.pi || "",
+      site: latestDefaults.site || "",
+    };
+  };
 
   useEffect(() => {
     const refreshSubjects = () => {
@@ -454,12 +466,13 @@ function StudySubjects({
       // "Visit Calendar & Upcoming Visits" widget (Admin, Site Staff, PI).
       syncSubjectSchedules(studyId, subjectId, editedSubject);
     } else {
+      const studyDerivedFields = getStudyDerivedSubjectFormFields();
       const baseSubject = {
         ...newSubject,
         id: subjectId,
         initials: newSubject.initials.trim(),
-        pi: newSubject.pi.trim(),
-        site: newSubject.site.trim(),
+        pi: studyDerivedFields.pi,
+        site: studyDerivedFields.site,
         studyId,
         createdAt: now,
         updatedAt: now,
@@ -481,8 +494,10 @@ function StudySubjects({
         mutating `subjectsByStudy`. This is the defense-in-depth backstop for
         the UI guard above.
       */
+      let createdSubject;
+
       try {
-        createSubject(studyId, subjectToAdd);
+        createdSubject = createSubject(studyId, subjectToAdd);
       } catch (error) {
         window.alert(
           (error && error.message) ||
@@ -496,7 +511,7 @@ function StudySubjects({
       // the `subjects-updated` event dispatch to round-trip through storage.
       setSubjectsByStudy((current) => ({
         ...current,
-        [studyId]: [...subjectsData, subjectToAdd],
+        [studyId]: [...subjectsData, createdSubject],
       }));
 
       // Push the new subject's Screening/Enrollment dates into the shared
@@ -504,7 +519,7 @@ function StudySubjects({
       // every role's "Visit Calendar & Upcoming Visits" widget (Admin,
       // Site Staff, PI) — previously only the SubjectFolderWorkspace flow
       // did this, so subjects added from this page never appeared there.
-      syncSubjectSchedules(studyId, subjectId, subjectToAdd);
+      syncSubjectSchedules(studyId, subjectId, createdSubject);
 
       // notifySubjectCreated expects { subjectId, studyCode, addedByRole },
       // while this page's own subject record uses { id, studyId } — adapt the
@@ -534,7 +549,10 @@ function StudySubjects({
     }
 
     setEditingSubjectId(null);
-    setNewSubject(emptySubjectForm);
+    setNewSubject({
+      ...emptySubjectForm,
+      ...getStudyDerivedSubjectFormFields(),
+    });
     setShowSubjectModal(true);
   };
 
@@ -986,29 +1004,82 @@ function StudySubjects({
             />
 
             <label htmlFor="subject-pi">Principal Investigator</label>
-            <input
-              id="subject-pi"
-              placeholder="Principal Investigator"
-              value={newSubject.pi}
-              onChange={(event) =>
-                setNewSubject({
-                  ...newSubject,
-                  pi: event.target.value,
-                })
-              }
-            />
+            {editingSubjectId ? (
+              <input
+                id="subject-pi"
+                placeholder="Principal Investigator"
+                value={newSubject.pi}
+                onChange={(event) =>
+                  setNewSubject({
+                    ...newSubject,
+                    pi: event.target.value,
+                  })
+                }
+              />
+            ) : (
+              <input
+                id="subject-pi"
+                placeholder="Principal Investigator"
+                value={inheritedSubjectFields.pi || "—"}
+                readOnly
+                aria-readonly="true"
+              />
+            )}
 
             <label htmlFor="subject-site">Site</label>
-            {(() => {
-              const availableSites = (getStudies() || []).filter(
-                (study) =>
-                  study && (study.siteNumber || study.site || study.location)
-              );
+            {editingSubjectId ? (
+              (() => {
+                const availableSites = (getStudies() || []).filter(
+                  (study) =>
+                    study && (study.siteNumber || study.site || study.location)
+                );
 
-              if (availableSites.length > 0) {
+                if (availableSites.length > 0) {
+                  return (
+                    <select
+                      id="subject-site"
+                      value={newSubject.site}
+                      onChange={(event) =>
+                        setNewSubject({
+                          ...newSubject,
+                          site: event.target.value,
+                        })
+                      }
+                    >
+                      <option value="">Select Site</option>
+                      {availableSites.map((study) => {
+                        const number =
+                          study.siteNumber ||
+                          study.number ||
+                          study.siteNo ||
+                          "";
+                        const name =
+                          study.site ||
+                          study.siteName ||
+                          study.location ||
+                          "";
+                        const optionValue = number || name;
+                        const label =
+                          number && name
+                            ? `${number} — ${name}`
+                            : number || name;
+                        return (
+                          <option
+                            key={`${study.id || study.code || optionValue}`}
+                            value={optionValue}
+                          >
+                            {label}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  );
+                }
+
                 return (
-                  <select
+                  <input
                     id="subject-site"
+                    placeholder="Site"
                     value={newSubject.site}
                     onChange={(event) =>
                       setNewSubject({
@@ -1016,51 +1087,18 @@ function StudySubjects({
                         site: event.target.value,
                       })
                     }
-                  >
-                    <option value="">Select Site</option>
-                    {availableSites.map((study) => {
-                      const number =
-                        study.siteNumber ||
-                        study.number ||
-                        study.siteNo ||
-                        "";
-                      const name =
-                        study.site ||
-                        study.siteName ||
-                        study.location ||
-                        "";
-                      const optionValue = number || name;
-                      const label =
-                        number && name
-                          ? `${number} — ${name}`
-                          : number || name;
-                      return (
-                        <option
-                          key={`${study.id || study.code || optionValue}`}
-                          value={optionValue}
-                        >
-                          {label}
-                        </option>
-                      );
-                    })}
-                  </select>
+                  />
                 );
-              }
-
-              return (
+              })()
+            ) : (
                 <input
                   id="subject-site"
                   placeholder="Site"
-                  value={newSubject.site}
-                  onChange={(event) =>
-                    setNewSubject({
-                      ...newSubject,
-                      site: event.target.value,
-                    })
-                  }
+                  value={inheritedSubjectFields.siteDisplay || "—"}
+                  readOnly
+                  aria-readonly="true"
                 />
-              );
-            })()}
+            )}
 
             <div className="form-group">
               <label htmlFor="subject-screening-date">

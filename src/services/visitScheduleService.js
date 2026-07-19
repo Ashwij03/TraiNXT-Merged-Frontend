@@ -56,7 +56,7 @@ export function isCompletedVisitSchedule(schedule) {
   return isCompletedVisitStatus(schedule?.status);
 }
 
-function toLocalDateKey(date) {
+export function toLocalDateKey(date) {
   return [
     date.getFullYear(),
     String(date.getMonth() + 1).padStart(2, "0"),
@@ -64,7 +64,7 @@ function toLocalDateKey(date) {
   ].join("-");
 }
 
-function getCalendarDateKey(value) {
+export function getCalendarDateKey(value) {
   if (!value) {
     return "";
   }
@@ -82,6 +82,46 @@ function getCalendarDateKey(value) {
 
   const parsed = new Date(raw);
   return Number.isNaN(parsed.getTime()) ? "" : toLocalDateKey(parsed);
+}
+
+function getCalendarDateSortValue(value) {
+  const dateKey = getCalendarDateKey(value);
+
+  if (!dateKey) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  const [year, month, day] = dateKey.split("-").map(Number);
+  return new Date(year, month - 1, day).getTime();
+}
+
+export function compareScheduleDates(first, second) {
+  return (
+    getCalendarDateSortValue(first?.date ?? first) -
+    getCalendarDateSortValue(second?.date ?? second)
+  );
+}
+
+export function isPastCalendarDate(value, referenceDate = new Date()) {
+  const visitSortValue = getCalendarDateSortValue(value);
+  const referenceSortValue = getCalendarDateSortValue(referenceDate);
+
+  if (
+    !Number.isFinite(visitSortValue) ||
+    !Number.isFinite(referenceSortValue)
+  ) {
+    return false;
+  }
+
+  return visitSortValue < referenceSortValue;
+}
+
+export function isUpcomingVisitSchedule(item, referenceDate = new Date()) {
+  return Boolean(
+    item?.date &&
+      !isCompletedVisitSchedule(item) &&
+      !isPastCalendarDate(item.date, referenceDate)
+  );
 }
 
 function addCalendarDays(dateKey, days) {
@@ -649,14 +689,19 @@ export function getFilteredSchedules(
 }
 
 export function getUpcomingVisitsForDate(schedules, date) {
-  const targetDate = String(date || "").slice(0, 10);
+  const targetDate = getCalendarDateKey(date);
+
+  if (!targetDate) {
+    return [];
+  }
 
   return schedules
     .filter(
       (item) =>
         !isCompletedVisitSchedule(item) &&
-        String(item.date || "").slice(0, 10) === targetDate
+        getCalendarDateKey(item.date) === targetDate
     )
+    .sort(compareScheduleDates)
     .map((item) => ({
       subjectid: item.subjectId,
       subject: item.subjectId,
@@ -688,24 +733,28 @@ export function getUpcomingVisitsWindow(
   daysAhead = 7,
   referenceDate = new Date()
 ) {
-  const start = new Date(referenceDate);
-  start.setHours(0, 0, 0, 0);
-  const endDate = new Date(start);
-  endDate.setDate(start.getDate() + daysAhead);
+  const startKey = getCalendarDateKey(referenceDate);
+
+  if (!startKey) {
+    return [];
+  }
+
+  const endKey = addCalendarDays(startKey, daysAhead);
+  const startValue = getCalendarDateSortValue(startKey);
+  const endValue = getCalendarDateSortValue(endKey);
 
   return schedules
     .filter((item) => {
-      const visitDate = new Date(item.date);
-      if (Number.isNaN(visitDate.getTime()) || isCompletedVisitSchedule(item)) {
+      const visitValue = getCalendarDateSortValue(item.date);
+      if (!Number.isFinite(visitValue) || isCompletedVisitSchedule(item)) {
         return false;
       }
 
-      visitDate.setHours(0, 0, 0, 0);
       return (
-        visitDate >= start &&
-        visitDate <= endDate
+        visitValue >= startValue &&
+        visitValue <= endValue
       );
     })
-    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .sort(compareScheduleDates)
     .map(mapScheduleToTableRow);
 }

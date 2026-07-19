@@ -10,7 +10,6 @@ import {
 } from "../../../services/roleService";
 import { canAddStudy } from "../../../utils/contentAccess";
 import { readStorage } from "../../../utils/storageHelpers";
-import { resolveSiteDisplay } from "../../../utils/siteDisplay";
 import ROLES from "../../../constants/roles";
 import {
   STUDY_STATUS_OPTIONS,
@@ -117,6 +116,26 @@ function getStudySiteNumber(study, sites) {
 }
 
 /**
+ * Resolves the actual Site Name for a study by looking up its assigned
+ * site record (matched via resolveStudySite, the same lookup used for the
+ * Site Number column). Falls back to the raw site/location string stored
+ * on the study when no matching site record exists yet. Deliberately does
+ * NOT fall back to study.name — a study object always has its own `name`
+ * field (the study title), and using that as a generic fallback caused the
+ * Site Name column to silently display the study's name instead of the
+ * site's name whenever no site record matched.
+ */
+function getStudySiteName(study, sites) {
+  const site = resolveStudySite(study, sites);
+
+  if (site) {
+    return site.siteName || site.name || study?.site || study?.location || "";
+  }
+
+  return study?.site || study?.location || "";
+}
+
+/**
  * Display-only formatter that renders a date as "yyyy-mm-dd", matching the
  * Start Date column's format. Reads the calendar date directly off the
  * stored string when possible so no timezone conversion can shift the day.
@@ -147,7 +166,7 @@ function formatDateYYYYMMDD(dateValue) {
 }
 
 function getStoredCompletedDateDisplay(study) {
-  if (study?.status !== "Completed" || !study?.completedDate) {
+  if (!study?.completedDate) {
     return "";
   }
 
@@ -730,7 +749,7 @@ function Studies() {
 
                     <div>
                       <strong>Site:</strong>
-                      {resolveSiteDisplay(study, { fallback: "N/A" })}
+                      {getStudySiteName(study, sites) || "N/A"}
                     </div>
 
                     <div>
@@ -810,7 +829,7 @@ function Studies() {
 
                 <div className="study-list-field">
                   <label>Site</label>
-                  <span>{resolveSiteDisplay(study, { fallback: "-" })}</span>
+                  <span>{getStudySiteName(study, sites) || "-"}</span>
                 </div>
 
                 <div className="study-list-field">
@@ -894,7 +913,7 @@ function Studies() {
                     <td>{study.country || "-"}</td>
                     <td>{study.principalInvestigator || "-"}</td>
                     <td>{getStudySiteNumber(study, sites) || "-"}</td>
-                    <td>{resolveSiteDisplay(study, { fallback: "-" })}</td>
+                    <td>{getStudySiteName(study, sites) || "-"}</td>
                     <td>
                       {getSubjectsForStudy(subjectsByStudy, study).length}/{study.targetSubjects || 0}
                     </td>
@@ -908,8 +927,6 @@ function Studies() {
                         {study.status || STUDY_STATUS_DEFAULT}
                       </span>
                     </td>
-
-                    <td>{getStoredCompletedDateDisplay(study)}</td>
 
                     <td>{study.startDate || "-"}</td>
 

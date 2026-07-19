@@ -44,6 +44,7 @@ import PIEISFDashboard from "./PIEISFDashboard";
 import PIICFDashboard from "./PIICFDashboard";
 import StudyFolderDashboard from "./PIStudyFolderDashboard";
 import VisitCalendarSection from "../../components/dashboard/shared/VisitCalendarSection";
+import useVisitSchedules from "../../hooks/useVisitSchedules";
 
 import {
   getDashboardData,
@@ -55,6 +56,10 @@ import {
 import { useComments } from "../../comments/CommentsContext";
 
 import { getStudies } from "../../services/studyService";
+import {
+  addOrUpdateVisitSchedule,
+  SCHEDULES_EVENT
+} from "../../services/visitScheduleService";
 import {
   getStudyKey,
   useRoleStudiesSidebar,
@@ -80,6 +85,9 @@ function PIDashboard({ embeddedInLayout = false }) {
   const [selectedStudy, setSelectedStudy] = useState(
     () => getNavbarData().selectedStudy || "All Studies",
   );
+  const selectedStudyCode =
+    selectedStudy && selectedStudy !== "All Studies" ? selectedStudy : "";
+  const { upcomingWindow } = useVisitSchedules({ studyCode: selectedStudyCode });
 
   const [dashboardData, setDashboardData] = useState(() =>
     syncKpisFromData(getDashboardData()),
@@ -123,6 +131,7 @@ function PIDashboard({ embeddedInLayout = false }) {
     window.addEventListener("studies-updated", refreshSharedData);
     window.addEventListener("subjects-updated", refreshSharedData);
     window.addEventListener("study-overview-updated", refreshSharedData);
+    window.addEventListener(SCHEDULES_EVENT, refreshSharedData);
 
     return () => {
       window.removeEventListener("pi-study-change", handleStudyChange);
@@ -132,6 +141,7 @@ function PIDashboard({ embeddedInLayout = false }) {
       window.removeEventListener("studies-updated", refreshSharedData);
       window.removeEventListener("subjects-updated", refreshSharedData);
       window.removeEventListener("study-overview-updated", refreshSharedData);
+      window.removeEventListener(SCHEDULES_EVENT, refreshSharedData);
     };
   }, []);
 
@@ -334,7 +344,7 @@ function PIDashboard({ embeddedInLayout = false }) {
     {
       title: "Schedule Visit",
       icon: <FaCalendarAlt />,
-      count: (dashboardData.upcomingVisits || []).length,
+      count: upcomingWindow.length,
       action: () => setShowVisitModal(true),
     },
     {
@@ -469,10 +479,29 @@ function PIDashboard({ embeddedInLayout = false }) {
       return;
     }
 
-    updateDashboard({
-      ...dashboardData,
-      upcomingVisits: [...(dashboardData.upcomingVisits || []), newVisit],
+    const subjectRecord = realSubjects.find(
+      (subject) =>
+        String(subject.subjectId || subject.id) === String(newVisit.subject)
+    );
+    const studyId = selectedStudyCode || subjectRecord?.studyCode || subjectRecord?.studyKey;
+
+    if (!studyId) {
+      alert("Select a study or enter a subject linked to a study");
+      return;
+    }
+
+    addOrUpdateVisitSchedule({
+      studyId,
+      subjectId: newVisit.subject,
+      subject: subjectRecord || {
+        id: newVisit.subject,
+        subjectId: newVisit.subject
+      },
+      visitName: newVisit.visit,
+      date: newVisit.date,
+      status: "Scheduled"
     });
+    refreshDashboardData();
 
     setShowVisitModal(false);
     setNewVisit({

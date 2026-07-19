@@ -7,7 +7,15 @@ export function formatScheduleDisplayDate(dateValue) {
     return "—";
   }
 
-  const parsed = new Date(dateValue);
+  const raw = String(dateValue).trim();
+  const isoDateMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const parsed = isoDateMatch
+    ? new Date(
+        Number(isoDateMatch[1]),
+        Number(isoDateMatch[2]) - 1,
+        Number(isoDateMatch[3])
+      )
+    : new Date(raw);
 
   if (!Number.isNaN(parsed.getTime())) {
     return parsed.toLocaleDateString("en-GB", {
@@ -17,7 +25,6 @@ export function formatScheduleDisplayDate(dateValue) {
     });
   }
 
-  const raw = String(dateValue).trim();
   const withoutTime = raw.replace(/\s+\d{1,2}:\d{2}(?::\d{2})?\s*(AM|PM)?/i, "");
 
   return withoutTime || raw;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AppLayout from "./AppLayout";
 import "./SiteDetails.css";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -6,7 +6,13 @@ import { getStudyByCode } from "../../services/studyService";
 import {
   getStudyTeam,
   getRegulatoryChecklist,
+  saveStudyTeamMember,
+  deleteStudyTeamMember,
+  saveRegulatoryChecklistItem,
+  deleteRegulatoryChecklistItem,
+  PLANNING_UPDATED_EVENT,
 } from "../../services/planningService";
+import { canEditStudyContent } from "../../utils/contentAccess";
 import {
   getAllSubjectsFromStorage,
   getSubjectStatusAnalytics,
@@ -34,6 +40,27 @@ const SiteDetails = () => {
 
   const siteData = location.state;
 
+  // Bump on planning-updated events so newly added team members /
+  // contacts / regulatory records appear immediately without a reload.
+  const [planningVersion, setPlanningVersion] = useState(0);
+
+  useEffect(() => {
+    const refresh = () => setPlanningVersion((v) => v + 1);
+    window.addEventListener(PLANNING_UPDATED_EVENT, refresh);
+    return () =>
+      window.removeEventListener(PLANNING_UPDATED_EVENT, refresh);
+  }, []);
+  void planningVersion;
+
+  const canEdit = canEditStudyContent();
+
+  const [teamFormOpen, setTeamFormOpen] = useState(false);
+  const [contactFormOpen, setContactFormOpen] = useState(false);
+  const [regulatoryFormOpen, setRegulatoryFormOpen] = useState(false);
+  const [editingTeamMember, setEditingTeamMember] = useState(null);
+  const [editingContact, setEditingContact] = useState(null);
+  const [editingRegulatoryItem, setEditingRegulatoryItem] = useState(null);
+
   const studyData = siteData
     ? getStudyByCode(siteData.id)
     : null;
@@ -45,6 +72,32 @@ const SiteDetails = () => {
   const regulatoryChecklist = siteData
     ? getRegulatoryChecklist(siteData.id)
     : [];
+
+  const handleSaveTeamMember = (data) => {
+    if (!siteData?.id) return;
+    saveStudyTeamMember(siteData.id, data);
+    setTeamFormOpen(false);
+    setContactFormOpen(false);
+    setEditingTeamMember(null);
+    setEditingContact(null);
+  };
+
+  const handleDeleteTeamMember = (memberId) => {
+    if (!siteData?.id) return;
+    deleteStudyTeamMember(siteData.id, memberId);
+  };
+
+  const handleSaveRegulatoryItem = (data) => {
+    if (!siteData?.id) return;
+    saveRegulatoryChecklistItem(siteData.id, data);
+    setRegulatoryFormOpen(false);
+    setEditingRegulatoryItem(null);
+  };
+
+  const handleDeleteRegulatoryItem = (itemId) => {
+    if (!siteData?.id) return;
+    deleteRegulatoryChecklistItem(siteData.id, itemId);
+  };
 
   const allSubjects = getAllSubjectsFromStorage();
 
@@ -378,11 +431,15 @@ const SiteDetails = () => {
 
             <p>
               There are currently no activity records for this site.
+              Site activity is derived from audit logs and is not
+              manually editable in this workspace.
             </p>
 
             <button
               type="button"
               className="site-empty-btn"
+              disabled
+              title="Site activity is derived from audit logs and cannot be added manually."
             >
               + Add Activity
             </button>
@@ -476,11 +533,15 @@ const SiteDetails = () => {
 
                 <p>
                   No assignments have been created for this site.
+                  Assignments are managed centrally through the study
+                  workspace and cannot be created directly here.
                 </p>
 
                 <button
                   type="button"
                   className="site-empty-btn"
+                  disabled
+                  title="Assignments are managed centrally in the study workspace."
                 >
                   + Create Assignment
                 </button>
@@ -498,41 +559,97 @@ const SiteDetails = () => {
                     No study team members have been assigned.
                   </p>
 
-                  <button
-                    type="button"
-                    className="site-empty-btn"
-                  >
-                    + Add Team Member
-                  </button>
+                  {canEdit && (
+                    <button
+                      type="button"
+                      className="site-empty-btn"
+                      onClick={() => {
+                        setEditingTeamMember(null);
+                        setTeamFormOpen(true);
+                      }}
+                    >
+                      + Add Team Member
+                    </button>
+                  )}
                 </div>
               ) : (
-                <div className="site-team-grid">
-                  {studyTeam.map((member) => (
-                    <div
-                      className="site-team-card"
-                      key={member.id}
+                <>
+                  <div className="site-team-grid">
+                    {studyTeam.map((member) => (
+                      <div
+                        className="site-team-card"
+                        key={member.id}
+                      >
+                        <strong>
+                          {member.name || "—"}
+                        </strong>
+
+                        <p>
+                          <span>Role</span>
+                          {member.role || "—"}
+                        </p>
+
+                        <p>
+                          <span>Organization</span>
+                          {member.organization || "—"}
+                        </p>
+
+                        <p>
+                          <span>Start Date</span>
+                          {member.startDate || "—"}
+                        </p>
+
+                        {canEdit && (
+                          <div className="site-team-card-actions">
+                            <button
+                              type="button"
+                              className="link-btn"
+                              onClick={() => {
+                                setEditingTeamMember(member);
+                                setTeamFormOpen(true);
+                              }}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              className="link-btn danger"
+                              onClick={() =>
+                                handleDeleteTeamMember(member.id)
+                              }
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {canEdit && (
+                    <button
+                      type="button"
+                      className="site-empty-btn"
+                      onClick={() => {
+                        setEditingTeamMember(null);
+                        setTeamFormOpen(true);
+                      }}
                     >
-                      <strong>
-                        {member.name || "—"}
-                      </strong>
+                      + Add Team Member
+                    </button>
+                  )}
+                </>
+              )}
 
-                      <p>
-                        <span>Role</span>
-                        {member.role || "—"}
-                      </p>
-
-                      <p>
-                        <span>Organization</span>
-                        {member.organization || "—"}
-                      </p>
-
-                      <p>
-                        <span>Start Date</span>
-                        {member.startDate || "—"}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+              {teamFormOpen && (
+                <SiteTeamMemberForm
+                  initialData={editingTeamMember}
+                  onSave={handleSaveTeamMember}
+                  onCancel={() => {
+                    setTeamFormOpen(false);
+                    setEditingTeamMember(null);
+                  }}
+                />
               )}
             </section>
 
@@ -540,43 +657,90 @@ const SiteDetails = () => {
               <h3>Contact Info</h3>
 
               {studyTeam.length === 0 ? (
-              <div className="site-empty-state">
+                <div className="site-empty-state">
                   <h4>No Contact Information</h4>
 
                   <p>
                     No contact information has been added.
                   </p>
 
-                  <button
-                    type="button"
-                    className="site-empty-btn"
-                  >
-                    + Add Contact
-                  </button>
+                  {canEdit && (
+                    <button
+                      type="button"
+                      className="site-empty-btn"
+                      onClick={() => {
+                        setEditingContact(null);
+                        setContactFormOpen(true);
+                      }}
+                    >
+                      + Add Contact
+                    </button>
+                  )}
                 </div>
               ) : (
-                <div className="site-team-grid">
-                  {studyTeam.map((member) => (
-                    <div
-                      className="site-team-card"
-                      key={`contact-${member.id}`}
+                <>
+                  <div className="site-team-grid">
+                    {studyTeam.map((member) => (
+                      <div
+                        className="site-team-card"
+                        key={`contact-${member.id}`}
+                      >
+                        <strong>
+                          {member.name || "—"}
+                        </strong>
+
+                        <p>
+                          <span>Email</span>
+                          {member.email || "—"}
+                        </p>
+
+                        <p>
+                          <span>Phone</span>
+                          {member.phone || "—"}
+                        </p>
+
+                        {canEdit && (
+                          <div className="site-team-card-actions">
+                            <button
+                              type="button"
+                              className="link-btn"
+                              onClick={() => {
+                                setEditingContact(member);
+                                setContactFormOpen(true);
+                              }}
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {canEdit && (
+                    <button
+                      type="button"
+                      className="site-empty-btn"
+                      onClick={() => {
+                        setEditingContact(null);
+                        setContactFormOpen(true);
+                      }}
                     >
-                      <strong>
-                        {member.name || "—"}
-                      </strong>
+                      + Add Contact
+                    </button>
+                  )}
+                </>
+              )}
 
-                      <p>
-                        <span>Email</span>
-                        {member.email || "—"}
-                      </p>
-
-                      <p>
-                        <span>Phone</span>
-                        {member.phone || "—"}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+              {contactFormOpen && (
+                <SiteContactForm
+                  initialData={editingContact}
+                  onSave={handleSaveTeamMember}
+                  onCancel={() => {
+                    setContactFormOpen(false);
+                    setEditingContact(null);
+                  }}
+                />
               )}
             </section>
 
@@ -588,11 +752,15 @@ const SiteDetails = () => {
 
                 <p>
                   No activation milestones have been recorded.
+                  Activation milestones are managed through the study
+                  Planning workspace.
                 </p>
 
                 <button
                   type="button"
                   className="site-empty-btn"
+                  disabled
+                  title="Activation milestones are managed in the study Planning workspace."
                 >
                   + Add Activation
                 </button>
@@ -610,38 +778,94 @@ const SiteDetails = () => {
                     Regulatory records are not available.
                   </p>
 
-                  <button
-                    type="button"
-                    className="site-empty-btn"
-                  >
-                    + Add Regulatory Record
-                  </button>
-                </div>
-              ) : (
-                <div className="site-regulatory-list">
-                  {regulatoryChecklist.map(
-                    (item, index) => (
-                      <div
-                        className="site-regulatory-item"
-                        key={item.id || index}
-                      >
-                        {Object.entries(item).map(
-                          ([key, value]) => (
-                            <p key={key}>
-                              <span>{key}</span>
-
-                              {value === null ||
-                              value === undefined ||
-                              value === ""
-                                ? "—"
-                                : String(value)}
-                            </p>
-                          )
-                        )}
-                      </div>
-                    )
+                  {canEdit && (
+                    <button
+                      type="button"
+                      className="site-empty-btn"
+                      onClick={() => {
+                        setEditingRegulatoryItem(null);
+                        setRegulatoryFormOpen(true);
+                      }}
+                    >
+                      + Add Regulatory Record
+                    </button>
                   )}
                 </div>
+              ) : (
+                <>
+                  <div className="site-regulatory-list">
+                    {regulatoryChecklist.map(
+                      (item, index) => (
+                        <div
+                          className="site-regulatory-item"
+                          key={item.id || index}
+                        >
+                          {Object.entries(item).map(
+                            ([key, value]) => (
+                              <p key={key}>
+                                <span>{key}</span>
+
+                                {value === null ||
+                                value === undefined ||
+                                value === ""
+                                  ? "—"
+                                  : String(value)}
+                              </p>
+                            )
+                          )}
+
+                          {canEdit && (
+                            <div className="site-regulatory-actions">
+                              <button
+                                type="button"
+                                className="link-btn"
+                                onClick={() => {
+                                  setEditingRegulatoryItem(item);
+                                  setRegulatoryFormOpen(true);
+                                }}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                className="link-btn danger"
+                                onClick={() =>
+                                  handleDeleteRegulatoryItem(item.id)
+                                }
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  {canEdit && (
+                    <button
+                      type="button"
+                      className="site-empty-btn"
+                      onClick={() => {
+                        setEditingRegulatoryItem(null);
+                        setRegulatoryFormOpen(true);
+                      }}
+                    >
+                      + Add Regulatory Record
+                    </button>
+                  )}
+                </>
+              )}
+
+              {regulatoryFormOpen && (
+                <SiteRegulatoryForm
+                  initialData={editingRegulatoryItem}
+                  onSave={handleSaveRegulatoryItem}
+                  onCancel={() => {
+                    setRegulatoryFormOpen(false);
+                    setEditingRegulatoryItem(null);
+                  }}
+                />
               )}
             </section>
           </div>
@@ -878,11 +1102,15 @@ const SiteDetails = () => {
 
                       <p>
                         There are currently no risk indicators for this site.
+                        Risk indicators are computed from study health signals
+                        and cannot be added manually here.
                       </p>
 
                       <button
                         type="button"
                         className="site-empty-btn"
+                        disabled
+                        title="Risk indicators are computed from study health signals."
                       >
                         + Add Risk Indicator
                       </button>
@@ -919,11 +1147,15 @@ const SiteDetails = () => {
 
                     <p>
                       Site KPIs have not been configured.
+                      KPIs are derived automatically from operational
+                      metrics and cannot be added manually.
                     </p>
 
                     <button
                       type="button"
                       className="site-empty-btn"
+                      disabled
+                      title="Site KPIs are derived automatically from operational metrics."
                     >
                       + Add KPI
                     </button>
@@ -963,11 +1195,15 @@ const SiteDetails = () => {
 
                     <p>
                       No audit records are available for this site.
+                      Audit entries are written automatically by the
+                      system and cannot be added manually.
                     </p>
 
                     <button
                       type="button"
                       className="site-empty-btn"
+                      disabled
+                      title="Audit entries are written automatically by the system."
                     >
                       + Add Audit Entry
                     </button>
@@ -998,5 +1234,248 @@ const SiteDetails = () => {
     </AppLayout>
   );
 };
+
+function SiteTeamMemberForm({ initialData, onSave, onCancel }) {
+  const [form, setForm] = useState({
+    name: "",
+    role: "",
+    email: "",
+    organization: "",
+    startDate: "",
+  });
+
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        name: initialData.name || "",
+        role: initialData.role || "",
+        email: initialData.email || "",
+        organization: initialData.organization || "",
+        startDate: initialData.startDate || "",
+        ...(initialData.id ? { id: initialData.id } : {}),
+      });
+    }
+  }, [initialData]);
+
+  return (
+    <form
+      className="site-inline-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!form.name.trim()) return;
+        onSave(form);
+      }}
+    >
+      <input
+        placeholder="Name"
+        value={form.name}
+        onChange={(e) => setForm({ ...form, name: e.target.value })}
+        required
+      />
+      <input
+        placeholder="Role"
+        value={form.role}
+        onChange={(e) => setForm({ ...form, role: e.target.value })}
+      />
+      <input
+        type="date"
+        value={form.startDate}
+        onChange={(e) =>
+          setForm({ ...form, startDate: e.target.value })
+        }
+      />
+      <input
+        placeholder="Email"
+        value={form.email}
+        onChange={(e) => setForm({ ...form, email: e.target.value })}
+      />
+      <input
+        placeholder="Organization"
+        value={form.organization}
+        onChange={(e) =>
+          setForm({ ...form, organization: e.target.value })
+        }
+      />
+      <div className="site-inline-form-actions">
+        <button type="submit" className="site-empty-btn">
+          {form.id ? "Update Member" : "Add Member"}
+        </button>
+        <button
+          type="button"
+          className="link-btn"
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function SiteContactForm({ initialData, onSave, onCancel }) {
+  const [form, setForm] = useState({
+    name: "",
+    role: "",
+    email: "",
+    phone: "",
+    organization: "",
+  });
+
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        name: initialData.name || "",
+        role: initialData.role || "",
+        email: initialData.email || "",
+        phone: initialData.phone || "",
+        organization: initialData.organization || "",
+        ...(initialData.id ? { id: initialData.id } : {}),
+      });
+    }
+  }, [initialData]);
+
+  return (
+    <form
+      className="site-inline-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!form.name.trim()) return;
+        onSave(form);
+      }}
+    >
+      <input
+        placeholder="Name"
+        value={form.name}
+        onChange={(e) => setForm({ ...form, name: e.target.value })}
+        required
+      />
+      <input
+        placeholder="Role"
+        value={form.role}
+        onChange={(e) => setForm({ ...form, role: e.target.value })}
+      />
+      <input
+        placeholder="Email"
+        type="email"
+        value={form.email}
+        onChange={(e) => setForm({ ...form, email: e.target.value })}
+      />
+      <input
+        placeholder="Phone"
+        value={form.phone}
+        onChange={(e) => setForm({ ...form, phone: e.target.value })}
+      />
+      <input
+        placeholder="Organization"
+        value={form.organization}
+        onChange={(e) =>
+          setForm({ ...form, organization: e.target.value })
+        }
+      />
+      <div className="site-inline-form-actions">
+        <button type="submit" className="site-empty-btn">
+          {form.id ? "Update Contact" : "Add Contact"}
+        </button>
+        <button
+          type="button"
+          className="link-btn"
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function SiteRegulatoryForm({ initialData, onSave, onCancel }) {
+  const [form, setForm] = useState({
+    label: "",
+    documentDate: "",
+    dueDate: "",
+    status: "Pending",
+    documentName: "",
+    documentUrl: "",
+  });
+
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        label: initialData.label || "",
+        documentDate: initialData.documentDate || "",
+        dueDate: initialData.dueDate || "",
+        status: initialData.status || "Pending",
+        documentName: initialData.documentName || "",
+        documentUrl: initialData.documentUrl || "",
+        ...(initialData.id ? { id: initialData.id } : {}),
+      });
+    }
+  }, [initialData]);
+
+  return (
+    <form
+      className="site-inline-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!form.label.trim()) return;
+        onSave({ ...form, completed: false });
+      }}
+    >
+      <input
+        placeholder="Regulatory Record Label"
+        value={form.label}
+        onChange={(e) => setForm({ ...form, label: e.target.value })}
+        required
+      />
+      <input
+        type="date"
+        value={form.documentDate}
+        onChange={(e) =>
+          setForm({ ...form, documentDate: e.target.value })
+        }
+      />
+      <input
+        type="date"
+        value={form.dueDate}
+        onChange={(e) =>
+          setForm({ ...form, dueDate: e.target.value })
+        }
+      />
+      <select
+        value={form.status}
+        onChange={(e) => setForm({ ...form, status: e.target.value })}
+      >
+        <option>Pending</option>
+        <option>Submitted</option>
+        <option>Approved</option>
+        <option>Rejected</option>
+      </select>
+      <input
+        type="file"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          setForm({
+            ...form,
+            documentName: file.name,
+            documentUrl: URL.createObjectURL(file),
+          });
+        }}
+      />
+      <div className="site-inline-form-actions">
+        <button type="submit" className="site-empty-btn">
+          {form.id ? "Update Record" : "Add Record"}
+        </button>
+        <button
+          type="button"
+          className="link-btn"
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
 
 export default SiteDetails;

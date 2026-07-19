@@ -1,8 +1,11 @@
 import React, { useMemo } from "react";
 import { resolveSiteDisplay } from "../../utils/siteDisplay";
 import { getStudies } from "../../services/studyService";
+import useVisitSchedules from "../../hooks/useVisitSchedules";
+import { formatScheduleDisplayDate } from "../../utils/formatScheduleDisplayDate";
 
 function Monitoring() {
+  const { schedules } = useVisitSchedules();
   const siteSources = useMemo(() => getStudies(), []);
   const displaySite = (value) =>
     value
@@ -11,27 +14,6 @@ function Monitoring() {
           fallback: value
         })
       : "—";
-
-  const visits = [
-    {
-      site: "Apollo Hospital",
-      type: "Routine Monitoring",
-      date: "10-Jun-2026",
-      status: "Completed"
-    },
-    {
-      site: "Yashoda Hospital",
-      type: "Follow Up",
-      date: "14-Jun-2026",
-      status: "Scheduled"
-    },
-    {
-      site: "AIG Hospital",
-      type: "Close Out",
-      date: "22-Jun-2026",
-      status: "Pending"
-    }
-  ];
 
   return (
     <div style={{ padding: "30px" }}>
@@ -48,14 +30,20 @@ function Monitoring() {
         </thead>
 
         <tbody>
-          {visits.map((visit, index) => (
-            <tr key={index}>
-              <td>{displaySite(visit.site)}</td>
-              <td>{visit.type}</td>
-              <td>{visit.date}</td>
-              <td>{visit.status}</td>
+          {schedules.length === 0 ? (
+            <tr>
+              <td colSpan="4">No monitoring visits scheduled.</td>
             </tr>
-          ))}
+          ) : (
+            schedules.map((visit) => (
+              <tr key={visit.id}>
+                <td>{displaySite(visit.site)}</td>
+                <td>{visit.visit || "Visit"}</td>
+                <td>{formatScheduleDisplayDate(visit.date)}</td>
+                <td>{visit.status || "Scheduled"}</td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>

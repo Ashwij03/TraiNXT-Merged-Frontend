@@ -44,6 +44,7 @@ function SitePerformance() {
               { key: "commentResolutionDays", label: "Avg Comment Days" }
             ]}
             data={performance}
+            pagination
           />
         </div>
       </div>
