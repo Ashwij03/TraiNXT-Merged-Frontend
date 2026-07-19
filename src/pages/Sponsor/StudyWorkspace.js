@@ -188,7 +188,7 @@ function StudyWorkspace() {
           </div>
         )}
         {activeTab === "financials" && (
-  <StudyFinancials />
+  <StudyFinancials study={study} />
 )}
       </div>
     </AppLayout>

@@ -9,6 +9,7 @@ import {
   getEffectiveRole,
 } from "../../../services/roleService";
 import { canAddStudy } from "../../../utils/contentAccess";
+import { resolveSiteDisplay } from "../../../utils/siteDisplay";
 import ROLES from "../../../constants/roles";
 import {
   FiFolder,
@@ -580,7 +581,7 @@ function Studies() {
 
                     <div>
                       <strong>Site:</strong>
-                      {study.location || "N/A"}
+                      {resolveSiteDisplay(study, { fallback: "N/A" })}
                     </div>
 
                     <div>
@@ -660,7 +661,7 @@ function Studies() {
 
                 <div className="study-list-field">
                   <label>Site</label>
-                  <span>{study.location || "-"}</span>
+                  <span>{resolveSiteDisplay(study, { fallback: "-" })}</span>
                 </div>
 
                 <div className="study-list-field">
@@ -730,7 +731,7 @@ function Studies() {
                     <td>{study.indication || "-"}</td>
                     <td>{study.country || "-"}</td>
                     <td>{study.principalInvestigator || "-"}</td>
-                    <td>{study.location || "-"}</td>
+                    <td>{resolveSiteDisplay(study, { fallback: "-" })}</td>
                     <td>
                       {study.enrolled || 0}/{study.targetSubjects || 0}
                     </td>

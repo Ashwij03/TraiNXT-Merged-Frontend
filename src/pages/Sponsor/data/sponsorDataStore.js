@@ -192,14 +192,30 @@ export function getSites(study) {
 
       const target = Number(matchedStudy.targetSubjects || 0);
 
+      const siteName =
+        matchedStudy.site ||
+        matchedStudy.location ||
+        matchedStudy.name ||
+        "Unnamed Site";
+
+      const siteNumber =
+        matchedStudy.siteNumber ||
+        matchedStudy.siteNo ||
+        `SITE-${String(index + 1).padStart(3, "0")}`;
+
       return {
         id: index + 1,
 
-        name:
-          matchedStudy.site ||
-          matchedStudy.location ||
-          matchedStudy.name ||
-          "Unnamed Site",
+        // Site Number is now a first-class field used by
+        // operational/reference displays.
+        siteNumber,
+
+        // Preserve Site Name as separate master-data semantic field.
+        siteName,
+
+        // Legacy `name` retained for existing consumers (filters,
+        // search text, etc.) — DO NOT drop.
+        name: siteName,
 
         sponsor: matchedStudy.sponsor,
 
@@ -222,17 +238,28 @@ export function getSites(study) {
   // Sponsor > Site Performance, which intentionally show every study.
   const studies = getStudies();
 
-  return studies.map((singleStudy) => {
+  return studies.map((singleStudy, index) => {
     const subjects = subjectsByStudy[singleStudy.code] || [];
 
     const enrolled = subjects.length;
 
     const target = Number(singleStudy.targetSubjects || 0);
 
+    const siteName =
+      singleStudy.site || singleStudy.location || singleStudy.name;
+
+    const siteNumber =
+      singleStudy.siteNumber ||
+      singleStudy.siteNo ||
+      `SITE-${String(index + 1).padStart(3, "0")}`;
+
     return {
       id: singleStudy.code,
 
-      name: singleStudy.site || singleStudy.location || singleStudy.name,
+      siteNumber,
+      siteName,
+
+      name: siteName,
 
       sponsor: singleStudy.sponsor,
 

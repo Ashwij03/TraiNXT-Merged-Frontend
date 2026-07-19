@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 
 import AppLayout from "./AppLayout";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 import "./Subjects.css";
 
 
@@ -11,6 +13,15 @@ function Subjects() {
 
 	const [search, setSearch] = useState("");
 	const [searchTerm, setSearchTerm] = useState("");;
+
+	const siteSources = useMemo(() => getStudies(), []);
+	const displaySite = (value) =>
+	  value
+	    ? resolveSiteDisplay(value, {
+	        sources: siteSources,
+	        fallback: value
+	      })
+	    : "—";
 	
 
   
@@ -128,7 +139,7 @@ function Subjects() {
 
 				<td>{subject.id}</td>
 				<td>{subject.study}</td>
-				<td>{subject.site}</td>
+				<td>{displaySite(subject.site)}</td>
 				<td>{subject.pi}</td>
 
 				<td>

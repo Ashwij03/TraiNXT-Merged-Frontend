@@ -1,14 +1,25 @@
-import React from "react";
+import React, { useMemo } from "react";
 import CROLayout from "./CROLayout";
 import { useCROData } from "./CRODATAContext";
 import CROStatusBadge from "./CROStatusBadge";
 import EmptyState from "./EmptyState";
 import { useNavigate } from "react-router-dom";
 import { FaTimes } from "react-icons/fa";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 
 function CROScreening() {
   const { subjects } = useCROData();
   const navigate = useNavigate();
+
+  const siteSources = useMemo(() => getStudies(), []);
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   const screeningSubjects = subjects.filter(
     (s) => s.status === "Screening" || s.visit === "Screening"
@@ -51,7 +62,7 @@ function CROScreening() {
                   <tr key={s.id}>
                     <td>{s.id}</td>
                     <td>{s.study}</td>
-                    <td>{s.site}</td>
+                    <td>{displaySite(s.site)}</td>
                     <td>{s.visit}</td>
                     <td>
                       <CROStatusBadge status={s.status} />

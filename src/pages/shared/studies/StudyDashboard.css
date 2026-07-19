@@ -837,3 +837,76 @@ RESPONSIVE
 .icon-btn.danger {
   color: #dc3545;
 }
+
+/* Item 13 — Incomplete eISF modules preview inside the eISF Summary card */
+.study-health-incomplete-modules {
+  margin-top: 4px;
+}
+
+.study-health-incomplete-label {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+}
+
+.study-health-incomplete-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.study-health-incomplete-item {
+  padding: 8px 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #0f172a;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.study-health-incomplete-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.study-health-incomplete-id {
+  font-size: 11px;
+  color: #64748b;
+  background: #e2e8f0;
+  padding: 2px 6px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.study-health-incomplete-list--all {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.study-health-view-all {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border: 1px solid #0d6efd;
+  border-radius: 8px;
+  background: transparent;
+  color: #0d6efd;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.study-health-view-all:hover {
+  background: rgba(13, 110, 253, 0.08);
+}

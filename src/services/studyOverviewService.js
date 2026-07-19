@@ -1,23 +1,30 @@
 import { readJson } from "../utils/storageHelpers";
 import { getStudyByCode, getStudies } from "./studyService";
-import {
-  getFolderTree,
-  getFolderDocuments,
-} from "./folderService";
 import { getSitePerformance, getTrainingLogs, getSites } from "./adminService";
 import { getFilteredSchedules } from "./visitScheduleService";
 import { getCurrentUser } from "./roleService";
+import { getEssentialDocumentsHealth } from "../pages/shared/EISF/services/essentialDocumentsHealthService";
 import {
   normalizeSiteActivationStatus,
   normalizeGCPStatus,
   SITE_ACTIVATION_BUCKETS,
   GCP_CERT_BUCKETS,
 } from "../utils/siteStatusNormalizer";
+import { getSubjectStatusAnalytics } from "../utils/subjectStatusAnalytics";
+// Item 15 — reuse the single authoritative milestone store (Planning service).
+// Study Overview no longer maintains its own copy; it delegates to planning.
+import {
+  getPlanningMilestones,
+  savePlanningMilestone,
+  deletePlanningMilestone,
+  PLANNING_MILESTONES_KEY,
+} from "./planningService";
 
-export const STUDY_MILESTONES_KEY = "studyMilestonesByStudy";
+// Kept for backward-compatibility with any external consumer that imports it.
+// The Study Overview no longer stores milestones under this key — it delegates
+// to the Planning service's PLANNING_MILESTONES_KEY store (single source).
+export const STUDY_MILESTONES_KEY = PLANNING_MILESTONES_KEY;
 export const STUDY_OVERVIEW_EVENT = "study-overview-updated";
-
-const ESSENTIAL_DOC_SECTIONS = ["eISF", "regulatory", "studyFolder"];
 
 const DEFAULT_MILESTONE_TITLES = [
   "Study Start",
@@ -26,58 +33,41 @@ const DEFAULT_MILESTONE_TITLES = [
   "Close-Out",
 ];
 
-function writeJson(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
+// Adapters between the Planning shape ({title, dueDate, owner, status, notes})
+// and the Study Overview shape ({title, targetDate, actualDate, status, notes}).
+// Both views operate on the same underlying record — only field aliases differ.
+function toOverviewMilestone(planningEntry) {
+  if (!planningEntry || typeof planningEntry !== "object") return planningEntry;
+  return {
+    ...planningEntry,
+    id: planningEntry.id,
+    title: planningEntry.title,
+    // Overview reads/edits `targetDate`; Planning stores it as `dueDate`.
+    targetDate: planningEntry.targetDate ?? planningEntry.dueDate ?? "",
+    actualDate: planningEntry.actualDate ?? "",
+    status: planningEntry.status ?? "Pending",
+    owner: planningEntry.owner ?? "",
+    notes: planningEntry.notes ?? "",
+  };
+}
+
+function toPlanningMilestone(overviewEntry) {
+  if (!overviewEntry || typeof overviewEntry !== "object") return overviewEntry;
+  const merged = { ...overviewEntry };
+  // Keep both aliases in sync so downstream planning-shape consumers still work.
+  const target =
+    overviewEntry.targetDate ?? overviewEntry.dueDate ?? "";
+  merged.dueDate = target;
+  merged.targetDate = target;
+  return merged;
 }
 
 export function dispatchStudyOverviewUpdated() {
   window.dispatchEvent(new CustomEvent(STUDY_OVERVIEW_EVENT));
 }
 
-function countDocsInTree(sectionId, contextKey, nodes) {
-  const docsByFolder = getFolderDocuments(sectionId, contextKey);
-  let count = 0;
-
-  const walk = (list) => {
-    (Array.isArray(list) ? list : []).forEach((node) => {
-      const folderDocs = docsByFolder[node.id];
-      if (Array.isArray(folderDocs)) {
-        count += folderDocs.length;
-      }
-      if (node.children?.length) {
-        walk(node.children);
-      }
-    });
-  };
-
-  walk(nodes);
-  return count;
-}
-
 export function getEssentialDocumentsCompletion(studyCode) {
-  const code = String(studyCode || "");
-  let uploaded = 0;
-  let expected = 0;
-
-  ESSENTIAL_DOC_SECTIONS.forEach((sectionId) => {
-    const tree = getFolderTree(sectionId, code);
-    const root = tree[0];
-    const children = Array.isArray(root?.children) ? root.children : [];
-    expected += Math.max(children.length, 1);
-    uploaded += countDocsInTree(sectionId, code, tree);
-  });
-
-  const percent =
-    expected === 0 && uploaded === 0
-      ? 0
-      : Math.min(100, Math.round((uploaded / Math.max(expected, 1)) * 100));
-
-  return {
-    uploaded,
-    expected: Math.max(expected, uploaded),
-    percent,
-    complete: uploaded > 0 && percent >= 100,
-  };
+  return getEssentialDocumentsHealth(studyCode);
 }
 
 export function getStudyProgressSummary(studyCode) {
@@ -92,23 +82,28 @@ export function getStudyProgressSummary(studyCode) {
     subjects = [];
   }
 
-  const schedules = getFilteredSchedules(getCurrentUser(), { studyCode: code });
-  const docStats = getEssentialDocumentsCompletion(code);
+  // Reuse the authoritative subject status analytics (normalizeStatus)
+  // so the summary always reflects the same lifecycle engine used elsewhere.
+  const analytics = getSubjectStatusAnalytics(subjects);
+  const byStatus = analytics.reduce((acc, entry) => {
+    acc[entry.name] = entry.value;
+    return acc;
+  }, {});
 
-  const sites = new Set();
-  if (study?.site) sites.add(String(study.site));
-  if (study?.location) sites.add(String(study.location));
-  subjects.forEach((s) => {
-    if (s?.site) sites.add(String(s.site));
-  });
+  const screened = byStatus.Screening || 0;
+  const enrolled = byStatus.Enrolled || 0;
+  const ongoing = byStatus.Ongoing || 0;
+  const completed = byStatus.Completed || 0;
 
   return {
-    sites: sites.size,
-    subjects: subjects.length,
-    visits: schedules.length,
-    documents: docStats.uploaded,
+    screened,
+    enrolled,
+    ongoing,
+    completed,
     targetSubjects: Number(study?.targetSubjects) || 0,
-    enrolled: Number(study?.enrolled) || subjects.length,
+    // Preserved for the study-health enrollment-progress factor
+    // so downstream calculations remain backward compatible.
+    enrolledTotal: Number(study?.enrolled) || subjects.length,
   };
 }
 
@@ -124,65 +119,425 @@ function createDefaultMilestones(studyCode) {
   }));
 }
 
+// Item 15 — Study Overview reads from the same authoritative Planning store.
+// No duplicate localStorage bucket, no parallel state.
+//
+// Backward-compat migration: if legacy `studyMilestonesByStudy` data exists,
+// migrate it into the shared planning store on first read, then rely solely
+// on the planning store going forward.
+const LEGACY_STUDY_MILESTONES_KEY = "studyMilestonesByStudy";
+let __legacyMilestonesMigrated = false;
+function migrateLegacyMilestonesIfNeeded() {
+  if (__legacyMilestonesMigrated) return;
+  __legacyMilestonesMigrated = true;
+  try {
+    const legacy = readJson(LEGACY_STUDY_MILESTONES_KEY, null);
+    if (!legacy || typeof legacy !== "object") return;
+    Object.entries(legacy).forEach(([code, list]) => {
+      if (!Array.isArray(list) || !list.length) return;
+      const existing = getPlanningMilestones(code);
+      const existingIds = new Set(existing.map((row) => row.id));
+      list.forEach((entry) => {
+        if (!entry || existingIds.has(entry.id)) return;
+        savePlanningMilestone(code, toPlanningMilestone(entry));
+      });
+    });
+  } catch {
+    // Migration is best-effort; never block reads.
+  }
+}
+
 export function getStudyMilestones(studyCode) {
   const code = String(studyCode || "");
-  const all = readJson(STUDY_MILESTONES_KEY, {});
-  const list = all[code];
-  if (Array.isArray(list) && list.length) return list;
+  migrateLegacyMilestonesIfNeeded();
+  const list = getPlanningMilestones(code);
+  if (Array.isArray(list) && list.length) {
+    return list.map(toOverviewMilestone);
+  }
   return createDefaultMilestones(code);
 }
 
 export function saveStudyMilestones(studyCode, milestones) {
-  const code = String(studyCode || "");
-  const all = readJson(STUDY_MILESTONES_KEY, {});
-  all[code] = Array.isArray(milestones) ? milestones : [];
-  writeJson(STUDY_MILESTONES_KEY, all);
+  const list = Array.isArray(milestones) ? milestones : [];
+  // Persist each entry through the Planning service so both pages stay in sync.
+  list.forEach((entry) => savePlanningMilestone(studyCode, toPlanningMilestone(entry)));
   dispatchStudyOverviewUpdated();
-  return all[code];
+  return getStudyMilestones(studyCode);
 }
 
 export function addStudyMilestone(studyCode, milestone) {
-  const list = getStudyMilestones(studyCode);
-  const entry = {
-    id: `ms-${Date.now()}`,
+  const entry = toPlanningMilestone({
     title: String(milestone?.title ?? "").trim() || "New Milestone",
     targetDate: milestone?.targetDate || "",
     actualDate: milestone?.actualDate || "",
     status: milestone?.status || "Pending",
     notes: milestone?.notes || "",
-  };
-  return saveStudyMilestones(studyCode, [...list, entry]);
+    owner: milestone?.owner || "",
+  });
+  savePlanningMilestone(studyCode, entry);
+  dispatchStudyOverviewUpdated();
+  return getStudyMilestones(studyCode);
 }
 
 export function updateStudyMilestone(studyCode, milestoneId, updates) {
-  const list = getStudyMilestones(studyCode).map((item) =>
-    item.id === milestoneId ? { ...item, ...updates } : item
+  const existing = getPlanningMilestones(studyCode).find(
+    (item) => item.id === milestoneId
   );
-  return saveStudyMilestones(studyCode, list);
+  if (!existing) return getStudyMilestones(studyCode);
+  const merged = toPlanningMilestone({ ...toOverviewMilestone(existing), ...updates, id: milestoneId });
+  savePlanningMilestone(studyCode, merged);
+  dispatchStudyOverviewUpdated();
+  return getStudyMilestones(studyCode);
 }
 
 export function deleteStudyMilestone(studyCode, milestoneId) {
-  const list = getStudyMilestones(studyCode).filter(
-    (item) => item.id !== milestoneId
+  deletePlanningMilestone(studyCode, milestoneId);
+  dispatchStudyOverviewUpdated();
+  return getStudyMilestones(studyCode);
+}
+
+// Item 14 — Site Performance Summary
+// The table must be fully dynamic: never render static/mock/hardcoded rows.
+// Every row (Site Number, Enrollment, Screening %, Compliance %) is derived
+// from the existing shared study/site data sources — the authoritative Sites
+// store, the subjectsByStudy map and the visit schedules store — so the
+// values automatically update whenever the underlying data changes.
+function siteMatchesStudy(name, studySite) {
+  if (!studySite) return true;
+  const value = String(name || "");
+  return (
+    value === studySite ||
+    value.includes(studySite) ||
+    studySite.includes(value)
   );
-  return saveStudyMilestones(studyCode, list);
+}
+
+function normalizeSiteMatchTokens(...values) {
+  return values
+    .map((value) => String(value || "").trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function subjectBelongsToSite(subject, siteTokens) {
+  if (!siteTokens.length) return true;
+  const candidates = normalizeSiteMatchTokens(
+    subject?.site,
+    subject?.siteName,
+    subject?.siteNumber,
+    subject?.location
+  );
+  if (!candidates.length) return false;
+  return candidates.some((candidate) =>
+    siteTokens.some(
+      (token) => token === candidate || token.includes(candidate) || candidate.includes(token)
+    )
+  );
+}
+
+function scheduleBelongsToSite(schedule, siteTokens) {
+  if (!siteTokens.length) return true;
+  const candidates = normalizeSiteMatchTokens(
+    schedule?.site,
+    schedule?.siteName,
+    schedule?.siteNumber
+  );
+  if (!candidates.length) return false;
+  return candidates.some((candidate) =>
+    siteTokens.some(
+      (token) => token === candidate || token.includes(candidate) || candidate.includes(token)
+    )
+  );
+}
+
+function scheduleBelongsToStudy(schedule, studyCode) {
+  if (!studyCode) return true;
+  const tokens = normalizeSiteMatchTokens(
+    schedule?.study,
+    schedule?.studyKey,
+    schedule?.studyCode
+  );
+  if (!tokens.length) return false;
+  const code = String(studyCode).toLowerCase();
+  return tokens.some((token) => token === code || token.includes(code));
+}
+
+function computePercent(numerator, denominator) {
+  if (!denominator || denominator <= 0) return null;
+  return Math.round((Number(numerator) / Number(denominator)) * 100);
+}
+
+function computeEnrollmentMetricsForSite({
+  siteTokens,
+  studySubjects,
+  studySchedules,
+  studyCode,
+  fallbackSubjectsEnrolled,
+  fallbackEnrollmentTarget,
+}) {
+  const subjectsForSite = studySubjects.filter((subject) =>
+    subjectBelongsToSite(subject, siteTokens)
+  );
+
+  const screenedSubjects = subjectsForSite.filter((subject) => {
+    const status = String(subject?.status || "").toLowerCase();
+    if (!status) return Boolean(subject?.screeningDate);
+    return (
+      status.includes("screen") ||
+      status.includes("enroll") ||
+      status.includes("ongoing") ||
+      status.includes("complete") ||
+      status.includes("withdraw") ||
+      status.includes("discontinue")
+    ) || Boolean(subject?.screeningDate);
+  });
+
+  const enrolledSubjects = subjectsForSite.filter((subject) => {
+    const status = String(subject?.status || "").toLowerCase();
+    if (status) {
+      if (status.includes("screen") && !status.includes("passed")) {
+        return false;
+      }
+      return (
+        status.includes("enroll") ||
+        status.includes("ongoing") ||
+        status.includes("complete") ||
+        status.includes("randomiz") ||
+        status.includes("active") ||
+        status.includes("withdraw") ||
+        status.includes("discontinue")
+      );
+    }
+    return Boolean(subject?.enrollmentDate);
+  });
+
+  const enrolledCount =
+    enrolledSubjects.length ||
+    (Number(fallbackSubjectsEnrolled) || 0);
+
+  const enrollmentTarget = Number(fallbackEnrollmentTarget) || 0;
+
+  const schedulesForSite = studySchedules.filter((schedule) =>
+    scheduleBelongsToSite(schedule, siteTokens)
+  );
+
+  const completedVisits = schedulesForSite.filter((schedule) => {
+    const status = String(schedule?.status || "").toLowerCase();
+    return status.includes("complete");
+  }).length;
+
+  const visitCompliance = schedulesForSite.length
+    ? computePercent(completedVisits, schedulesForSite.length)
+    : null;
+
+  const screeningDenominator = subjectsForSite.length || enrolledCount;
+  const screeningRate = screeningDenominator
+    ? computePercent(screenedSubjects.length, screeningDenominator)
+    : null;
+
+  return {
+    subjectsForSiteCount: subjectsForSite.length,
+    enrolledCount,
+    enrollmentTarget,
+    screeningRate,
+    visitCompliance,
+    totalVisits: schedulesForSite.length,
+    completedVisits,
+    studyCode,
+  };
+}
+
+function buildDynamicSitePerformance(study, user, studyCode) {
+  const code = String(studyCode || study?.code || "");
+  const studySite = String(study?.site || study?.location || "").trim();
+  const sites = getSites(user);
+
+  let studySubjects = [];
+  try {
+    const byStudy = readJson("subjectsByStudy", {});
+    studySubjects = Array.isArray(byStudy[code]) ? byStudy[code] : [];
+  } catch {
+    studySubjects = [];
+  }
+
+  // Visit schedules are the authoritative source for compliance. We reuse the
+  // same shared filtered-schedules service that every other visit widget uses.
+  let studySchedules = [];
+  try {
+    studySchedules = getFilteredSchedules(user).filter((schedule) =>
+      scheduleBelongsToStudy(schedule, code)
+    );
+  } catch {
+    studySchedules = [];
+  }
+
+  const relevantSites = sites.filter((site) =>
+    siteMatchesStudy(site.name || site.siteName, studySite)
+  );
+
+  if (relevantSites.length) {
+    return relevantSites.map((site) => {
+      const siteName = site.name || site.siteName || "";
+      const siteNumber =
+        site.siteNumber || site.number || site.siteNo || site.site_number || "";
+      const siteTokens = normalizeSiteMatchTokens(
+        siteName,
+        siteNumber,
+        site.id,
+        site.siteId
+      );
+      const metrics = computeEnrollmentMetricsForSite({
+        siteTokens,
+        studySubjects,
+        studySchedules,
+        studyCode: code,
+        fallbackSubjectsEnrolled: site.subjectsEnrolled,
+        fallbackEnrollmentTarget:
+          site.enrollmentTarget != null
+            ? Number(site.enrollmentTarget) || 0
+            : Number(study?.targetSubjects) || 0,
+      });
+
+      return {
+        siteId: site.id || site.siteId || siteNumber || siteName,
+        siteName,
+        siteNumber,
+        enrolled: metrics.enrolledCount,
+        subjectsEnrolled: metrics.enrolledCount,
+        enrollmentTarget: metrics.enrollmentTarget,
+        targetSubjects: metrics.enrollmentTarget,
+        screeningRate:
+          site.screeningRate != null
+            ? Number(site.screeningRate)
+            : metrics.screeningRate,
+        visitCompliance:
+          site.visitCompliance != null
+            ? Number(site.visitCompliance)
+            : metrics.visitCompliance,
+      };
+    });
+  }
+
+  // Fall back to the single site referenced on the study itself so the
+  // summary still populates when no Sites records exist yet, using the same
+  // dynamic computation over subjects and visit schedules.
+  if (studySite) {
+    const siteTokens = normalizeSiteMatchTokens(studySite, study?.siteNumber);
+    const metrics = computeEnrollmentMetricsForSite({
+      siteTokens,
+      studySubjects,
+      studySchedules,
+      studyCode: code,
+      fallbackSubjectsEnrolled: study?.enrolled,
+      fallbackEnrollmentTarget: study?.targetSubjects,
+    });
+
+    return [
+      {
+        siteId: study?.siteNumber || studySite,
+        siteName: studySite,
+        siteNumber: study?.siteNumber || "",
+        enrolled: metrics.enrolledCount,
+        subjectsEnrolled: metrics.enrolledCount,
+        enrollmentTarget: metrics.enrollmentTarget,
+        targetSubjects: metrics.enrollmentTarget,
+        screeningRate: metrics.screeningRate,
+        visitCompliance: metrics.visitCompliance,
+      },
+    ];
+  }
+
+  return [];
 }
 
 export function getStudyScopedSitePerformance(studyCode, user = getCurrentUser()) {
   const study = getStudyByCode(studyCode);
+  const code = String(studyCode || study?.code || "");
   const studySite = String(study?.site || study?.location || "").trim();
   const records = getSitePerformance(user);
 
-  if (!studySite) return records;
+  const scoped = studySite
+    ? records.filter((item) =>
+        siteMatchesStudy(
+          item.siteName || item.site || item.name,
+          studySite
+        )
+      )
+    : records;
 
-  return records.filter((item) => {
-    const name = String(item.siteName || item.site || item.name || "");
-    return (
-      name === studySite ||
-      name.includes(studySite) ||
-      studySite.includes(name)
-    );
-  });
+  // Item 14 — When explicit sitePerformance records exist we still enrich
+  // them with the shared dynamic metrics so every column (Site Number,
+  // Enrollment, Screening %, Compliance %) reflects the authoritative
+  // subject/visit-schedule data, not the stored snapshot.
+  if (scoped && scoped.length) {
+    let studySubjects = [];
+    try {
+      const byStudy = readJson("subjectsByStudy", {});
+      studySubjects = Array.isArray(byStudy[code]) ? byStudy[code] : [];
+    } catch {
+      studySubjects = [];
+    }
+
+    let studySchedules = [];
+    try {
+      studySchedules = getFilteredSchedules(user).filter((schedule) =>
+        scheduleBelongsToStudy(schedule, code)
+      );
+    } catch {
+      studySchedules = [];
+    }
+
+    return scoped.map((record) => {
+      const siteName =
+        record.siteName || record.site || record.name || "";
+      const siteNumber =
+        record.siteNumber ||
+        record.number ||
+        record.siteNo ||
+        record.site_number ||
+        record.siteId ||
+        "";
+      const siteTokens = normalizeSiteMatchTokens(
+        siteName,
+        siteNumber,
+        record.siteId
+      );
+      const metrics = computeEnrollmentMetricsForSite({
+        siteTokens,
+        studySubjects,
+        studySchedules,
+        studyCode: code,
+        fallbackSubjectsEnrolled:
+          record.enrolled ?? record.subjectsEnrolled ?? 0,
+        fallbackEnrollmentTarget:
+          record.enrollmentTarget ??
+          record.targetSubjects ??
+          Number(study?.targetSubjects) ??
+          0,
+      });
+
+      return {
+        ...record,
+        siteNumber,
+        enrolled: metrics.enrolledCount,
+        subjectsEnrolled: metrics.enrolledCount,
+        enrollmentTarget: metrics.enrollmentTarget,
+        targetSubjects: metrics.enrollmentTarget,
+        screeningRate:
+          metrics.screeningRate != null
+            ? metrics.screeningRate
+            : record.screeningRate ?? null,
+        visitCompliance:
+          metrics.visitCompliance != null
+            ? metrics.visitCompliance
+            : record.visitCompliance ?? null,
+      };
+    });
+  }
+
+  // No explicit sitePerformance rows exist yet — synthesize from the shared
+  // studies/sites/subjects data so the widget is never left with static or
+  // stale mock content.
+  return buildDynamicSitePerformance(study, user, studyCode);
 }
 
 export function getSiteActivationCounts(studyCode, user = getCurrentUser()) {
@@ -257,71 +612,49 @@ export function getGCPCertificationSummary(studyCode, user = getCurrentUser()) {
   return counts;
 }
 
-export function getStudyHealthSummary(studyCode, user = getCurrentUser()) {
-  const progress = getStudyProgressSummary(studyCode);
+export function getStudyHealthSummary(studyCode /* legacy signature */) {
+  // Item 13 — eISF Summary
+  // The percentage displayed must come from the SAME shared 22-module
+  // completion calculation used by Essential Documents Health. We reuse
+  // getEssentialDocumentsCompletion() (which wraps getEssentialDocumentsHealth)
+  // directly — no separate calculation, no duplicated math.
   const docs = getEssentialDocumentsCompletion(studyCode);
-  const activation = getSiteActivationCounts(studyCode, user);
-  const gcp = getGCPCertificationSummary(studyCode, user);
-  const milestones = getStudyMilestones(studyCode);
+
+  const score = Number(docs?.percent) || 0;
+  const completedModules = Number(
+    docs?.completedModules ?? docs?.uploaded ?? 0
+  );
+  const totalModules = Number(
+    docs?.totalModules ?? docs?.expected ?? 22
+  );
+
+  let status = "In Progress";
+  if (score >= 100) status = "Complete";
+  else if (score === 0) status = "Not Started";
+
+  // Item 13 — derive the list of INCOMPLETE eISF module names dynamically
+  // from the same shared moduleBreakdown produced by the 22-module
+  // completion calculation. No hardcoded module list, no static copy.
+  const breakdown = Array.isArray(docs?.moduleBreakdown)
+    ? docs.moduleBreakdown
+    : [];
+  const incompleteModules = breakdown
+    .filter((entry) => entry && entry.complete === false)
+    .map((entry) => ({
+      id: entry.id,
+      title: String(entry.title ?? "").trim() || `Module ${entry.id}`,
+    }));
 
   const factors = [];
-  let score = 100;
-
-  if (docs.percent < 50) {
-    score -= 25;
-    factors.push({ label: "Essential documents incomplete", impact: "High" });
-  } else if (docs.percent < 80) {
-    score -= 10;
-    factors.push({ label: "Essential documents in progress", impact: "Medium" });
-  }
-
-  const pendingSites = (activation.Pending || 0) + (activation.Onboarding || 0);
-  if (pendingSites > 0) {
-    score -= 15;
+  const outstanding = Math.max(totalModules - completedModules, 0);
+  if (outstanding > 0) {
     factors.push({
-      label: `${pendingSites} site(s) not fully activated`,
-      impact: "Medium",
+      label: `${outstanding} of ${totalModules} eISF module(s) outstanding`,
+      impact: score < 50 ? "High" : "Medium",
     });
   }
 
-  const gcpIssues = (gcp.Expired || 0) + (gcp.Missing || 0);
-  if (gcpIssues > 0) {
-    score -= 20;
-    factors.push({
-      label: `${gcpIssues} GCP certification gap(s)`,
-      impact: "High",
-    });
-  }
-
-  const overdueMilestones = milestones.filter(
-    (m) =>
-      m.status !== "Completed" &&
-      m.targetDate &&
-      new Date(m.targetDate) < new Date()
-  );
-  if (overdueMilestones.length) {
-    score -= 10;
-    factors.push({
-      label: `${overdueMilestones.length} overdue milestone(s)`,
-      impact: "Medium",
-    });
-  }
-
-  if (
-    progress.targetSubjects > 0 &&
-    progress.enrolled / progress.targetSubjects < 0.25
-  ) {
-    score -= 10;
-    factors.push({ label: "Enrollment below 25% of target", impact: "Medium" });
-  }
-
-  score = Math.max(0, Math.min(100, score));
-
-  let status = "Healthy";
-  if (score < 50) status = "At Risk";
-  else if (score < 75) status = "Needs Attention";
-
-  return { score, status, factors };
+  return { score, status, factors, incompleteModules };
 }
 
 export function getStudiesForOverview() {
