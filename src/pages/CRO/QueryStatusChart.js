@@ -7,20 +7,21 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useCROData } from "./CRODATAContext";
+import { isOpenComment } from "../../services/commentService";
 
 const COLORS = ["#ef4444", "#10b981", "#3b82f6", "#94a3b8"];
 
 function QueryStatusChart() {
   const { comments } = useCROData();
 
-  const open = comments.filter((c) => c.status === "Open").length;
-  const answered = comments.filter((c) => c.status === "Answered").length;
-  const closed = comments.filter((c) => c.status === "Closed").length;
+  const open = comments.filter(isOpenComment).length;
+  const resolved = comments.filter(
+    (comment) => String(comment?.status || "").toLowerCase() === "resolved"
+  ).length;
 
   const data = [
     { name: "Open", value: open },
-    { name: "Answered", value: answered },
-    { name: "Closed", value: closed },
+    { name: "Resolved", value: resolved },
   ].filter((d) => d.value > 0);
 
   if (data.length === 0) {

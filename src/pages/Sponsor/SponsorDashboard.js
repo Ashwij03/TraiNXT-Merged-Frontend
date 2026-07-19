@@ -323,7 +323,7 @@ const SponsorDashboard = () => {
                 <BarChart data={phaseData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="phase" />
-                  <YAxis />
+                  <YAxis allowDecimals={false} />
                   <Tooltip />
                   <Bar
                     dataKey="studies"

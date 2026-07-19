@@ -8,6 +8,8 @@ import React, {
   useCallback,
 } from "react";
 import { getStudies } from "../../services/studyService";
+import { addCommentRecord } from "../../services/commentService";
+import { getCurrentUser } from "../../services/roleService";
 
 const CRODataContext = createContext();
 
@@ -73,7 +75,13 @@ function getSharedReports() {
 }
 
 function getSharedComments() {
-  return readStorageArray("comments");
+  return readStorageArray("comments").map((comment) => ({
+    ...comment,
+    message: comment.description || comment.message || comment.text || "",
+    author: comment.createdBy || comment.author || "Unknown",
+    subject: comment.subjectId || comment.subject || "",
+    date: comment.createdAt || comment.date || "",
+  }));
 }
 
 function getSharedNotifications() {
@@ -179,27 +187,18 @@ export const CROProvider = ({ children }) => {
   // used across the app and notifies other roles via the same event
   // this context already listens for.
   const addComment = useCallback((newComment) => {
-    try {
-      const existingComments = readStorageArray("comments");
+    const user = getCurrentUser();
 
-      const commentToSave = {
-        id: `C-${Date.now()}`,
-        status: "Open",
-        createdBy: "CRO User",
-        createdRole: "CRO",
-        date: new Date().toISOString().split("T")[0],
-        ...newComment,
-      };
-
-      const updatedComments = [commentToSave, ...existingComments];
-
-      localStorage.setItem("comments", JSON.stringify(updatedComments));
-      window.dispatchEvent(new Event("comments-updated"));
-
-      return commentToSave;
-    } catch {
-      return null;
-    }
+    return addCommentRecord(
+      {
+        subjectId: newComment.subject || newComment.subjectId || "",
+        description: newComment.message || newComment.text || "",
+        site: newComment.site || "",
+        study: newComment.study || newComment.studyCode || "",
+        stage: "Monitoring",
+      },
+      user
+    );
   }, []);
 
   const kpiMetrics = useMemo(() => {
@@ -210,6 +209,11 @@ export const CROProvider = ({ children }) => {
     const pendingReviews = documents.filter(
       (document) => document.status === "Pending",
     ).length;
+
+    const openCommentsCount = comments.filter((comment) => {
+      const status = String(comment?.status || "").toLowerCase();
+      return status === "open" || status === "unresolved";
+    }).length;
 
     const completedVisits = visits.filter(
       (visit) => visit.status === "Completed",
@@ -251,8 +255,8 @@ export const CROProvider = ({ children }) => {
       sitesUnderMonitoring: uniqueSites,
       monitoringVisits: visits.length,
       pendingReviews,
-      comments: comments.length,
-      commentsCount: comments.length,
+      comments: openCommentsCount,
+      commentsCount: openCommentsCount,
       complianceMetrics: `${complianceRate}%`,
     };
   }, [visits, documents, comments]);

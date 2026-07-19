@@ -1,4 +1,3 @@
-import { readStorage } from "../../../utils/storageHelpers";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import ProgressNotes from "../operations/ProgressNotes";
@@ -9,26 +8,7 @@ import "./StudyDetails.css";
 import ERegSection from "../../../ereg/ERegSection.js";
 import StudyFinancials from "../../Sponsor/Financials/StudyFinancials";
 import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
-
-const STUDY_STORAGE_KEYS = ["studies", "studiesData", "studyData"];
-
-function getAllStudies() {
-  for (const storageKey of STUDY_STORAGE_KEYS) {
-    const savedStudies = readStorage(storageKey, null);
-
-    if (Array.isArray(savedStudies)) {
-      return savedStudies;
-    }
-
-    if (savedStudies && typeof savedStudies === "object") {
-      return Object.values(savedStudies).flatMap((value) =>
-        Array.isArray(value) ? value : [value]
-      );
-    }
-  }
-
-  return [];
-}
+import { getStudies } from "../../../services/studyService";
 
 function getStudyCode(study) {
   return String(
@@ -72,11 +52,11 @@ function StudyDetails() {
 
   const [showSubjects, setShowSubjects] = useState(false);
   const [activeTab, setActiveTab] = useState("financials");
-  const [studies, setStudies] = useState(() => getAllStudies());
+  const [studies, setStudies] = useState(() => getStudies());
 
   useEffect(() => {
     const refreshStudies = () => {
-      setStudies(getAllStudies());
+      setStudies(getStudies());
     };
 
     window.addEventListener("studies-updated", refreshStudies);

@@ -1,61 +1,91 @@
-import React, { createContext, useContext, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { getComments } from "../services/adminService";
+import {
+  addCommentRecord,
+  isOpenComment,
+  resolveCommentRecord,
+} from "../services/commentService";
+import { getCurrentUser } from "../services/roleService";
 
 const CommentsContext = createContext();
 
+export { isOpenComment };
+
 export function CommentsProvider({ children }) {
-  const [comments, setComments] = useState([
-    {
-      id: "E1",
-      subject: "J-D 77777",
-      visitId: "unscheduled-1",
-      visitNumber: 3,
-      week: 24,
-      visitName: "Screening",
-      procedure: "Full Physical Exam",
-      author: "Kristen Bosse",
-      text: "testing",
-      date: "11/12/2019",
-      status: "resolved", // ✅ use status (not resolved:true)
-    },
-  ]);
+  const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
+  const [comments, setComments] = useState(() => getComments(currentUser));
 
-  // ✅ ADD COMMENT
-  const addComment = (visitId, data) => {
-    const newComment = {
-      id: "E" + Math.floor(Math.random() * 1000),
-      visitId,
-      subject: "J-D 77777",
-      visitNumber: data.visitNumber || 1,
-      week: data.week || 1,
-      visitName: data.visitName || "Screening",
-      procedure: data.visitName || "Procedure",
-      author: "Alice TestOne",
-      text: data.text,
-      status: data.status,
-      date: new Date().toLocaleDateString(),
+  const refreshComments = useCallback(() => {
+    const user = getCurrentUser();
+    setCurrentUser(user);
+    setComments(getComments(user));
+  }, []);
+
+  useEffect(() => {
+    refreshComments();
+
+    window.addEventListener("comments-updated", refreshComments);
+    window.addEventListener("sponsor-data-updated", refreshComments);
+
+    return () => {
+      window.removeEventListener("comments-updated", refreshComments);
+      window.removeEventListener("sponsor-data-updated", refreshComments);
     };
+  }, [refreshComments]);
 
-    setComments((prev) => [newComment, ...prev]);
-  };
+  const pendingCount = useMemo(
+    () => comments.filter(isOpenComment).length,
+    [comments]
+  );
 
-  // ✅ RESOLVE COMMENT (optional)
-  const resolveComment = (id) => {
-    setComments((prev) =>
-      prev.map((c) =>
-        c.id === id ? { ...c, status: "resolved" } : c
-      )
-    );
-  };
+  const addComment = useCallback(
+    (visitId, data = {}) => {
+      const record = addCommentRecord(
+        {
+          visitId,
+          description: data.text || data.description || "",
+          subjectId: data.subjectId || data.subject || "",
+          study: data.study || data.studyCode || "",
+          site: data.site || currentUser?.assignedSite || "",
+          stage: data.visitName || data.stage || "General",
+        },
+        currentUser
+      );
 
-  // ✅ RETURN MUST BE INSIDE FUNCTION
+      refreshComments();
+      return record;
+    },
+    [currentUser, refreshComments]
+  );
+
+  const resolveComment = useCallback(
+    (id) => {
+      resolveCommentRecord(id, currentUser);
+      refreshComments();
+    },
+    [currentUser, refreshComments]
+  );
+
   return (
     <CommentsContext.Provider
-      value={{ comments, addComment, resolveComment }}
+      value={{
+        comments,
+        pendingCount,
+        addComment,
+        resolveComment,
+        refreshComments,
+      }}
     >
       {children}
     </CommentsContext.Provider>
   );
 }
 
-// ✅ CUSTOM HOOK
 export const useComments = () => useContext(CommentsContext);

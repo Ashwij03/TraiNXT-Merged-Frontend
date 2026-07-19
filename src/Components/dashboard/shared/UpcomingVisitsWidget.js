@@ -1,4 +1,5 @@
 
+import { formatScheduleDisplayDate } from "../../../utils/formatScheduleDisplayDate";
 import "./dashboard.css";
 
 function UpcomingVisitsWidget({
@@ -22,7 +23,7 @@ function UpcomingVisitsWidget({
         <div key={`${visit.subject || visit.subjectId}-${index}`} className="visit-item">
           <strong>{visit.subject || visit.subjectId || "—"}</strong>
           <div>{visit.visit || "—"}</div>
-          <small>{visit.date || "—"}</small>
+          <small>{formatScheduleDisplayDate(visit.date)}</small>
         </div>
       ))}
     </div>

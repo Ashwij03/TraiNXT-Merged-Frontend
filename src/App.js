@@ -118,6 +118,7 @@ import CROLiveChat from "./pages/CRO/CROLiveChat";
 import SponsorLiveChat from "./pages/Sponsor/LiveChat";
 
 const SPONSOR_ROLES = [ROLES.SPONSOR];
+const SPONSOR_ADMIN_ROLES = [ROLES.SPONSOR, ROLES.ADMIN];
 const PI_ROLES = [ROLES.PI];
 const CRO_ROLES = [ROLES.CRO, ROLES.ADMIN];
 
@@ -647,7 +648,7 @@ function App() {
       <Route
         path="/site-details"
         element={
-          <ProtectedRoute allowedRoles={SPONSOR_ROLES}>
+          <ProtectedRoute allowedRoles={SPONSOR_ADMIN_ROLES}>
             <SiteDetails />
           </ProtectedRoute>
         }

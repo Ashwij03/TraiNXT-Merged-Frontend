@@ -8,6 +8,7 @@ import {
   getSites,
   initializeAdminData
 } from "./adminService";
+import { isOpenComment } from "./commentService";
 import { getUpcomingVisitsWindow } from "./visitScheduleService";
 
 export function getStudiesDashboard() {
@@ -21,7 +22,7 @@ export function getStudiesDashboard() {
     (sum, study) => sum + Number(study.enrolled || 0),
     0
   );
-  const openComments = comments.filter((c) => c.status === "Open");
+  const openComments = comments.filter(isOpenComment);
 
   return {
     kpis: {

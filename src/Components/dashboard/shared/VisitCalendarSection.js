@@ -1,15 +1,63 @@
+
+
+
+
+
+
+
+
+
+
 import { useEffect, useMemo, useState } from "react";
 import DashboardCard from "./DashboardCard";
 import CalendarWidget from "./CalendarWidget";
 import DataTable from "./DataTable";
-import { mapScheduleToTableRow } from "../../../services/visitScheduleService";
+import {
+  isCompletedVisitSchedule,
+  mapScheduleToTableRow
+} from "../../../services/visitScheduleService";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
 import "./VisitCalendarSection.css";
+
+/**
+ * Display-only formatter that renders a date as "yyyy-mm-dd", matching the
+ * Start Date column's format. Reads the calendar date directly off the
+ * stored string when possible so no timezone conversion can shift the day.
+ */
+function formatDateYYYYMMDD(dateValue) {
+  if (!dateValue) {
+    return "-";
+  }
+
+  const raw = String(dateValue).trim();
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if (match) {
+    const [, year, month, day] = match;
+    return `${year}-${month}-${day}`;
+  }
+
+  const parsed = new Date(raw);
+
+  if (!Number.isNaN(parsed.getTime())) {
+    const year = parsed.getFullYear();
+    const month = String(parsed.getMonth() + 1).padStart(2, "0");
+    const day = String(parsed.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  return raw;
+}
 
 const UPCOMING_COLUMNS = [
   { key: "subjectid", label: "Subject ID", width: "18%" },
   { key: "visit", label: "Visit", width: "20%" },
-  { key: "date", label: "Date", width: "16%" },
+  {
+    key: "date",
+    label: "Date",
+    width: "16%",
+    render: (value) => formatDateYYYYMMDD(value),
+  },
   { key: "study", label: "Study", width: "18%" },
   { key: "site", label: "Site", width: "14%" },
   { key: "status", label: "Status", width: "14%" }
@@ -58,6 +106,11 @@ function VisitCalendarSection({
     [getVisitsForDate, selectedScheduleDate]
   );
 
+  const calendarSchedules = useMemo(
+    () => schedules.filter((item) => !isCompletedVisitSchedule(item)),
+    [schedules]
+  );
+
   const upcomingRows = useMemo(() => {
     if (selectedScheduleDate) {
       return selectedDaySchedules;
@@ -68,7 +121,7 @@ function VisitCalendarSection({
     }
 
     return schedules
-      .filter((item) => item.status !== "Completed")
+      .filter((item) => !isCompletedVisitSchedule(item))
       .sort((a, b) => new Date(a.date) - new Date(b.date))
       .slice(0, 12)
       .map(mapScheduleToTableRow);
@@ -90,7 +143,7 @@ function VisitCalendarSection({
       <div className="calendar-table-unified">
         <div className="calendar-table-unified__calendar">
           <CalendarWidget
-            schedules={schedules}
+            schedules={calendarSchedules}
             selectedDate={selectedScheduleDate}
             onDateSelect={handleDateSelect}
           />
@@ -119,3 +172,11 @@ function VisitCalendarSection({
 }
 
 export default VisitCalendarSection;
+
+
+
+
+
+
+
+

@@ -162,11 +162,11 @@ const SiteDetails = () => {
             </button>
 
             <h1>
-              {siteData.name || "Clinical Site"}
+              {siteData.siteNumber || siteData.id || "Clinical Site"}
             </h1>
 
             <p>
-              Site ID: {siteData.id || "—"} |{" "}
+              Site Name: {siteData.name || "—"} |{" "}
               {siteData.country || "—"}
             </p>
           </div>
