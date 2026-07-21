@@ -152,6 +152,10 @@ function getSubjectDetailCards(subject, siteSources = []) {
       value: subject?.pi || "—",
     },
     {
+      label: "Study ID",
+      value: subject?.studyId || "—",
+    },
+    {
       label: "Site",
       value: siteDisplay,
     },
