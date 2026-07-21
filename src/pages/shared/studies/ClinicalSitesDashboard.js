@@ -298,7 +298,9 @@ function ClinicalSitesDashboard({ study }) {
                 <tr key={site.id}>
                   <td>{site.siteNumber || site.id}</td>
 
-                  <td>{resolveSiteDisplay(site)}</td>
+                  <td>{site.siteName || site.name}</td>
+
+                  {/* <td>{resolveSiteDisplay(site)}</td> */}
 
                   <td>{site.country || "—"}</td>
 

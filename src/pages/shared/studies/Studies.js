@@ -648,6 +648,7 @@ function Studies() {
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value)}
             >
+              <option value="studyId">Sort By</option>
               <option value="studyId">Study ID</option>
               <option value="name">Study Name</option>
               <option value="sponsor">Sponsor</option>
