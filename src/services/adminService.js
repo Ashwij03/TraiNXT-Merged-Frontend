@@ -14,6 +14,7 @@ import {
   getUpcomingVisitsWindow
 } from "./visitScheduleService";
 import { isOpenComment } from "./commentService";
+import { getPendingAccessRequests } from "./accessPermissionService";
 import {
   getNotificationsForUser,
   markNotificationRead as markSharedNotificationRead,
@@ -201,9 +202,110 @@ function filterByExactSite(items, siteField, siteName) {
   });
 }
 
+// UPDATED: Sites are no longer read from a phantom "sites" storage key that
+// nothing in the app ever writes to. They are derived from two real sources
+// of truth the user actually enters data into:
+//   1. Registration — Admin/PI/SiteStaff users register under a hospital
+//      "Organization Type", stored as user.assignedSite. Each distinct
+//      hospital name is a real clinical site.
+//   2. Studies — every study records a site/location string even when no
+//      user has registered under that name yet.
+// Enrollment counts then roll up from real subject records so the numbers
+// stay accurate as subjects are added/removed, with no fabricated data.
+const SITE_BASED_ROLES = ["Admin", "PI", "SiteStaff"];
+
+function normalizeSiteKey(value) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
+function deriveSiteRecords() {
+  const users = readJson("users", []);
+  const studies = getStudies();
+  const subjects = getAllSubjectsFlat();
+  const siteMap = new Map();
+
+  const ensureSite = (rawName) => {
+    const name = String(rawName || "").trim();
+    if (!name) return null;
+
+    const key = normalizeSiteKey(name);
+    if (!siteMap.has(key)) {
+      siteMap.set(key, {
+        name,
+        location: name,
+        pi: "",
+        subjectsEnrolled: 0,
+        hasActiveStudy: false,
+        hasCompletedStudy: false,
+        hasStudy: false
+      });
+    }
+    return siteMap.get(key);
+  };
+
+  // 1. Registration-derived sites.
+  users
+    .filter(
+      (user) => SITE_BASED_ROLES.includes(user.role) && user.assignedSite
+    )
+    .forEach((user) => {
+      const site = ensureSite(user.assignedSite);
+      if (site && user.role === "PI" && !site.pi) {
+        site.pi = user.name || "";
+      }
+    });
+
+  // 2. Study-derived sites.
+  studies.forEach((study) => {
+    const site = ensureSite(study.site || study.location);
+    if (!site) return;
+
+    site.hasStudy = true;
+
+    if (!site.pi && study.principalInvestigator) {
+      site.pi = study.principalInvestigator;
+    }
+
+    if (study.status === "Completed") {
+      site.hasCompletedStudy = true;
+    } else {
+      site.hasActiveStudy = true;
+    }
+  });
+
+  // 3. Real enrollment counts, rolled up per site from actual subjects.
+  subjects.forEach((subject) => {
+    const site = ensureSite(subject.site || subject.siteNumber);
+    if (site) {
+      site.subjectsEnrolled += 1;
+    }
+  });
+
+  return Array.from(siteMap.values())
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((site, index) => {
+      const id = `SITE-${String(index + 1).padStart(3, "0")}`;
+      let status = "Active";
+
+      if (site.hasStudy && !site.hasActiveStudy && site.hasCompletedStudy) {
+        status = "Completed";
+      }
+
+      return {
+        id,
+        siteNumber: id,
+        name: site.name,
+        location: site.location,
+        pi: site.pi || "—",
+        subjectsEnrolled: site.subjectsEnrolled,
+        status
+      };
+    });
+}
+
 export function getSites(user = getCurrentUser()) {
   initializeAdminData();
-  const sites = readJson(STORAGE_KEYS.sites, []);
+  const sites = deriveSiteRecords();
   return isAdmin(user) ? sites : filterBySite(sites, "name", user);
 }
 
@@ -304,7 +406,88 @@ export function saveSettings(settings) {
 
 export function getSitePerformance(user = getCurrentUser()) {
   initializeAdminData();
-  const records = readJson(STORAGE_KEYS.sitePerformance, []);
+
+  const sites = getSites(user);
+  const studies = getStudies();
+  const subjects = getAllSubjectsFlat();
+  const comments = getComments();
+  const schedules = getMergedSchedules(user);
+
+  const passedScreeningStages = ["Enrolled", "Ongoing", "Completed"];
+
+  const records = sites.map((site) => {
+    const siteKey = normalizeSiteKey(site.name);
+
+    const siteStudies = studies.filter(
+      (study) => normalizeSiteKey(study.site || study.location) === siteKey
+    );
+    const siteSubjects = subjects.filter(
+      (subject) => normalizeSiteKey(subject.site || subject.siteNumber) === siteKey
+    );
+    const siteComments = comments.filter(
+      (comment) => normalizeSiteKey(comment.site) === siteKey
+    );
+    const siteSchedules = schedules.filter(
+      (schedule) => normalizeSiteKey(schedule.site) === siteKey
+    );
+
+    const enrollmentTarget = siteStudies.reduce(
+      (sum, study) => sum + Number(study.targetSubjects || 0),
+      0
+    );
+
+    const statusedSubjects = siteSubjects
+      .map((subject) =>
+        getCanonicalSubjectStatus(subject, {
+          studyId: subject.studyId || subject.studyKey
+        })
+      )
+      .filter(Boolean);
+
+    const screeningRate = statusedSubjects.length
+      ? Math.round(
+          (statusedSubjects.filter((status) =>
+            passedScreeningStages.includes(status)
+          ).length /
+            statusedSubjects.length) *
+            100
+        )
+      : 0;
+
+    const completedVisits = siteSchedules.filter(
+      (schedule) => String(schedule.status || "").toLowerCase() === "completed"
+    ).length;
+
+    const visitCompliance = siteSchedules.length
+      ? Math.round((completedVisits / siteSchedules.length) * 100)
+      : 0;
+
+    const resolvedComments = siteComments.filter(
+      (comment) => comment.resolvedAt && comment.createdAt
+    );
+
+    const commentResolutionDays = resolvedComments.length
+      ? Math.round(
+          resolvedComments.reduce((sum, comment) => {
+            const created = new Date(comment.createdAt).getTime();
+            const resolved = new Date(comment.resolvedAt).getTime();
+            const days = (resolved - created) / (1000 * 60 * 60 * 24);
+            return sum + (Number.isFinite(days) ? Math.max(days, 0) : 0);
+          }, 0) / resolvedComments.length
+        )
+      : "—";
+
+    return {
+      siteName: site.name,
+      siteNumber: site.siteNumber,
+      enrolled: site.subjectsEnrolled,
+      enrollmentTarget,
+      screeningRate,
+      visitCompliance,
+      commentResolutionDays
+    };
+  });
+
   return isAdmin(user)
     ? records
     : records.filter((item) => {
@@ -388,9 +571,59 @@ export function getStudyLogs(studyCode, user = getCurrentUser()) {
   return [...auditLogs, ...trainingLogs, ...delegationLogs];
 }
 
+// UPDATED: Recruitment is no longer read from a phantom "recruitment"
+// storage key that nothing in the app ever writes to. Each study is treated
+// as a recruitment source, and its screened/enrolled/conversion numbers are
+// derived live from the real subjects recorded against that study — the
+// same canonical lifecycle status used by Site Performance — so the funnel
+// stays accurate as subjects are added, screened, and enrolled.
+const PASSED_SCREENING_STAGES = ["Enrolled", "Ongoing", "Completed"];
+
 export function getRecruitment(user = getCurrentUser()) {
   initializeAdminData();
-  const records = readJson(STORAGE_KEYS.recruitment, []);
+
+  const studies = getStudies();
+  const subjects = getAllSubjectsFlat();
+
+  const records = studies
+    .map((study) => {
+      const studySubjects = subjects.filter((subject) => {
+        const reference = subject.studyId || subject.studyKey;
+        if (!reference) return false;
+
+        return [study.code, study.studyId, study.id].some(
+          (value) =>
+            normalizeRelationshipValue(value) ===
+            normalizeRelationshipValue(reference)
+        );
+      });
+
+      const statusedSubjects = studySubjects
+        .map((subject) =>
+          getCanonicalSubjectStatus(subject, {
+            studyId: subject.studyId || subject.studyKey
+          })
+        )
+        .filter(Boolean);
+
+      const screened = statusedSubjects.length;
+      const enrolled = statusedSubjects.filter((status) =>
+        PASSED_SCREENING_STAGES.includes(status)
+      ).length;
+      const conversionRate = screened
+        ? Math.round((enrolled / screened) * 100)
+        : 0;
+
+      return {
+        source: study.name || study.protocol || study.code || "—",
+        site: study.site || study.location || "—",
+        screened,
+        enrolled,
+        conversionRate
+      };
+    })
+    .filter((record) => record.screened > 0);
+
   return filterBySite(records, "site", user);
 }
 
@@ -505,6 +738,7 @@ export function getAdminDashboardData(siteFilter = "") {
     comments,
     schedules,
     pendingUsers,
+    pendingAccessRequests: getPendingAccessRequests(),
     pieData: [
       {
         name: "Approved",

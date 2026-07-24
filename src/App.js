@@ -9,8 +9,6 @@ import ROLES from "./constants/roles";
 import StudyDashboard from "./pages/shared/studies/StudyDashboard";
 import VisitDetails from "./pages/shared/visits/VisitDetails";
 import CompletedVisit from "./pages/shared/visits/CompletedVisit";
-// import SubjectProfilePage from "./pages/shared/subjects/SubjectProfilePage";
-import SubjectPage from "./pages/shared/subjects/SubjectPage";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import ForgotPassword from "./auth/ForgotPassword";
 import EISFHub from "./pages/shared/documents/EISFHub";
@@ -211,15 +209,6 @@ function App() {
           </ProtectedRoute>
         }
       /> */}
-
-      <Route
-        path="/subject-page"
-        element={
-          <ProtectedRoute>
-            <SubjectPage />
-          </ProtectedRoute>
-        }
-      />
 
       <Route
         path="/operations/comments"

@@ -62,6 +62,7 @@ function AdminDashboard() {
     studies,
     sites,
     pendingUsers,
+    pendingAccessRequests,
     complianceScore
   } = dashboardData;
 
@@ -107,7 +108,7 @@ function AdminDashboard() {
 
           <KPICard
             title="Pending"
-            value={pendingUsers.length}
+            value={pendingUsers.length + pendingAccessRequests.length}
             subtitle="Access Requests"
             icon="🛡️"
             onClick={() => navigate("/access-permission")}
@@ -160,7 +161,7 @@ function AdminDashboard() {
               {
                 type: "warning",
                 title: "Pending Approvals",
-                message: `${pendingUsers.length} users awaiting approval`
+                message: `${pendingUsers.length + pendingAccessRequests.length} users awaiting approval`
               },
               {
                 type: "danger",
