@@ -585,7 +585,7 @@ export function loadSettings() {
     phone: currentUser.phone || "",
     jobTitle: currentUser.jobTitle || "",
     department: currentUser.department || "",
-    organization: currentUser.organization || "",
+    organization: currentUser.orgType || currentUser.organization || "",
     country: currentUser.country || "",
     timeZone: currentUser.timeZone || "",
     language: currentUser.language || "",

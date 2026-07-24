@@ -1,16 +1,3 @@
-// Shared notifications data service.
-//
-// Single localStorage key ("notifications") holds every notification record
-// across every study — this is the same key CRODATAContext.getSharedNotifications()
-// and Sponsor's sponsorDataStore already read from and listen for
-// ("notifications-updated"), so this service is the missing writer they were
-// built to expect (see the "notification service" comments already left in
-// reportService.js and commentService.js).
-//
-// There is no seeding/default data here on purpose (B10 requires no static
-// notifications when storage is empty). Records are only ever created by an
-// explicit action (subject/visit/document/report/comment/permission event),
-// via the notify* helpers below.
 import ROLES from "../constants/roles";
 import { getCurrentUser, getEffectiveRole, getAccessibleStudies } from "./roleService";
 

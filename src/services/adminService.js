@@ -336,22 +336,32 @@ export function getStudyLogs(studyCode, user = getCurrentUser()) {
   const studySite = study?.site || study?.location || "";
   const normalizedCode = String(studyCode);
 
-  const auditLogs = getRecentActivityLogs(50)
-    .filter(
-      (log) =>
-        String(log.studyCode) === normalizedCode ||
-        String(log.studyName) === normalizedCode
-    )
-    .map((log) => ({
+  // D2 (Activity Access Control): match this study's audit entries first,
+  // then restrict to the viewer's authorized site scope. isAdmin bypasses
+  // this (broad authorized visibility); Site Staff/PI only see entries
+  // whose recorded site matches their assigned site — preventing Site A
+  // activity from leaking into a Site B user's view of a shared study.
+  // Entries with no recorded site (legacy data) remain visible, matching
+  // filterBySite's existing behavior used across the rest of the app.
+  const matchedAuditLogs = getRecentActivityLogs(50).filter(
+    (log) =>
+      String(log.studyCode) === normalizedCode ||
+      String(log.studyName) === normalizedCode
+  );
+
+  const auditLogs = filterBySite(matchedAuditLogs, "site", user).map(
+    (log) => ({
       id: `AUD-${log.id}`,
       type: "Audit",
       action: log.action || "System activity",
       user: log.deletedBy || log.user || "System",
+      site: log.site || studySite || "",
       timestamp: log.timestamp
         ? new Date(log.timestamp).toLocaleString()
         : "—",
       status: "Recorded"
-    }));
+    })
+  );
 
   const trainingLogs = getTrainingLogs(user)
     .filter(
@@ -365,6 +375,7 @@ export function getStudyLogs(studyCode, user = getCurrentUser()) {
       type: "Training",
       action: log.training,
       user: log.delegates || "—",
+      site: log.site || studySite || "",
       timestamp: "—",
       status: log.status || "Active"
     }));
@@ -381,6 +392,7 @@ export function getStudyLogs(studyCode, user = getCurrentUser()) {
       type: "Delegation",
       action: log.description || log.duty,
       user: log.delegateName || "—",
+      site: log.site || studySite || "",
       timestamp: log.effectivePeriod || "—",
       status: log.status || "Active"
     }));
