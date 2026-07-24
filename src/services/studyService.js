@@ -509,6 +509,16 @@ export function addAuditLog(action, details) {
 
   saveAuditLogs(logs);
 
+  // D2 (Activity Access Control): notify listeners an activity was recorded
+  // so scoped Recent Activity views can refresh via event sync instead of
+  // polling, matching the existing studies-updated / admin-data-updated
+  // pattern used elsewhere in the app.
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent("activity-log-updated", { detail: { action } })
+    );
+  }
+
   return newLog;
 }
 
@@ -548,6 +558,7 @@ export function deleteStudy(studyCode, deletionDetails = {}) {
   addAuditLog("STUDY_DELETED", {
     studyCode,
     studyName: study.name,
+    site: study.site || study.location || "",
     deletedBy: deletionDetails.deletedBy || "Unknown",
     reason: deletionDetails.reason || "",
     timestamp: new Date().toISOString()
@@ -561,6 +572,12 @@ export function deleteStudy(studyCode, deletionDetails = {}) {
 export function deleteSubject(studyCode, subjectId, deletionDetails = {}) {
   const subjectsByStudy =
     JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
+
+  const existingSubject = Array.isArray(subjectsByStudy[studyCode])
+    ? subjectsByStudy[studyCode].find(
+        (subject) => String(subject.id) === String(subjectId)
+      )
+    : null;
 
   if (Array.isArray(subjectsByStudy[studyCode])) {
     subjectsByStudy[studyCode] = subjectsByStudy[studyCode].filter(
@@ -576,6 +593,7 @@ export function deleteSubject(studyCode, subjectId, deletionDetails = {}) {
   addAuditLog("SUBJECT_DELETED", {
     studyCode,
     subjectId,
+    site: existingSubject?.site || "",
     deletedBy: deletionDetails.deletedBy || "Unknown",
     reason: deletionDetails.reason || "",
     timestamp: new Date().toISOString()

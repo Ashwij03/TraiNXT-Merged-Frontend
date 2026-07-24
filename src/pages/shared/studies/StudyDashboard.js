@@ -55,7 +55,12 @@ import {
   requiresPermissionRequest,
 } from "../../../utils/contentAccess";
 import { submitAccessRequest } from "../../../services/accessPermissionService";
-import { getCurrentUser } from "../../../services/roleService";
+import {
+  getCurrentUser,
+  getAccessibleStudies,
+  hasPermission,
+  PERMISSIONS,
+} from "../../../services/roleService";
 import { useComments } from "../../../comments/CommentsContext";
 import { isOpenComment } from "../../../services/commentService";
 import "../AccessPermissions.css";
@@ -85,7 +90,17 @@ function StudyDashboard() {
 
     if (tabFromUrl) {
       // ===== ITEM 16: Redirect Regulatory tab to Overview =====
-      const resolvedTab = tabFromUrl === "Regulatory" ? "Overview" : tabFromUrl;
+      let resolvedTab = tabFromUrl === "Regulatory" ? "Overview" : tabFromUrl;
+
+      // ===== START D2 PART 1 CHANGES =====
+      // Restrict unauthorized Activity access: a direct ?tab=Activity URL
+      // must not expose the tab's content to a role without
+      // VIEW_SITE_ACTIVITIES, even though the tab button is already
+      // hidden from them in StudyWorkspaceTabs.
+      if (resolvedTab === "Activity" && !hasPermission(PERMISSIONS.VIEW_SITE_ACTIVITIES)) {
+        resolvedTab = "Overview";
+      }
+      // ===== END D2 PART 1 CHANGES =====
 
       setActiveTab((currentTab) =>
         currentTab === resolvedTab ? currentTab : resolvedTab,
@@ -111,9 +126,41 @@ function StudyDashboard() {
   const canEditStudy = canEditStudyContent(currentUser);
   const canRemoveStudy = canDeleteStudy(currentUser);
   const needsPermissionRequest = requiresPermissionRequest(currentUser);
+  // ===== START D2 PART 1 CHANGES =====
+  // Role-based Activity visibility, backed by the shared rolePermissions
+  // map (VIEW_SITE_ACTIVITIES) rather than a hardcoded role check.
+  const canViewActivity = hasPermission(PERMISSIONS.VIEW_SITE_ACTIVITIES, currentUser);
+  // ===== END D2 PART 1 CHANGES =====
 
   const currentStudy = getStudyByCode(id);
   const overview = useStudyOverview(id, studyRefreshKey);
+
+  // A2 (Role-Scoped Study Visibility): the route itself allows any
+  // authenticated role to reach /study-dashboard/:id, and getStudyByCode()
+  // reads the unfiltered study list, so this is the only place left that
+  // can stop a direct URL from exposing a study the current user's role,
+  // site, or organization isn't authorized to see.
+  const accessibleStudies = useMemo(
+    () => getAccessibleStudies(currentUser),
+    [currentUser],
+  );
+
+  const isStudyAccessible = useMemo(() => {
+    if (!currentStudy) {
+      // Let the existing "study not found" handling deal with an unknown id.
+      return true;
+    }
+
+    return accessibleStudies.some(
+      (study) => String(study.code) === String(currentStudy.code),
+    );
+  }, [accessibleStudies, currentStudy]);
+
+  useEffect(() => {
+    if (currentStudy && !isStudyAccessible) {
+      navigate("/studies", { replace: true });
+    }
+  }, [currentStudy, isStudyAccessible, navigate]);
 
   const getStudyKey = useCallback((study) => {
     return String(
@@ -340,6 +387,12 @@ function StudyDashboard() {
     });
   };
 
+  // A2 (Role-Scoped Study Visibility): don't render this study's data even
+  // for the single tick before the redirect effect above navigates away.
+  if (currentStudy && !isStudyAccessible) {
+    return null;
+  }
+
   return (
     <DashboardLayout>
       {!data ? (
@@ -367,6 +420,47 @@ function StudyDashboard() {
                     ? "All Sites Overview"
                     : "Assigned Site Overview"}
                 </p>
+
+                <div className="study-quick-details">
+                  <span className="study-quick-detail">
+                    <span className="study-quick-detail-label">Study ID</span>
+                    <span className="study-quick-detail-value">
+                      {currentStudy?.code || "-"}
+                    </span>
+                  </span>
+                  <span className="study-quick-detail">
+                    <span className="study-quick-detail-label">Indication</span>
+                    <span className="study-quick-detail-value">
+                      {currentStudy?.indication || "-"}
+                    </span>
+                  </span>
+                  <span className="study-quick-detail">
+                    <span className="study-quick-detail-label">Site</span>
+                    <span className="study-quick-detail-value">
+                      {currentStudy?.site || currentStudy?.location || "-"}
+                    </span>
+                  </span>
+                  <span className="study-quick-detail">
+                    <span className="study-quick-detail-label">
+                      Principal Investigator
+                    </span>
+                    <span className="study-quick-detail-value">
+                      {currentStudy?.principalInvestigator || "-"}
+                    </span>
+                  </span>
+                  <span className="study-quick-detail">
+                    <span className="study-quick-detail-label">Sponsor</span>
+                    <span className="study-quick-detail-value">
+                      {currentStudy?.sponsor || "-"}
+                    </span>
+                  </span>
+                  <span className="study-quick-detail">
+                    <span className="study-quick-detail-label">CRO</span>
+                    <span className="study-quick-detail-value">
+                      {currentStudy?.cro || "-"}
+                    </span>
+                  </span>
+                </div>
               </div>
 
               <div className="page-header-actions">
@@ -774,9 +868,12 @@ function StudyDashboard() {
           )}
         </>
       )}
-      {activeTab === "Activity" && <StudyActivity />}
+      {/* ===== START D2 PART 1 CHANGES ===== */}
+      {activeTab === "Activity" && canViewActivity && <StudyActivity />}
+      {/* ===== END D2 PART 1 CHANGES ===== */}
     </DashboardLayout>
   );
 }
 
 export default StudyDashboard;
+
