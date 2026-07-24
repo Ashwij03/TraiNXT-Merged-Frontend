@@ -2,9 +2,10 @@ import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import useVisitPlans from "../../../hooks/useVisitPlans";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
-import RequestPermissionButton from "../../../Components/common/RequestPermissionButton";
+import RequestPermissionButton from "../../../components/common/RequestPermissionButton";
 import { canEditStudyContent } from "../../../utils/contentAccess";
 import { getCurrentUser } from "../../../services/roleService";
+import { formatScheduleDisplayDate } from "../../../utils/formatScheduleDisplayDate";
 import {
   saveVisitPlan,
   deleteVisitPlan,
@@ -29,13 +30,10 @@ function StudyVisitPlan() {
   const { id: studyCode } = useParams();
   const canEdit = canEditStudyContent(getCurrentUser());
   const { plans, getPlanDetails, refresh } = useVisitPlans(studyCode);
-  const { schedules } = useVisitSchedules({ studyCode });
+  const { schedules, upcomingWindow } = useVisitSchedules({ studyCode });
   const upcomingVisits = useMemo(() => {
-    return [...schedules]
-      .filter((item) => item.date)
-      .sort((a, b) => new Date(a.date) - new Date(b.date))
-      .slice(0, 5);
-  }, [schedules]);
+    return upcomingWindow.slice(0, 5);
+  }, [upcomingWindow]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showWizard, setShowWizard] = useState(false);
@@ -190,7 +188,7 @@ function StudyVisitPlan() {
 
                       <td>{visit.visit}</td>
 
-                      <td>{visit.date}</td>
+                      <td>{formatScheduleDisplayDate(visit.date)}</td>
 
                       <td>{visit.status}</td>
                     </tr>

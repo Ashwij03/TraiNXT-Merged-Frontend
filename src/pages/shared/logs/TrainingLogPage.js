@@ -1,16 +1,26 @@
 // UPDATED: Training Log page in DashboardLayout with dynamic localStorage data
 
-import DashboardLayout from "../../../Components/dashboard/DashboardLayout";
-import DataTable from "../../../Components/dashboard/DataTable";
-import KPICard from "../../../Components/dashboard/KPICard";
+import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
+import DataTable from "../../../components/dashboard/shared/DataTable";
+import KPICard from "../../../components/dashboard/shared/KPICard";
 import { getTrainingLogs } from "../../../services/adminService";
 import { getAssignedSite } from "../../../services/roleService";
+import { resolveSiteDisplay } from "../../../utils/siteDisplay";
+import { getStudies } from "../../../services/studyService";
 import "../../../pages/Admin/AdminPage.css";
-import "../../../Components/TrainingLog.css";
+import "../../../components/TrainingLog.css";
 
 function TrainingLogPage() {
   const logs = getTrainingLogs();
   const assignedSite = getAssignedSite();
+  const siteSources = getStudies();
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
   const totalDelegates = logs.reduce(
     (sum, item) => sum + (item.delegates?.length || 0),
     0
@@ -20,7 +30,7 @@ function TrainingLogPage() {
     training: item.training,
     linkedDuties: item.linkedDuties,
     delegates: `${item.delegates?.length || 0} delegate(s)`,
-    site: item.site
+    site: displaySite(item.site)
   }));
 
   return (
@@ -59,6 +69,7 @@ function TrainingLogPage() {
               { key: "site", label: "Site" }
             ]}
             data={tableData}
+            pagination
           />
         </div>
 

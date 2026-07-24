@@ -1,74 +1,56 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import DataTable from "../../../Components/dashboard/DataTable";
+import DataTable from "../../../components/dashboard/shared/DataTable";
 import {
-  addCommentRecord,
   canResolveComments,
+  canViewComment,
   canWriteComments,
-  getVisibleComments,
-  resolveCommentRecord
 } from "../../../services/commentService";
 import { getCurrentUser } from "../../../services/roleService";
 import { getStudyByCode } from "../../../services/studyService";
+import { useComments } from "../../../comments/CommentsContext";
 
 function StudyComments() {
   const { id } = useParams();
   const study = getStudyByCode(id);
   const studyCode = study?.code || id;
   const currentUser = getCurrentUser();
-  const [refreshKey, setRefreshKey] = useState(0);
+  const { comments: liveComments, addComment, resolveComment } = useComments();
   const [commentText, setCommentText] = useState("");
 
-  // Live-refresh whenever any comment changes anywhere in the app (Sponsor's
-  // top-level comment, another tab, a resolve action elsewhere, etc). This
-  // component previously only computed its comment list once on mount and
-  // never listened for updates, so a comment added via the Sponsor/Admin
-  // Comments tab (a different route, /study/:code) never appeared here
-  // until this component fully remounted.
-  useEffect(() => {
-    function handleCommentsUpdated() {
-      setRefreshKey((value) => value + 1);
-    }
-
-    window.addEventListener("comments-updated", handleCommentsUpdated);
-    return () => {
-      window.removeEventListener("comments-updated", handleCommentsUpdated);
-    };
-  }, []);
-
   const comments = useMemo(() => {
-    void refreshKey;
-    return getVisibleComments(
-      { studyCode, studyStage: study?.status },
-      undefined
-    ).map((comment) => ({
-      id: comment.id,
-      subjectDocument: comment.documentDeleted
-        ? `${comment.subjectId} / ${comment.document || "Deleted document"}`
-        : comment.document
-          ? `${comment.subjectId} / ${comment.document}`
-          : comment.subjectId,
-      comment: comment.description || "—",
-      by: comment.createdBy || "—",
-      date: comment.createdAt || "—",
-      status: comment.status,
-      action:
-        comment.status === "Open" && canResolveComments() ? (
-          <button
-            type="button"
-            onClick={() => {
-              resolveCommentRecord(comment.id);
-              setRefreshKey((value) => value + 1);
-            }}
-          >
-            Resolve
-          </button>
-        ) : (
-          "—"
-        )
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [studyCode, study?.status, refreshKey]);
+    return liveComments
+      .filter((comment) =>
+        canViewComment(comment, currentUser, study?.status),
+      )
+      .filter(
+        (comment) => !studyCode || String(comment.study) === String(studyCode),
+      )
+      .map((comment) => ({
+        id: comment.id,
+        studyId: comment.study || studyCode || "—",
+        subjectDocument: comment.documentDeleted
+          ? `${comment.subjectId} / ${comment.document || "Deleted document"}`
+          : comment.document
+            ? `${comment.subjectId} / ${comment.document}`
+            : comment.subjectId,
+        comment: comment.description || "—",
+        by: comment.createdBy || "—",
+        date: comment.createdAt || "—",
+        status: comment.status,
+        action:
+          comment.status === "Open" && canResolveComments() ? (
+            <button
+              type="button"
+              onClick={() => resolveComment(comment.id)}
+            >
+              Resolve
+            </button>
+          ) : (
+            "—"
+          ),
+      }));
+  }, [liveComments, studyCode, study?.status, currentUser, resolveComment]);
 
   const handleAddComment = () => {
     const text = commentText.trim();
@@ -77,16 +59,10 @@ function StudyComments() {
       return;
     }
 
-    // addCommentRecord already enforces top-level-only for CRO/Sponsor
-    // internally — this view is reached by Admin/Site Staff/PI/CRO, so no
-    // additional gating is needed here beyond canWriteComments below.
-    addCommentRecord(
-      {
-        study: studyCode,
-        description: text
-      },
-      currentUser
-    );
+    addComment("", {
+      text,
+      study: studyCode,
+    });
 
     setCommentText("");
   };
@@ -118,6 +94,7 @@ function StudyComments() {
         title={`Comments — ${study?.name || studyCode}`}
         columns={[
           { key: "id", label: "ID" },
+          { key: "studyId", label: "Study ID" },
           { key: "subjectDocument", label: "Subject/Document" },
           { key: "comment", label: "Comment" },
           { key: "by", label: "By" },
@@ -129,6 +106,7 @@ function StudyComments() {
         ]}
         data={comments}
         emptyMessage="No comments for this study"
+        pagination
       />
     </div>
   );

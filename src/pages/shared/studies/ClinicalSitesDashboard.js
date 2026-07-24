@@ -1,24 +1,32 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import ClinicalSiteQuickView from "./ClinicalSiteQuickView";
 
 import ClinicalSitesMap from "./ClinicalSitesMap";
 
 import "./ClinicalSitesDashboard.css";
 
 import { getSites, getSiteKPIs } from "../../Sponsor/data/sponsorDataStore";
+import {
+  resolveSiteDisplay,
+  formatSiteOption,
+} from "../../../utils/siteDisplay";
 
-import KPICard from "../../../Components/dashboard/KPICard";
+import KPICard from "../../../components/dashboard/shared/KPICard";
 import { FiHome, FiUsers, FiTrendingUp, FiActivity } from "react-icons/fi";
 
 const CLINICAL_SITES_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 
 function ClinicalSitesDashboard({ study }) {
+  const navigate = useNavigate();
   const [sites, setSites] = useState([]);
+  const [quickViewSite, setQuickViewSite] = useState(null);
   const [selectedCountry, setSelectedCountry] = useState("All Countries");
   const [searchText, setSearchText] = useState("");
 
   const [selectedStatus, setSelectedStatus] = useState("All Status");
 
-const [selectedSite, setSelectedSite] = useState("All Sites");
+  const [selectedSite, setSelectedSite] = useState("All Sites");
 
   const [sortDirection, setSortDirection] = useState("asc");
 
@@ -31,8 +39,6 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
     totalEnrolled: 0,
     avgPerformance: 0,
   });
-
-  
 
   useEffect(() => {
     const refresh = () => {
@@ -52,7 +58,13 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
   useEffect(() => {
     setCurrentPage(1);
     setRankingPage(1);
-  }, [selectedCountry, selectedStatus, selectedSite, searchText, sortDirection]);
+  }, [
+    selectedCountry,
+    selectedStatus,
+    selectedSite,
+    searchText,
+    sortDirection,
+  ]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -83,12 +95,16 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
     ...new Set(sites.map((site) => site.status || "Unknown")),
   ];
 
-  const siteNames = [
-  "All Sites",
-  ...new Set(
-    sites.map((site) => site.name || "Unknown")
-  ),
-];
+  // Selector options render as "SITE-001 — Apollo Clinical Research",
+  // while the underlying stored value remains the Site Number so the
+  // existing filter logic continues to work.
+  const siteFilterOptions = [
+    { value: "All Sites", label: "All Sites" },
+    ...sites.map((site) => ({
+      value: site.siteNumber || site.name || "Unknown",
+      label: formatSiteOption(site) || site.name || "Unknown",
+    })),
+  ];
 
   const filteredSites = sites.filter((site) => {
     const countryValue = site.country || site.region || site.location || "";
@@ -98,42 +114,39 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
 
     const matchesStatus =
       selectedStatus === "All Status" || (site.status || "") === selectedStatus;
-      
+
     const matchesSite =
       selectedSite === "All Sites" ||
+      (site.siteNumber || "") === selectedSite ||
       (site.name || "") === selectedSite;
 
     const search = searchText.toLowerCase();
 
     const matchesSearch =
-  String(site.id || "")
-    .toLowerCase()
-    .includes(search) ||
-
-  String(site.name || "")
-    .toLowerCase()
-    .includes(search) ||
-
-  String(site.country || "")
-    .toLowerCase()
-    .includes(search) ||
-
-  String(site.sponsor || "")
-    .toLowerCase()
-    .includes(search) ||
-
-  String(site.status || "")
-    .toLowerCase()
-    .includes(search);
+      String(site.id || "")
+        .toLowerCase()
+        .includes(search) ||
+      String(site.name || "")
+        .toLowerCase()
+        .includes(search) ||
+      String(site.country || "")
+        .toLowerCase()
+        .includes(search) ||
+      String(site.sponsor || "")
+        .toLowerCase()
+        .includes(search) ||
+      String(site.status || "")
+        .toLowerCase()
+        .includes(search);
     return matchesCountry && matchesStatus && matchesSite && matchesSearch;
   });
 
   const sortedSites = [...filteredSites].sort((a, b) => {
-  const idA = Number(a.id) || 0;
-  const idB = Number(b.id) || 0;
+    const idA = Number(a.id) || 0;
+    const idB = Number(b.id) || 0;
 
-  return sortDirection === "asc" ? idA - idB : idB - idA;
-});
+    return sortDirection === "asc" ? idA - idB : idB - idA;
+  });
 
   const totalPages = Math.max(1, Math.ceil(sortedSites.length / rowsPerPage));
 
@@ -160,8 +173,8 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
     rankingPage * rankingRowsPerPage,
   );
 
- return (
-  <div className="clinical-sites-page">
+  return (
+    <div className="clinical-sites-page">
       <h2>Clinical Sites</h2>
 
       <div className="studies-kpi-grid">
@@ -195,60 +208,68 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
       </div>
 
       <div className="clinical-sites-card">
-  <h3>Clinical Site Filters</h3>
+        <h3>Clinical Site Filters</h3>
 
-  <div className="clinical-sites-toolbar">
+        <div className="clinical-sites-toolbar">
+          <input
+            id="clinical-site-search"
+            name="clinicalSiteSearch"
+            type="text"
+            placeholder="Search Site ID, Site Name, Country, Sponsor or Status"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
 
-    <input
-      type="text"
-      placeholder="Search Site ID, Site Name, Country, Sponsor or Status"
-      value={searchText}
-      onChange={(e) => setSearchText(e.target.value)}
-    />
+          <select
+            id="clinical-site-country"
+            name="clinicalSiteCountry"
+            value={selectedCountry}
+            onChange={(e) => setSelectedCountry(e.target.value)}
+          >
+            {countries.map((country) => (
+              <option key={country} value={country}>
+                {country}
+              </option>
+            ))}
+          </select>
 
-    <select
-      value={selectedCountry}
-      onChange={(e) => setSelectedCountry(e.target.value)}
-    >
-      {countries.map((country) => (
-        <option key={country} value={country}>
-          {country}
-        </option>
-      ))}
-    </select>
+          <select
+            id="clinical-site-status"
+            name="clinicalSiteStatus"
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+          >
+            {statuses.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
 
-    <select
-      value={selectedStatus}
-      onChange={(e) => setSelectedStatus(e.target.value)}
-    >
-      {statuses.map((status) => (
-        <option key={status} value={status}>
-          {status}
-        </option>
-      ))}
-    </select>
+          <select
+            id="clinical-site-filter"
+            name="clinicalSiteFilter"
+            value={selectedSite}
+            onChange={(e) => setSelectedSite(e.target.value)}
+          >
+            {siteFilterOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
 
-    <select
-      value={selectedSite}
-      onChange={(e) => setSelectedSite(e.target.value)}
-    >
-      {siteNames.map((siteName) => (
-        <option key={siteName} value={siteName}>
-          {siteName}
-        </option>
-      ))}
-    </select>
-
-    <select
-      value={sortDirection}
-      onChange={(e) => setSortDirection(e.target.value)}
-    >
-      <option value="asc">Ascending</option>
-      <option value="desc">Descending</option>
-    </select>
-
-  </div>
-</div>
+          <select
+            id="clinical-site-sort-direction"
+            name="clinicalSiteSortDirection"
+            value={sortDirection}
+            onChange={(e) => setSortDirection(e.target.value)}
+          >
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+        </div>
+      </div>
 
       <div className="clinical-sites-card">
         <h3>Site Performance</h3>
@@ -260,22 +281,26 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
             <thead>
               <tr>
                 <th>Site ID</th>
-                <th>Site Name</th>
+                <th>Site</th>
                 <th>Country</th>
                 <th>Sponsor</th>
                 <th>Status</th>
                 <th>Enrolled</th>
                 <th>Target</th>
                 <th>Performance</th>
+                <th>Quick View</th>
+                <th>Site Workspace</th>
               </tr>
             </thead>
 
             <tbody>
               {paginatedSites.map((site) => (
                 <tr key={site.id}>
-                  <td>{site.id}</td>
+                  <td>{site.siteNumber || site.id}</td>
 
-                  <td>{site.name}</td>
+                  <td>{site.siteName || site.name}</td>
+
+                  {/* <td>{resolveSiteDisplay(site)}</td> */}
 
                   <td>{site.country || "—"}</td>
 
@@ -288,6 +313,28 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
                   <td>{site.target ?? site.targetSubjects ?? 0}</td>
 
                   <td>{site.performance ?? site.enrollmentRate ?? 0}%</td>
+                  <td>
+                    <button
+                      type="button"
+                      className="sponsor-btn-secondary"
+                      onClick={() => setQuickViewSite(site)}
+                    >
+                      View
+                    </button>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      className="sponsor-btn-secondary"
+                      onClick={() =>
+                        navigate("/site-details", {
+                          state: site,
+                        })
+                      }
+                    >
+                      Open
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -334,7 +381,7 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
           </div>
         </div>
       </div>
-      
+
       <div className="clinical-sites-card">
         <h3>Site Ranking</h3>
 
@@ -345,7 +392,7 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
             <thead>
               <tr>
                 <th>Rank</th>
-                <th>Site Name</th>
+                <th>Site</th>
                 <th>Enrolled</th>
                 <th>Performance</th>
               </tr>
@@ -355,7 +402,7 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
               {paginatedRankedSites.map((site, index) => (
                 <tr key={site.id}>
                   <td>{(rankingPage - 1) * rankingRowsPerPage + index + 1}</td>
-                  <td>{site.name}</td>
+                  <td>{resolveSiteDisplay(site)}</td>
                   <td>{site.enrolled ?? site.subjectsEnrolled ?? 0}</td>
                   <td>{site.performance ?? site.enrollmentRate ?? 0}%</td>
                 </tr>
@@ -408,14 +455,19 @@ const [selectedSite, setSelectedSite] = useState("All Sites");
             </div>
           </div>
         )}
-        </div>
-        <div className="clinical-sites-card">
-    <h3>Interactive Map</h3>
+      </div>
+      <div className="clinical-sites-card">
+        <h3>Interactive Map</h3>
+        <ClinicalSitesMap sites={filteredSites} />
+      </div>
 
-    <ClinicalSitesMap
-        sites={filteredSites}
-    />
-</div>
+      {quickViewSite && (
+        <ClinicalSiteQuickView
+          site={quickViewSite}
+          study={study}
+          onClose={() => setQuickViewSite(null)}
+        />
+      )}
     </div>
   );
 }

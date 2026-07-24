@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import CROLayout from "./CROLayout";
 import { useCROData } from "./CRODATAContext";
 import StatusBadge from "./StatusBadge";
 import EmptyState from "./EmptyState";
 import CROModal from "./CROModal";
-import RequestPermissionButton from "../../Components/common/RequestPermissionButton";
+import RequestPermissionButton from "../../components/common/RequestPermissionButton";
 import { getAccessibleStudies, getCurrentUser } from "../../services/roleService";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 
 function CRORegulatoryDocuments() {
   const { documents } = useCROData();
@@ -16,6 +18,16 @@ function CRORegulatoryDocuments() {
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [studies, setStudies] = useState(() => getAccessibleStudies(getCurrentUser()));
   const [uploadStudyCode, setUploadStudyCode] = useState("");
+
+  const siteSources = useMemo(() => getStudies(), []);
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
+
 
   React.useEffect(() => {
     const refresh = () => setStudies(getAccessibleStudies(getCurrentUser()));
@@ -137,7 +149,7 @@ function CRORegulatoryDocuments() {
                   <tr key={doc.id}>
                     <td>{doc.id}</td>
                     <td>{doc.name}</td>
-                    <td>{doc.site}</td>
+                    <td>{displaySite(doc.site)}</td>
                     <td>{doc.version}</td>
                     <td>{doc.expiry}</td>
                     <td>
@@ -184,7 +196,7 @@ function CRORegulatoryDocuments() {
               <strong>ID:</strong> {selectedDoc.id}
             </p>
             <p>
-              <strong>Site:</strong> {selectedDoc.site}
+              <strong>Site:</strong> {displaySite(selectedDoc.site)}
             </p>
             <p>
               <strong>Version:</strong> {selectedDoc.version}

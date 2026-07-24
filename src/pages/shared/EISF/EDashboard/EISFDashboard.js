@@ -10,8 +10,8 @@ import ParticipantConsent from "../ParticipantConsent/ParticipantConsent";
 import Regulatory from "../Regulatory/Regulatory";
 import Ethics from "../Ethics/Ethics";
 import ResearchGovernance from "../ResearchGovernance/ResearchGovernance";
-import SOP from "../SOP/Sop";
-import SiteIntiation from "../SiteIntiation/SiteIntiation";
+import SOP from "../Sop/Sop";
+import SiteInitiation from "../SiteInitiation/SiteInitiation";
 import SiteTraining from "../SiteTraining/SiteTraining";
 import Recruitment from "../Recruitment/Recruitment";
 import Randomization from "../Randomization/Randomization";
@@ -35,7 +35,7 @@ const pageMap = {
   "6.0": Ethics,
   "7.0": ResearchGovernance,
   "8.0": SOP,
-  "9.0": SiteIntiation,
+  "9.0": SiteInitiation,
   "10.0": SiteTraining,
   "11.0": Recruitment,
   "12.0": Randomization,
@@ -60,7 +60,7 @@ function getParentSectionId(id) {
 
 export default function EISFDashboard({ studyCode } = {}) {
   const [selected, setSelected] = useState("1.0");
-  const [expanded, setExpanded] = useState({});
+  const [expandedModuleId, setExpandedModuleId] = useState(null);
 
   const selectedModuleId = useMemo(
     () => getParentSectionId(selected),
@@ -79,10 +79,9 @@ export default function EISFDashboard({ studyCode } = {}) {
   };
 
   const toggleModule = (moduleId) => {
-    setExpanded((prev) => ({
-      ...prev,
-      [moduleId]: !prev[moduleId],
-    }));
+    setExpandedModuleId((currentModuleId) =>
+      currentModuleId === moduleId ? null : moduleId
+    );
   };
 
   return (
@@ -112,14 +111,14 @@ export default function EISFDashboard({ studyCode } = {}) {
                     type="button"
                     className="eisf-expand-btn"
                     onClick={() => toggleModule(item.id)}
-                    aria-label={`${expanded[item.id] ? "Collapse" : "Expand"} ${item.title}`}
+                    aria-label={`${expandedModuleId === item.id ? "Collapse" : "Expand"} ${item.title}`}
                   >
-                    {expanded[item.id] ? "−" : "+"}
+                    {expandedModuleId === item.id ? "−" : "+"}
                   </button>
                 )}
               </div>
 
-              {expanded[item.id] &&
+              {expandedModuleId === item.id &&
                 item.children?.map((child) => (
                   <button
                     type="button"

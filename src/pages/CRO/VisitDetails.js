@@ -4,8 +4,8 @@ import { useParams } from "react-router-dom";
 import VisitHeader from "./VisitHeader";
 import VisitProcedures from "./VisitProcedures";
 
-import { useComments } from "./CommentsContext";
-import CommentModal from "./CommentModal";
+import { useComments } from "../../comments/CommentsContext";
+import CommentModal from "../../comments/CommentModal";
 
 import "./VisitDetails.css";
 

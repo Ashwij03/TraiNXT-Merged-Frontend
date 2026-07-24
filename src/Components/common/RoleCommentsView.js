@@ -1,14 +1,13 @@
+import { normalizeStatus } from "../../utils/normalizeStatus";
 import React, { useEffect, useMemo, useState } from "react";
 import "../../pages/PI/PIComments.css";
 import {
-  addCommentRecord,
   canResolveComments,
+  canViewComment,
   canWriteComments,
-  getVisibleComments,
-  resolveCommentRecord,
 } from "../../services/commentService";
 import { getAssignedSite, getCurrentUser } from "../../services/roleService";
-import { getComments, saveComments } from "../../services/adminService";
+import { useComments } from "../../comments/CommentsContext";
 
 const SORT_FIELDS = {
   id: "id",
@@ -18,18 +17,6 @@ const SORT_FIELDS = {
   date: "date",
   status: "status",
 };
-
-function normalizeStatus(status) {
-  if (status === "Resolved") {
-    return "resolved";
-  }
-
-  if (status === "Open") {
-    return "unresolved";
-  }
-
-  return "pending-review";
-}
 
 function toDisplayStatus(status) {
   if (status === "resolved") {
@@ -52,7 +39,7 @@ function mapCommentRecord(comment) {
     comment: comment.description || "—",
     createdBy: comment.createdBy || "—",
     date: comment.createdAt || "—",
-    status: normalizeStatus(comment.status),
+    status: normalizeStatus(comment.status, { type: "comment" }),
     study: comment.study || "",
     site: comment.site || "",
     rawStatus: comment.status,
@@ -62,12 +49,18 @@ function mapCommentRecord(comment) {
 export default function RoleCommentsView({ embedded = false }) {
   const currentUser = getCurrentUser();
   const assignedSite = getAssignedSite() || "All Sites";
-  const [refreshKey, setRefreshKey] = useState(0);
+  const {
+    comments: authoritativeComments,
+    resolveComment,
+    reopenComment,
+    addComment: createComment,
+  } = useComments();
 
   const sourceComments = useMemo(() => {
-    void refreshKey;
-    return getVisibleComments({}, currentUser).map(mapCommentRecord);
-  }, [currentUser, refreshKey]);
+    return authoritativeComments
+      .filter((comment) => canViewComment(comment, currentUser))
+      .map(mapCommentRecord);
+  }, [authoritativeComments, currentUser]);
 
   const [filter, setFilter] = useState("unresolved");
   const [searchQuery, setSearchQuery] = useState("");
@@ -94,8 +87,6 @@ export default function RoleCommentsView({ embedded = false }) {
       setSelectedStudy(defaultStudy);
     }
   }, [availableStudies, selectedStudy]);
-
-  const refreshComments = () => setRefreshKey((value) => value + 1);
 
   const searchSuggestions = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
@@ -191,17 +182,17 @@ export default function RoleCommentsView({ embedded = false }) {
 
   const toggleStatus = (comment) => {
     if (comment.status === "resolved") {
-      const updated = getComments(currentUser).map((item) =>
-        item.id === comment.id ? { ...item, status: "Open" } : item
-      );
-      saveComments(updated);
-      refreshComments();
+      // Reopen goes through the canonical commentService entry point so it
+      // fires the same comments-updated / sponsor-data-updated events every
+      // other consumer subscribes to (Study/Subject/Operations Comments,
+      // dashboard KPI widgets, PendingCommentsWidget). Previously this
+      // wrote via saveComments directly, which only dispatched
+      // admin-data-updated and left other views stale until reload.
+      reopenComment(comment.id);
       return;
     }
 
-    if (resolveCommentRecord(comment.id, currentUser)) {
-      refreshComments();
-    }
+    resolveComment(comment.id);
   };
 
   const addComment = () => {
@@ -214,16 +205,12 @@ export default function RoleCommentsView({ embedded = false }) {
       return;
     }
 
-    addCommentRecord(
-      {
-        description: text,
-        study: selectedStudy === "All Studies" ? "" : selectedStudy,
-        site: selectedSite,
-        stage: "Monitoring",
-      },
-      currentUser
-    );
-    refreshComments();
+    createComment("", {
+      text,
+      study: selectedStudy === "All Studies" ? "" : selectedStudy,
+      site: selectedSite,
+      stage: "Monitoring",
+    });
   };
 
   const totalComments = sourceComments.length;

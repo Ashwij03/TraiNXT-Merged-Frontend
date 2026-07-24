@@ -1,13 +1,13 @@
 // UPDATED: Delegation Log page in DashboardLayout with dynamic localStorage data
 
 import { useState } from "react";
-import DashboardLayout from "../../../Components/dashboard/DashboardLayout";
-import DataTable from "../../../Components/dashboard/DataTable";
-import KPICard from "../../../Components/dashboard/KPICard";
+import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
+import DataTable from "../../../components/dashboard/shared/DataTable";
+import KPICard from "../../../components/dashboard/shared/KPICard";
 import { getDelegationLogs } from "../../../services/adminService";
 import { getAssignedSite } from "../../../services/roleService";
 import "../../../pages/Admin/AdminPage.css";
-import "../../../Components/DelegationLog.css";
+import "../../../components/DelegationLog.css";
 
 function DelegationLogPage() {
   const logs = getDelegationLogs();
@@ -110,6 +110,7 @@ function DelegationLogPage() {
                 { key: "userSignature", label: "User Signature" }
               ]}
               data={visibleDuties}
+              pagination
             />
           </div>
         )}

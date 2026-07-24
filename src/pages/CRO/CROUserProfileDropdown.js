@@ -183,7 +183,7 @@ function CROUserProfileDropdown() {
         className={`cro-user-dropdown${open ? " cro-user-dropdown--open" : ""}`}
         ref={containerRef}
       >
-        {console.log("PROFILE OPEN =", open)}
+        
         <button
           type="button"
           ref={triggerRef}

@@ -82,28 +82,59 @@ function isVisibleToUser(notification, user) {
   return accessibleStudyCodeSet(user).has(String(notification.studyCode));
 }
 
-// Internal — every public notify* helper below funnels through here so
+// Generic writer — every public notify* helper below funnels through here so
 // storage shape and the "only dispatch when something actually changed"
-// rule stay in one place.
-function createNotification({ title, message, studyCode = "", targetRoles = [] }) {
+// rule stay in one place. `eventId` is an optional stable identity for
+// transition/reminder events that must never duplicate on navigation/remount.
+export function createNotification({
+  title,
+  message,
+  studyCode = "",
+  targetRoles = [],
+  type = "",
+  eventId = "",
+  metadata = {},
+  createdAt = "",
+   actorName = "",
+    actorRole = "",
+}) {
   const cleanTitle = String(title || "").trim();
   const cleanMessage = String(message || "").trim();
+  const cleanEventId = String(eventId || "").trim();
 
   if (!cleanTitle || !cleanMessage) {
     return null;
   }
 
-  const record = {
-    id: `NOTIF-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    title: cleanTitle,
-    message: cleanMessage,
-    studyCode: studyCode ? String(studyCode) : "",
-    targetRoles: Array.isArray(targetRoles) ? targetRoles : [],
-    createdAt: new Date().toISOString(),
-    read: false,
-  };
-
   const existing = readNotifications();
+
+  if (cleanEventId) {
+    const duplicate = existing.find(
+      (notification) => notification.eventId === cleanEventId,
+    );
+
+    if (duplicate) {
+      return duplicate;
+    }
+  }
+
+  const record = {
+  id: `NOTIF-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  title: cleanTitle,
+  message: cleanMessage,
+
+  actorName: String(actorName || "").trim(),
+  actorRole: String(actorRole || "").trim(),
+
+  studyCode: studyCode ? String(studyCode) : "",
+  targetRoles: Array.isArray(targetRoles) ? targetRoles : [],
+  type: String(type || "").trim(),
+  eventId: cleanEventId,
+  metadata: metadata && typeof metadata === "object" ? metadata : {},
+  createdAt: createdAt ? String(createdAt) : new Date().toISOString(),
+  read: false,
+};
+
   const next = [record, ...existing].slice(0, MAX_STORED_NOTIFICATIONS);
 
   if (!writeNotifications(next)) {
@@ -204,9 +235,13 @@ const OPERATIONAL_ROLES = [ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.PI];
 export function notifySubjectCreated(subject) {
   return createNotification({
     title: "Subject added",
-    message: `Subject ${subject?.subjectId || subject?.id || ""} was added to ${subject?.studyCode || "the study"}${
-      subject?.addedByRole ? ` by ${subject.addedByRole}` : ""
+    message: `Subject ${
+      subject?.subjectId || subject?.id || ""
+    } was added to ${
+      subject?.studyCode || "the study"
     }.`,
+   actorName: subject?.addedByName || "Unknown User",
+actorRole: subject?.addedByRole || "Unknown Role",
     studyCode: subject?.studyCode,
     targetRoles: OPERATIONAL_ROLES,
   });
@@ -304,6 +339,116 @@ export function notifyPermissionRequestRejected(request) {
     message: `Your request for "${request?.action || "access"}" on ${request?.studyCode || "a study"} was rejected.`,
     studyCode: request?.studyCode,
     targetRoles: [request?.role].filter(Boolean),
+  });
+}
+
+// Formats a stored completedDate (either a plain "YYYY-MM-DD" from the
+// study details form's date input, or a full ISO timestamp from the
+// auto-stamped status-transition path) as "dd-mm-yyyy" for display in
+// the "Study Completed" notification message. Reads the calendar date
+// directly off the string so no timezone conversion can shift the day.
+function formatCompletedDateDDMMYYYY(dateValue) {
+  if (!dateValue) {
+    return "";
+  }
+
+  const raw = String(dateValue).trim();
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if (match) {
+    const [, year, month, day] = match;
+    return `${day}-${month}-${year}`;
+  }
+
+  const parsed = new Date(raw);
+
+  if (!Number.isNaN(parsed.getTime())) {
+    const day = String(parsed.getDate()).padStart(2, "0");
+    const month = String(parsed.getMonth() + 1).padStart(2, "0");
+    const year = parsed.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+
+  return raw;
+}
+
+export function notifyStudyCompleted(study) {
+  const studyCode = study?.code || study?.studyCode || study?.id || "";
+  const completedDate = study?.completedDate || "";
+  const eventId = `study_completed:${studyCode}:${completedDate}`;
+  const studyName =
+    study?.name ||
+    study?.studyName ||
+    study?.protocol ||
+    studyCode ||
+    "the study";
+
+  if (!studyCode || !completedDate) {
+    return null;
+  }
+
+  return createNotification({
+    title: "Study Completed",
+    message: `Study ${studyName} has been completed on ${formatCompletedDateDDMMYYYY(completedDate)}.`,
+    studyCode,
+    targetRoles: [ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.PI, ROLES.SPONSOR],
+    type: "study_completed",
+    eventId,
+    metadata: {
+      studyCode,
+      studyName,
+      completedDate,
+    },
+  });
+}
+
+export function notifyUpcomingVisitReminder({
+  schedule,
+  studyCode = "",
+  targetRoles = [ROLES.SITE_STAFF, ROLES.PI],
+  recipientKey = "",
+  occurrenceDate = "",
+}) {
+  const visitId = schedule?.id || "";
+  const scheduledDate = schedule?.date || "";
+  const visitName = schedule?.visit || "Scheduled visit";
+  const subjectId = schedule?.subjectId || schedule?.subject || "";
+  const resolvedStudyCode =
+    studyCode || schedule?.study || schedule?.studyKey || "";
+  const resolvedOccurrenceDate = occurrenceDate || scheduledDate;
+  const resolvedRecipientKey =
+    recipientKey ||
+    (Array.isArray(targetRoles) ? targetRoles.join("+") : String(targetRoles || ""));
+  const eventId = [
+    "upcoming_visit_reminder",
+    visitId,
+    resolvedOccurrenceDate,
+    resolvedStudyCode,
+    resolvedRecipientKey,
+  ]
+    .map((part) => String(part || "").trim())
+    .join(":");
+
+  if (!visitId || !scheduledDate || !resolvedStudyCode || !resolvedRecipientKey) {
+    return null;
+  }
+
+  return createNotification({
+    title: "Upcoming Visit Reminder",
+    message: `Visit ${visitName} for Subject ${subjectId || "—"} is scheduled for tomorrow.`,
+    studyCode: resolvedStudyCode,
+    targetRoles,
+    type: "upcoming_visit_reminder",
+    eventId,
+    metadata: {
+      visitId,
+      visitName,
+      subjectId,
+      studyCode: resolvedStudyCode,
+      site: schedule?.site || "",
+      scheduledDate,
+      occurrenceDate: resolvedOccurrenceDate,
+    },
   });
 }
 

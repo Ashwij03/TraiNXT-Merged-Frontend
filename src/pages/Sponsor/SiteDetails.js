@@ -1,300 +1,1481 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import AppLayout from "./AppLayout";
 import "./SiteDetails.css";
 import { useLocation, useNavigate } from "react-router-dom";
-import KpiCard from "./KpiCard";
+import { getStudyByCode } from "../../services/studyService";
+import {
+  getStudyTeam,
+  getRegulatoryChecklist,
+  saveStudyTeamMember,
+  deleteStudyTeamMember,
+  saveRegulatoryChecklistItem,
+  deleteRegulatoryChecklistItem,
+  PLANNING_UPDATED_EVENT,
+} from "../../services/planningService";
+import { canEditStudyContent } from "../../utils/contentAccess";
+import {
+  getAllSubjectsFromStorage,
+  getSubjectStatusAnalytics,
+} from "../../utils/subjectStatusAnalytics";
+import {
+  getEssentialDocumentsCompletion,
+  getStudyScopedSitePerformance,
+  getStudyHealthSummary,
+} from "../../services/studyOverviewService";
+import { getStudyLogs } from "../../services/adminService";
 
 import {
-  FiUsers,
-  FiTrendingUp,
-  FiShield,
-} from "react-icons/fi";
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
 
 const SiteDetails = () => {
-    
   const navigate = useNavigate();
   const location = useLocation();
 
   const siteData = location.state;
 
-  // ❗ SAFETY CHECK (IMPORTANT)
+  // Bump on planning-updated events so newly added team members /
+  // contacts / regulatory records appear immediately without a reload.
+  const [planningVersion, setPlanningVersion] = useState(0);
+
+  useEffect(() => {
+    const refresh = () => setPlanningVersion((v) => v + 1);
+    window.addEventListener(PLANNING_UPDATED_EVENT, refresh);
+    return () =>
+      window.removeEventListener(PLANNING_UPDATED_EVENT, refresh);
+  }, []);
+  void planningVersion;
+
+  const canEdit = canEditStudyContent();
+
+  const [teamFormOpen, setTeamFormOpen] = useState(false);
+  const [contactFormOpen, setContactFormOpen] = useState(false);
+  const [regulatoryFormOpen, setRegulatoryFormOpen] = useState(false);
+  const [editingTeamMember, setEditingTeamMember] = useState(null);
+  const [editingContact, setEditingContact] = useState(null);
+  const [editingRegulatoryItem, setEditingRegulatoryItem] = useState(null);
+
+  const studyData = siteData
+    ? getStudyByCode(siteData.id)
+    : null;
+
+  const studyTeam = siteData
+    ? getStudyTeam(siteData.id)
+    : [];
+
+  const regulatoryChecklist = siteData
+    ? getRegulatoryChecklist(siteData.id)
+    : [];
+
+  const handleSaveTeamMember = (data) => {
+    if (!siteData?.id) return;
+    saveStudyTeamMember(siteData.id, data);
+    setTeamFormOpen(false);
+    setContactFormOpen(false);
+    setEditingTeamMember(null);
+    setEditingContact(null);
+  };
+
+  const handleDeleteTeamMember = (memberId) => {
+    if (!siteData?.id) return;
+    deleteStudyTeamMember(siteData.id, memberId);
+  };
+
+  const handleSaveRegulatoryItem = (data) => {
+    if (!siteData?.id) return;
+    saveRegulatoryChecklistItem(siteData.id, data);
+    setRegulatoryFormOpen(false);
+    setEditingRegulatoryItem(null);
+  };
+
+  const handleDeleteRegulatoryItem = (itemId) => {
+    if (!siteData?.id) return;
+    deleteRegulatoryChecklistItem(siteData.id, itemId);
+  };
+
+  const allSubjects = getAllSubjectsFromStorage();
+
+  const essentialDocumentMetrics = siteData
+    ? getEssentialDocumentsCompletion(siteData.id)
+    : {
+        uploaded: 0,
+        expected: 0,
+        percent: 0,
+        complete: false,
+      };
+
+  const sitePerformanceMetrics = siteData
+    ? getStudyScopedSitePerformance(siteData.id)
+    : [];
+
+  const studyHealthMetrics = siteData
+    ? getStudyHealthSummary(siteData.id)
+    : {
+        score: 0,
+        status: "",
+        factors: [],
+      };
+
+  const studyLogs = siteData
+    ? getStudyLogs(siteData.id)
+    : [];
+
+  const [activeTab, setActiveTab] = useState("overview");
+
   if (!siteData) {
     return (
       <AppLayout>
-        <div style={{ padding: "24px" }}>
+        <div className="site-details-page">
           <h2>No Site Selected</h2>
+
+          <button
+            type="button"
+            className="back-btn"
+            onClick={() => navigate(-1)}
+          >
+            ← Back
+          </button>
         </div>
       </AppLayout>
     );
   }
 
+  const normalizeValue = (value) =>
+    String(value ?? "").trim().toLowerCase();
+
+  const siteSubjects = allSubjects.filter((subject) => {
+    const sameStudy =
+      normalizeValue(subject.studyKey) ===
+      normalizeValue(siteData.id);
+
+    const sameSite =
+      normalizeValue(subject.site) ===
+      normalizeValue(siteData.name);
+
+    return sameStudy && sameSite;
+  });
+
+  const subjectStatusAnalytics =
+    getSubjectStatusAnalytics(siteSubjects);
+
+  const getStatusCount = (status) =>
+    subjectStatusAnalytics.find(
+      (item) => item.name === status
+    )?.value ?? 0;
+
+  const enrollmentAnalytics = {
+    planned: 0,
+    screened: getStatusCount("Screening"),
+    randomized: 0,
+    completed: getStatusCount("Completed"),
+    earlyTermination:
+      getStatusCount("Withdrawn") +
+      getStatusCount("Dropout"),
+  };
+
+  const enrolled = Number(siteData.enrolled ?? 0);
+  const target = Number(siteData.target ?? 0);
+
+  const enrollmentProgress =
+    target > 0
+      ? Math.min(
+          Math.round((enrolled / target) * 100),
+          100
+        )
+      : 0;
+
+  const enrollmentChartData = [
+    {
+      name: "Current Enrollment",
+      subjects: enrolled,
+    },
+    {
+      name: "Target Enrollment",
+      subjects: target,
+    },
+  ];
+
   return (
     <AppLayout>
       <div className="site-details-page">
+        <div className="site-workspace-header">
+          <div>
+            <button
+              type="button"
+              className="back-btn"
+              onClick={() => navigate(-1)}
+            >
+              ← Back
+            </button>
 
-        <div style={{ marginBottom: "20px" }}>
-  <button
-    className="back-btn"
-    onClick={() => navigate(-1)}
-  >
-    ← Back
-  </button>
-</div>
+            <h1>
+              {siteData.siteNumber || siteData.id || "Clinical Site"}
+            </h1>
 
-        {/* HEADER */}
-        <h1>{siteData.siteName}</h1>
-
-        {/* KPI CARDS */}
-        <div className="sponsor-kpi-grid">
-
- <KpiCard
-  title="Enrollment"
-  value={siteData.enrollment}
-  subtitle="Subjects"
-  icon={<FiUsers size={24} />}
-  iconBg="#eff6ff"
-  iconColor="#2563eb"
-  onClick={() =>
-    document
-      .getElementById("recruitment-section")
-      ?.scrollIntoView({ behavior: "smooth" })
-  }
-/>
-
-  <KpiCard
-  title="Performance"
-  value="89%"
-  subtitle="Site Score"
-  icon={<FiTrendingUp size={24} />}
-  iconBg="#ecfdf5"
-  iconColor="#16a34a"
-  onClick={() =>
-    document
-      .getElementById("performance-section")
-      ?.scrollIntoView({ behavior: "smooth" })
-  }
-/>
-<KpiCard
-  title="Compliance"
-  value={siteData.compliance}
-  subtitle="Audit Ready"
-  icon={<FiShield size={24} />}
-  iconBg="#ede9fe"
-  iconColor="#7c3aed"
-  onClick={() =>
-    document
-      .getElementById("compliance-section")
-      ?.scrollIntoView({ behavior: "smooth" })
-  }
-/>
-
-<KpiCard
-  title="Compliance"
-  value={siteData.compliance}
-  subtitle="Audit Ready"
-  icon={<FiShield size={24} />}
-  iconBg="#ede9fe"
-  iconColor="#7c3aed"
-  onClick={() =>
-    document
-      .getElementById("compliance-section")
-      ?.scrollIntoView({ behavior: "smooth" })
-  }
-/>
-
-</div>
-
-        {/* SITE INFO */}
-        <div className="details-card">
-
-          <h2>Site Information</h2>
-
-          <div className="details-grid">
-
-            <div>
-              <strong>Site Name</strong>
-              <p>{siteData.siteName}</p>
-            </div>
-
-            <div>
-              <strong>Enrollment</strong>
-              <p>{siteData.enrollment}</p>
-            </div>
-
-            <div>
-              <strong>Compliance</strong>
-              <p>{siteData.compliance}</p>
-            </div>
-
-            <div>
-              <strong>Status</strong>
-              <p>{siteData.status}</p>
-            </div>
-
+            <p>
+              Site Name: {siteData.name || "—"} |{" "}
+              {siteData.country || "—"}
+            </p>
           </div>
 
+          <span className="site-workspace-status">
+            {siteData.status || "—"}
+          </span>
         </div>
-        
-       <div
-  id="performance-section"
-  className="details-card"
->
-  <h2>Performance Metrics</h2>
 
-  <table className="sponsor-table">
+        <div className="site-workspace-tabs">
+          <button
+            type="button"
+            className={
+              activeTab === "overview" ? "active" : ""
+            }
+            onClick={() => setActiveTab("overview")}
+          >
+            Overview
+          </button>
 
-    <thead>
-      <tr>
-        <th>Metric</th>
-        <th>Value</th>
-      </tr>
-    </thead>
+          <button
+            type="button"
+            className={
+              activeTab === "enrollment" ? "active" : ""
+            }
+            onClick={() => setActiveTab("enrollment")}
+          >
+            Enrollment
+          </button>
 
-    <tbody>
-      <tr>
-        <td>Target Enrollment</td>
-        <td>250</td>
-      </tr>
+          <button
+            type="button"
+            className={
+              activeTab === "status" ? "active" : ""
+            }
+            onClick={() => setActiveTab("status")}
+          >
+            Status
+          </button>
 
-      <tr>
-        <td>Actual Enrollment</td>
-        <td>{siteData.enrollment}</td>
-      </tr>
+          <button
+            type="button"
+            className={
+              activeTab === "activity" ? "active" : ""
+            }
+            onClick={() => setActiveTab("activity")}
+          >
+            Activity
+          </button>
 
-      <tr>
-        <td>Completed Visits</td>
-        <td>95%</td>
-      </tr>
+          <button
+            type="button"
+            className={
+              activeTab === "details" ? "active" : ""
+            }
+            onClick={() => setActiveTab("details")}
+          >
+            Detailed Site Info
+          </button>
 
-      <tr>
-        <td>Open Queries</td>
-        <td>8</td>
-      </tr>
+          <button
+            type="button"
+            className={
+              activeTab === "analytics" ? "active" : ""
+            }
+            onClick={() => setActiveTab("analytics")}
+          >
+            Enrollment Analytics
+          </button>
 
-      <tr>
-        <td>Closed Queries</td>
-        <td>42</td>
-      </tr>
+          <button
+            type="button"
+            className={
+              activeTab === "metrics" ? "active" : ""
+            }
+            onClick={() => setActiveTab("metrics")}
+          >
+            Dashboard Metrics
+          </button>
+        </div>
 
-      <tr>
-        <td>Protocol Deviations</td>
-        <td>3</td>
-      </tr>
+        {activeTab === "overview" && (
+          <div className="details-card">
+            <h2>Site Summary</h2>
 
-    </tbody>
+            <div className="details-grid">
+              <div>
+                <strong>Site ID</strong>
+                <p>{siteData.id || "—"}</p>
+              </div>
 
-  </table>
+              <div>
+                <strong>Site Name</strong>
+                <p>{siteData.name || "—"}</p>
+              </div>
 
-</div>
+              <div>
+                <strong>Country</strong>
+                <p>{siteData.country || "—"}</p>
+              </div>
 
-<div
-  id="compliance-section"
-  className="details-card"
->
-  <h2>Compliance Overview</h2>
+              <div>
+                <strong>Sponsor</strong>
+                <p>
+                  {siteData.sponsor ||
+                    siteData.account ||
+                    "—"}
+                </p>
+              </div>
 
-  <div className="details-grid">
+              <div>
+                <strong>Status</strong>
+                <p>{siteData.status || "—"}</p>
+              </div>
 
-    <div>
-      <strong>Audit Status</strong>
-      <p>Passed</p>
-    </div>
+              <div>
+                <strong>Enrolled</strong>
+                <p>{enrolled}</p>
+              </div>
 
-    <div>
-      <strong>Last Audit</strong>
-      <p>2026-05-15</p>
-    </div>
+              <div>
+                <strong>Target</strong>
+                <p>{target}</p>
+              </div>
 
-    <div>
-      <strong>CAPA Status</strong>
-      <p>Closed</p>
-    </div>
+              <div>
+                <strong>Performance</strong>
+                <p>{siteData.performance ?? 0}%</p>
+              </div>
+            </div>
+          </div>
+        )}
 
-    <div>
-      <strong>Inspection Readiness</strong>
-      <p>96%</p>
-    </div>
+        {activeTab === "enrollment" && (
+          <div className="details-card">
+            <h2>Enrollment Projection Chart</h2>
 
-  </div>
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={enrollmentChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
 
-</div>
-<div
-  id="risk-section"
-  className="details-card"
->
-  <h2>Risk Assessment</h2>
+                <Bar
+                  dataKey="subjects"
+                  fill="#082b3d"
+                  radius={[8, 8, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
 
-  <div className="details-grid">
+        {activeTab === "status" && (
+          <div className="details-card">
+            <h2>Status Progress</h2>
 
-    <div>
-      <strong>Current Risk</strong>
-      <p>Low</p>
-    </div>
+            <div className="details-grid">
+              <div>
+                <strong>Current Status</strong>
+                <p>{siteData.status || "—"}</p>
+              </div>
 
-    <div>
-      <strong>Risk Score</strong>
-      <p>18/100</p>
-    </div>
+              <div>
+                <strong>Subjects Enrolled</strong>
+                <p>{enrolled}</p>
+              </div>
 
-    <div>
-      <strong>Open Issues</strong>
-      <p>2</p>
-    </div>
+              <div>
+                <strong>Target Subjects</strong>
+                <p>{target}</p>
+              </div>
 
-    <div>
-      <strong>Escalations</strong>
-      <p>0</p>
-    </div>
+              <div>
+                <strong>Enrollment Progress</strong>
+                <p>{enrollmentProgress}%</p>
+              </div>
+            </div>
 
-  </div>
+            <div className="site-progress-section">
+              <div className="site-progress-header">
+                <span>Enrollment Progress</span>
 
-</div>
-<div
-  id="recruitment-section"
-  className="details-card"
->
-  <h2>Recruitment Summary</h2>
+                <strong>
+                  {enrolled} / {target}
+                </strong>
+              </div>
 
-  <table className="sponsor-table">
+              <div className="site-progress-track">
+                <div
+                  className="site-progress-fill"
+                  style={{
+                    width: `${enrollmentProgress}%`,
+                  }}
+                />
+              </div>
 
-    <thead>
-      <tr>
-        <th>Metric</th>
-        <th>Count</th>
-      </tr>
-    </thead>
+              <p className="site-progress-text">
+                {enrollmentProgress}% of target enrolled
+              </p>
+            </div>
+          </div>
+        )}
 
-    <tbody>
+        {activeTab === "activity" && (
+          <div className="site-empty-state">
+            <h4>No Activity Available</h4>
 
-      <tr>
-        <td>Screened Subjects</td>
-        <td>320</td>
-      </tr>
+            <p>
+              There are currently no activity records for this site.
+              Site activity is derived from audit logs and is not
+              manually editable in this workspace.
+            </p>
 
-      <tr>
-        <td>Randomized Subjects</td>
-        <td>250</td>
-      </tr>
+            <button
+              type="button"
+              className="site-empty-btn"
+              disabled
+              title="Site activity is derived from audit logs and cannot be added manually."
+            >
+              + Add Activity
+            </button>
+          </div>
+        )}
 
-      <tr>
-        <td>Completed Subjects</td>
-        <td>198</td>
-      </tr>
+        {activeTab === "details" && (
+          <div className="details-card">
+            <h2>Detailed Site Info</h2>
 
-      <tr>
-        <td>Dropouts</td>
-        <td>12</td>
-      </tr>
+            <section className="site-info-section">
+              <h3>General Information</h3>
 
-    </tbody>
+              <div className="details-grid">
+                <div>
+                  <strong>Study Code</strong>
+                  <p>{studyData?.code || "—"}</p>
+                </div>
 
-  </table>
+                <div>
+                  <strong>Study Name</strong>
+                  <p>{studyData?.name || "—"}</p>
+                </div>
 
-</div>
+                <div>
+                  <strong>Protocol</strong>
+                  <p>{studyData?.protocol || "—"}</p>
+                </div>
 
+                <div>
+                  <strong>Indication</strong>
+                  <p>{studyData?.indication || "—"}</p>
+                </div>
+
+                <div>
+                  <strong>Country</strong>
+                  <p>{studyData?.country || "—"}</p>
+                </div>
+
+                <div>
+                  <strong>Site</strong>
+                  <p>
+                    {studyData?.site ||
+                      studyData?.location ||
+                      "—"}
+                  </p>
+                </div>
+
+                <div>
+                  <strong>Sponsor</strong>
+                  <p>{studyData?.sponsor || "—"}</p>
+                </div>
+
+                <div>
+                  <strong>CRO</strong>
+                  <p>{studyData?.cro || "—"}</p>
+                </div>
+
+                <div>
+                  <strong>Status</strong>
+                  <p>{studyData?.status || "—"}</p>
+                </div>
+
+                <div>
+                  <strong>
+                    Principal Investigator
+                  </strong>
+                  <p>
+                    {studyData?.principalInvestigator ||
+                      "—"}
+                  </p>
+                </div>
+
+                <div>
+                  <strong>Start Date</strong>
+                  <p>{studyData?.startDate || "—"}</p>
+                </div>
+
+                <div>
+                  <strong>Description</strong>
+                  <p>{studyData?.description || "—"}</p>
+                </div>
+              </div>
+            </section>
+
+            <section className="site-info-section">
+              <h3>Assignments</h3>
+
+              <div className="site-empty-state">
+                <h4>No Assignments</h4>
+
+                <p>
+                  No assignments have been created for this site.
+                  Assignments are managed centrally through the study
+                  workspace and cannot be created directly here.
+                </p>
+
+                <button
+                  type="button"
+                  className="site-empty-btn"
+                  disabled
+                  title="Assignments are managed centrally in the study workspace."
+                >
+                  + Create Assignment
+                </button>
+              </div>
+            </section>
+
+            <section className="site-info-section">
+              <h3>Study Team</h3>
+
+              {studyTeam.length === 0 ? (
+                <div className="site-empty-state">
+                  <h4>No Study Team</h4>
+
+                  <p>
+                    No study team members have been assigned.
+                  </p>
+
+                  {canEdit && (
+                    <button
+                      type="button"
+                      className="site-empty-btn"
+                      onClick={() => {
+                        setEditingTeamMember(null);
+                        setTeamFormOpen(true);
+                      }}
+                    >
+                      + Add Team Member
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div className="site-team-grid">
+                    {studyTeam.map((member) => (
+                      <div
+                        className="site-team-card"
+                        key={member.id}
+                      >
+                        <strong>
+                          {member.name || "—"}
+                        </strong>
+
+                        <p>
+                          <span>Role</span>
+                          {member.role || "—"}
+                        </p>
+
+                        <p>
+                          <span>Organization</span>
+                          {member.organization || "—"}
+                        </p>
+
+                        <p>
+                          <span>Start Date</span>
+                          {member.startDate || "—"}
+                        </p>
+
+                        {canEdit && (
+                          <div className="site-team-card-actions">
+                            <button
+                              type="button"
+                              className="link-btn"
+                              onClick={() => {
+                                setEditingTeamMember(member);
+                                setTeamFormOpen(true);
+                              }}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              className="link-btn danger"
+                              onClick={() =>
+                                handleDeleteTeamMember(member.id)
+                              }
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {canEdit && (
+                    <button
+                      type="button"
+                      className="site-empty-btn"
+                      onClick={() => {
+                        setEditingTeamMember(null);
+                        setTeamFormOpen(true);
+                      }}
+                    >
+                      + Add Team Member
+                    </button>
+                  )}
+                </>
+              )}
+
+              {teamFormOpen && (
+                <SiteTeamMemberForm
+                  initialData={editingTeamMember}
+                  onSave={handleSaveTeamMember}
+                  onCancel={() => {
+                    setTeamFormOpen(false);
+                    setEditingTeamMember(null);
+                  }}
+                />
+              )}
+            </section>
+
+            <section className="site-info-section">
+              <h3>Contact Info</h3>
+
+              {studyTeam.length === 0 ? (
+                <div className="site-empty-state">
+                  <h4>No Contact Information</h4>
+
+                  <p>
+                    No contact information has been added.
+                  </p>
+
+                  {canEdit && (
+                    <button
+                      type="button"
+                      className="site-empty-btn"
+                      onClick={() => {
+                        setEditingContact(null);
+                        setContactFormOpen(true);
+                      }}
+                    >
+                      + Add Contact
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div className="site-team-grid">
+                    {studyTeam.map((member) => (
+                      <div
+                        className="site-team-card"
+                        key={`contact-${member.id}`}
+                      >
+                        <strong>
+                          {member.name || "—"}
+                        </strong>
+
+                        <p>
+                          <span>Email</span>
+                          {member.email || "—"}
+                        </p>
+
+                        <p>
+                          <span>Phone</span>
+                          {member.phone || "—"}
+                        </p>
+
+                        {canEdit && (
+                          <div className="site-team-card-actions">
+                            <button
+                              type="button"
+                              className="link-btn"
+                              onClick={() => {
+                                setEditingContact(member);
+                                setContactFormOpen(true);
+                              }}
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {canEdit && (
+                    <button
+                      type="button"
+                      className="site-empty-btn"
+                      onClick={() => {
+                        setEditingContact(null);
+                        setContactFormOpen(true);
+                      }}
+                    >
+                      + Add Contact
+                    </button>
+                  )}
+                </>
+              )}
+
+              {contactFormOpen && (
+                <SiteContactForm
+                  initialData={editingContact}
+                  onSave={handleSaveTeamMember}
+                  onCancel={() => {
+                    setContactFormOpen(false);
+                    setEditingContact(null);
+                  }}
+                />
+              )}
+            </section>
+
+            <section className="site-info-section">
+              <h3>Site Activation Details</h3>
+
+              <div className="site-empty-state">
+                <h4>No Activation Details</h4>
+
+                <p>
+                  No activation milestones have been recorded.
+                  Activation milestones are managed through the study
+                  Planning workspace.
+                </p>
+
+                <button
+                  type="button"
+                  className="site-empty-btn"
+                  disabled
+                  title="Activation milestones are managed in the study Planning workspace."
+                >
+                  + Add Activation
+                </button>
+              </div>
+            </section>
+
+            <section className="site-info-section">
+              <h3>Regulatory Info</h3>
+
+              {regulatoryChecklist.length === 0 ? (
+                <div className="site-empty-state">
+                  <h4>No Regulatory Information</h4>
+
+                  <p>
+                    Regulatory records are not available.
+                  </p>
+
+                  {canEdit && (
+                    <button
+                      type="button"
+                      className="site-empty-btn"
+                      onClick={() => {
+                        setEditingRegulatoryItem(null);
+                        setRegulatoryFormOpen(true);
+                      }}
+                    >
+                      + Add Regulatory Record
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div className="site-regulatory-list">
+                    {regulatoryChecklist.map(
+                      (item, index) => (
+                        <div
+                          className="site-regulatory-item"
+                          key={item.id || index}
+                        >
+                          {Object.entries(item).map(
+                            ([key, value]) => (
+                              <p key={key}>
+                                <span>{key}</span>
+
+                                {value === null ||
+                                value === undefined ||
+                                value === ""
+                                  ? "—"
+                                  : String(value)}
+                              </p>
+                            )
+                          )}
+
+                          {canEdit && (
+                            <div className="site-regulatory-actions">
+                              <button
+                                type="button"
+                                className="link-btn"
+                                onClick={() => {
+                                  setEditingRegulatoryItem(item);
+                                  setRegulatoryFormOpen(true);
+                                }}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                className="link-btn danger"
+                                onClick={() =>
+                                  handleDeleteRegulatoryItem(item.id)
+                                }
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  {canEdit && (
+                    <button
+                      type="button"
+                      className="site-empty-btn"
+                      onClick={() => {
+                        setEditingRegulatoryItem(null);
+                        setRegulatoryFormOpen(true);
+                      }}
+                    >
+                      + Add Regulatory Record
+                    </button>
+                  )}
+                </>
+              )}
+
+              {regulatoryFormOpen && (
+                <SiteRegulatoryForm
+                  initialData={editingRegulatoryItem}
+                  onSave={handleSaveRegulatoryItem}
+                  onCancel={() => {
+                    setRegulatoryFormOpen(false);
+                    setEditingRegulatoryItem(null);
+                  }}
+                />
+              )}
+            </section>
+          </div>
+        )}
+
+        {activeTab === "analytics" && (
+          <div className="analytics-section">
+            <div className="details-card">
+              <h2>Site Enrollment Analytics</h2>
+
+              <div className="site-enrollment-analytics-grid">
+                <div className="site-enrollment-analytics-card">
+                  <span>Planned</span>
+                  <strong>
+                    {enrollmentAnalytics.planned}
+                  </strong>
+                </div>
+
+                <div className="site-enrollment-analytics-card">
+                  <span>Screened</span>
+                  <strong>
+                    {enrollmentAnalytics.screened}
+                  </strong>
+                </div>
+
+                <div className="site-enrollment-analytics-card">
+                  <span>Randomized</span>
+                  <strong>
+                    {enrollmentAnalytics.randomized}
+                  </strong>
+                </div>
+
+                <div className="site-enrollment-analytics-card">
+                  <span>Completed</span>
+                  <strong>
+                    {enrollmentAnalytics.completed}
+                  </strong>
+                </div>
+
+                <div className="site-enrollment-analytics-card">
+                  <span>Early Termination</span>
+                  <strong>
+                    {enrollmentAnalytics.earlyTermination}
+                  </strong>
+                </div>
+              </div>
+
+              <div className="site-enrollment-statistics">
+                <h3>Enrollment Statistics</h3>
+
+                <div className="details-grid">
+                  <div>
+                    <strong>Current Enrollment</strong>
+                    <p>{enrolled}</p>
+                  </div>
+
+                  <div>
+                    <strong>Target Enrollment</strong>
+                    <p>{target}</p>
+                  </div>
+
+                  <div>
+                    <strong>Enrollment Progress</strong>
+                    <p>{enrollmentProgress}%</p>
+                  </div>
+
+                  <div>
+                    <strong>Site Subject Records</strong>
+                    <p>{siteSubjects.length}</p>
+                  </div>
+                </div>
+
+                <div className="clinical-site-enrollment-section">
+                  <div className="clinical-site-enrollment-header">
+                    <span>Enrollment Progress</span>
+
+                    <strong>
+                      {enrolled} / {target}
+                    </strong>
+                  </div>
+
+                  <div className="clinical-site-enrollment-track">
+                    <div
+                      className="clinical-site-enrollment-fill"
+                      style={{
+                        width: `${enrollmentProgress}%`,
+                      }}
+                    />
+                  </div>
+
+                  <p>
+                    {enrollmentProgress}% of target enrolled
+                  </p>
+                </div>
+              </div>
+
+              <div className="site-subject-status-analytics">
+                <h3>Subject Status Analytics</h3>
+
+                <ResponsiveContainer
+                  width="100%"
+                  height={320}
+                >
+                  <BarChart data={subjectStatusAnalytics}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip />
+
+                    <Bar
+                      dataKey="value"
+                      fill="#082b3d"
+                      radius={[8, 8, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "metrics" && (
+          <div className="details-card">
+            <h2>Site Dashboard Metrics</h2>
+
+            <div className="details-grid">
+              <div>
+                <strong>
+                  Essential Document Status
+                </strong>
+
+                <p>
+                  {essentialDocumentMetrics.complete
+                    ? "Complete"
+                    : "Incomplete"}
+                </p>
+              </div>
+
+              <div>
+                <strong>Document Completion</strong>
+                <p>
+                  {essentialDocumentMetrics.percent}%
+                </p>
+              </div>
+
+              <div>
+                <strong>Documents Uploaded</strong>
+                <p>
+                  {essentialDocumentMetrics.uploaded}
+                </p>
+              </div>
+
+              <div>
+                <strong>Expected Documents</strong>
+                <p>
+                  {essentialDocumentMetrics.expected}
+                </p>
+              </div>
+            </div>
+
+            <div className="site-progress-section">
+              <div className="site-progress-header">
+                <span>
+                  Essential Document Completion
+                </span>
+
+                <strong>
+                  {essentialDocumentMetrics.uploaded} /{" "}
+                  {essentialDocumentMetrics.expected}
+                </strong>
+              </div>
+
+              <div className="site-progress-track">
+                <div
+                  className="site-progress-fill"
+                  style={{
+                    width: `${essentialDocumentMetrics.percent}%`,
+                  }}
+                />
+              </div>
+
+              <p className="site-progress-text">
+                {essentialDocumentMetrics.percent}% complete
+              </p>
+            </div>
+
+            <section className="site-info-section">
+              <h3>Key Risk Indicators</h3>
+
+              <div className="details-grid">
+                <div>
+                  <strong>Study Health Score</strong>
+                  <p>{studyHealthMetrics.score}</p>
+                </div>
+
+                <div>
+                  <strong>Study Health Status</strong>
+                  <p>
+                    {studyHealthMetrics.status || "—"}
+                  </p>
+                </div>
+
+                <div>
+                  <strong>Total Risk Indicators</strong>
+                  <p>
+                    {studyHealthMetrics.factors.length}
+                  </p>
+                </div>
+              </div>
+
+              <div className="site-regulatory-list">
+                {studyHealthMetrics.factors.length > 0 ? (
+                  studyHealthMetrics.factors.map(
+                    (factor, index) => (
+                      <div
+                        className="site-regulatory-item"
+                        key={`${factor.label}-${index}`}
+                      >
+                        <p>
+                          <span>Risk Indicator</span>
+                          {factor.label}
+                        </p>
+
+                        <p>
+                          <span>Impact</span>
+                          {factor.impact}
+                        </p>
+                      </div>
+                    )
+                  )
+                ) : (
+                    <div className="site-empty-state">
+                      <h4>No Risk Indicators</h4>
+
+                      <p>
+                        There are currently no risk indicators for this site.
+                        Risk indicators are computed from study health signals
+                        and cannot be added manually here.
+                      </p>
+
+                      <button
+                        type="button"
+                        className="site-empty-btn"
+                        disabled
+                        title="Risk indicators are computed from study health signals."
+                      >
+                        + Add Risk Indicator
+                      </button>
+                    </div>
+                )}
+              </div>
+            </section>
+
+            <section className="site-info-section">
+              <h3>Site KPIs</h3>
+
+              {sitePerformanceMetrics.length > 0 ? (
+                <div className="site-regulatory-list">
+                  {sitePerformanceMetrics.map(
+                    (metric, index) => (
+                      <div
+                        className="site-regulatory-item"
+                        key={index}
+                      >
+                        <pre>
+                          {JSON.stringify(
+                            metric,
+                            null,
+                            2
+                          )}
+                        </pre>
+                      </div>
+                    )
+                  )}
+                </div>
+              ) : (
+                  <div className="site-empty-state">
+                    <h4>No KPI Records</h4>
+
+                    <p>
+                      Site KPIs have not been configured.
+                      KPIs are derived automatically from operational
+                      metrics and cannot be added manually.
+                    </p>
+
+                    <button
+                      type="button"
+                      className="site-empty-btn"
+                      disabled
+                      title="Site KPIs are derived automatically from operational metrics."
+                    >
+                      + Add KPI
+                    </button>
+                  </div>
+              )}
+            </section>
+
+            <section className="site-info-section">
+              <h3>System / Audit Info</h3>
+
+              {studyLogs.length > 0 ? (
+                <div className="site-regulatory-list">
+                  {studyLogs.map((log, index) => (
+                    <div
+                      className="site-regulatory-item"
+                      key={index}
+                    >
+                      {Object.entries(log).map(
+                        ([key, value]) => (
+                          <p key={key}>
+                            <span>{key}</span>
+
+                            {value === null ||
+                            value === undefined ||
+                            value === ""
+                              ? "—"
+                              : String(value)}
+                          </p>
+                        )
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                  <div className="site-empty-state">
+                    <h4>No Audit Logs</h4>
+
+                    <p>
+                      No audit records are available for this site.
+                      Audit entries are written automatically by the
+                      system and cannot be added manually.
+                    </p>
+
+                    <button
+                      type="button"
+                      className="site-empty-btn"
+                      disabled
+                      title="Audit entries are written automatically by the system."
+                    >
+                      + Add Audit Entry
+                    </button>
+                  </div>
+              )}
+            </section>
+
+            <section className="site-info-section">
+              <h3>Last Modified</h3>
+
+              <div className="details-grid">
+                <div>
+                  <strong>Last Modified Record</strong>
+
+                  <p>
+                    {studyLogs.length > 0
+                      ? JSON.stringify(
+                          studyLogs[studyLogs.length - 1]
+                        )
+                      : "Not available"}
+                  </p>
+                </div>
+              </div>
+            </section>
+          </div>
+        )}
       </div>
     </AppLayout>
   );
 };
+
+function SiteTeamMemberForm({ initialData, onSave, onCancel }) {
+  const [form, setForm] = useState({
+    name: "",
+    role: "",
+    email: "",
+    organization: "",
+    startDate: "",
+  });
+
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        name: initialData.name || "",
+        role: initialData.role || "",
+        email: initialData.email || "",
+        organization: initialData.organization || "",
+        startDate: initialData.startDate || "",
+        ...(initialData.id ? { id: initialData.id } : {}),
+      });
+    }
+  }, [initialData]);
+
+  return (
+    <form
+      className="site-inline-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!form.name.trim()) return;
+        onSave(form);
+      }}
+    >
+      <input
+        placeholder="Name"
+        value={form.name}
+        onChange={(e) => setForm({ ...form, name: e.target.value })}
+        required
+      />
+      <input
+        placeholder="Role"
+        value={form.role}
+        onChange={(e) => setForm({ ...form, role: e.target.value })}
+      />
+      <input
+        type="date"
+        value={form.startDate}
+        onChange={(e) =>
+          setForm({ ...form, startDate: e.target.value })
+        }
+      />
+      <input
+        placeholder="Email"
+        value={form.email}
+        onChange={(e) => setForm({ ...form, email: e.target.value })}
+      />
+      <input
+        placeholder="Organization"
+        value={form.organization}
+        onChange={(e) =>
+          setForm({ ...form, organization: e.target.value })
+        }
+      />
+      <div className="site-inline-form-actions">
+        <button type="submit" className="site-empty-btn">
+          {form.id ? "Update Member" : "Add Member"}
+        </button>
+        <button
+          type="button"
+          className="link-btn"
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function SiteContactForm({ initialData, onSave, onCancel }) {
+  const [form, setForm] = useState({
+    name: "",
+    role: "",
+    email: "",
+    phone: "",
+    organization: "",
+  });
+
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        name: initialData.name || "",
+        role: initialData.role || "",
+        email: initialData.email || "",
+        phone: initialData.phone || "",
+        organization: initialData.organization || "",
+        ...(initialData.id ? { id: initialData.id } : {}),
+      });
+    }
+  }, [initialData]);
+
+  return (
+    <form
+      className="site-inline-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!form.name.trim()) return;
+        onSave(form);
+      }}
+    >
+      <input
+        placeholder="Name"
+        value={form.name}
+        onChange={(e) => setForm({ ...form, name: e.target.value })}
+        required
+      />
+      <input
+        placeholder="Role"
+        value={form.role}
+        onChange={(e) => setForm({ ...form, role: e.target.value })}
+      />
+      <input
+        placeholder="Email"
+        type="email"
+        value={form.email}
+        onChange={(e) => setForm({ ...form, email: e.target.value })}
+      />
+      <input
+        placeholder="Phone"
+        value={form.phone}
+        onChange={(e) => setForm({ ...form, phone: e.target.value })}
+      />
+      <input
+        placeholder="Organization"
+        value={form.organization}
+        onChange={(e) =>
+          setForm({ ...form, organization: e.target.value })
+        }
+      />
+      <div className="site-inline-form-actions">
+        <button type="submit" className="site-empty-btn">
+          {form.id ? "Update Contact" : "Add Contact"}
+        </button>
+        <button
+          type="button"
+          className="link-btn"
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function SiteRegulatoryForm({ initialData, onSave, onCancel }) {
+  const [form, setForm] = useState({
+    label: "",
+    documentDate: "",
+    dueDate: "",
+    status: "Pending",
+    documentName: "",
+    documentUrl: "",
+  });
+
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        label: initialData.label || "",
+        documentDate: initialData.documentDate || "",
+        dueDate: initialData.dueDate || "",
+        status: initialData.status || "Pending",
+        documentName: initialData.documentName || "",
+        documentUrl: initialData.documentUrl || "",
+        ...(initialData.id ? { id: initialData.id } : {}),
+      });
+    }
+  }, [initialData]);
+
+  return (
+    <form
+      className="site-inline-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!form.label.trim()) return;
+        onSave({ ...form, completed: false });
+      }}
+    >
+      <input
+        placeholder="Regulatory Record Label"
+        value={form.label}
+        onChange={(e) => setForm({ ...form, label: e.target.value })}
+        required
+      />
+      <input
+        type="date"
+        value={form.documentDate}
+        onChange={(e) =>
+          setForm({ ...form, documentDate: e.target.value })
+        }
+      />
+      <input
+        type="date"
+        value={form.dueDate}
+        onChange={(e) =>
+          setForm({ ...form, dueDate: e.target.value })
+        }
+      />
+      <select
+        value={form.status}
+        onChange={(e) => setForm({ ...form, status: e.target.value })}
+      >
+        <option>Pending</option>
+        <option>Submitted</option>
+        <option>Approved</option>
+        <option>Rejected</option>
+      </select>
+      <input
+        type="file"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          setForm({
+            ...form,
+            documentName: file.name,
+            documentUrl: URL.createObjectURL(file),
+          });
+        }}
+      />
+      <div className="site-inline-form-actions">
+        <button type="submit" className="site-empty-btn">
+          {form.id ? "Update Record" : "Add Record"}
+        </button>
+        <button
+          type="button"
+          className="link-btn"
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
 
 export default SiteDetails;

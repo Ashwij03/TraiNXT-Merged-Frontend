@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import DashboardLayout from "../../Components/dashboard/DashboardLayout";
-import KPICard from "../../Components/dashboard/KPICard";
-import DataTable from "../../Components/dashboard/DataTable";
+import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
+import KPICard from "../../components/dashboard/shared/KPICard";
+import DataTable from "../../components/dashboard/shared/DataTable";
 import {
   canManageReports,
   createReport,
@@ -232,6 +232,7 @@ function Reports() {
             ]}
             data={reports}
             emptyMessage="No reports yet for your accessible studies"
+            pagination
           />
         </div>
       </div>

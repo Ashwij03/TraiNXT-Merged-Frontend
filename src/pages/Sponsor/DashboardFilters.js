@@ -14,12 +14,7 @@ const DashboardFilters = ({
   const handleApplyFilters = () => {
 	
 
-    console.log(
-      "Applied Filters:",
-      selectedStudy,
-      selectedRegion,
-      selectedDate
-    );
+    
 
   };
 

@@ -1,24 +1,25 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCROData } from "./CRODATAContext";
 import CROStatusBadge from "./CROStatusBadge";
 import EmptyState from "./EmptyState";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
+import { formatScheduleDisplayDate } from "../../utils/formatScheduleDisplayDate";
 import "./UpcomingMonitoringVisits.css";
-
-function formatDate(dateStr) {
-  if (!dateStr) return "—";
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return dateStr;
-  return d.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
 
 function UpcomingMonitoringVisits() {
   const { upcomingVisits } = useCROData();
   const navigate = useNavigate();
+
+  const siteSources = useMemo(() => getStudies(), []);
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   return (
     <div className="upcoming-visits-widget">
@@ -55,9 +56,9 @@ function UpcomingMonitoringVisits() {
               {upcomingVisits.slice(0, 6).map((visit) => (
                 <tr key={visit.id}>
                   <td>{visit.id}</td>
-                  <td>{visit.site}</td>
+                  <td>{displaySite(visit.site)}</td>
                   <td>{visit.visitType}</td>
-                  <td>{formatDate(visit.date)}</td>
+                  <td>{formatScheduleDisplayDate(visit.date)}</td>
                   <td>
                     <CROStatusBadge status={visit.status} />
                   </td>

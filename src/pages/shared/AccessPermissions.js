@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
-import DashboardLayout from "../../Components/dashboard/DashboardLayout";
-import DataTable from "../../Components/dashboard/DataTable";
+import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
+import DataTable from "../../components/dashboard/shared/DataTable";
 import {
   acceptAccessRequest,
   getAccessRequestHistory,
@@ -219,6 +219,7 @@ function AccessPermissions() {
             columns={signupColumns}
             data={signupData}
             emptyMessage="No pending signup approvals"
+            pagination
           />
         ) : activeTab === "pending" ? (
           <DataTable
@@ -226,6 +227,7 @@ function AccessPermissions() {
             columns={pendingColumns}
             data={pendingData}
             emptyMessage="No pending access requests"
+            pagination
           />
         ) : (
           <DataTable
@@ -233,6 +235,7 @@ function AccessPermissions() {
             columns={historyColumns}
             data={historyData}
             emptyMessage="No request history yet"
+            pagination
           />
         )}
       </div>

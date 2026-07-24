@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
-import DataTable from "../../../Components/dashboard/DataTable";
-import DocumentFolderManager from "../../../Components/common/DocumentFolderManager";
-import DelegationLog from "../../../Components/DelegationLog";
+import DataTable from "../../../components/dashboard/shared/DataTable";
+import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
+import DelegationLog from "../../../components/DelegationLog";
 
 import { getStudyLogs, getDelegationLogs } from "../../../services/adminService";
 import { getStudyByCode } from "../../../services/studyService";
@@ -285,6 +285,7 @@ const RESPONSIBILITY_MAP = {
         ]}
         data={studyLogs}
         emptyMessage="No log entries for this study"
+        pagination
       />
 
       {/* ---- MODIFIED: staff, history, and the edit/delete handlers are now

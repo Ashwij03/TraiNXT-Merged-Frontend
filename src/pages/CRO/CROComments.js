@@ -1,14 +1,19 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
 import CROLayout from "./CROLayout";
 
 import { useCROData } from "./CRODATAContext";
+import { isOpenComment } from "../../services/commentService";
 
 import CROStatusBadge from "./CROStatusBadge";
 
 import EmptyState from "./EmptyState";
 
 import CROModal from "./CROModal";
+
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+
+import { getStudies } from "../../services/studyService";
 
 
 
@@ -19,6 +24,16 @@ function CROComments() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const [showAddModal, setShowAddModal] = useState(false);
+
+  const siteSources = useMemo(() => getStudies(), []);
+
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   const [newComment, setNewComment] = useState({
 
@@ -108,23 +123,22 @@ function CROComments() {
 
           <h3>Open</h3>
 
-          <h1>{comments.filter((c) => c.status === "Open").length}</h1>
+          <h1>{comments.filter(isOpenComment).length}</h1>
 
         </div>
 
         <div className="dashboard-card">
 
-          <h3>Answered</h3>
+          <h3>Resolved</h3>
 
-          <h1>{comments.filter((c) => c.status === "Answered").length}</h1>
-
-        </div>
-
-        <div className="dashboard-card">
-
-          <h3>Closed</h3>
-
-          <h1>{comments.filter((c) => c.status === "Closed").length}</h1>
+          <h1>
+            {
+              comments.filter(
+                (comment) =>
+                  String(comment?.status || "").toLowerCase() === "resolved"
+              ).length
+            }
+          </h1>
 
         </div>
 
@@ -212,7 +226,7 @@ function CROComments() {
 
                     <td>{comment.subject}</td>
 
-                    <td>{comment.site}</td>
+                    <td>{displaySite(comment.site)}</td>
 
                     <td>{comment.author}</td>
 

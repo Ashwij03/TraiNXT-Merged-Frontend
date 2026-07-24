@@ -1,7 +1,7 @@
 import ROLES from "../constants/roles";
 import { getEffectiveRole, getCurrentUser } from "../services/roleService";
 
-const EDIT_ROLES = [ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.PI];
+const EDIT_ROLES = [ROLES.ADMIN, ROLES.PI, ROLES.SITE_STAFF];
 const RESTRICTED_ROLES = [ROLES.CRO, ROLES.SPONSOR];
 
 export function getEffectiveRoleForAccess(user = getCurrentUser()) {

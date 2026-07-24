@@ -1,10 +1,10 @@
 // UPDATED: Recruitment page with dynamic funnel data from adminService
 
-import DashboardLayout from "../../Components/dashboard/DashboardLayout";
-import KPICard from "../../Components/dashboard/KPICard";
-import DashboardBarChart from "../../Components/dashboard/DashboardBarChart";
-import DashboardCard from "../../Components/dashboard/DashboardCard";
-import DataTable from "../../Components/dashboard/DataTable";
+import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
+import KPICard from "../../components/dashboard/shared/KPICard";
+import DashboardBarChart from "../../components/dashboard/shared/DashboardBarChart";
+import DashboardCard from "../../components/dashboard/shared/DashboardCard";
+import DataTable from "../../components/dashboard/shared/DataTable";
 import { getRecruitment } from "../../services/adminService";
 import "./AdminPage.css";
 
@@ -68,6 +68,7 @@ function Recruitment() {
               { key: "conversionRate", label: "Conversion %" }
             ]}
             data={recruitment}
+            pagination
           />
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { readStorageArray } from "../../utils/storageHelpers";
 import React, {
   createContext,
   useContext,
@@ -7,17 +8,15 @@ import React, {
   useCallback,
 } from "react";
 import { getStudies } from "../../services/studyService";
+import { addCommentRecord } from "../../services/commentService";
+import { getCurrentUser } from "../../services/roleService";
+import {
+  getFilteredSchedules,
+  getUpcomingVisitsWindow,
+  SCHEDULES_EVENT
+} from "../../services/visitScheduleService";
 
 const CRODataContext = createContext();
-
-function readStorageArray(key) {
-  try {
-    const value = JSON.parse(localStorage.getItem(key));
-    return Array.isArray(value) ? value : [];
-  } catch {
-    return [];
-  }
-}
 
 function getSharedStudies() {
   try {
@@ -69,7 +68,23 @@ function getSharedSubjects() {
   If a key does not exist yet, CRO shows an empty list instead of demo data.
 */
 function getSharedVisits() {
-  return readStorageArray("visitSchedules");
+  try {
+    return getFilteredSchedules(getCurrentUser()).map((schedule) => ({
+      ...schedule,
+      id: schedule.id,
+      visitId: schedule.id,
+      visitType: schedule.visit || schedule.visitType || "Visit",
+      cra: schedule.cra || "—",
+      subject: schedule.subjectId,
+      subjectId: schedule.subjectId,
+      study: schedule.study || schedule.studyKey || "",
+      studyCode: schedule.study || schedule.studyKey || "",
+      date: schedule.date,
+      status: schedule.status || "Scheduled"
+    }));
+  } catch {
+    return [];
+  }
 }
 
 function getSharedDocuments() {
@@ -81,7 +96,13 @@ function getSharedReports() {
 }
 
 function getSharedComments() {
-  return readStorageArray("comments");
+  return readStorageArray("comments").map((comment) => ({
+    ...comment,
+    message: comment.description || comment.message || comment.text || "",
+    author: comment.createdBy || comment.author || "Unknown",
+    subject: comment.subjectId || comment.subject || "",
+    date: comment.createdAt || comment.date || "",
+  }));
 }
 
 function getSharedNotifications() {
@@ -133,6 +154,7 @@ export const CROProvider = ({ children }) => {
     window.addEventListener("studies-updated", handleSharedDataUpdate);
     window.addEventListener("subjects-updated", handleSharedDataUpdate);
     window.addEventListener("visits-updated", handleSharedDataUpdate);
+    window.addEventListener(SCHEDULES_EVENT, handleSharedDataUpdate);
     window.addEventListener("documents-updated", handleSharedDataUpdate);
     window.addEventListener("reports-updated", handleSharedDataUpdate);
     window.addEventListener("comments-updated", handleSharedDataUpdate);
@@ -145,6 +167,7 @@ export const CROProvider = ({ children }) => {
       window.removeEventListener("studies-updated", handleSharedDataUpdate);
       window.removeEventListener("subjects-updated", handleSharedDataUpdate);
       window.removeEventListener("visits-updated", handleSharedDataUpdate);
+      window.removeEventListener(SCHEDULES_EVENT, handleSharedDataUpdate);
       window.removeEventListener("documents-updated", handleSharedDataUpdate);
       window.removeEventListener("reports-updated", handleSharedDataUpdate);
       window.removeEventListener("comments-updated", handleSharedDataUpdate);
@@ -187,27 +210,18 @@ export const CROProvider = ({ children }) => {
   // used across the app and notifies other roles via the same event
   // this context already listens for.
   const addComment = useCallback((newComment) => {
-    try {
-      const existingComments = readStorageArray("comments");
+    const user = getCurrentUser();
 
-      const commentToSave = {
-        id: `C-${Date.now()}`,
-        status: "Open",
-        createdBy: "CRO User",
-        createdRole: "CRO",
-        date: new Date().toISOString().split("T")[0],
-        ...newComment,
-      };
-
-      const updatedComments = [commentToSave, ...existingComments];
-
-      localStorage.setItem("comments", JSON.stringify(updatedComments));
-      window.dispatchEvent(new Event("comments-updated"));
-
-      return commentToSave;
-    } catch {
-      return null;
-    }
+    return addCommentRecord(
+      {
+        subjectId: newComment.subject || newComment.subjectId || "",
+        description: newComment.message || newComment.text || "",
+        site: newComment.site || "",
+        study: newComment.study || newComment.studyCode || "",
+        stage: "Monitoring",
+      },
+      user
+    );
   }, []);
 
   const kpiMetrics = useMemo(() => {
@@ -218,6 +232,11 @@ export const CROProvider = ({ children }) => {
     const pendingReviews = documents.filter(
       (document) => document.status === "Pending",
     ).length;
+
+    const openCommentsCount = comments.filter((comment) => {
+      const status = String(comment?.status || "").toLowerCase();
+      return status === "open" || status === "unresolved";
+    }).length;
 
     const completedVisits = visits.filter(
       (visit) => visit.status === "Completed",
@@ -259,8 +278,8 @@ export const CROProvider = ({ children }) => {
       sitesUnderMonitoring: uniqueSites,
       monitoringVisits: visits.length,
       pendingReviews,
-      comments: comments.length,
-      commentsCount: comments.length,
+      comments: openCommentsCount,
+      commentsCount: openCommentsCount,
       complianceMetrics: `${complianceRate}%`,
     };
   }, [visits, documents, comments]);
@@ -309,8 +328,11 @@ export const CROProvider = ({ children }) => {
         status = "At Risk";
       }
 
+      const siteNumber = `SITE-${String(index + 1).padStart(3, "0")}`;
       return {
-        id: `SITE-${String(index + 1).padStart(3, "0")}`,
+        id: siteNumber,
+        siteNumber,
+        siteName: site,
         site,
         study: siteSubjects[0]?.study || "—",
         enrollment: `${enrollmentPct}%`,
@@ -322,13 +344,7 @@ export const CROProvider = ({ children }) => {
   }, [subjects, visits]);
 
   const upcomingVisits = useMemo(() => {
-    return [...visits]
-      .filter((visit) => visit.status !== "Completed")
-      .sort(
-        (firstVisit, secondVisit) =>
-          new Date(firstVisit.date) - new Date(secondVisit.date),
-      )
-      .slice(0, 8);
+    return getUpcomingVisitsWindow(visits, 30).slice(0, 8);
   }, [visits]);
 
   const globalSearch = useCallback(

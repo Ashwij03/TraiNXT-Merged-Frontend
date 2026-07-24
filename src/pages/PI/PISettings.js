@@ -24,7 +24,7 @@ function PISettings({ activeView = "security" }) {
   );
   const location = useLocation();
 
-console.log("STATE =", location.state);
+
 
   useEffect(() => {
     const fresh = getSettingsData();

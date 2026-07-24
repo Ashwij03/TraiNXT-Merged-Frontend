@@ -1,3 +1,4 @@
+import { readStorage } from "../utils/storageHelpers";
 import ROLES from "../constants/roles";
 import { getEffectiveRole } from "./roleService";
 
@@ -33,21 +34,6 @@ const DEFAULT_CONVERSATIONS = [
   },
 ];
 
-function readStorage(key) {
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) {
-      return { conversations: DEFAULT_CONVERSATIONS };
-    }
-    const parsed = JSON.parse(raw);
-    return parsed?.conversations?.length
-      ? parsed
-      : { conversations: DEFAULT_CONVERSATIONS };
-  } catch {
-    return { conversations: DEFAULT_CONVERSATIONS };
-  }
-}
-
 function writeStorage(key, data) {
   localStorage.setItem(key, JSON.stringify(data));
   return data;
@@ -58,7 +44,13 @@ export function getLiveChatStorageKey(role = getEffectiveRole()) {
 }
 
 export function getRoleLiveChatData(role = getEffectiveRole()) {
-  return readStorage(getLiveChatStorageKey(role));
+  const data = readStorage(getLiveChatStorageKey(role), {
+    conversations: DEFAULT_CONVERSATIONS,
+  });
+
+  return data?.conversations?.length
+    ? data
+    : { conversations: DEFAULT_CONVERSATIONS };
 }
 
 export function saveRoleLiveChatData(data, role = getEffectiveRole()) {

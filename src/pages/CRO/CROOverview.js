@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "../../Components/dashboard/DashboardLayout";
+import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
 import { getCRODashboardData } from "../../services/adminService";
+import { useComments } from "../../comments/CommentsContext";
 import CROContracts from "./CROContracts";
 import CRODetails from "./CRODetails";
 import "./CROOversight.css";
 
 function CROOverview() {
   const navigate = useNavigate();
-  const { sites, studies, openComments } = getCRODashboardData();
+  const { pendingCount: openCommentsCount } = useComments();
+  const { sites, studies } = getCRODashboardData();
   const [selectedCro, setSelectedCro] = useState(null);
 
   return (
@@ -29,7 +31,7 @@ function CROOverview() {
             <p>Active Studies</p>
           </div>
           <div className="kpi-card">
-            <h2>{openComments.length}</h2>
+            <h2>{openCommentsCount}</h2>
             <p>Open Comments</p>
           </div>
           <div className="kpi-card">

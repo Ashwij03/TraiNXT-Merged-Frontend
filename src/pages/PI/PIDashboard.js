@@ -34,7 +34,7 @@ import PISidebar from "./PISidebar";
 import PILiveChat from "./PILiveChat";
 import PICommentModal from "./PICommentModal";
 import PIReports from "./PIReports";
-import PIRecruitment from "./PIRecuritment";
+import PIRecruitment from "./PIRecruitment";
 import PIRegulatory from "./PIRegulatory";
 import PISettings from "./PISettings";
 import PINotifications from "./PINotifications";
@@ -43,18 +43,23 @@ import PIComments from "./PIComments";
 import PIEISFDashboard from "./PIEISFDashboard";
 import PIICFDashboard from "./PIICFDashboard";
 import StudyFolderDashboard from "./PIStudyFolderDashboard";
-import VisitCalendarSection from "../../Components/dashboard/VisitCalendarSection";
+import VisitCalendarSection from "../../components/dashboard/shared/VisitCalendarSection";
+import useVisitSchedules from "../../hooks/useVisitSchedules";
 
 import {
   getDashboardData,
   saveDashboardData,
   syncKpisFromData,
   getNavbarData,
-  getCommentsData,
   buildDynamicAlerts,
 } from "./piDashboardService";
+import { useComments } from "../../comments/CommentsContext";
 
 import { getStudies } from "../../services/studyService";
+import {
+  addOrUpdateVisitSchedule,
+  SCHEDULES_EVENT
+} from "../../services/visitScheduleService";
 import {
   getStudyKey,
   useRoleStudiesSidebar,
@@ -65,10 +70,10 @@ import "../shared/studies/StudyDashboard.css";
 
 function PIDashboard({ embeddedInLayout = false }) {
   const navigate = useNavigate();
+  const { comments: liveComments, pendingCount: openCommentsCount } = useComments();
 
   const { studyCount } = useRoleStudiesSidebar();
 
-  const [comments, setComments] = useState([]);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [selectedPage, setSelectedPage] = useState("dashboard");
   const [settingsView, setSettingsView] = useState("security");
@@ -80,6 +85,9 @@ function PIDashboard({ embeddedInLayout = false }) {
   const [selectedStudy, setSelectedStudy] = useState(
     () => getNavbarData().selectedStudy || "All Studies",
   );
+  const selectedStudyCode =
+    selectedStudy && selectedStudy !== "All Studies" ? selectedStudy : "";
+  const { upcomingWindow } = useVisitSchedules({ studyCode: selectedStudyCode });
 
   const [dashboardData, setDashboardData] = useState(() =>
     syncKpisFromData(getDashboardData()),
@@ -118,18 +126,22 @@ function PIDashboard({ embeddedInLayout = false }) {
 
     window.addEventListener("pi-study-change", handleStudyChange);
     window.addEventListener("pi-comments-updated", refreshDashboardData);
+    window.addEventListener("comments-updated", refreshDashboardData);
     window.addEventListener("pi-dashboard-updated", refreshDashboardData);
     window.addEventListener("studies-updated", refreshSharedData);
     window.addEventListener("subjects-updated", refreshSharedData);
     window.addEventListener("study-overview-updated", refreshSharedData);
+    window.addEventListener(SCHEDULES_EVENT, refreshSharedData);
 
     return () => {
       window.removeEventListener("pi-study-change", handleStudyChange);
       window.removeEventListener("pi-comments-updated", refreshDashboardData);
+      window.removeEventListener("comments-updated", refreshDashboardData);
       window.removeEventListener("pi-dashboard-updated", refreshDashboardData);
       window.removeEventListener("studies-updated", refreshSharedData);
       window.removeEventListener("subjects-updated", refreshSharedData);
       window.removeEventListener("study-overview-updated", refreshSharedData);
+      window.removeEventListener(SCHEDULES_EVENT, refreshSharedData);
     };
   }, []);
 
@@ -263,6 +275,8 @@ function PIDashboard({ embeddedInLayout = false }) {
     studiesCount: actualStudiesCount,
     consentRate,
     visitCompletion,
+    commentsCount: openCommentsCount,
+    openComments: openCommentsCount,
   };
 
   const navigateToPage = (page) => {
@@ -330,7 +344,7 @@ function PIDashboard({ embeddedInLayout = false }) {
     {
       title: "Schedule Visit",
       icon: <FaCalendarAlt />,
-      count: (dashboardData.upcomingVisits || []).length,
+      count: upcomingWindow.length,
       action: () => setShowVisitModal(true),
     },
     {
@@ -360,7 +374,7 @@ function PIDashboard({ embeddedInLayout = false }) {
       studies: sharedStudies,
       recentSubjects: realSubjects,
     },
-    getCommentsData(),
+    liveComments,
   );
 
   const enrollmentChartData = [
@@ -465,10 +479,29 @@ function PIDashboard({ embeddedInLayout = false }) {
       return;
     }
 
-    updateDashboard({
-      ...dashboardData,
-      upcomingVisits: [...(dashboardData.upcomingVisits || []), newVisit],
+    const subjectRecord = realSubjects.find(
+      (subject) =>
+        String(subject.subjectId || subject.id) === String(newVisit.subject)
+    );
+    const studyId = selectedStudyCode || subjectRecord?.studyCode || subjectRecord?.studyKey;
+
+    if (!studyId) {
+      alert("Select a study or enter a subject linked to a study");
+      return;
+    }
+
+    addOrUpdateVisitSchedule({
+      studyId,
+      subjectId: newVisit.subject,
+      subject: subjectRecord || {
+        id: newVisit.subject,
+        subjectId: newVisit.subject
+      },
+      visitName: newVisit.visit,
+      date: newVisit.date,
+      status: "Scheduled"
     });
+    refreshDashboardData();
 
     setShowVisitModal(false);
     setNewVisit({
@@ -723,7 +756,7 @@ function PIDashboard({ embeddedInLayout = false }) {
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={enrollmentChartData}>
                     <XAxis dataKey="name" />
-                    <YAxis />
+                    <YAxis allowDecimals={false} />
                     <Tooltip />
                     <Bar
                       dataKey="value"
@@ -829,7 +862,7 @@ function PIDashboard({ embeddedInLayout = false }) {
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={dashboardData.visitData || []}>
                     <XAxis dataKey="visit" />
-                    <YAxis />
+                    <YAxis allowDecimals={false} />
                     <Tooltip />
                     <Bar
                       dataKey="completion"
@@ -1113,11 +1146,7 @@ function PIDashboard({ embeddedInLayout = false }) {
       </div>
 
       {showCommentModal && (
-        <PICommentModal
-          comments={comments}
-          setComments={setComments}
-          onClose={() => setShowCommentModal(false)}
-        />
+        <PICommentModal onClose={() => setShowCommentModal(false)} />
       )}
     </div>
   );

@@ -1,10 +1,11 @@
 // UPDATED: Site Performance page with dynamic metrics from adminService
 
-import DashboardLayout from "../../Components/dashboard/DashboardLayout";
-import DashboardCard from "../../Components/dashboard/DashboardCard";
-import DashboardBarChart from "../../Components/dashboard/DashboardBarChart";
-import DataTable from "../../Components/dashboard/DataTable";
+import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
+import DashboardCard from "../../components/dashboard/shared/DashboardCard";
+import DashboardBarChart from "../../components/dashboard/shared/DashboardBarChart";
+import DataTable from "../../components/dashboard/shared/DataTable";
 import { getSitePerformance } from "../../services/adminService";
+import { formatSiteLabel } from "../../utils/siteDisplay";
 import "./AdminPage.css";
 
 function SitePerformance() {
@@ -31,7 +32,11 @@ function SitePerformance() {
           <DataTable
             title="Performance Metrics"
             columns={[
-              { key: "siteName", label: "Site" },
+              {
+                key: "siteName",
+                label: "Site",
+                render: (_value, row) => formatSiteLabel(row) || "—"
+              },
               { key: "enrolled", label: "Enrolled" },
               { key: "enrollmentTarget", label: "Target" },
               { key: "screeningRate", label: "Screening %" },
@@ -39,6 +44,7 @@ function SitePerformance() {
               { key: "commentResolutionDays", label: "Avg Comment Days" }
             ]}
             data={performance}
+            pagination
           />
         </div>
       </div>

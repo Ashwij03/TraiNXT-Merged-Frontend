@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "../../../Components/dashboard/DashboardLayout";
-import KPICard from "../../../Components/dashboard/KPICard";
+import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
+import KPICard from "../../../components/dashboard/shared/KPICard";
 import { createStudy, getStudies } from "../../../services/studyService";
 import {
   getAccessibleStudies,
@@ -9,7 +9,13 @@ import {
   getEffectiveRole,
 } from "../../../services/roleService";
 import { canAddStudy } from "../../../utils/contentAccess";
+import { readStorage } from "../../../utils/storageHelpers";
 import ROLES from "../../../constants/roles";
+import {
+  STUDY_STATUS_OPTIONS,
+  STUDY_STATUS_DEFAULT,
+  getStudyStatusClass,
+} from "../../../constants/studyStatus";
 import {
   FiFolder,
   FiGrid,
@@ -23,6 +29,7 @@ import {
 import "./Studies.css";
 
 const STUDIES_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+const SUBJECTS_STORAGE_KEY = "subjectsByStudy";
 
 const initialForm = {
   code: "",
@@ -34,13 +41,137 @@ const initialForm = {
   site: "",
   enrolled: "",
   targetSubjects: "",
-  status: "Active",
+  status: STUDY_STATUS_DEFAULT,
   principalInvestigator: "",
   sponsor: "",
   cro: "",
   startDate: "",
+  completedDate: "",
   description: "",
 };
+
+function normalizeValue(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+function readSubjectsByStudy() {
+  return readStorage(SUBJECTS_STORAGE_KEY, {});
+}
+
+function readSiteRecords() {
+  const sites = readStorage("sites", []);
+  return Array.isArray(sites) ? sites : [];
+}
+
+function getSubjectsForStudy(subjectsByStudy, study) {
+  if (!subjectsByStudy || typeof subjectsByStudy !== "object" || !study) {
+    return [];
+  }
+
+  const studyKey = study.code;
+  const normalizedStudyKey = normalizeValue(studyKey);
+  const matchedSubjects = [];
+
+  Object.entries(subjectsByStudy).forEach(([collectionKey, subjects]) => {
+    if (!Array.isArray(subjects)) {
+      return;
+    }
+
+    subjects.forEach((subject) => {
+      const subjectStudyReference = subject.studyId || collectionKey;
+
+      if (normalizeValue(subjectStudyReference) === normalizedStudyKey) {
+        matchedSubjects.push(subject);
+      }
+    });
+  });
+
+  return matchedSubjects;
+}
+
+function resolveStudySite(study, sites) {
+  const siteReference = study?.site || study?.location;
+
+  if (!siteReference) {
+    return null;
+  }
+
+  const normalizedReference = normalizeValue(siteReference);
+
+  return (
+    sites.find((site) =>
+      [site.siteNumber, site.id, site.name].some(
+        (value) => normalizeValue(value) === normalizedReference
+      )
+    ) || null
+  );
+}
+
+function getStudySiteNumber(study, sites) {
+  const site = resolveStudySite(study, sites);
+
+  return site?.siteNumber || site?.id || study?.siteNumber || "";
+}
+
+/**
+ * Resolves the actual Site Name for a study by looking up its assigned
+ * site record (matched via resolveStudySite, the same lookup used for the
+ * Site Number column). Falls back to the raw site/location string stored
+ * on the study when no matching site record exists yet. Deliberately does
+ * NOT fall back to study.name — a study object always has its own `name`
+ * field (the study title), and using that as a generic fallback caused the
+ * Site Name column to silently display the study's name instead of the
+ * site's name whenever no site record matched.
+ */
+function getStudySiteName(study, sites) {
+  const site = resolveStudySite(study, sites);
+
+  if (site) {
+    return site.siteName || site.name || study?.site || study?.location || "";
+  }
+
+  return study?.site || study?.location || "";
+}
+
+/**
+ * Display-only formatter that renders a date as "yyyy-mm-dd", matching the
+ * Start Date column's format. Reads the calendar date directly off the
+ * stored string when possible so no timezone conversion can shift the day.
+ */
+function formatDateYYYYMMDD(dateValue) {
+  if (!dateValue) {
+    return "-";
+  }
+
+  const raw = String(dateValue).trim();
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if (match) {
+    const [, year, month, day] = match;
+    return `${year}-${month}-${day}`;
+  }
+
+  const parsed = new Date(raw);
+
+  if (!Number.isNaN(parsed.getTime())) {
+    const year = parsed.getFullYear();
+    const month = String(parsed.getMonth() + 1).padStart(2, "0");
+    const day = String(parsed.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  return raw;
+}
+
+function getStoredCompletedDateDisplay(study) {
+  if (!study?.completedDate) {
+    return "";
+  }
+
+  return formatDateYYYYMMDD(study.completedDate);
+}
 
 function Studies() {
   const navigate = useNavigate();
@@ -61,6 +192,10 @@ function Studies() {
   }, []);
 
   const [studies, setStudies] = useState(() => loadStudies());
+  const [subjectsByStudy, setSubjectsByStudy] = useState(() =>
+    readSubjectsByStudy()
+  );
+  const [sites, setSites] = useState(() => readSiteRecords());
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [sponsorFilter, setSponsorFilter] = useState("");
@@ -84,10 +219,9 @@ function Studies() {
     localStorage.setItem("studiesViewMode", mode);
   };
 
-  const statusOptions = useMemo(
-    () => [...new Set(studies.map((study) => study.status).filter(Boolean))].sort(),
-    [studies]
-  );
+  // Item 8: the study status filter always exposes the six canonical values,
+  // regardless of what is currently present in the data set.
+  const statusOptions = useMemo(() => STUDY_STATUS_OPTIONS, []);
 
   const sponsorOptions = useMemo(
     () => [...new Set(studies.map((study) => study.sponsor).filter(Boolean))].sort(),
@@ -145,15 +279,30 @@ function Studies() {
 
     switch (sortBy) {
       case "studyId":
+        return result.sort((a, b) => {
+          const numA = Number(a.code);
+          const numB = Number(b.code);
+
+          if (!Number.isNaN(numA) && !Number.isNaN(numB)) {
+            return numA - numB;
+          }
+
+          return String(a.code || "").localeCompare(String(b.code || ""));
+        });
+
+      case "name":
         return result.sort((a, b) =>
-          String(a.code || "").localeCompare(String(b.code || ""))
+          String(a.name || "").localeCompare(String(b.name || ""), undefined, {
+            numeric: true,
+            sensitivity: "base",
+          })
         );
 
       case "startDate":
         return result.sort(
           (a, b) =>
-            new Date(b.startDate || 0).getTime() -
-            new Date(a.startDate || 0).getTime()
+            new Date(a.startDate || 0).getTime() -
+            new Date(b.startDate || 0).getTime()
         );
 
       case "sponsor":
@@ -162,9 +311,16 @@ function Studies() {
         );
 
       default:
-        return result.sort((a, b) =>
-          String(a.studyId || "").localeCompare(String(b.studyId || ""))
-        );
+        return result.sort((a, b) => {
+          const numA = Number(a.code);
+          const numB = Number(b.code);
+
+          if (!Number.isNaN(numA) && !Number.isNaN(numB)) {
+            return numA - numB;
+          }
+
+          return String(a.code || "").localeCompare(String(b.code || ""));
+        });
     }
   }, [
     studies,
@@ -201,14 +357,27 @@ function Studies() {
   }, [currentPage, totalPages]);
 
   useEffect(() => {
-    const refreshStudies = () => setStudies(loadStudies());
+    const refreshStudies = () => {
+      setStudies(loadStudies());
+      setSites(readSiteRecords());
+    };
+
+    const refreshSubjects = () => {
+      setSubjectsByStudy(readSubjectsByStudy());
+    };
 
     window.addEventListener("studies-updated", refreshStudies);
     window.addEventListener("sponsor-data-updated", refreshStudies);
+    window.addEventListener("admin-data-updated", refreshStudies);
+    window.addEventListener("subjects-updated", refreshSubjects);
+    window.addEventListener("storage", refreshSubjects);
 
     return () => {
       window.removeEventListener("studies-updated", refreshStudies);
       window.removeEventListener("sponsor-data-updated", refreshStudies);
+      window.removeEventListener("admin-data-updated", refreshStudies);
+      window.removeEventListener("subjects-updated", refreshSubjects);
+      window.removeEventListener("storage", refreshSubjects);
     };
   }, [loadStudies]);
 
@@ -267,12 +436,30 @@ function Studies() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+if (Number(form.enrolled) > Number(form.targetSubjects)) {
+  alert("Subjects Enrolled cannot be greater than Target Subjects.");
+  return;
+}
 
-    const createdStudy = createStudy({
-      ...form,
-      site: form.site || form.location,
-      protocol: form.protocol || form.name,
-    });
+if (
+  form.completedDate &&
+  new Date(form.completedDate) < new Date(form.startDate)
+) {
+  alert("Completed Date cannot be earlier than Start Date.");
+  return;
+}
+const cleanedForm = Object.fromEntries(
+  Object.entries(form).map(([key, value]) => [
+    key,
+    typeof value === "string" ? value.trim() : value,
+  ])
+);
+
+const createdStudy = createStudy({
+  ...cleanedForm,
+  site: cleanedForm.site || cleanedForm.location,
+  protocol: cleanedForm.protocol || cleanedForm.name,
+});
 
     const subjectsByStudy =
       JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
@@ -479,6 +666,7 @@ function Studies() {
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value)}
             >
+              <option value="studyId">Sort By</option>
               <option value="studyId">Study ID</option>
               <option value="name">Study Name</option>
               <option value="sponsor">Sponsor</option>
@@ -561,11 +749,11 @@ function Studies() {
               >
                 <div className="study-card-content">
                   <div
-                    className={`study-status ${(
-                      study.status || "active"
-                    ).toLowerCase()}`}
+                    className={`study-status ${getStudyStatusClass(
+                      study.status || STUDY_STATUS_DEFAULT
+                    )}`}
                   >
-                    {study.status || "Active"}
+                    {study.status || STUDY_STATUS_DEFAULT}
                   </div>
 
                   <h3>{study.name}</h3>
@@ -580,12 +768,12 @@ function Studies() {
 
                     <div>
                       <strong>Site:</strong>
-                      {study.location || "N/A"}
+                      {getStudySiteName(study, sites) || "N/A"}
                     </div>
 
                     <div>
                       <strong>Subjects:</strong>
-                      {study.enrolled || 0}
+                      {getSubjectsForStudy(subjectsByStudy, study).length}
                       {" / "}
                       {study.targetSubjects || 0}
                     </div>
@@ -660,13 +848,13 @@ function Studies() {
 
                 <div className="study-list-field">
                   <label>Site</label>
-                  <span>{study.location || "-"}</span>
+                  <span>{getStudySiteName(study, sites) || "-"}</span>
                 </div>
 
                 <div className="study-list-field">
                   <label>Subjects</label>
                   <span>
-                    {study.enrolled || 0}/{study.targetSubjects || 0}
+                    {getSubjectsForStudy(subjectsByStudy, study).length}/{study.targetSubjects || 0}
                   </span>
                 </div>
 
@@ -677,11 +865,11 @@ function Studies() {
 
                 <div className="study-list-status">
                   <span
-                    className={`study-status ${(
-                      study.status || "active"
-                    ).toLowerCase()}`}
+                    className={`study-status ${getStudyStatusClass(
+                      study.status || STUDY_STATUS_DEFAULT
+                    )}`}
                   >
-                    {study.status || "Active"}
+                    {study.status || STUDY_STATUS_DEFAULT}
                   </span>
 
                   <button
@@ -712,17 +900,30 @@ function Studies() {
                   <th>Indication</th>
                   <th>Country</th>
                   <th>PI</th>
-                  <th>Site</th>
+                  <th>Site Number</th>
+                  <th>Site Name</th>
                   <th>Subjects</th>
-                  <th>Status</th>
-                  <th>Start</th>
+                  <th>Study Status</th>
+                  <th>Start Date</th>
+                  <th>Completed Date</th>
                   <th>Action</th>
                 </tr>
               </thead>
 
               <tbody>
                 {paginatedStudies.map((study) => (
-                  <tr key={study.code}>
+                  <tr
+                    key={study.code}
+                    onClick={() => handleStudyCardClick(study)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        handleStudyCardClick(study);
+                      }
+                    }}
+                  >
                     <td>{study.code}</td>
                     <td>{study.name}</td>
                     <td>{study.sponsor || "-"}</td>
@@ -730,28 +931,34 @@ function Studies() {
                     <td>{study.indication || "-"}</td>
                     <td>{study.country || "-"}</td>
                     <td>{study.principalInvestigator || "-"}</td>
-                    <td>{study.location || "-"}</td>
+                    <td>{getStudySiteNumber(study, sites) || "-"}</td>
+                    <td>{getStudySiteName(study, sites) || "-"}</td>
                     <td>
-                      {study.enrolled || 0}/{study.targetSubjects || 0}
+                      {getSubjectsForStudy(subjectsByStudy, study).length}/{study.targetSubjects || 0}
                     </td>
 
                     <td>
                       <span
-                        className={`study-status ${(
-                          study.status || "active"
-                        ).toLowerCase()}`}
+                        className={`study-status ${getStudyStatusClass(
+                          study.status || STUDY_STATUS_DEFAULT
+                        )}`}
                       >
-                        {study.status || "Active"}
+                        {study.status || STUDY_STATUS_DEFAULT}
                       </span>
                     </td>
 
                     <td>{study.startDate || "-"}</td>
 
+                    <td>{getStoredCompletedDateDisplay(study) || "-"}</td>
+
                     <td>
                       <button
                         type="button"
                         className="open-study-btn"
-                        onClick={() => handleStudyCardClick(study)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleStudyCardClick(study);
+                        }}
                       >
                         Open
                       </button>
@@ -776,7 +983,10 @@ function Studies() {
 
                 <button
                   type="button"
-                  onClick={() => setFormOpen(false)}
+                  onClick={() => {
+  setForm(initialForm);
+  setFormOpen(false);
+}}
                   aria-label="Close add study form"
                 >
                   ×
@@ -883,11 +1093,11 @@ function Studies() {
                     onChange={handleChange}
                     required
                   >
-                    <option>Active</option>
-                    <option>Screening</option>
-                    <option>Enrollment</option>
-                    <option>Paused</option>
-                    <option>Completed</option>
+                    {STUDY_STATUS_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
                   </select>
                 </label>
 
@@ -934,6 +1144,16 @@ function Studies() {
                   />
                 </label>
 
+                <label>
+                  Completed Date
+                  <input
+                    name="completedDate"
+                    type="date"
+                    value={form.completedDate}
+                    onChange={handleChange}
+                  />
+                </label>
+
                 <label className="study-form-wide">
                   Study Description
                   <textarea
@@ -951,7 +1171,10 @@ function Studies() {
                 <button
                   type="button"
                   className="secondary-btn"
-                  onClick={() => setFormOpen(false)}
+                onClick={() => {
+  setForm(initialForm);
+  setFormOpen(false);
+}}
                 >
                   Cancel
                 </button>

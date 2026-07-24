@@ -1,9 +1,9 @@
 // UPDATED: Role-aware notifications with categories and bulk actions
 
 import { useMemo, useState } from "react";
-import DashboardLayout from "../../Components/dashboard/DashboardLayout";
-import DashboardCard from "../../Components/dashboard/DashboardCard";
-import KPICard from "../../Components/dashboard/KPICard";
+import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
+import DashboardCard from "../../components/dashboard/shared/DashboardCard";
+import KPICard from "../../components/dashboard/shared/KPICard";
 import {
   getNotifications,
   markAllNotificationsRead,
@@ -14,6 +14,8 @@ import {
   getCurrentUser,
   isAdmin
 } from "../../services/roleService";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 import "./AdminPage.css";
 
 const CATEGORY_LABELS = {
@@ -29,6 +31,15 @@ function Notifications() {
   const assignedSite = getAssignedSite();
   const [filter, setFilter] = useState("all");
   const [notifications, setNotifications] = useState(getNotifications());
+
+  const siteSources = useMemo(() => getStudies(), []);
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   const scopedNotifications = useMemo(() => {
     if (adminMode) {
@@ -151,9 +162,23 @@ function Notifications() {
                   <p style={{ margin: "6px 0 0", color: "#4b5563" }}>
                     {notification.message}
                   </p>
+                {notification.actorName && (
+  <small
+    style={{
+      color: "#6b7280",
+      display: "block",
+      marginTop: "4px",
+    }}
+  >
+    By {notification.actorName}
+    {notification.actorRole
+      ? ` - ${notification.actorRole}`
+      : ""}
+  </small>
+)}
                   <small style={{ color: "#9ca3af" }}>
                     {new Date(notification.createdAt).toLocaleString()}
-                    {notification.site ? ` • ${notification.site}` : ""}
+                    {notification.site ? ` • ${displaySite(notification.site)}` : ""}
                   </small>
                 </div>
 

@@ -1,4 +1,4 @@
-import DocumentFolderManager from "../../../Components/common/DocumentFolderManager";
+import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
 import "./SubjectDocuments.css";
 
 function SubjectDocuments({ subject }) {

@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
 import CROLayout from "./CROLayout";
 
 import { useCROData } from "./CRODATAContext";
 
 import EmptyState from "./EmptyState";
+
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+
+import { getStudies } from "../../services/studyService";
 
 
 
@@ -14,6 +18,15 @@ function CROFiles() {
 
   const [searchTerm, setSearchTerm] = useState("");
 
+  const siteSources = useMemo(() => getStudies(), []);
+
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
 
   const filteredFiles = files.filter((f) =>
@@ -146,7 +159,7 @@ function CROFiles() {
 
                     <td>{file.category}</td>
 
-                    <td>{file.site}</td>
+                    <td>{displaySite(file.site)}</td>
 
                     <td>{file.uploadedOn}</td>
 
@@ -166,7 +179,7 @@ function CROFiles() {
 
                             file.name,
 
-                            `Category: ${file.category}\nSite: ${file.site}\nUploaded: ${file.uploadedOn}`
+                            `Category: ${file.category}\nSite: ${displaySite(file.site)}\nUploaded: ${file.uploadedOn}`
 
                           )
 

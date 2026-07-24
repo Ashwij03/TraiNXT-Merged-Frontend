@@ -45,7 +45,7 @@ const SECTIONS = [
 
 const Settings = () => {
   const location = useLocation();
-  console.log(location.state);
+ 
   const [settings, setSettings] = useState(loadSettings());
   const [activeSection, setActiveSection] = useState(null);
   const [saved, setSaved] = useState(false);

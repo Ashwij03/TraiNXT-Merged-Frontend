@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import CROSidebar from "./Components/CROSidebar";
-import CRONavbar from "./Components/CRONavbar";
-import RequestPermissionButton from "../../Components/common/RequestPermissionButton";
+import CROSidebar from "./CROSidebar";
+import CRONavbar from "./CRONavbar";
+import RequestPermissionButton from "../../components/common/RequestPermissionButton";
 import { getSitePerformance } from "../../services/adminService";
+import { formatSiteLabel } from "../../utils/siteDisplay";
 
 function loadSites() {
   try {
@@ -87,7 +88,7 @@ function SitePerformance() {
               <tbody>
                 {filteredSites.map((site) => (
                   <tr key={site.id || site.siteName || site.site}>
-                    <td>{site.siteName || site.site || site.name}</td>
+                    <td>{formatSiteLabel(site) || site.siteName || site.site || site.name || "—"}</td>
                     <td>{site.enrollment ?? "—"}</td>
                     <td>{site.queries ?? "—"}</td>
                     <td>{site.compliance ?? "—"}</td>

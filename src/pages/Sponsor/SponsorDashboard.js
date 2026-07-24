@@ -32,8 +32,8 @@ import AppLayout from './AppLayout.js';
 import EnrollmentChart from './EnrollmentChart';
 import StatusPieChart from './StatusPieChart';
 import KpiCard from './KpiCard';
-import AlertsPanel from './AlertsPanel';
-import QuickActions from './QuickActions';
+import AlertsPanel from './SponsorAlertsPanel';
+import QuickActions from './SponsorQuickActions';
 import SubscriptionEditModal from './SubscriptionEditModal';
 import {
   FaCheckCircle,
@@ -323,7 +323,7 @@ const SponsorDashboard = () => {
                 <BarChart data={phaseData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="phase" />
-                  <YAxis />
+                  <YAxis allowDecimals={false} />
                   <Tooltip />
                   <Bar
                     dataKey="studies"

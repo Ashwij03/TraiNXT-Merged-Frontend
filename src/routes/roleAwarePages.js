@@ -1,8 +1,8 @@
 import ROLES from "../constants/roles";
 import { getEffectiveRole } from "../services/roleService";
 
-import RoleCommentsView from "../Components/common/RoleCommentsView";
-import DashboardLayout from "../Components/dashboard/DashboardLayout";
+import RoleCommentsView from "../components/common/RoleCommentsView";
+import DashboardLayout from "../components/dashboard/shared/DashboardLayout";
 import AdminComments from "../pages/Admin/Comments";
 import AdminSitePerformance from "../pages/Admin/SitePerformance";
 import AdminRecruitment from "../pages/Admin/Recruitment";
@@ -13,11 +13,10 @@ import AdminSettings from "../pages/Admin/Settings";
 import SharedProgressNotes from "../pages/shared/operations/ProgressNotes";
 import SharedStudies from "../pages/shared/studies/Studies";
 // import SharedSubjects from "../pages/shared/subjects/SubjectsDashboard";
-import SharedStudyDetails from "../pages/shared/studies/StudyDetails";
 import SponsorEnrollment from "../pages/Sponsor/Enrollment";
 import SponsorQueries from "../pages/Sponsor/Queries";
 import CroEnrollment from "../pages/CRO/CROEnrollment";
-import CroQueries from "../pages/CRO/Components/Queries";
+import CroQueries from "../pages/CRO/CROQueries";
 
 import SponsorSitePerformance from "../pages/Sponsor/SitePerformance";
 import SponsorRecruitment from "../pages/Sponsor/Recruitment";
@@ -144,10 +143,6 @@ export function RoleAwareProgressNotes() {
 
 export function RoleAwareStudies() {
   return <SharedStudies />;
-}
-
-export function RoleAwareStudyDetails() {
-  return <SharedStudyDetails />;
 }
 
 export function RoleAwareEnrollment() {

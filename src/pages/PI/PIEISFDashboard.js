@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import DelegationLog from "../../Components/DelegationLog";
-import TrainingLog from "../../Components/TrainingLog";
+import DelegationLog from "../../components/DelegationLog";
+import TrainingLog from "../../components/TrainingLog";
 import "./PIEISFDashboard.css";
 function PIEISFDashboard() {
   const [eisfTab, setEisfTab] = useState("delegation");

@@ -1,3 +1,4 @@
+import { readStorage } from "../../utils/storageHelpers";
 // UPDATED: Central PI dashboard data layer (localStorage + dynamic study synchronization)
 
 // Notifications are intentionally NOT read from/written to their own
@@ -10,10 +11,18 @@ import {
   markNotificationRead as markSharedNotificationRead,
 } from "../../services/notificationService";
 import { getCurrentUser } from "../../services/roleService";
+import { getComments, saveComments } from "../../services/adminService";
+import {
+  getFilteredSchedules,
+  getUpcomingVisitsWindow
+} from "../../services/visitScheduleService";
+import {
+  addCommentRecord,
+  resolveCommentRecord,
+} from "../../services/commentService";
 
 const STORAGE_KEYS = {
   dashboard: "piDashboardData",
-  comments: "piCommentsData",
   reports: "piReportsData",
   settings: "piSettingsData",
   security: "piSecurityData",
@@ -27,15 +36,6 @@ const STORAGE_KEYS = {
 
 export const dispatchNotificationsUpdated = () => {
   window.dispatchEvent(new CustomEvent("pi-notifications-updated"));
-};
-
-const readStorage = (key, fallback) => {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
 };
 
 const writeStorage = (key, data) => {
@@ -70,9 +70,23 @@ export const getDefaultDashboardData = () => ({
   lastUpdated: new Date().toLocaleString(),
 });
 
+const getDynamicUpcomingVisits = () => {
+  try {
+    return getUpcomingVisitsWindow(getFilteredSchedules(getCurrentUser()), 30).map(
+      (visit) => ({
+        ...visit,
+        subject: visit.subject || visit.subjectId || visit.subjectid
+      })
+    );
+  } catch {
+    return [];
+  }
+};
+
 export const getDashboardData = () => {
   const defaults = getDefaultDashboardData();
   const saved = readStorage(STORAGE_KEYS.dashboard, {});
+  const dynamicUpcomingVisits = getDynamicUpcomingVisits();
 
   const mergedData = {
     ...defaults,
@@ -81,9 +95,7 @@ export const getDashboardData = () => {
     recentSubjects: Array.isArray(saved.recentSubjects)
       ? saved.recentSubjects
       : defaults.recentSubjects,
-    upcomingVisits: Array.isArray(saved.upcomingVisits)
-      ? saved.upcomingVisits
-      : defaults.upcomingVisits,
+    upcomingVisits: dynamicUpcomingVisits,
     pendingQueries: Array.isArray(saved.pendingQueries)
       ? saved.pendingQueries
       : defaults.pendingQueries,
@@ -171,6 +183,11 @@ const formatAlertDate = () =>
     year: "numeric",
   });
 
+function isOpenComment(comment) {
+  const status = String(comment?.status || "").toLowerCase();
+  return status === "open" || status === "unresolved";
+}
+
 const PRIORITY_TO_TYPE = {
   Critical: "critical",
   High: "danger",
@@ -179,9 +196,7 @@ const PRIORITY_TO_TYPE = {
 };
 
 export const buildDynamicAlerts = (dashboardData, comments = []) => {
-  const openComments = comments.filter(
-    (comment) => comment.status === "unresolved"
-  ).length;
+  const openComments = comments.filter(isOpenComment).length;
 
   const studiesCount = (dashboardData.studies || []).length;
 
@@ -312,54 +327,74 @@ export const saveSecurityData = (data) => {
 
 export const getDefaultComments = () => [];
 
-export const getCommentsData = () => {
-  const storedComments = readStorage(STORAGE_KEYS.comments, []);
-  return Array.isArray(storedComments) ? storedComments : [];
-};
+export const getCommentsData = () => getComments();
 
 export const saveCommentsData = (comments) => {
   const safeComments = Array.isArray(comments) ? comments : [];
-  writeStorage(STORAGE_KEYS.comments, safeComments);
-
+  saveComments(safeComments);
+  window.dispatchEvent(new Event("comments-updated"));
   window.dispatchEvent(new CustomEvent("pi-comments-updated"));
-
   return safeComments;
 };
 
 export const addComment = (comment = {}) => {
-  const existingComments = getCommentsData();
+  const user = getCurrentUser();
+  const record = addCommentRecord(
+    {
+      subjectId: comment.subjectId || "",
+      description: comment.comment || comment.text || comment.description || "",
+      study: comment.study || comment.studyCode || "",
+      site: comment.site || "",
+      stage: comment.type || comment.stage || "General",
+    },
+    user
+  );
 
-  const newComment = {
-    id:
-      comment.id ||
-      `COM-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    subjectId: comment.subjectId || "",
-    visit: comment.visit || "",
-    type: comment.type || "General",
-    comment: comment.comment || "",
-    createdBy: comment.createdBy || "",
-    date:
-      comment.date ||
-      new Date().toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }),
-    status: comment.status || "unresolved",
-    ...comment,
-  };
+  if (comment.status === "resolved" && record?.id) {
+    resolveCommentRecord(record.id, user);
+  }
 
-  const updatedComments = [newComment, ...existingComments];
-
-  return saveCommentsData(updatedComments);
+  return record;
 };
 
 export const updateComment = (commentId, updates = {}) => {
+  const user = getCurrentUser();
+  const nextStatus = updates.status;
+
+  if (
+    nextStatus === "resolved" ||
+    nextStatus === "Resolved" ||
+    nextStatus === "open" ||
+    nextStatus === "Open" ||
+    nextStatus === "unresolved"
+  ) {
+    if (nextStatus === "resolved" || nextStatus === "Resolved") {
+      resolveCommentRecord(commentId, user);
+      return getCommentsData().find((comment) => comment.id === commentId) || null;
+    }
+
+    const updatedComments = getCommentsData().map((comment) =>
+      comment.id === commentId
+        ? {
+            ...comment,
+            ...updates,
+            status: "Open",
+          }
+        : comment
+    );
+
+    return saveCommentsData(updatedComments).find(
+      (comment) => comment.id === commentId
+    );
+  }
+
   const updatedComments = getCommentsData().map((comment) =>
     comment.id === commentId ? { ...comment, ...updates } : comment
   );
 
-  return saveCommentsData(updatedComments);
+  return saveCommentsData(updatedComments).find(
+    (comment) => comment.id === commentId
+  );
 };
 
 export const deleteComment = (commentId) => {
@@ -371,7 +406,7 @@ export const deleteComment = (commentId) => {
 };
 
 export const clearCommentsData = () => {
-  localStorage.removeItem(STORAGE_KEYS.comments);
+  saveComments([]);
   window.dispatchEvent(new CustomEvent("pi-comments-updated"));
   return [];
 };
@@ -870,9 +905,7 @@ export const syncKpisFromData = (data = {}) => {
   const recentSubjects = Array.isArray(data.recentSubjects)
     ? data.recentSubjects
     : [];
-  const upcomingVisits = Array.isArray(data.upcomingVisits)
-    ? data.upcomingVisits
-    : [];
+  const upcomingVisits = getDynamicUpcomingVisits();
 
   const totalEnrolled = studies.reduce(
     (sum, study) => sum + Number(study.enrolled || 0),
@@ -892,11 +925,8 @@ export const syncKpisFromData = (data = {}) => {
 
   const comments = getCommentsData();
 
-  const commentsCount = comments.length;
-
-  const openComments = comments.filter(
-    (comment) => comment.status === "unresolved"
-  ).length;
+  const openComments = comments.filter(isOpenComment).length;
+  const commentsCount = openComments;
 
   const completedSubjects = recentSubjects.filter(
     (subject) => subject.status === "Completed"
@@ -937,7 +967,7 @@ export const syncKpisFromData = (data = {}) => {
       studiesCount,
       commentsCount,
       openComments,
-      comments: commentsCount,
+      comments: openComments,
       pendingTasks: studiesCount,
       visitCompletion,
       consentRate,
