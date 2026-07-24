@@ -1,10 +1,11 @@
-
 import RecentActivity from "../../../components/dashboard/shared/RecentActivity";
 // ===== END F2 CHANGES =====
 // ===== START F2 CHANGES =====
 import StudyComments from "./StudyComments";
 // ===== END F2 CHANGES =====
-import React, { useState }from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useParams } from "react-router-dom";
+import { getStudyLogs } from "../../../services/adminService";
 import "./StudyActivity.css";
 
 // ===== START F2 CHANGES =====
@@ -40,31 +41,55 @@ const upcomingActivities = [
 
 // ===== END F2 CHANGES =====
 
-// ===== START F2 CHANGES =====
-const recentActivities = [
-  {
-    id: 1,
-    title: "Email sent to Investigator",
-    site: "Apollo Hospital",
-    time: "10 mins ago",
-  },
-  {
-    id: 2,
-    title: "Site Monitoring Visit",
-    site: "Care Hospital",
-    time: "1 hour ago",
-  },
-  {
-    id: 3,
-    title: "Study Document Uploaded",
-    site: "Global Research Center",
-    time: "Yesterday",
-  },
-];
-// ===== END F2 CHANGES =====
-
 function StudyActivity() {
+    const { id: studyCode } = useParams();
     const [showComposeModal, setShowComposeModal] = useState(false);
+
+    // D2 (Activity Access Control): Recent Activity is sourced from the
+    // shared, already role/site-scoped getStudyLogs() service (same source
+    // used by the Logs tab) instead of a static, unscoped array. This
+    // guarantees Admin retains broad authorized visibility while Site
+    // Staff/PI only see activity for their authorized site — no Site A →
+    // Site B leakage, and nothing is shown outside the current study.
+    const loadRecentActivities = useCallback(() => {
+        if (!studyCode) {
+            return [];
+        }
+
+        return getStudyLogs(studyCode)
+            .filter((log) => log.type === "Audit")
+            .map((log) => ({
+                id: log.id,
+                title: log.action,
+                site: log.site || "—",
+                time: log.timestamp,
+            }));
+    }, [studyCode]);
+
+    const [recentActivities, setRecentActivities] = useState(loadRecentActivities);
+
+    useEffect(() => {
+        setRecentActivities(loadRecentActivities());
+    }, [loadRecentActivities]);
+
+    useEffect(() => {
+        // Event-driven sync (no polling): refresh whenever an activity is
+        // recorded or underlying study/subject data changes elsewhere.
+        const refresh = () => setRecentActivities(loadRecentActivities());
+
+        window.addEventListener("activity-log-updated", refresh);
+        window.addEventListener("studies-updated", refresh);
+        window.addEventListener("subjects-updated", refresh);
+        window.addEventListener("storage", refresh);
+
+        return () => {
+            window.removeEventListener("activity-log-updated", refresh);
+            window.removeEventListener("studies-updated", refresh);
+            window.removeEventListener("subjects-updated", refresh);
+            window.removeEventListener("storage", refresh);
+        };
+    }, [loadRecentActivities]);
+
     const handleRefresh = () => {
         window.location.reload();
     };
@@ -220,3 +245,4 @@ function StudyActivity() {
 }
 
 export default StudyActivity;
+

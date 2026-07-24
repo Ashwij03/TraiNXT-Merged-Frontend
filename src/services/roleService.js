@@ -188,10 +188,7 @@ export function getAccessibleSites(user = getCurrentUser()) {
 
   return sites.filter(
     (site) =>
-      site.name === assignedSite ||
-      site.id === assignedSite ||
-      site.name?.includes(assignedSite) ||
-      assignedSite?.includes(site.name)
+      site.id === assignedSite || matchesOrg(site.name, assignedSite)
   );
 }
 
@@ -246,15 +243,25 @@ export function getAccessibleStudies(user = getCurrentUser()) {
 
     const studyField = effectiveRole === ROLES.CRO ? "cro" : "sponsor";
 
-    const matchedStudies = studies.filter((study) =>
-      matchesOrg(study[studyField], orgName)
-    );
+    // A2 (Role-Scoped Study Visibility): decide per study, not for the
+    // whole list. A study that IS explicitly assigned to a different
+    // CRO/Sponsor must never be shown — falling back to "show everything"
+    // here would leak another organization's study data.
+    //
+    // For CRO specifically: a study with no CRO recorded is not this CRO's
+    // study, so it must be excluded rather than shown by default — a CRO
+    // user should only ever see studies that list their own CRO name.
+    // Sponsor keeps its existing behavior (an unassigned sponsor study
+    // stays visible) since that wasn't part of this fix.
+    return studies.filter((study) => {
+      const fieldValue = study[studyField];
 
-    // Do not exclude every study just because the org label on the study
-    // doesn't happen to match the user's stored org name (e.g. legacy
-    // studies created before the org field was captured consistently).
-    // Fall back to showing all studies rather than an incorrect zero.
-    return matchedStudies.length > 0 ? matchedStudies : studies;
+      if (!fieldValue) {
+        return effectiveRole !== ROLES.CRO;
+      }
+
+      return matchesOrg(fieldValue, orgName);
+    });
   }
 
   const assignedSite = getAssignedSite(user);
@@ -263,13 +270,36 @@ export function getAccessibleStudies(user = getCurrentUser()) {
     return studies;
   }
 
-  return studies.filter((study) => {
+  const siteScopedStudies = studies.filter((study) => {
     const studySite = study.site || study.location || "";
-    return (
-      studySite === assignedSite ||
-      studySite.includes(assignedSite) ||
-      assignedSite.includes(studySite)
-    );
+    return matchesOrg(studySite, assignedSite);
+  });
+
+  if (effectiveRole !== ROLES.PI) {
+    return siteScopedStudies;
+  }
+
+  // A PI must additionally be the named Principal Investigator recorded on
+  // the study — being at the right site isn't enough, since multiple PIs
+  // can be registered at the same site. Match against the PI's registered
+  // name (First Name + Last Name from registration), the same way name is
+  // stored in the study's principalInvestigator field. A study with no PI
+  // recorded yet is treated as unassigned and stays visible, consistent
+  // with the fallback used for unassigned CRO/Sponsor studies above.
+  const piName = user?.name || "";
+
+  if (!piName) {
+    return siteScopedStudies;
+  }
+
+  return siteScopedStudies.filter((study) => {
+    const studyPi = study.principalInvestigator || "";
+
+    if (!studyPi) {
+      return true;
+    }
+
+    return matchesOrg(studyPi, piName);
   });
 }
 
@@ -284,11 +314,7 @@ export function getStudiesForSite(siteName) {
 
   return studies.filter((study) => {
     const studySite = study.site || study.location || "";
-    return (
-      studySite === siteName ||
-      studySite.includes(siteName) ||
-      siteName.includes(studySite)
-    );
+    return matchesOrg(studySite, siteName);
   });
 }
 
@@ -334,11 +360,7 @@ export function filterBySite(items, siteField = "site", user = getCurrentUser())
 
   return items.filter((item) => {
     const value = item[siteField] || item.siteName || item.location || "";
-    return (
-      value === assignedSite ||
-      value.includes(assignedSite) ||
-      assignedSite.includes(value)
-    );
+    return matchesOrg(value, assignedSite);
   });
 }
 

@@ -197,6 +197,75 @@
 }
 
 /* =========================================
+   STUDY CONTEXT HEADER (A9)
+========================================= */
+
+.header-study-context {
+  align-items: center;
+  background: var(--tnxt-bg-alt);
+  border: 1px solid var(--tnxt-border);
+  border-radius: var(--tnxt-radius-full);
+  display: flex;
+  flex-shrink: 1;
+  gap: 6px;
+  max-width: 320px;
+  min-width: 0;
+  padding: 4px 12px;
+}
+
+.header-study-context--empty {
+  background: transparent;
+  border-style: dashed;
+}
+
+.header-study-context-label {
+  color: var(--tnxt-text-secondary);
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.header-study-context-value {
+  color: var(--tnxt-text);
+  font-size: var(--tnxt-font-size-sm);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-study-context-value--muted {
+  color: var(--tnxt-text-secondary);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.enterprise-header--role-branded .header-study-context {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.enterprise-header--role-branded .header-study-context-label {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.enterprise-header--role-branded .header-study-context-value {
+  color: var(--tnxt-text-inverse);
+}
+
+.enterprise-header--role-branded .header-study-context-value--muted {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+@media (max-width: 768px) {
+  .header-study-context {
+    max-width: 160px;
+  }
+}
+
+/* =========================================
    FILTERS
 ========================================= */
 
