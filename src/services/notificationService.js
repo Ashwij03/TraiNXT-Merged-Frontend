@@ -1,16 +1,3 @@
-// Shared notifications data service.
-//
-// Single localStorage key ("notifications") holds every notification record
-// across every study — this is the same key CRODATAContext.getSharedNotifications()
-// and Sponsor's sponsorDataStore already read from and listen for
-// ("notifications-updated"), so this service is the missing writer they were
-// built to expect (see the "notification service" comments already left in
-// reportService.js and commentService.js).
-//
-// There is no seeding/default data here on purpose (B10 requires no static
-// notifications when storage is empty). Records are only ever created by an
-// explicit action (subject/visit/document/report/comment/permission event),
-// via the notify* helpers below.
 import ROLES from "../constants/roles";
 import { getCurrentUser, getEffectiveRole, getAccessibleStudies } from "./roleService";
 
@@ -95,12 +82,25 @@ export function createNotification({
   eventId = "",
   metadata = {},
   createdAt = "",
-   actorName = "",
-    actorRole = "",
+  actorName = "",
+  actorRole = "",
 }) {
   const cleanTitle = String(title || "").trim();
   const cleanMessage = String(message || "").trim();
   const cleanEventId = String(eventId || "").trim();
+    const currentUser = getCurrentUser();
+
+  const resolvedActorName =
+    actorName ||
+    currentUser?.name ||
+    currentUser?.fullName ||
+    currentUser?.username ||
+    "System";
+
+  const resolvedActorRole =
+    actorRole ||
+    getEffectiveRole(currentUser) ||
+    "System";
 
   if (!cleanTitle || !cleanMessage) {
     return null;
@@ -119,21 +119,20 @@ export function createNotification({
   }
 
   const record = {
-  id: `NOTIF-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-  title: cleanTitle,
-  message: cleanMessage,
-
-  actorName: String(actorName || "").trim(),
-  actorRole: String(actorRole || "").trim(),
-
-  studyCode: studyCode ? String(studyCode) : "",
-  targetRoles: Array.isArray(targetRoles) ? targetRoles : [],
-  type: String(type || "").trim(),
-  eventId: cleanEventId,
-  metadata: metadata && typeof metadata === "object" ? metadata : {},
-  createdAt: createdAt ? String(createdAt) : new Date().toISOString(),
-  read: false,
-};
+    id: `NOTIF-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    title: cleanTitle,
+    message: cleanMessage,
+        actorName: resolvedActorName,
+    actorRole: resolvedActorRole,
+    studyCode: studyCode ? String(studyCode) : "",
+    targetRoles: Array.isArray(targetRoles) ? targetRoles : [],
+    type: String(type || "").trim(),
+    eventId: cleanEventId,
+    metadata: metadata && typeof metadata === "object" ? metadata : {},
+    createdAt: createdAt ? String(createdAt) : new Date().toISOString(),
+    read: false,
+  };
+  
 
   const next = [record, ...existing].slice(0, MAX_STORED_NOTIFICATIONS);
 
@@ -235,13 +234,9 @@ const OPERATIONAL_ROLES = [ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.PI];
 export function notifySubjectCreated(subject) {
   return createNotification({
     title: "Subject added",
-    message: `Subject ${
-      subject?.subjectId || subject?.id || ""
-    } was added to ${
-      subject?.studyCode || "the study"
+    message: `Subject ${subject?.subjectId || subject?.id || ""} was added to ${subject?.studyCode || "the study"}${
+      subject?.addedByRole ? ` by ${subject.addedByRole}` : ""
     }.`,
-   actorName: subject?.addedByName || "Unknown User",
-actorRole: subject?.addedByRole || "Unknown Role",
     studyCode: subject?.studyCode,
     targetRoles: OPERATIONAL_ROLES,
   });

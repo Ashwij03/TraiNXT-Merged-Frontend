@@ -63,9 +63,17 @@ export function getPendingAccessRequests() {
 
 export function getAccessRequestHistory() {
   const history = readJson(HISTORY_KEY, []).map(normalizeRequest);
+  const seenIds = new Set(history.map((request) => request.id));
+
+  // Only fall back to REQUESTS_KEY for resolved requests that were never
+  // recorded in HISTORY_KEY (e.g. legacy data from before history tracking
+  // existed). Requests resolved via acceptAccessRequest/revokeAccessRequest
+  // are already in `history` above, so re-adding them here would duplicate
+  // the id and break React's key uniqueness.
   const resolvedFromPending = getAllAccessRequests().filter(
-    (request) => request.status !== "Pending",
+    (request) => request.status !== "Pending" && !seenIds.has(request.id),
   );
+
   return [...history, ...resolvedFromPending].sort((a, b) =>
     String(b.timestamp || b.requestedOn).localeCompare(
       String(a.timestamp || a.requestedOn),

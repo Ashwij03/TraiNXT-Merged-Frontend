@@ -62,7 +62,7 @@ export default function RoleCommentsView({ embedded = false }) {
       .map(mapCommentRecord);
   }, [authoritativeComments, currentUser]);
 
-  const [filter, setFilter] = useState("unresolved");
+  const [filter, setFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSite, setSelectedSite] = useState(assignedSite);
   const [selectedStudy, setSelectedStudy] = useState("All Studies");
@@ -315,7 +315,7 @@ export default function RoleCommentsView({ embedded = false }) {
         <div className="pi-enterprise-kpi purple">
           <span className="pi-enterprise-kpi-label">Pending Review</span>
           <span className="pi-enterprise-kpi-value">
-            {pendingReviewComments}
+            {openComments + pendingReviewComments}
           </span>
         </div>
       </div>

@@ -275,7 +275,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
 
 <span
   onClick={() => {
-    
+   
 
     if (setSelectedPage) {
       setSelectedPage("comments");

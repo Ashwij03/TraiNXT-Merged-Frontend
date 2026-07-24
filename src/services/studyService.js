@@ -9,9 +9,12 @@ import {
   resolveSiteNumber,
   resolveSiteRecord,
 } from "../utils/siteDisplay";
+import {
+  addAuditLog as recordCanonicalAuditLog,
+  getRecentActivityLogs as getCanonicalRecentActivityLogs
+} from "./auditService";
 
 const STUDIES_STORAGE_KEY = "trianxtStudies";
-const AUDIT_LOG_KEY = "auditLogs";
 const SUBJECTS_STORAGE_KEY = "subjectsByStudy";
 
 function getStoredStudies() {
@@ -475,45 +478,21 @@ export function isStudyCompletedByCode(studyCode) {
   return Boolean(study && study.status === STUDY_STATUS_COMPLETED);
 }
 
-function getAuditLogs() {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    return JSON.parse(localStorage.getItem(AUDIT_LOG_KEY)) || [];
-  } catch {
-    return [];
-  }
-}
-
-function saveAuditLogs(logs) {
-  localStorage.setItem(AUDIT_LOG_KEY, JSON.stringify(logs));
-}
-
+// CANONICAL AUDIT ARCHITECTURE (Batch A): studyService no longer owns a
+// private "auditLogs" store. Persistence, normalization, and the
+// activity-log-updated sync event now live in the single canonical
+// src/services/auditService.js. These two functions are kept here, with
+// their exact original signatures, purely so every existing caller across
+// the app (dashboardService.js, adminService.js, StudyActivity.js,
+// SubjectVisits.js, VisitDetails.js, PIStudySubjectsProfile.js, and the
+// direct localStorage["auditLogs"] read in SubjectAuditTrail.js) keeps
+// working unchanged while recording through the one canonical service.
 export function addAuditLog(action, details) {
-  const logs = getAuditLogs();
-
-  const newLog = {
-    id: Date.now(),
-    timestamp: new Date().toISOString(),
-    action,
-    ...details
-  };
-
-  logs.unshift(newLog);
-
-  if (logs.length > 100) {
-    logs.pop();
-  }
-
-  saveAuditLogs(logs);
-
-  return newLog;
+  return recordCanonicalAuditLog(action, details);
 }
 
 export function getRecentActivityLogs(limit = 10) {
-  return getAuditLogs().slice(0, limit);
+  return getCanonicalRecentActivityLogs(limit);
 }
 
 export function deleteStudy(studyCode, deletionDetails = {}) {
@@ -548,6 +527,7 @@ export function deleteStudy(studyCode, deletionDetails = {}) {
   addAuditLog("STUDY_DELETED", {
     studyCode,
     studyName: study.name,
+    site: study.site || study.location || "",
     deletedBy: deletionDetails.deletedBy || "Unknown",
     reason: deletionDetails.reason || "",
     timestamp: new Date().toISOString()
@@ -561,6 +541,12 @@ export function deleteStudy(studyCode, deletionDetails = {}) {
 export function deleteSubject(studyCode, subjectId, deletionDetails = {}) {
   const subjectsByStudy =
     JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
+
+  const existingSubject = Array.isArray(subjectsByStudy[studyCode])
+    ? subjectsByStudy[studyCode].find(
+        (subject) => String(subject.id) === String(subjectId)
+      )
+    : null;
 
   if (Array.isArray(subjectsByStudy[studyCode])) {
     subjectsByStudy[studyCode] = subjectsByStudy[studyCode].filter(
@@ -576,6 +562,7 @@ export function deleteSubject(studyCode, subjectId, deletionDetails = {}) {
   addAuditLog("SUBJECT_DELETED", {
     studyCode,
     subjectId,
+    site: existingSubject?.site || "",
     deletedBy: deletionDetails.deletedBy || "Unknown",
     reason: deletionDetails.reason || "",
     timestamp: new Date().toISOString()

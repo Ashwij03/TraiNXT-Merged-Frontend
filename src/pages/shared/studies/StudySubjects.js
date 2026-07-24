@@ -1,10 +1,6 @@
 import { readStorage } from "../../../utils/storageHelpers";
 import { useEffect, useMemo, useState } from "react";
-import {
-  useNavigate,
-  useParams,
-  useSearchParams,
-} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   FiArrowLeft,
   FiChevronLeft,
@@ -184,14 +180,11 @@ function StudySubjects({
   showBackButton = true,
 }) {
   const params = useParams();
-const navigate = useNavigate();
-const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
-const subjectIdFromUrl = searchParams.get("subject");
-
-const studyId = String(
-  params.id || params.studyId || params.code || ""
-).trim();
+  const studyId = String(
+    params.id || params.studyId || params.code || ""
+  ).trim();
 
   const [subjectsByStudy, setSubjectsByStudy] = useState(() =>
     readStorage(SUBJECTS_STORAGE_KEY, {})
@@ -271,29 +264,18 @@ const studyId = String(
   }, [studyId]);
 
   useEffect(() => {
-  const savedSubject = readStorage(
-    SELECTED_SUBJECT_STORAGE_KEY,
-    null
-  );
+    const savedSubject = readStorage(SELECTED_SUBJECT_STORAGE_KEY, null);
 
-  // URL subject is the source of truth
-  if (subjectIdFromUrl) {
-    setSelectedSubjectId(subjectIdFromUrl);
-    return;
-  }
+    if (
+      savedSubject?.id &&
+      normalizeValue(savedSubject.studyId) === normalizeValue(studyId)
+    ) {
+      setSelectedSubjectId(savedSubject.id);
+      return;
+    }
 
-  // Fallback to localStorage when no subject is in the URL
-  if (
-    savedSubject?.id &&
-    normalizeValue(savedSubject.studyId) ===
-      normalizeValue(studyId)
-  ) {
-    setSelectedSubjectId(savedSubject.id);
-    return;
-  }
-
-  setSelectedSubjectId(null);
-}, [studyId, subjectIdFromUrl]);
+    setSelectedSubjectId(null);
+  }, [studyId]);
 
   const subjectsData = useMemo(() => {
     return getSubjectsForStudy(subjectsByStudy, studyId);
@@ -353,49 +335,23 @@ const studyId = String(
     );
   }, [selectedSubjectId, subjectsData]);
 
- const saveSubjects = (updatedSubjectsByStudy) => {
-  setSubjectsByStudy(updatedSubjectsByStudy);
+  const saveSubjects = (updatedSubjectsByStudy) => {
+    setSubjectsByStudy(updatedSubjectsByStudy);
 
-  writeStorage(
-    SUBJECTS_STORAGE_KEY,
-    updatedSubjectsByStudy,
-    "subjects-updated"
-  );
-};
-
-const handleSaveSubject = () => {
-  const subjectId = newSubject.id.trim();
-  const initials = newSubject.initials.trim();
-
-  if (!studyId || !subjectId) {
-    window.alert("Subject ID is required.");
-    return;
-  }
-
-  if (!initials) {
-    window.alert("Initials are required.");
-    return;
-  }
-
-  if (
-    newSubject.screeningDate &&
-    newSubject.enrollmentDate &&
-    new Date(newSubject.enrollmentDate) <
-      new Date(newSubject.screeningDate)
-  ) {
-    window.alert(
-      "Enrollment Date cannot be earlier than Screening Date."
+    writeStorage(
+      SUBJECTS_STORAGE_KEY,
+      updatedSubjectsByStudy,
+      "subjects-updated"
     );
-    return;
-  }
+  };
 
-  // 👇 Paste ALL of your remaining save logic here
-  // (duplicate check, create/update, syncSubjectSchedules, notifySubjectCreated...)
+  const handleSaveSubject = () => {
+    const subjectId = newSubject.id.trim();
 
-  setNewSubject(emptySubjectForm);
-  setEditingSubjectId(null);
-  setShowSubjectModal(false);
-
+    if (!studyId || !subjectId) {
+      window.alert("Subject ID is required.");
+      return;
+    }
 
     const isEditing = Boolean(editingSubjectId);
 
@@ -424,17 +380,7 @@ const handleSaveSubject = () => {
         return;
       }
     }
-if (
-  newSubject.screeningDate &&
-  newSubject.enrollmentDate &&
-  new Date(newSubject.enrollmentDate) <
-    new Date(newSubject.screeningDate)
-) {
-  window.alert(
-    "Enrollment Date cannot be earlier than Screening Date."
-  );
-  return;
-}
+
     const duplicateExists = subjectsData.some(
       (subject) =>
         normalizeValue(subject.id) === normalizeValue(subjectId) &&
@@ -584,23 +530,12 @@ if (
       // field names here rather than renaming the stored record shape used by
       // every other subject reader in the app.
       notifySubjectCreated({
-  subjectId,
-  studyCode: studyId,
-
-  // Dynamic actor name
-  addedByName:
-    currentUser?.name ||
-    currentUser?.username ||
-    currentUser?.fullName ||
-    currentUser?.displayName ||
-    currentUser?.email ||
-    "Unknown User",
-
-  // Dynamic actor role
-  addedByRole:
-    ROLE_LABELS[getEffectiveRole(currentUser)] ||
-    getEffectiveRole(currentUser),
-});
+        subjectId,
+        studyCode: studyId,
+        addedByRole:
+          ROLE_LABELS[getEffectiveRole(currentUser)] ||
+          getEffectiveRole(currentUser),
+      });
     }
 
     setNewSubject(emptySubjectForm);
@@ -609,17 +544,15 @@ if (
   };
 
   const openAddSubjectModal = () => {
-  // B2: PI has read-only access
-  if (!showAddSubject) {
-    return;
-  }
+    // Item 7 (Stage 5A): prevent opening the Add Subject flow at all when
+    // the target study is Completed. Shared service still enforces this
+    // as defense in depth if the flow is somehow reached.
+    if (isStudyCompleted) {
+      window.alert(COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE);
+      return;
+    }
 
-  if (isStudyCompleted) {
-    window.alert(COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE);
-    return;
-  }
-
-  setEditingSubjectId(null);
+    setEditingSubjectId(null);
     setNewSubject({
       ...emptySubjectForm,
       ...getStudyDerivedSubjectFormFields(),
@@ -628,22 +561,17 @@ if (
   };
 
   const openEditSubjectModal = (subject) => {
-  // B2: PI has read-only access and cannot edit subjects
-  if (!canModifySubjects) {
-    return;
-  }
+    if (!subject) {
+      return;
+    }
 
-  if (!subject) {
-    return;
-  }
-
-  // Item 7 (extension): prevent opening the Edit Subject flow at all when
-  // the target study is Completed. Shared service still enforces this
-  // as defense in depth if the flow is somehow reached.
-  if (isStudyCompleted) {
-    window.alert(COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE);
-    return;
-  }
+    // Item 7 (extension): prevent opening the Edit Subject flow at all when
+    // the target study is Completed. Shared service still enforces this
+    // as defense in depth if the flow is somehow reached.
+    if (isStudyCompleted) {
+      window.alert(COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE);
+      return;
+    }
 
     setEditingSubjectId(subject.id);
     setNewSubject({
@@ -660,22 +588,17 @@ if (
   };
 
   const handleDeleteSubject = (subject) => {
-  // B2: PI has read-only access and cannot delete subjects
-  if (!canModifySubjects) {
-    return;
-  }
+    if (!subject) {
+      return;
+    }
 
-  if (!subject) {
-    return;
-  }
+    const confirmed = window.confirm(
+      `Delete subject ${subject.id}? This cannot be undone.`
+    );
 
-  const confirmed = window.confirm(
-    `Delete subject ${subject.id}? This cannot be undone.`
-  );
-
-  if (!confirmed) {
-    return;
-  }
+    if (!confirmed) {
+      return;
+    }
 
     const updatedSubjectsForStudy = subjectsData.filter(
       (item) => normalizeValue(item.id) !== normalizeValue(subject.id)
@@ -716,14 +639,10 @@ if (
   };
 
   const closeSubjectFolder = () => {
-  localStorage.removeItem(SELECTED_SUBJECT_STORAGE_KEY);
-  setSelectedSubjectId(null);
-  setSearchTerm("");
-
-  navigate(
-    `/study-dashboard/${encodeURIComponent(studyId)}?tab=Subjects`
-  );
-};
+    localStorage.removeItem(SELECTED_SUBJECT_STORAGE_KEY);
+    setSelectedSubjectId(null);
+    setSearchTerm("");
+  };
 
   if (selectedSubject) {
     const subjectContextKey = getSubjectContextKey(
@@ -1058,36 +977,10 @@ if (
       )}
 
       {showSubjectModal && (
-       <div
-  className="subject-modal-overlay"
-  onClick={() => {
-    setShowSubjectModal(false);
-    setNewSubject(emptySubjectForm);
-    setEditingSubjectId(null);
-  }}
->
-         <div
-  className="subject-modal"
-  onClick={(event) => event.stopPropagation()}
->
+        <div className="subject-modal-overlay">
+          <div className="subject-modal">
+            <h3>{editingSubjectId ? "Edit Subject" : "Add New Subject"}</h3>
 
-  <div className="subject-modal-header">
-    <h3>
-      {editingSubjectId ? "Edit Subject" : "Add New Subject"}
-    </h3>
-
-    <button
-      type="button"
-      className="modal-close-btn"
-      onClick={() => {
-        setShowSubjectModal(false);
-        setNewSubject(emptySubjectForm);
-        setEditingSubjectId(null);
-      }}
-    >
-      ×
-    </button>
-  </div>
             <label htmlFor="subject-id">Subject ID</label>
             <input
               id="subject-id"

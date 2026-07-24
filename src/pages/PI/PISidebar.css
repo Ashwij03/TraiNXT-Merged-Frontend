@@ -59,15 +59,15 @@
 }
 
 .menu-item.active-menu {
-  background: #2563eb;
-  color: #ffffff;
+  background: #2563eb !important;
+  color: #ffffff !important;
   font-weight: 600;
-  border-left: 4px solid #2563eb;
+  border-left: 4px solid #60a5fa;
   padding-left: 10px;
 }
 
 .menu-item.active-menu svg {
-  color: #60a5fa;
+  color: #ffffff !important;
 }
 
 .sidebar {
@@ -77,7 +77,7 @@
   width: 220px;
   min-width: 220px;
   height: calc(100vh - 72px);
-  background: #082b3d;
+  background: #0b3b55;
   color: white;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -215,4 +215,42 @@
 .pi-sidebar-brand img {
     width: 42px !important;
     height: 42px !important;
+}
+.pi-sidebar .menu-item {
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.pi-sidebar .menu-item:active {
+  transform: scale(0.98);
+  background-color: #2563eb !important;
+  color: white !important;
+}
+
+.pi-sidebar .menu-item:active svg {
+  color: white !important;
+}
+
+/* =====================================
+   B6 - PI SIDEBAR ACTIVE STATE
+===================================== */
+
+.pi-sidebar .menu-item {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pi-sidebar .menu-item.active-menu {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  border-left: 4px solid #93c5fd !important;
+}
+
+.pi-sidebar .menu-item.active-menu svg {
+  color: #ffffff !important;
+}
+
+.pi-sidebar .menu-item:hover {
+  background-color: rgba(37, 99, 235, 0.6);
+  color: #ffffff;
 }

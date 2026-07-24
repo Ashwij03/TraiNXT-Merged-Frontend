@@ -162,24 +162,22 @@ function Notifications() {
                   <p style={{ margin: "6px 0 0", color: "#4b5563" }}>
                     {notification.message}
                   </p>
-                {notification.actorName && (
-  <small
-    style={{
-      color: "#6b7280",
-      display: "block",
-      marginTop: "4px",
-    }}
-  >
-    By {notification.actorName}
-    {notification.actorRole
-      ? ` - ${notification.actorRole}`
-      : ""}
-  </small>
-)}
                   <small style={{ color: "#9ca3af" }}>
-                    {new Date(notification.createdAt).toLocaleString()}
-                    {notification.site ? ` • ${displaySite(notification.site)}` : ""}
-                  </small>
+  {notification.actorName
+    ? `By ${notification.actorName}`
+    : "By System"}
+
+  {notification.actorRole
+    ? ` (${notification.actorRole})`
+    : ""}
+
+  {" • "}
+  {new Date(notification.createdAt).toLocaleString()}
+
+  {notification.site
+    ? ` • ${displaySite(notification.site)}`
+    : ""}
+</small>
                 </div>
 
                 <div className="notification-actions">
