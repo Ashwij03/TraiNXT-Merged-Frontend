@@ -4,18 +4,26 @@ import CROModal from "./CROModal";
 import CROLayout from "./CROLayout";
 import { useCROData } from "./CRODATAContext";
 import { CRO_STORAGE_KEYS, loadFromStorage } from "./croStorage";
+import { getCurrentUser, getAssignedSite } from "../../services/roleService";
 import "./CROSettings.css";
 import "../Admin/AdminPage.css";
 
-const DEFAULT_SETTINGS = {
-  organization: "Clinical Research Org",
-  email: "cro@trialnxt.com",
-  phone: "+91 9876543210",
-  timezone: "Asia/Kolkata",
-  notifications: true,
-  emailAlerts: true,
-  smsAlerts: false,
-  twoFactorEnabled: false,
+const getDefaultSettings = () => {
+  const currentUser = getCurrentUser();
+
+  return {
+    organization:
+      currentUser?.orgType ||
+      getAssignedSite(currentUser) ||
+      "Clinical Research Org",
+    email: currentUser?.email || "cro@trialnxt.com",
+    phone: currentUser?.phone || "+91 9876543210",
+    timezone: "Asia/Kolkata",
+    notifications: true,
+    emailAlerts: true,
+    smsAlerts: false,
+    twoFactorEnabled: false,
+  };
 };
 
 const SECTIONS = [
@@ -30,7 +38,7 @@ function CROSettings() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeSection, setActiveSection] = useState("account");
   const [settings, setSettings] = useState(() =>
-    loadFromStorage(CRO_STORAGE_KEYS.settings, DEFAULT_SETTINGS),
+    loadFromStorage(CRO_STORAGE_KEYS.settings, getDefaultSettings()),
   );
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileImage, setProfileImage] = useState(

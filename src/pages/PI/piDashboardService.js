@@ -10,7 +10,7 @@ import {
   getNotificationsForUser,
   markNotificationRead as markSharedNotificationRead,
 } from "../../services/notificationService";
-import { getCurrentUser } from "../../services/roleService";
+import { getCurrentUser, getAssignedSite } from "../../services/roleService";
 import { getComments, saveComments } from "../../services/adminService";
 import {
   getFilteredSchedules,
@@ -545,6 +545,7 @@ export const syncNotificationsPageToNavbar = (pageItems = []) => {
 export const getSettingsData = () => {
   const user = readStorage("currentUser", null);
   const dashboard = getDashboardData();
+  const assignedSite = getAssignedSite(user) || "";
 
   const defaults = {
     profile: {
@@ -555,9 +556,9 @@ export const getSettingsData = () => {
       role: user?.role || "Principal Investigator",
       department: "",
       email: user?.email || "",
-      phone: "",
-      institute: "",
-      siteName: "",
+      phone: user?.phone || "",
+      institute: user?.orgType || assignedSite,
+      siteName: assignedSite,
       status: "Active",
       studyAssignments: (dashboard.studies || []).map((study) => study.study),
       contactInfo: {

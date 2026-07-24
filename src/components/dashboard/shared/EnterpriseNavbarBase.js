@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./DashboardHeader.css";
 import SearchableDropdown from "../../common/SearchableDropdown";
 import RoleSwitcherDropdown from "../../common/RoleSwitcherDropdown";
@@ -81,6 +81,7 @@ function EnterpriseNavbarBase({
   setSelectedPage,
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const profileSectionRef = useRef(null);
 
   const currentUser = getCurrentUser();
@@ -193,6 +194,66 @@ function EnterpriseNavbarBase({
     return base;
   }, [userIsAdmin, effectiveRole, croOptions.length]);
 
+  // ---------------------------------------------------------------------
+  // A9 — Study Context Header
+  //
+  // The header's own Study dropdown (selectedStudyCode/SELECTED_STUDY_FILTER_KEY)
+  // is only one way a Study gets selected. Sidebar links, Quick Actions, and
+  // deep links all navigate straight to /study-dashboard/:code without ever
+  // touching that dropdown. Without this, the header could show one Study
+  // while the page underneath was showing another. Reading the code out of
+  // the route keeps every module — Admin, PI, CRO, Sponsor, Site Staff —
+  // showing the same Study context, since they all render this same header.
+  // ---------------------------------------------------------------------
+  const routeStudyCode = useMemo(() => {
+    const match = location.pathname.match(/^\/study-dashboard\/([^/?]+)/);
+    return match ? decodeURIComponent(match[1]) : "";
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!routeStudyCode) {
+      return;
+    }
+
+    if (routeStudyCode !== selectedStudyCode) {
+      setSelectedStudyCode(routeStudyCode);
+      setStoredStudyFilter(routeStudyCode);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [routeStudyCode]);
+
+  // Resolve the full Study record for whatever code the header currently
+  // holds (from its dropdown, the route, or a refreshed page). filterVersion
+  // is included so an edit made elsewhere (rename, status change) or a
+  // "studies-updated" event refreshes what's displayed here.
+  const selectedStudyDetails = useMemo(() => {
+    void filterVersion;
+
+    if (!selectedStudyCode) {
+      return null;
+    }
+
+    return getStudyByCode(selectedStudyCode) || null;
+  }, [selectedStudyCode, filterVersion]);
+
+  // Handle invalid Study context: a stored/route code that no longer
+  // resolves to a real Study (deleted elsewhere, corrupted storage, a
+  // stale link, or a code that isn't visible under the current role/preview
+  // role) must not be left displayed as if it were still valid. Clear it so
+  // the header falls back to its empty state instead of showing stale or
+  // incorrect details.
+  useEffect(() => {
+    if (!selectedStudyCode || selectedStudyDetails) {
+      return;
+    }
+
+    setSelectedStudyCode("");
+    setStoredStudyFilter("");
+    setSelectedSubject("");
+    setStoredSubjectFilter("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStudyCode, selectedStudyDetails]);
+
   useEffect(() => {
     touchUserSession(getCurrentUser());
   }, [userEmail]);
@@ -213,12 +274,19 @@ function EnterpriseNavbarBase({
   useEffect(() => {
     const bumpFilters = () => setFilterVersion((value) => value + 1);
 
+    // "studies-updated" (dispatched by studyService on create/update/delete)
+    // is included here so the Study Context Header picks up name/status
+    // edits, or a deletion, immediately — without this the header could
+    // keep showing stale study details until something else forced a
+    // re-render.
     window.addEventListener(HEADER_FILTERS_EVENT, bumpFilters);
     window.addEventListener(ADMIN_PREVIEW_ROLE_EVENT, bumpFilters);
+    window.addEventListener("studies-updated", bumpFilters);
 
     return () => {
       window.removeEventListener(HEADER_FILTERS_EVENT, bumpFilters);
       window.removeEventListener(ADMIN_PREVIEW_ROLE_EVENT, bumpFilters);
+      window.removeEventListener("studies-updated", bumpFilters);
     };
   }, []);
 
@@ -718,3 +786,4 @@ function EnterpriseNavbarBase({
 }
 
 export default EnterpriseNavbarBase;
+

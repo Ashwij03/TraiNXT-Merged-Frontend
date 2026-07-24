@@ -2,15 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
 import KPICard from "../../../components/dashboard/shared/KPICard";
-import { createStudy, getStudies } from "../../../services/studyService";
+import { createStudy } from "../../../services/studyService";
 import {
   getAccessibleStudies,
   getCurrentUser,
-  getEffectiveRole,
 } from "../../../services/roleService";
 import { canAddStudy } from "../../../utils/contentAccess";
 import { readStorage } from "../../../utils/storageHelpers";
-import ROLES from "../../../constants/roles";
 import {
   STUDY_STATUS_OPTIONS,
   STUDY_STATUS_DEFAULT,
@@ -177,18 +175,15 @@ function Studies() {
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
 
-  // For CRO, the main Studies page must mirror the exact same dynamic
-  // study source the CRO sidebar uses (getStudies(), unfiltered), so the
-  // sidebar count and the main page list/KPI always match. Every other
-  // role keeps using getAccessibleStudies() exactly as before.
+  // A2 (Role-Scoped Study Visibility): every role — including CRO — reads
+  // through getAccessibleStudies() so the Studies list only ever shows
+  // studies the current role is authorized to see. The sidebar
+  // (useRoleStudiesSidebar) now reads through the same function, so the
+  // sidebar count and this page's list/KPI stay in sync without falling
+  // back to the unfiltered study list for any role.
   const loadStudies = useCallback(() => {
     const user = getCurrentUser();
-    const effectiveRole = String(getEffectiveRole(user) || "")
-      .trim()
-      .toLowerCase();
-    const isCroRole = effectiveRole === String(ROLES.CRO).trim().toLowerCase();
-
-    return isCroRole ? getStudies() : getAccessibleStudies(user);
+    return getAccessibleStudies(user);
   }, []);
 
   const [studies, setStudies] = useState(() => loadStudies());
