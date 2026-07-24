@@ -1,7 +1,7 @@
 import "./DashboardSidebar.css";
 import TriaNXTLogo from "../../common/TriaNXTLogo";
-import { getStudies } from "../../../services/studyService";
 import {
+  getAccessibleStudies,
   getCurrentUser,
   getDashboardPath,
   getEffectiveRole,
@@ -62,7 +62,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
 
   const getStudiesSafe = () => {
     try {
-      const studies = getStudies();
+      const studies = getAccessibleStudies(currentUser);
       return Array.isArray(studies) ? studies : [];
     } catch {
       return [];
@@ -856,3 +856,17 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
 }
 
 export default DashboardSidebar;
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -152,6 +152,10 @@ function getSubjectDetailCards(subject, siteSources = []) {
       value: subject?.pi || "—",
     },
     {
+      label: "Study ID",
+      value: subject?.studyId || "—",
+    },
+    {
       label: "Site",
       value: siteDisplay,
     },
@@ -260,6 +264,7 @@ function StudySubjects({
   }, [studyId]);
 
   useEffect(() => {
+  const loadSelectedSubject = () => {
     const savedSubject = readStorage(SELECTED_SUBJECT_STORAGE_KEY, null);
 
     if (
@@ -267,11 +272,21 @@ function StudySubjects({
       normalizeValue(savedSubject.studyId) === normalizeValue(studyId)
     ) {
       setSelectedSubjectId(savedSubject.id);
-      return;
+    } else {
+      setSelectedSubjectId(null);
     }
+  };
 
-    setSelectedSubjectId(null);
-  }, [studyId]);
+  // Load on first render
+  loadSelectedSubject();
+
+  // Update whenever the sidebar selects a subject
+  window.addEventListener("subject-selected", loadSelectedSubject);
+
+  return () => {
+    window.removeEventListener("subject-selected", loadSelectedSubject);
+  };
+}, [studyId]);
 
   const subjectsData = useMemo(() => {
     return getSubjectsForStudy(subjectsByStudy, studyId);

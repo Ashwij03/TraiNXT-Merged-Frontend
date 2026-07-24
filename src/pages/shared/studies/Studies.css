@@ -771,7 +771,7 @@
 .study-modal {
   width: 100%;
   max-width: 860px;
-  max-height: 90vh;
+  max-height: 75vh;
   padding: 24px;
   overflow-y: auto;
   border-radius: 10px;
