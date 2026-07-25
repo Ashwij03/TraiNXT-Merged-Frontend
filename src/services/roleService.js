@@ -210,7 +210,7 @@ function getUserOrgName(user) {
   );
 }
 
-function matchesOrg(value, orgName) {
+export function matchesOrg(value, orgName) {
   if (!value || !orgName) {
     return false;
   }
@@ -487,6 +487,7 @@ export function canAccessRoute(path, user = getCurrentUser()) {
     "/logs": Object.values(ROLES),
     "/logs/training": Object.values(ROLES),
     "/logs/delegation": Object.values(ROLES),
+    "/audit-logs": [ROLES.ADMIN, ROLES.SITE_STAFF],
     "/training": Object.values(ROLES),
     "/delegation": Object.values(ROLES)
   };

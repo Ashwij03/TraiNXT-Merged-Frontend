@@ -31,6 +31,7 @@ import Sites from "./pages/Admin/Sites";
 import LogsPage from "./pages/shared/logs/LogsPage";
 import TrainingLogPage from "./pages/shared/logs/TrainingLogPage";
 import DelegationLogPage from "./pages/shared/logs/DelegationLogPage";
+import AuditLogsPage from "./pages/shared/audit/AuditLogsPage";
 import {
   getDashboardPath,
   getCurrentUser,
@@ -269,6 +270,15 @@ function App() {
         element={
           <ProtectedRoute>
             <DelegationLogPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/audit-logs"
+        element={
+          <ProtectedRoute>
+            <AuditLogsPage />
           </ProtectedRoute>
         }
       />
