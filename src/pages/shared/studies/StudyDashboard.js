@@ -1,6 +1,4 @@
-// ===== START F2 CHANGES =====
 import StudyActivity from "./StudyActivity";
-// ===== END F2 CHANGES =====
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
@@ -12,9 +10,6 @@ import StudyWorkspaceTabs from "./StudyWorkspaceTabs";
 import StudyDocuments from "./StudyDocuments";
 import StudyComments from "./StudyComments";
 import StudyLogsTab from "./StudyLogsTab";
-// ===== START ITEM 16: Regulatory removed from Studies module =====
-// import StudyRegulatory from "./StudyRegulatory";
-// ===== END ITEM 16 =====
 import StudyReports from "./StudyReports";
 import StudyPlanning from "./StudyPlanning";
 import StudyVisitPlan from "./StudyVisitPlan";
@@ -27,7 +22,6 @@ import StudyHealthSummary from "../../../components/studies/StudyHealthSummary";
 import useStudyOverview from "../../../hooks/useStudyOverview";
 import StudyFinancials from "../../Sponsor/Financials/StudyFinancials";
 import AlertsPanel from "../../../components/dashboard/shared/AlertsPanel";
-// import SubjectProfile from "../subjects/SubjectProfile";
 import useStudiesDashboard from "../../../hooks/useStudiesDashboard";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
 import {
