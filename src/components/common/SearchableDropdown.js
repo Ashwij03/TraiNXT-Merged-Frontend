@@ -4,12 +4,17 @@ import "./SearchableDropdown.css";
 const DEFAULT_VISIBLE = 5;
 
 function sortOptions(options) {
-  return [...options].sort((a, b) =>
+  const allOption = options.find((option) => String(option.value) === "");
+  const rest = options.filter((option) => String(option.value) !== "");
+
+  const sortedRest = [...rest].sort((a, b) =>
     String(a.label).localeCompare(String(b.label), undefined, {
       numeric: true,
       sensitivity: "base"
     })
   );
+
+  return allOption ? [allOption, ...sortedRest] : sortedRest;
 }
 
 function SearchableDropdown({

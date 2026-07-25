@@ -786,13 +786,23 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
 
       {canViewAuditLogs && (
         <div
+          className={getLinkClass(pathname === "/audit-logs")}
+          onClick={() => handleNav("/audit-logs")}
+        >
+          <FiFileText size={16} />
+          <span>Audit Logs</span>
+        </div>
+      )}
+
+      {canViewAuditLogs && (
+        <div
           className={getLinkClass(
             pathname === "/logs" || pathname.startsWith("/logs/"),
           )}
           onClick={() => handleNav("/logs")}
         >
-          <FiFileText size={16} />
-          <span>Audit Logs</span>
+          <FiLayers size={16} />
+          <span>Logs</span>
         </div>
       )}
 
@@ -856,17 +866,3 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
 }
 
 export default DashboardSidebar;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
