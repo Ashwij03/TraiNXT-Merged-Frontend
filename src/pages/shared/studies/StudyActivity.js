@@ -1,16 +1,9 @@
 import RecentActivity from "../../../components/dashboard/shared/RecentActivity";
-// ===== END F2 CHANGES =====
-// ===== START F2 CHANGES =====
 import StudyComments from "./StudyComments";
-// ===== END F2 CHANGES =====
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { getStudyLogs } from "../../../services/adminService";
 import "./StudyActivity.css";
-
-// ===== START F2 CHANGES =====
-
-
 
 const overdueActivities = [
   {
@@ -38,8 +31,6 @@ const upcomingActivities = [
     status: "Planned",
   },
 ];
-
-// ===== END F2 CHANGES =====
 
 function StudyActivity() {
     const { id: studyCode } = useParams();
@@ -96,8 +87,6 @@ function StudyActivity() {
 
   return (
     <div className="workspace-content">
-
-      {/* ===== START F2 CHANGES ===== */}
 
       <div className="activity-header">
         <h2>Study Activity</h2>
@@ -175,20 +164,11 @@ function StudyActivity() {
         <div className="activity-card">
             <h3>Activity History</h3>
 
-            {/* ===== START F2 CHANGES ===== */}
-
             <StudyComments />
-
-            {/* ===== END F2 CHANGES ===== */}
 
         </div>
 
       </div>
-
-
-      {/* ===== END F2 CHANGES ===== */}
-
-      {/* ===== START F2 CHANGES ===== */}
 
       {showComposeModal && (
         <div className="email-modal-overlay">
@@ -236,13 +216,9 @@ function StudyActivity() {
         </div>
       )}
 
-      {/* ===== END F2 CHANGES ===== */}
-
-
     </div>
     
   );
 }
 
 export default StudyActivity;
-

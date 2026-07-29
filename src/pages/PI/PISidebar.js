@@ -1,4 +1,5 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
 import {
   FaHome,
   FaBookOpen,
@@ -25,11 +26,24 @@ const ICON_MAP = {
   cog: FaCog,
 };
 
-function PISidebar({ selectedPage, setSelectedPage, isOpen = true, onClose }) {
+function PISidebar({
+  selectedPage,
+  setSelectedPage,
+  isOpen = true,
+  onClose,
+}) {
+  const { pathname } = useLocation();
+
   const menuData = getSidebarMenuData();
 
-  const { studyCount, studiesOpen, isStudiesActive, handleStudiesClick } =
-    useRoleStudiesSidebar({ onNavigate: onClose });
+  const {
+    studyCount,
+    studiesOpen,
+    isStudiesActive,
+    handleStudiesClick,
+  } = useRoleStudiesSidebar({
+    onNavigate: onClose,
+  });
 
   const handleStudiesNav = () => {
     handleStudiesClick();
@@ -49,8 +63,26 @@ function PISidebar({ selectedPage, setSelectedPage, isOpen = true, onClose }) {
     }
   };
 
-  const getMenuClass = (page) =>
-    `menu-item${selectedPage === page ? " active-menu" : ""}`;
+  const getMenuClass = (page) => {
+    const routeMap = {
+      dashboard: "/pi-dashboard",
+      comments: "/pi-comments",
+      sitePerformance: "/pi-site-performance",
+      recruitment: "/pi-recruitment",
+      regulatory: "/pi-regulatory",
+      reports: "/pi-reports",
+      notifications: "/pi-notifications",
+      settings: "/pi-settings",
+    };
+
+    const route = routeMap[page];
+
+    const isActive =
+      route &&
+      (pathname === route || pathname.startsWith(`${route}/`));
+
+    return `menu-item${isActive ? " active-menu" : ""}`;
+  };
 
   const mainSections = menuData.sections.filter(
     (section) => section.id !== "dashboard",
@@ -74,6 +106,7 @@ function PISidebar({ selectedPage, setSelectedPage, isOpen = true, onClose }) {
           onClick={() => handleMenuClick("dashboard")}
         />
 
+        {/* Dashboard */}
         {dashboardSection && (
           <div
             className={getMenuClass(dashboardSection.page)}
@@ -84,9 +117,12 @@ function PISidebar({ selectedPage, setSelectedPage, isOpen = true, onClose }) {
           </div>
         )}
 
+        {/* Studies */}
         <div
           className={`menu-item studies-menu${
-            selectedPage === "studies" || isStudiesActive ? " active-menu" : ""
+            selectedPage === "studies" || isStudiesActive
+              ? " active-menu"
+              : ""
           }`}
           onClick={handleStudiesNav}
         >
@@ -94,12 +130,14 @@ function PISidebar({ selectedPage, setSelectedPage, isOpen = true, onClose }) {
           <span>Studies ({studyCount})</span>
         </div>
 
+        {/* Studies submenu */}
         {studiesOpen && (
           <div className="submenu-container pi-studies-tree">
             <RoleStudiesSidebarTree onNavigate={onClose} />
           </div>
         )}
 
+        {/* Other menu items */}
         {mainSections.map((section) => {
           const Icon = ICON_MAP[section.icon] || FaChartBar;
 
