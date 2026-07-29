@@ -90,24 +90,26 @@ function StudyComments() {
         </div>
       )}
 
-      <DataTable
-        title={`Comments — ${study?.name || studyCode}`}
-        columns={[
-          { key: "id", label: "ID" },
-          { key: "studyId", label: "Study ID" },
-          { key: "subjectDocument", label: "Subject/Document" },
-          { key: "comment", label: "Comment" },
-          { key: "by", label: "By" },
-          { key: "date", label: "Date" },
-          { key: "status", label: "Status" },
-          ...(canResolveComments()
-            ? [{ key: "action", label: "Action" }]
-            : [])
-        ]}
-        data={comments}
-        emptyMessage="No comments for this study"
-        pagination
-      />
+      <div style={{ overflowX: "auto" }}>
+        <DataTable
+          title={`Comments — ${study?.name || studyCode}`}
+          columns={[
+            { key: "id", label: "ID", width: "90px" },
+            { key: "studyId", label: "Study ID", width: "120px" },
+            { key: "subjectDocument", label: "Subject / Document", width: "220px" },
+            { key: "comment", label: "Comment", width: "320px" },
+            { key: "by", label: "By", width: "170px" },
+            { key: "date", label: "Date", width: "180px" },
+            { key: "status", label: "Status", width: "120px" },
+            ...(canResolveComments()
+              ? [{ key: "action", label: "Action", width: "120px" }]
+              : [])
+          ]}
+          data={comments}
+          emptyMessage="No comments for this study"
+          pagination
+        />
+      </div>
     </div>
   );
 }

@@ -195,6 +195,14 @@ export function createStudy(study) {
   }
 
   saveStoredStudies([...storedStudies, normalizedStudy]);
+
+  addAuditLog("STUDY_CREATED", {
+    studyCode: normalizedStudy.code,
+    studyName: normalizedStudy.name,
+    status: normalizedStudy.status,
+    timestamp: new Date().toISOString()
+  });
+
   notifyStudiesUpdated();
 
   // Item 9 (Stage 5B): a brand-new study can be entered with a Completed
@@ -279,6 +287,13 @@ export function updateStudy(studyCode, updates) {
   storedStudies[index] = updatedStudy;
 
   saveStoredStudies(storedStudies);
+
+  addAuditLog("STUDY_UPDATED", {
+    studyCode: updatedStudy.code,
+    studyName: updatedStudy.name,
+    status: updatedStudy.status,
+    timestamp: new Date().toISOString()
+  });
 
   /*
     Item 9 (Stage 5B): notify Admin, Site Staff, Principal Investigator,
