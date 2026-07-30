@@ -18,16 +18,15 @@
 
 .activity-grid{
     display:grid;
-    grid-template-columns:repeat(2,1fr);
+    grid-template-columns:repeat(2,minmax(450px,1fr));
     gap:20px;
+    width:100%;
 }
 
 .activity-card{
-    background:#fff;
-    border:1px solid #ddd;
-    border-radius:8px;
-    padding:20px;
-    min-height:180px;
+    width:100%;
+    min-width:0;
+    overflow-x:auto;
 }
 
 /* ===== START F2 CHANGES ===== */
@@ -51,10 +50,10 @@
 /* ===== END F2 CHANGES ===== */
 /* ===== START F2 CHANGES ===== */
 
-.activity-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #ffffff;
+.activity-table{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:auto;
 }
 
 .activity-table thead th {
