@@ -69,6 +69,30 @@ function isVisibleToUser(notification, user) {
   return accessibleStudyCodeSet(user).has(String(notification.studyCode));
 }
 
+// Resolves "Name (Role)" text for embedding directly in a notification
+// message body. Falls back to the current signed-in user when the caller
+// didn't pass an explicit actor name/role on the record itself — mirrors
+// the resolution createNotification does for its own actorName/actorRole
+// fields, so the message text and the "By ..." line rendered underneath it
+// always agree.
+function resolveActorDisplay({ actorName, actorRole } = {}) {
+  const currentUser = getCurrentUser();
+
+  const resolvedName =
+    actorName ||
+    currentUser?.name ||
+    currentUser?.fullName ||
+    currentUser?.username ||
+    "System";
+
+  const resolvedRole =
+    actorRole ||
+    getEffectiveRole(currentUser) ||
+    "System";
+
+  return `${resolvedName} (${resolvedRole})`;
+}
+
 // Generic writer — every public notify* helper below funnels through here so
 // storage shape and the "only dispatch when something actually changed"
 // rule stay in one place. `eventId` is an optional stable identity for
@@ -82,10 +106,25 @@ export function createNotification({
   eventId = "",
   metadata = {},
   createdAt = "",
+  actorName = "",
+  actorRole = "",
 }) {
   const cleanTitle = String(title || "").trim();
   const cleanMessage = String(message || "").trim();
   const cleanEventId = String(eventId || "").trim();
+  const currentUser = getCurrentUser();
+
+  const resolvedActorName =
+    actorName ||
+    currentUser?.name ||
+    currentUser?.fullName ||
+    currentUser?.username ||
+    "System";
+
+  const resolvedActorRole =
+    actorRole ||
+    getEffectiveRole(currentUser) ||
+    "System";
 
   if (!cleanTitle || !cleanMessage) {
     return null;
@@ -107,6 +146,8 @@ export function createNotification({
     id: `NOTIF-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     title: cleanTitle,
     message: cleanMessage,
+    actorName: resolvedActorName,
+    actorRole: resolvedActorRole,
     studyCode: studyCode ? String(studyCode) : "",
     targetRoles: Array.isArray(targetRoles) ? targetRoles : [],
     type: String(type || "").trim(),
@@ -216,9 +257,10 @@ const OPERATIONAL_ROLES = [ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.PI];
 export function notifySubjectCreated(subject) {
   return createNotification({
     title: "Subject added",
-    message: `Subject ${subject?.subjectId || subject?.id || ""} was added to ${subject?.studyCode || "the study"}${
-      subject?.addedByRole ? ` by ${subject.addedByRole}` : ""
-    }.`,
+    message: `Subject ${subject?.subjectId || subject?.id || ""} was added to ${subject?.studyCode || "the study"} by ${resolveActorDisplay({
+      actorName: subject?.addedByName,
+      actorRole: subject?.addedByRole,
+    })}.`,
     studyCode: subject?.studyCode,
     targetRoles: OPERATIONAL_ROLES,
   });
@@ -252,14 +294,16 @@ export function notifyVisitUpdated(visit) {
 }
 
 export function notifyDocumentAdded(document) {
-  const byClause = document?.addedByRole ? ` by ${document.addedByRole}` : "";
   const sectionClause = document?.sectionLabel
     ? ` in ${document.sectionLabel}`
     : "";
 
   return createNotification({
     title: "Document added",
-    message: `${document?.name || "A document"} was added to ${document?.studyCode || "the study"}${byClause}${sectionClause}.`,
+    message: `${document?.name || "A document"} was added to ${document?.studyCode || "the study"} by ${resolveActorDisplay({
+      actorName: document?.addedByName,
+      actorRole: document?.addedByRole,
+    })}${sectionClause}.`,
     studyCode: document?.studyCode,
     targetRoles: OPERATIONAL_ROLES,
   });
@@ -286,7 +330,10 @@ export function notifyReportUpdated(report) {
 export function notifyCommentAdded(comment) {
   return createNotification({
     title: "New comment",
-    message: `${comment?.authorRole || "Someone"} added a comment on ${comment?.studyCode || "a study"}.`,
+    message: `${resolveActorDisplay({
+      actorName: comment?.authorName,
+      actorRole: comment?.authorRole,
+    })} added a comment on ${comment?.studyCode || "a study"}.`,
     studyCode: comment?.studyCode,
     targetRoles: OPERATIONAL_ROLES,
   });

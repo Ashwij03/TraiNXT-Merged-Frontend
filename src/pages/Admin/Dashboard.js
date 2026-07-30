@@ -35,6 +35,9 @@ function AdminDashboard() {
   const [institutionFilter, setInstitutionFilter] = useState(
     getStoredInstitutionFilter()
   );
+  const [dashboardData, setDashboardData] = useState(() =>
+    getAdminDashboardData(getStoredInstitutionFilter())
+  );
 
   useEffect(() => {
     const handleFilterChange = (event) => {
@@ -51,10 +54,22 @@ function AdminDashboard() {
     };
   }, []);
 
-  const dashboardData = useMemo(
-    () => getAdminDashboardData(institutionFilter),
-    [institutionFilter]
-  );
+  useEffect(() => {
+    setDashboardData(getAdminDashboardData(institutionFilter));
+  }, [institutionFilter]);
+
+  useEffect(() => {
+    const refreshDashboard = () => {
+      setDashboardData(getAdminDashboardData(institutionFilter));
+    };
+
+    window.addEventListener("studies-updated", refreshDashboard);
+
+    return () => {
+      window.removeEventListener("studies-updated", refreshDashboard);
+    };
+  }, [institutionFilter]);
+
   const navigate = useNavigate();
 
   const {
