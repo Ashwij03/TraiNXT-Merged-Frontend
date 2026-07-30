@@ -15,7 +15,13 @@ function StudyComments() {
   const study = getStudyByCode(id);
   const studyCode = study?.code || id;
   const currentUser = getCurrentUser();
-  const { comments: liveComments, addComment, resolveComment } = useComments();
+  const {
+  comments: liveComments,
+  addComment,
+  resolveComment,
+  reopenComment,
+
+} = useComments();
   const [commentText, setCommentText] = useState("");
 
   const comments = useMemo(() => {
@@ -27,30 +33,56 @@ function StudyComments() {
         (comment) => !studyCode || String(comment.study) === String(studyCode),
       )
       .map((comment) => ({
-        id: comment.id,
+       id: `C-${String(comment.id).slice(-6)}`,
         studyId: comment.study || studyCode || "—",
         subjectDocument: comment.documentDeleted
           ? `${comment.subjectId} / ${comment.document || "Deleted document"}`
           : comment.document
             ? `${comment.subjectId} / ${comment.document}`
             : comment.subjectId,
-        comment: comment.description || "—",
+        comment: (
+  <div
+    style={{
+      whiteSpace: "normal",
+      wordBreak: "break-word",
+      maxWidth: "250px",
+    }}
+  >
+    {comment.description || "—"}
+  </div>
+),
         by: comment.createdBy || "—",
         date: comment.createdAt || "—",
         status: comment.status,
-        action:
-          comment.status === "Open" && canResolveComments() ? (
-            <button
-              type="button"
-              onClick={() => resolveComment(comment.id)}
-            >
-              Resolve
-            </button>
-          ) : (
-            "—"
-          ),
+       action: canResolveComments() ? (
+  comment.status === "Open" ? (
+    <button
+      type="button"
+      onClick={() => resolveComment(comment.id)}
+    >
+      Resolve
+    </button>
+  ) : (
+    <button
+      type="button"
+      onClick={() => reopenComment(comment.id)}
+    >
+      Reopen
+    </button>
+  )
+) : (
+  "—"
+),
+
       }));
-  }, [liveComments, studyCode, study?.status, currentUser, resolveComment]);
+  }, [
+  liveComments,
+  studyCode,
+  study?.status,
+  currentUser,
+  resolveComment,
+  reopenComment,
+]);
 
   const handleAddComment = () => {
     const text = commentText.trim();
@@ -89,22 +121,26 @@ function StudyComments() {
           </button>
         </div>
       )}
-
-      <div style={{ overflowX: "auto" }}>
+<div
+  style={{
+    width: "100%",
+    overflowX: "auto",
+  }}
+>
         <DataTable
           title={`Comments — ${study?.name || studyCode}`}
-          columns={[
-            { key: "id", label: "ID", width: "90px" },
-            { key: "studyId", label: "Study ID", width: "120px" },
-            { key: "subjectDocument", label: "Subject / Document", width: "220px" },
-            { key: "comment", label: "Comment", width: "320px" },
-            { key: "by", label: "By", width: "170px" },
-            { key: "date", label: "Date", width: "180px" },
-            { key: "status", label: "Status", width: "120px" },
-            ...(canResolveComments()
-              ? [{ key: "action", label: "Action", width: "120px" }]
-              : [])
-          ]}
+    columns={[
+  { key: "id", label: "ID", width: "80px" },
+  { key: "studyId", label: "Study ID", width: "110px" },
+  { key: "subjectDocument", label: "Subject / Document", width: "180px" },
+  { key: "comment", label: "Comment", width: "250px" },
+  { key: "by", label: "By", width: "120px" },
+  { key: "date", label: "Date", width: "120px" },
+  { key: "status", label: "Status", width: "90px" },
+  ...(canResolveComments()
+    ? [{ key: "action", label: "Action", width: "90px" }]
+    : []),
+]}
           data={comments}
           emptyMessage="No comments for this study"
           pagination

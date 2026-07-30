@@ -118,6 +118,33 @@ function StudyDashboard() {
     localStorage.setItem("sidebarStudiesOpen", JSON.stringify(true));
     localStorage.setItem("sidebarStudyBinderOpen", JSON.stringify(true));
   }, [id]);
+  useEffect(() => {
+const handleStudyUpdated = (event) => {
+  if (event.detail?.code === id) {
+
+    console.log("EVENT STUDY:", event.detail);
+
+    localStorage.setItem(
+      "selectedStudy",
+      JSON.stringify(event.detail)
+    );
+
+    setCurrentStudy(event.detail);
+
+    setTimeout(() => {
+      console.log("AFTER EVENT:", getStudyByCode(id));
+    }, 100);
+
+    setStudyRefreshKey((value) => value + 1);
+  }
+};
+
+  window.addEventListener("study-updated", handleStudyUpdated);
+
+  return () => {
+    window.removeEventListener("study-updated", handleStudyUpdated);
+  };
+}, [id]);
 
   const { data } = useStudiesDashboard();
   const { comments: liveComments } = useComments();
@@ -132,9 +159,16 @@ function StudyDashboard() {
   const canViewActivity = hasPermission(PERMISSIONS.VIEW_SITE_ACTIVITIES, currentUser);
   // ===== END D2 PART 1 CHANGES =====
 
-  const currentStudy = getStudyByCode(id);
+  const [currentStudy, setCurrentStudy] = useState(() => getStudyByCode(id));
   const overview = useStudyOverview(id, studyRefreshKey);
 
+useEffect(() => {
+  const study = getStudyByCode(id);
+
+  console.log("USE EFFECT STUDY:", study);
+
+  setCurrentStudy(study);
+}, [id, studyRefreshKey]);
   // A2 (Role-Scoped Study Visibility): the route itself allows any
   // authenticated role to reach /study-dashboard/:id, and getStudyByCode()
   // reads the unfiltered study list, so this is the only place left that
@@ -373,15 +407,22 @@ function StudyDashboard() {
     event.preventDefault();
 
     try {
+      console.log("EDIT FORM:", JSON.stringify(editForm, null, 2))
       const updatedStudy = updateStudy(editForm.code, {
         ...editForm,
-        site: editForm.site || editForm.location,
-        location: editForm.location || editForm.site,
+       site: editForm.site,
+location: editForm.site,
         enrolled: Number(editForm.enrolled) || 0,
         targetSubjects: Number(editForm.targetSubjects) || 0,
       });
-
+ console.log("UPDATED STUDY:", JSON.stringify(updatedStudy, null, 2));
       localStorage.setItem("selectedStudy", JSON.stringify(updatedStudy));
+      window.dispatchEvent(
+  new CustomEvent("study-updated", {
+    detail: updatedStudy,
+  })
+);
+window.dispatchEvent(new Event("studies-updated"));
       setShowEditModal(false);
       setStudyRefreshKey((value) => value + 1);
     } catch (error) {
@@ -735,12 +776,12 @@ function StudyDashboard() {
 
                   <label>
                     Site / Hospital
-                    <input
-                      name="location"
-                      value={editForm.location || ""}
-                      onChange={handleEditFormChange}
-                      required
-                    />
+                  <input
+  name="site"
+  value={editForm.site || ""}
+  onChange={handleEditFormChange}
+  required
+/>
                   </label>
 
                   <label>

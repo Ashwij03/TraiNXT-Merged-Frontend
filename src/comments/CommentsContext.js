@@ -106,17 +106,32 @@ export function CommentsProvider({ children }) {
 
   const addComment = useCallback(
     (visitId, data = {}) => {
-      const record = addCommentRecord(
-        {
-          visitId,
-          description: data.text || data.description || "",
-          subjectId: data.subjectId || data.subject || "",
-          study: data.study || data.studyCode || "",
-          site: data.site || currentUser?.assignedSite || "",
-          stage: data.visitName || data.stage || "General",
-        },
-        currentUser
-      );
+    const record = addCommentRecord(
+  {
+    visitId,
+
+    description: data.text || data.description || "",
+
+    subjectId: data.subjectId || data.subject || "",
+
+    study: data.study || data.studyCode || "",
+
+    site: data.site || currentUser?.assignedSite || "",
+
+    stage: data.visitName || data.stage || "General",
+
+    activityId: data.activityId || "",
+
+    activityName: data.activityName || "",
+
+    activityType: data.activityType || "",
+
+    module: data.module || "",
+
+    sourceView: data.sourceView || "",
+  },
+  currentUser
+);
 
       // commentService already dispatches comments-updated /
       // sponsor-data-updated, which triggers refreshComments via the
