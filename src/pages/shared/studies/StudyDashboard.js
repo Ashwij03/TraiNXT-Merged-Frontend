@@ -232,21 +232,29 @@ function StudyDashboard() {
     }));
   }, [upcomingWindow]);
 
-  const filteredPendingComments = useMemo(() => {
+  // Phase 7 — IMP-4.12: derive Open Comments for this study from the
+  // canonical liveComments feed so the KPI card, PendingCommentsWidget
+  // header count, and any dashboard drilldown all update in the same
+  // tick when a comment is added / resolved / reopened. The visible
+  // list is still capped for the widget, but the total count exposed
+  // downstream is the full study-scoped open count.
+  const studyOpenComments = useMemo(() => {
     return liveComments
       .filter(isOpenComment)
       .filter(
         (comment) =>
           matchesCurrentStudy({ studyCode: comment.study }) ||
           matchesCurrentStudy(comment),
-      )
-      .slice(0, 5)
-      .map((comment) => ({
-        id: comment.id,
-        subject: comment.subjectId,
-        status: comment.status,
-      }));
+      );
   }, [liveComments, matchesCurrentStudy]);
+
+  const filteredPendingComments = useMemo(() => {
+    return studyOpenComments.slice(0, 5).map((comment) => ({
+      id: comment.id,
+      subject: comment.subjectId,
+      status: comment.status,
+    }));
+  }, [studyOpenComments]);
 
   const filteredAlerts = useMemo(() => {
     return safeArray(data?.alerts).filter(matchesCurrentStudy);
@@ -268,10 +276,13 @@ function StudyDashboard() {
   const studyKpis = useMemo(() => {
     return {
       subjects: filteredRecentSubjects.length,
-      comments: filteredPendingComments.length,
+      // Phase 7 — IMP-4.12: KPI reflects the full study-scoped Open
+      // Comments count, not the 5-row widget slice, and updates
+      // automatically when any comment status changes upstream.
+      comments: studyOpenComments.length,
       visits: filteredUpcomingVisits.length,
     };
-  }, [filteredRecentSubjects, filteredPendingComments, filteredUpcomingVisits]);
+  }, [filteredRecentSubjects, studyOpenComments, filteredUpcomingVisits]);
 
   const handleRefreshStudy = () => {
     setIsRefreshing(true);
@@ -588,7 +599,10 @@ function StudyDashboard() {
                 </div>
 
                 <div className="widget-grid">
-                  <PendingCommentsWidget comments={filteredPendingComments} />
+                  <PendingCommentsWidget
+                    comments={filteredPendingComments}
+                    total={studyOpenComments.length}
+                  />
                   <QuickActionsWidget
                     study={currentStudy}
                     studyCode={id}

@@ -794,17 +794,8 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         </div>
       )}
 
-      {canViewAuditLogs && (
-        <div
-          className={getLinkClass(
-            pathname === "/logs" || pathname.startsWith("/logs/"),
-          )}
-          onClick={() => handleNav("/logs")}
-        >
-          <FiLayers size={16} />
-          <span>Logs</span>
-        </div>
-      )}
+      {/* ---- Global Logs sidebar entry removed by request. Training and
+      Delegation logs are reachable from inside each study's Logs tab. ---- */}
 
       {sidebarItems.some((item) => item.key === "notifications") && (
         <div

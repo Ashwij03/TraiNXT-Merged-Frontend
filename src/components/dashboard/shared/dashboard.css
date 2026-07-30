@@ -61,6 +61,14 @@
   line-height: 1.25;
 }
 
+/* Phase 7 — IMP-4.12: inline count on Pending / Open comment widgets.
+   Neutral color/weight so the numeric badge doesn't compete with the
+   widget title and preserves existing enterprise typography. */
+.dashboard-widget-count {
+  color: var(--tnxt-text-muted, #6b7280);
+  font-weight: 500;
+}
+
 .visit-item,
 .comment-item {
   padding: var(--tnxt-space-md);
