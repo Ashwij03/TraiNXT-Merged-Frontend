@@ -131,12 +131,15 @@ function getSubjectsForStudy(subjectsByStudy, studyId) {
 }
 
 function getSubjectDetailCards(subject, siteSources = []) {
-  const siteDisplay = subject?.site
-    ? resolveSiteDisplay(subject.site, {
-        sources: siteSources,
-        fallback: subject.site || "—"
-      })
-    : "—";
+  const latestSite =
+  getSubjectStudyDefaults(subject?.studyId).site || subject?.site;
+
+const siteDisplay = latestSite
+  ? resolveSiteDisplay(latestSite, {
+      sources: siteSources,
+      fallback: latestSite,
+    })
+  : "—";
 
   return [
     {
@@ -147,10 +150,13 @@ function getSubjectDetailCards(subject, siteSources = []) {
       label: "Status",
       value: subject?.status || "—",
     },
-    {
-      label: "Principal Investigator",
-      value: subject?.pi || "—",
-    },
+   {
+  label: "Principal Investigator",
+  value:
+    getSubjectStudyDefaults(subject?.studyId).pi ||
+    subject?.pi ||
+    "—",
+},
     {
       label: "Study ID",
       value: subject?.studyId || "—",
@@ -414,14 +420,14 @@ function StudySubjects({
         if (normalizeValue(subject.id) !== normalizeValue(editingSubjectId)) {
           return subject;
         }
-
+      const latestDefaults = getSubjectStudyDefaults(studyId);
         const merged = {
           ...subject,
           ...newSubject,
           id: subjectId,
           initials: newSubject.initials.trim(),
-          pi: newSubject.pi.trim(),
-          site: newSubject.site.trim(),
+          pi: latestDefaults.pi,
+          site: latestDefaults.site,
           studyId,
           updatedAt: now,
         };
@@ -583,8 +589,8 @@ function StudySubjects({
       screeningDate: subject.screeningDate || "",
       enrollmentDate: subject.enrollmentDate || "",
       currentVisit: subject.currentVisit || "",
-      pi: subject.pi || "",
-      site: subject.site || "",
+      pi: getSubjectStudyDefaults(studyId).pi || subject.pi || "",
+      site: getSubjectStudyDefaults(studyId).site || subject.site || "",
     });
     setShowSubjectModal(true);
   };
@@ -780,14 +786,21 @@ function StudySubjects({
                     <td>{subject.id || "—"}</td>
                     <td>{subject.initials || "—"}</td>
                     <td>{subject.status || "—"}</td>
-                    <td>{subject.pi || "—"}</td>
+                    <td>{getSubjectStudyDefaults(studyId).pi || subject.pi || "—"}</td>
                     <td>
-                      {subject.site
-                        ? resolveSiteDisplay(subject.site, {
-                            sources: getStudies(),
-                            fallback: subject.site
-                          })
-                        : "—"}
+                     {
+  (() => {
+    const latestSite =
+      getSubjectStudyDefaults(studyId).site || subject.site;
+
+    return latestSite
+      ? resolveSiteDisplay(latestSite, {
+          sources: getStudies(),
+          fallback: latestSite,
+        })
+      : "—";
+  })()
+}
                     </td>
                     <td>{subject.screeningDate || "—"}</td>
                     <td>{subject.enrollmentDate || "—"}</td>

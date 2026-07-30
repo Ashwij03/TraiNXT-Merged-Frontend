@@ -8,9 +8,23 @@ export default function CommentModal({
   onClose,
   visitId,
   onSubmit,
+
   subject = "SUB001",
+
   visit = "Screening",
   context = {},
+
+  activityId = "",
+
+  activityName = "",
+
+  activityType = "",
+
+  module = "",
+
+  sourceView = "",
+
+  study = "",
 }) {
   const commentsContext = useComments();
   const currentUser = getCurrentUser();

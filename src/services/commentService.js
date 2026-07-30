@@ -134,6 +134,11 @@ export function addCommentRecord(payload, user = getCurrentUser()) {
   const newComment = {
     id: `C-${Date.now()}`,
     visitId: payload.visitId || "",
+    activityId: payload.activityId || "",
+    activityName: payload.activityName || "",
+    activityType: payload.activityType || "",
+    module: payload.module || "",
+    sourceView: payload.sourceView || "",
     parentId,
     subjectId: payload.subjectId || "",
     document: payload.document || payload.documentName || "",
@@ -142,8 +147,6 @@ export function addCommentRecord(payload, user = getCurrentUser()) {
     study: payload.study || payload.studyCode || "",
     site: payload.site || user?.assignedSite || "",
     activity: payload.activity || "",
-    module: payload.module || "",
-    sourceView: payload.sourceView || "",
     status: "Open",
     priority: payload.priority || "Medium",
     stage: payload.stage || "Monitoring",
@@ -159,7 +162,8 @@ export function addCommentRecord(payload, user = getCurrentUser()) {
   // record's own schema (shared with the document-scoped QC comment
   // feature above) uses { study, createdRole } — adapt the field names
   // here rather than renaming the stored record shape everywhere else.
-  notifyCommentAdded({
+  notifyCommentAdded({module: payload.module || "",
+    sourceView: payload.sourceView || "",
     studyCode: newComment.study,
     authorRole: newComment.createdRole,
   });

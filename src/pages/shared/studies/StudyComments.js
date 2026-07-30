@@ -16,7 +16,12 @@ function StudyComments() {
   const studyCode = study?.code || id;
   const currentUser = getCurrentUser();
   const assignedSite = getAssignedSite() || "";
-  const { comments: liveComments, addComment, resolveComment } = useComments();
+  const {
+    comments: liveComments,
+    addComment,
+    resolveComment,
+    reopenComment,
+  } = useComments();
   const [commentText, setCommentText] = useState("");
 
   const comments = useMemo(() => {
@@ -28,30 +33,48 @@ function StudyComments() {
         (comment) => !studyCode || String(comment.study) === String(studyCode),
       )
       .map((comment) => ({
-        id: comment.id,
+        id: `C-${String(comment.id).slice(-6)}`,
         studyId: comment.study || studyCode || "—",
         subjectDocument: comment.documentDeleted
           ? `${comment.subjectId} / ${comment.document || "Deleted document"}`
           : comment.document
             ? `${comment.subjectId} / ${comment.document}`
             : comment.subjectId,
-        comment: comment.description || "—",
+        comment: (
+          <div
+            style={{
+              whiteSpace: "normal",
+              wordBreak: "break-word",
+              maxWidth: "250px",
+            }}
+          >
+            {comment.description || "—"}
+          </div>
+        ),
         by: comment.createdBy || "—",
         date: comment.createdAt || "—",
         status: comment.status,
         action:
           comment.status === "Open" && canResolveComments(currentUser) ? (
-            <button
-              type="button"
-              onClick={() => resolveComment(comment.id)}
-            >
+            <button type="button" onClick={() => resolveComment(comment.id)}>
               Resolve
+            </button>
+          ) : comment.status === "Resolved" && canResolveComments(currentUser) ? (
+            <button type="button" onClick={() => reopenComment(comment.id)}>
+              Reopen
             </button>
           ) : (
             "—"
           ),
       }));
-  }, [liveComments, studyCode, study?.status, currentUser, resolveComment]);
+  }, [
+    liveComments,
+    studyCode,
+    study?.status,
+    currentUser,
+    resolveComment,
+    reopenComment,
+  ]);
 
   const handleAddComment = () => {
     const text = commentText.trim();
@@ -94,8 +117,12 @@ function StudyComments() {
           </button>
         </div>
       )}
-
-      <div style={{ overflowX: "auto" }}>
+      <div
+        style={{
+          width: "100%",
+          overflowX: "auto",
+        }}
+      >
         <DataTable
           title={`Comments — ${study?.name || studyCode}`}
           columns={[
@@ -108,7 +135,7 @@ function StudyComments() {
             { key: "status", label: "Status", width: "120px" },
             ...(canResolveComments(currentUser)
               ? [{ key: "action", label: "Action", width: "120px" }]
-              : [])
+              : []),
           ]}
           data={comments}
           emptyMessage="No comments for this study"
