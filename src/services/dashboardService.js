@@ -8,7 +8,7 @@ import {
   getSites,
   initializeAdminData
 } from "./adminService";
-import { isOpenComment } from "./commentService";
+import { buildCommentCounts, isOpenComment } from "./commentService";
 import { getUpcomingVisitsWindow } from "./visitScheduleService";
 
 export function getStudiesDashboard() {
@@ -23,14 +23,34 @@ export function getStudiesDashboard() {
     0
   );
   const openComments = comments.filter(isOpenComment);
+  // Phase 7 — IMP-4.12: single source for Open/Pending/Resolved/total
+  // counts consumed by dashboard widgets, KPI cards, and navigation
+  // badges. Derived from the same canonical `comments` array
+  // CommentsContext exposes, so the KPI row and RoleCommentsView table
+  // never disagree.
+  const commentCounts = buildCommentCounts(comments);
 
   return {
     kpis: {
       studies: studies.length,
       subjects: totalSubjects,
-      comments: openComments.length,
+      comments: commentCounts.open,
+      // Phase 7 — expose the full breakdown so any dashboard consumer
+      // that reads getStudiesDashboard() (e.g. useStudiesDashboard)
+      // can render Open / Pending / Resolved / Total without
+      // recomputing from raw records.
+      commentsOpen: commentCounts.open,
+      commentsPending: commentCounts.pending,
+      commentsPendingReview: commentCounts.pendingReview,
+      commentsResolved: commentCounts.resolved,
+      commentsTotal: commentCounts.total,
       visits: schedules.length
     },
+
+    // Same breakdown at the top level for consumers that treat KPIs as
+    // strictly numeric (e.g. small dashboard tiles) and read structured
+    // count objects separately.
+    commentCounts,
 
     enrollmentTrend:
       studies.length > 0

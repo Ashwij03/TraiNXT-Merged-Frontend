@@ -28,6 +28,53 @@ export function isOpenComment(comment) {
   return status === "open" || status === "unresolved";
 }
 
+// Phase 7 — IMP-4.12 (Comments Dashboard Counts).
+// Canonical status predicates and count builder. Every dashboard KPI,
+// summary widget, and navigation counter derives Open / Pending /
+// Resolved from these rules — the same rules RoleCommentsView filters
+// on — so a status transition (add / edit / resolve / reopen /
+// updateStatus) reflects in every count in the same tick.
+export function isResolvedComment(comment) {
+  return String(comment?.status || "").toLowerCase() === "resolved";
+}
+
+// "Pending Review" is a distinct workflow state used by RoleCommentsView
+// (see the status filter dropdown). Accept every variant spelling so
+// dashboard counts match the workflow view exactly.
+export function isPendingReviewComment(comment) {
+  const status = String(comment?.status || "").toLowerCase();
+  return (
+    status === "pending-review" ||
+    status === "pending review" ||
+    status === "pending"
+  );
+}
+
+// Central count builder — returns the full status breakdown for any
+// comment array (already scoped by caller: study, subject, activity, or
+// role-authorized full list). Consumers should never re-implement the
+// individual status filters; call this and read the fields they need.
+export function buildCommentCounts(list) {
+  const comments = Array.isArray(list) ? list : [];
+  const open = comments.filter(isOpenComment).length;
+  const resolved = comments.filter(isResolvedComment).length;
+  const pendingReview = comments.filter(isPendingReviewComment).length;
+  const total = comments.length;
+  const other = Math.max(0, total - open - resolved - pendingReview);
+
+  return {
+    total,
+    open,
+    // "pending" is the Phase 7 dashboard label: everything still awaiting
+    // resolution — open + pending-review. Callers that only want the
+    // pending-review bucket read `pendingReview` directly.
+    pending: open + pendingReview,
+    pendingReview,
+    resolved,
+    other,
+  };
+}
+
 function isDocumentScopedComment(comment) {
   return Boolean(comment.documentId || comment.subjectId);
 }
@@ -50,6 +97,26 @@ export function canResolveComments(user = getCurrentUser()) {
     hasPermission(PERMISSIONS.RESOLVE_COMMENT, user) &&
     [ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.PI].includes(role)
   );
+}
+
+// Only the original author (or Admin/PI/Site Staff who can already resolve)
+// may edit a comment body. CRO/Sponsor stay create-only per B7.
+export function canEditComment(comment, user = getCurrentUser()) {
+  if (!comment) {
+    return false;
+  }
+
+  const role = getEffectiveRole(user);
+
+  if (RESTRICTED_ROLES.includes(role)) {
+    return false;
+  }
+
+  if ([ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.PI].includes(role)) {
+    return true;
+  }
+
+  return comment.createdBy && user?.name && comment.createdBy === user.name;
 }
 
 // CRO/Sponsor may only ever post a top-level comment — they can never
@@ -110,6 +177,11 @@ export function getVisibleComments(options = {}, user = getCurrentUser()) {
   );
 }
 
+// Every mutation entry point in this module funnels through this helper so
+// every consumer that listens on either event stays in sync. Phase 7
+// (Cross-View Comments Synchronization) requires that Add / Edit / Resolve
+// / Reopen / Status Update trigger the exact same broadcast — do not add
+// side-specific event names here.
 function notifyCommentsUpdated() {
   window.dispatchEvent(new Event("comments-updated"));
   window.dispatchEvent(new Event("sponsor-data-updated"));
@@ -216,6 +288,98 @@ export function reopenCommentRecord(commentId, user = getCurrentUser()) {
       status: "Open"
     };
   });
+
+  saveComments(comments);
+  notifyCommentsUpdated();
+  return true;
+}
+
+// Phase 7: canonical body/metadata edit. Any consumer that lets a user
+// change a comment's text, priority, or stage must funnel through this
+// entry point so the same comments-updated / sponsor-data-updated events
+// fire and every subscribed view (Study/Subject/Activity/Open/Pending,
+// dashboard widgets, counters) refreshes off the shared store — no
+// duplicate localStorage writes, no per-view state to keep in sync.
+export function editCommentRecord(commentId, updates = {}, user = getCurrentUser()) {
+  const existing = getComments(user).find((item) => item.id === commentId);
+
+  if (!existing || !canEditComment(existing, user)) {
+    return null;
+  }
+
+  // Whitelist editable fields — never let a caller flip status, resolvedBy,
+  // createdBy, id or timestamps from here. Status changes go through
+  // resolveCommentRecord / reopenCommentRecord / updateCommentStatusRecord.
+  const editable = {};
+  if (typeof updates.description === "string") {
+    editable.description = updates.description;
+  }
+  if (typeof updates.text === "string" && updates.description === undefined) {
+    editable.description = updates.text;
+  }
+  if (typeof updates.priority === "string") {
+    editable.priority = updates.priority;
+  }
+  if (typeof updates.stage === "string") {
+    editable.stage = updates.stage;
+  }
+
+  if (Object.keys(editable).length === 0) {
+    return existing;
+  }
+
+  let updatedRecord = existing;
+  const comments = getComments(user).map((item) => {
+    if (item.id !== commentId) {
+      return item;
+    }
+    updatedRecord = {
+      ...item,
+      ...editable,
+      updatedAt: new Date().toISOString(),
+      updatedBy: user?.name || "Unknown",
+    };
+    return updatedRecord;
+  });
+
+  saveComments(comments);
+  notifyCommentsUpdated();
+  return updatedRecord;
+}
+
+// Phase 7: generic status-update entry point. Consumers that previously
+// wrote `{ status: "resolved" }` via ad-hoc saveComments calls (PI
+// dashboard service, CRO context) must go through here so the single
+// source of truth (CommentsContext) refreshes across every view.
+export function updateCommentStatusRecord(commentId, nextStatus, user = getCurrentUser()) {
+  const normalized = String(nextStatus || "").toLowerCase();
+
+  if (normalized === "resolved") {
+    return resolveCommentRecord(commentId, user);
+  }
+
+  if (normalized === "open" || normalized === "unresolved" || normalized === "reopen") {
+    return reopenCommentRecord(commentId, user);
+  }
+
+  // Fall-through: for any other status transition (e.g. "pending-review")
+  // require resolve-level permission and route through the same broadcast
+  // so counters/widgets pick it up. This preserves the existing custom
+  // statuses used by RoleCommentsView (`pending-review`).
+  if (!canResolveComments(user)) {
+    return false;
+  }
+
+  const comments = getComments(user).map((item) =>
+    item.id === commentId
+      ? {
+          ...item,
+          status: nextStatus,
+          updatedAt: new Date().toISOString(),
+          updatedBy: user?.name || "Unknown",
+        }
+      : item
+  );
 
   saveComments(comments);
   notifyCommentsUpdated();

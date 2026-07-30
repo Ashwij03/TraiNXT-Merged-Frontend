@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import DataTable from "../../../components/dashboard/shared/DataTable";
-import { getVisibleComments } from "../../../services/commentService";
+import { canViewComment } from "../../../services/commentService";
+import { getCurrentUser } from "../../../services/roleService";
+import { useComments } from "../../../comments/CommentsContext";
 import { readJson } from "../../../utils/storageHelpers";
 
 // Resolve a Subject → Study ID mapping from the shared subjectsByStudy store,
@@ -32,46 +34,36 @@ function resolveStudyIdForSubject(subjectId) {
   return "";
 }
 
+// Phase 7 (Cross-View Comments Synchronization): this view now reads from
+// the shared CommentsContext instead of pulling from getVisibleComments()
+// on every "comments-updated" event via a local refreshTick. That local
+// listener duplicated work already done by CommentsProvider and left
+// this table one render behind the counters/widgets. All authorization
+// filtering still runs through canViewComment, unchanged.
 function SubjectComments({ subjectId }) {
-  // Bumped whenever "comments-updated" fires so this table reflects
-  // comments posted anywhere else (RoleCommentsView, DocumentFolderManager,
-  // CRO/Sponsor top-level comments) without needing the parent to remount.
-  const [refreshTick, setRefreshTick] = useState(0);
+  const currentUser = getCurrentUser();
+  const { comments: liveComments } = useComments();
 
-  useEffect(() => {
-    function handleCommentsUpdated() {
-      setRefreshTick((tick) => tick + 1);
-    }
-
-    window.addEventListener("comments-updated", handleCommentsUpdated);
-    return () => {
-      window.removeEventListener("comments-updated", handleCommentsUpdated);
-    };
-  }, []);
-
-  // Use the shared commentService reader instead of reading adminService
-  // directly. getVisibleComments() applies canViewComment, which enforces
-  // Sponsor's document-scoped stage-gating and the CRO/Sponsor cross-study
-  // access check. This component is reached via /subject/:id, a route with
-  // no role restriction, so any role — including CRO/Sponsor — could
-  // previously see another study's subject comments just by knowing the
-  // subject ID.
   const comments = useMemo(() => {
     const fallbackStudyId = resolveStudyIdForSubject(subjectId);
 
-    return getVisibleComments({ subjectId }).map((comment) => ({
-      id: comment.id,
-      studyId: comment.study || fallbackStudyId || "—",
-      subjectDocument: comment.document
-        ? `${comment.subjectId} / ${comment.document}`
-        : comment.subjectId,
-      comment: comment.description || "—",
-      by: comment.createdBy || "—",
-      date: comment.createdAt || "—",
-      status: comment.status
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subjectId, refreshTick]);
+    return liveComments
+      .filter((comment) => canViewComment(comment, currentUser))
+      .filter(
+        (comment) => String(comment.subjectId || "") === String(subjectId || "")
+      )
+      .map((comment) => ({
+        id: comment.id,
+        studyId: comment.study || fallbackStudyId || "—",
+        subjectDocument: comment.document
+          ? `${comment.subjectId} / ${comment.document}`
+          : comment.subjectId,
+        comment: comment.description || "—",
+        by: comment.createdBy || "—",
+        date: comment.createdAt || "—",
+        status: comment.status,
+      }));
+  }, [liveComments, subjectId, currentUser]);
 
   return (
     <DataTable

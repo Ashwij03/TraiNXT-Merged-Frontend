@@ -1,53 +1,42 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
 import {
-  addCommentRecord,
   canResolveComments,
+  canViewComment,
   canWriteComments,
-  getVisibleComments,
-  resolveCommentRecord,
 } from "../../../services/commentService";
 import { getCurrentUser } from "../../../services/roleService";
+import { useComments } from "../../../comments/CommentsContext";
 
-// This is the "Comments" tab rendered inside a study's detail page
-// (StudyDetails.js → activeTab === "comments"), reached by opening a
-// study and clicking Comments. It previously held its own hardcoded
-// demo comments in local React state (never persisted, never scoped to
-// a study, never shared with any other role), which is why a comment
-// added here never survived a refresh and was never visible to any
-// other role. It now reads/writes through the same shared commentService
-// used everywhere else, scoped to the current study.
-function loadStudyComments(studyCode, user) {
-  return getVisibleComments({ studyCode: studyCode || undefined }, user);
-}
-
+// "Comments" tab rendered inside a study's detail page
+// (StudyDetails.js → activeTab === "comments"). Phase 7: reads/writes go
+// through the shared CommentsContext instead of an ad-hoc window listener
+// + getVisibleComments() re-read on every event. Result: this table stays
+// in lockstep with Study Comments, Subject Comments, Open Comments,
+// Pending Comments, dashboard widgets, and counters — one source of
+// truth, no per-view API/state churn. Search/filter/permission/routing
+// behavior is preserved.
 export default function CommentsPage({ embedded = false }) {
   const { code } = useParams();
   const studyCode = code || "";
   const currentUser = getCurrentUser();
+  const {
+    comments: liveComments,
+    addComment,
+    resolveComment,
+  } = useComments();
 
   const [filter, setFilter] = useState("unresolved");
   const [commentText, setCommentText] = useState("");
-  const [comments, setComments] = useState(() =>
-    loadStudyComments(studyCode, currentUser)
-  );
 
-  const refreshComments = useCallback(() => {
-    setComments(loadStudyComments(studyCode, currentUser));
-  }, [studyCode, currentUser]);
-
-  useEffect(() => {
-    refreshComments();
-
-    window.addEventListener("comments-updated", refreshComments);
-    window.addEventListener("sponsor-data-updated", refreshComments);
-
-    return () => {
-      window.removeEventListener("comments-updated", refreshComments);
-      window.removeEventListener("sponsor-data-updated", refreshComments);
-    };
-  }, [refreshComments]);
+  const comments = useMemo(() => {
+    return liveComments
+      .filter((comment) => canViewComment(comment, currentUser))
+      .filter(
+        (comment) => !studyCode || String(comment.study) === String(studyCode)
+      );
+  }, [liveComments, studyCode, currentUser]);
 
   const filteredComments =
     filter === "all"
@@ -60,7 +49,7 @@ export default function CommentsPage({ embedded = false }) {
 
   const toggleStatus = (comment) => {
     if (comment.status !== "Resolved") {
-      resolveCommentRecord(comment.id, currentUser);
+      resolveComment(comment.id);
     }
   };
 
@@ -71,13 +60,10 @@ export default function CommentsPage({ embedded = false }) {
       return;
     }
 
-    addCommentRecord(
-      {
-        study: studyCode,
-        description: text,
-      },
-      currentUser
-    );
+    addComment("", {
+      text,
+      study: studyCode,
+    });
 
     setCommentText("");
   };

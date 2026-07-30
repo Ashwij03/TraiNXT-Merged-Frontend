@@ -18,7 +18,9 @@ import {
 } from "../../services/visitScheduleService";
 import {
   addCommentRecord,
+  editCommentRecord,
   resolveCommentRecord,
+  updateCommentStatusRecord,
 } from "../../services/commentService";
 
 const STORAGE_KEYS = {
@@ -361,40 +363,35 @@ export const updateComment = (commentId, updates = {}) => {
   const user = getCurrentUser();
   const nextStatus = updates.status;
 
-  if (
-    nextStatus === "resolved" ||
-    nextStatus === "Resolved" ||
-    nextStatus === "open" ||
-    nextStatus === "Open" ||
-    nextStatus === "unresolved"
-  ) {
-    if (nextStatus === "resolved" || nextStatus === "Resolved") {
-      resolveCommentRecord(commentId, user);
-      return getCommentsData().find((comment) => comment.id === commentId) || null;
-    }
+  // Phase 7 (Cross-View Comments Synchronization): every mutation on a
+  // comment must go through commentService, which dispatches both
+  // "comments-updated" and "sponsor-data-updated". Previously the
+  // non-status branch here wrote via saveCommentsData, which only fired
+  // "comments-updated" + "pi-comments-updated", leaving the Sponsor and
+  // Study views one step behind until reload.
 
-    const updatedComments = getCommentsData().map((comment) =>
-      comment.id === commentId
-        ? {
-            ...comment,
-            ...updates,
-            status: "Open",
-          }
-        : comment
-    );
-
-    return saveCommentsData(updatedComments).find(
-      (comment) => comment.id === commentId
-    );
+  // 1) Status transitions (open/unresolved/resolved/pending-review/etc.)
+  //    always funnel through updateCommentStatusRecord so the same
+  //    permission checks + event broadcast apply everywhere.
+  if (nextStatus !== undefined && nextStatus !== null && nextStatus !== "") {
+    updateCommentStatusRecord(commentId, nextStatus, user);
   }
 
-  const updatedComments = getCommentsData().map((comment) =>
-    comment.id === commentId ? { ...comment, ...updates } : comment
-  );
+  // 2) Body/priority/stage edits go through editCommentRecord (which is
+  //    also permission-checked via canEditComment). We hand it the same
+  //    update payload; editCommentRecord whitelists which fields it will
+  //    actually apply.
+  const hasBodyEdit =
+    typeof updates.description === "string" ||
+    typeof updates.text === "string" ||
+    typeof updates.priority === "string" ||
+    typeof updates.stage === "string";
 
-  return saveCommentsData(updatedComments).find(
-    (comment) => comment.id === commentId
-  );
+  if (hasBodyEdit) {
+    editCommentRecord(commentId, updates, user);
+  }
+
+  return getCommentsData().find((comment) => comment.id === commentId) || null;
 };
 
 export const deleteComment = (commentId) => {

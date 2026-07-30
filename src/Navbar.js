@@ -289,9 +289,8 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
   Files
 </span>
 
-<span onClick={() => setSelectedPage("logs")}>
-  Logs
-</span>
+        {/* Global Logs nav entry removed — Training/Delegation logs live
+        inside each study's Logs tab now. */}
 
         <span onClick={() => navigate("/about")}>About</span>
 
