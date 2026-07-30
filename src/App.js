@@ -9,8 +9,6 @@ import ROLES from "./constants/roles";
 import StudyDashboard from "./pages/shared/studies/StudyDashboard";
 import VisitDetails from "./pages/shared/visits/VisitDetails";
 import CompletedVisit from "./pages/shared/visits/CompletedVisit";
-// import SubjectProfilePage from "./pages/shared/subjects/SubjectProfilePage";
-import SubjectPage from "./pages/shared/subjects/SubjectPage";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import ForgotPassword from "./auth/ForgotPassword";
 import EISFHub from "./pages/shared/documents/EISFHub";
@@ -33,6 +31,7 @@ import Sites from "./pages/Admin/Sites";
 import LogsPage from "./pages/shared/logs/LogsPage";
 import TrainingLogPage from "./pages/shared/logs/TrainingLogPage";
 import DelegationLogPage from "./pages/shared/logs/DelegationLogPage";
+import AuditLogsPage from "./pages/shared/audit/AuditLogsPage";
 import {
   getDashboardPath,
   getCurrentUser,
@@ -213,15 +212,6 @@ function App() {
       /> */}
 
       <Route
-        path="/subject-page"
-        element={
-          <ProtectedRoute>
-            <SubjectPage />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
         path="/operations/comments"
         element={
           <ProtectedRoute>
@@ -280,6 +270,15 @@ function App() {
         element={
           <ProtectedRoute>
             <DelegationLogPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/audit-logs"
+        element={
+          <ProtectedRoute>
+            <AuditLogsPage />
           </ProtectedRoute>
         }
       />

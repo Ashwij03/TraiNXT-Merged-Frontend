@@ -35,6 +35,9 @@ function AdminDashboard() {
   const [institutionFilter, setInstitutionFilter] = useState(
     getStoredInstitutionFilter()
   );
+  const [dashboardData, setDashboardData] = useState(() =>
+    getAdminDashboardData(getStoredInstitutionFilter())
+  );
 
   useEffect(() => {
     const handleFilterChange = (event) => {
@@ -51,10 +54,22 @@ function AdminDashboard() {
     };
   }, []);
 
-  const dashboardData = useMemo(
-    () => getAdminDashboardData(institutionFilter),
-    [institutionFilter]
-  );
+  useEffect(() => {
+    setDashboardData(getAdminDashboardData(institutionFilter));
+  }, [institutionFilter]);
+
+  useEffect(() => {
+    const refreshDashboard = () => {
+      setDashboardData(getAdminDashboardData(institutionFilter));
+    };
+
+    window.addEventListener("studies-updated", refreshDashboard);
+
+    return () => {
+      window.removeEventListener("studies-updated", refreshDashboard);
+    };
+  }, [institutionFilter]);
+
   const navigate = useNavigate();
 
   const {
@@ -62,6 +77,7 @@ function AdminDashboard() {
     studies,
     sites,
     pendingUsers,
+    pendingAccessRequests,
     complianceScore
   } = dashboardData;
 
@@ -107,7 +123,7 @@ function AdminDashboard() {
 
           <KPICard
             title="Pending"
-            value={pendingUsers.length}
+            value={pendingUsers.length + pendingAccessRequests.length}
             subtitle="Access Requests"
             icon="🛡️"
             onClick={() => navigate("/access-permission")}
@@ -160,7 +176,7 @@ function AdminDashboard() {
               {
                 type: "warning",
                 title: "Pending Approvals",
-                message: `${pendingUsers.length} users awaiting approval`
+                message: `${pendingUsers.length + pendingAccessRequests.length} users awaiting approval`
               },
               {
                 type: "danger",

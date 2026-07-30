@@ -72,7 +72,7 @@ function CRODashboard() {
       icon: "💬",
       title: "Comments",
       value: safeKpis.comments ?? 0,
-      route: "/cro-comments",
+      route: "/comments",
     },
     {
       icon: "📊",
@@ -93,7 +93,7 @@ function CRODashboard() {
     },
     {
       label: "💬 Review Comments",
-      route: "/cro-comments",
+      route: "comments",
     },
     {
       label: "📁 Regulatory Review",
@@ -161,7 +161,7 @@ function CRODashboard() {
                 </div>
                 <div
                   className="dashboard-card clickable-card"
-                  onClick={() => navigate("/cro-comments")}
+                  onClick={() => navigate("comments")}
                   role="button"
                   tabIndex={0}
                 >

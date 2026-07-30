@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getStudies } from "../services/studyService";
+import { getAccessibleStudies, getCurrentUser } from "../services/roleService";
 import { FOLDER_TREE_EVENT } from "../services/folderService";
 
 export const STUDY_SECTIONS = [
@@ -75,7 +75,9 @@ function getStudySubjects(study) {
 
 function readStudies() {
   try {
-    const result = getStudies();
+    // A2 (Role-Scoped Study Visibility): the sidebar tree must only ever
+    // list studies the current role is authorized to see.
+    const result = getAccessibleStudies(getCurrentUser());
 
     return Array.isArray(result) ? result : [];
   } catch {

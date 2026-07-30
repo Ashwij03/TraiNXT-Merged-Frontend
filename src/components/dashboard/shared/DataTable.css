@@ -112,6 +112,7 @@
   white-space: nowrap;
   word-break: normal;
   overflow-wrap: normal;
+  vertical-align: middle;
 }
 
 .ctms-table td {

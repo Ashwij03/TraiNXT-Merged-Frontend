@@ -1,7 +1,7 @@
 import "./DashboardSidebar.css";
 import TriaNXTLogo from "../../common/TriaNXTLogo";
-import { getStudies } from "../../../services/studyService";
 import {
+  getAccessibleStudies,
   getCurrentUser,
   getDashboardPath,
   getEffectiveRole,
@@ -62,7 +62,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
 
   const getStudiesSafe = () => {
     try {
-      const studies = getStudies();
+      const studies = getAccessibleStudies(currentUser);
       return Array.isArray(studies) ? studies : [];
     } catch {
       return [];
@@ -786,13 +786,23 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
 
       {canViewAuditLogs && (
         <div
+          className={getLinkClass(pathname === "/audit-logs")}
+          onClick={() => handleNav("/audit-logs")}
+        >
+          <FiFileText size={16} />
+          <span>Audit Logs</span>
+        </div>
+      )}
+
+      {canViewAuditLogs && (
+        <div
           className={getLinkClass(
             pathname === "/logs" || pathname.startsWith("/logs/"),
           )}
           onClick={() => handleNav("/logs")}
         >
-          <FiFileText size={16} />
-          <span>Audit Logs</span>
+          <FiLayers size={16} />
+          <span>Logs</span>
         </div>
       )}
 

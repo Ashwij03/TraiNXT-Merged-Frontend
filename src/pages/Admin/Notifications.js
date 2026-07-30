@@ -163,8 +163,17 @@ function Notifications() {
                     {notification.message}
                   </p>
                   <small style={{ color: "#9ca3af" }}>
+                    {notification.actorName
+                      ? `By ${notification.actorName}`
+                      : "By System"}
+                    {notification.actorRole
+                      ? ` (${notification.actorRole})`
+                      : ""}
+                    {" • "}
                     {new Date(notification.createdAt).toLocaleString()}
-                    {notification.site ? ` • ${displaySite(notification.site)}` : ""}
+                    {notification.site
+                      ? ` • ${displaySite(notification.site)}`
+                      : ""}
                   </small>
                 </div>
 
