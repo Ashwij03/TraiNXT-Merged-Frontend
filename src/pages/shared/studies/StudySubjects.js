@@ -255,15 +255,6 @@ function StudySubjects({
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(
-      "selectedStudy",
-      JSON.stringify({
-        code: studyId,
-      })
-    );
-  }, [studyId]);
-
-  useEffect(() => {
   const loadSelectedSubject = () => {
     const savedSubject = readStorage(SELECTED_SUBJECT_STORAGE_KEY, null);
 
@@ -1233,4 +1224,3 @@ function StudySubjects({
 }
 
 export default StudySubjects;
-

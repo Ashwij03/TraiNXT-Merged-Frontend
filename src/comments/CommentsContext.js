@@ -56,6 +56,9 @@ export function CommentsProvider({ children }) {
           study: data.study || data.studyCode || "",
           site: data.site || currentUser?.assignedSite || "",
           stage: data.visitName || data.stage || "General",
+          activity: data.activity || "",
+          module: data.module || "",
+          sourceView: data.sourceView || "",
         },
         currentUser
       );

@@ -318,11 +318,6 @@ function Screening() {
 				<button
   className="view-btn"
   onClick={() => {
-    localStorage.setItem(
-      "selectedStudy",
-      JSON.stringify(screening)
-    );
-
     navigate(`/study/${screening.id}`);
   }}
 >

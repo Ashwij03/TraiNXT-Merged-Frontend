@@ -6,7 +6,7 @@ import {
   canViewComment,
   canWriteComments,
 } from "../../../services/commentService";
-import { getCurrentUser } from "../../../services/roleService";
+import { getCurrentUser, getAssignedSite } from "../../../services/roleService";
 import { getStudyByCode } from "../../../services/studyService";
 import { useComments } from "../../../comments/CommentsContext";
 
@@ -15,6 +15,7 @@ function StudyComments() {
   const study = getStudyByCode(id);
   const studyCode = study?.code || id;
   const currentUser = getCurrentUser();
+  const assignedSite = getAssignedSite() || "";
   const { comments: liveComments, addComment, resolveComment } = useComments();
   const [commentText, setCommentText] = useState("");
 
@@ -39,7 +40,7 @@ function StudyComments() {
         date: comment.createdAt || "—",
         status: comment.status,
         action:
-          comment.status === "Open" && canResolveComments() ? (
+          comment.status === "Open" && canResolveComments(currentUser) ? (
             <button
               type="button"
               onClick={() => resolveComment(comment.id)}
@@ -62,6 +63,10 @@ function StudyComments() {
     addComment("", {
       text,
       study: studyCode,
+      site: assignedSite,
+      module: "StudyComments",
+      sourceView: "study-comments",
+      activity: "Study",
     });
 
     setCommentText("");
@@ -101,7 +106,7 @@ function StudyComments() {
             { key: "by", label: "By", width: "170px" },
             { key: "date", label: "Date", width: "180px" },
             { key: "status", label: "Status", width: "120px" },
-            ...(canResolveComments()
+            ...(canResolveComments(currentUser)
               ? [{ key: "action", label: "Action", width: "120px" }]
               : [])
           ]}
