@@ -21,7 +21,7 @@ function EnrollmentChart() {
       <ResponsiveContainer width="100%" height={250}>
         <BarChart data={data}>
           <XAxis dataKey="study" />
-          <YAxis />
+          <YAxis allowDecimals={false} />
           <Tooltip />
           <Bar dataKey="value" fill="#2563eb" />
         </BarChart>

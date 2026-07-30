@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import AppLayout from "./AppLayout";
 import "./Screening.css";
 import { useNavigate } from "react-router-dom";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 
 function Screening() {
 	const navigate = useNavigate();
@@ -10,6 +12,15 @@ function Screening() {
 	const [selectedScreening, setSelectedScreening] = useState(null);
 	const [selectedSite, setSelectedSite] = useState("All Sites");
 	const [selectedStatus, setSelectedStatus] = useState("All Status");
+
+	const siteSources = useMemo(() => getStudies(), []);
+	const displaySite = (value) =>
+	  value
+	    ? resolveSiteDisplay(value, {
+	        sources: siteSources,
+	        fallback: value
+	      })
+	    : "—";
 
 	const screenings = [
 	  {
@@ -297,7 +308,7 @@ function Screening() {
                 <tr key={screening.id}>
 				<td>{screening.id}</td>
 				<td>{screening.study}</td>
-				<td>{screening.site}</td>
+				<td>{displaySite(screening.site)}</td>
 				<td>{screening.pi}</td>
 				<td>{screening.status}</td>
 				<td>{screening.screeningDate}</td>

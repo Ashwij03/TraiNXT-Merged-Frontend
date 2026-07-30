@@ -19,6 +19,8 @@ import {
 } from "../../../services/visitScheduleService";
 import NextVisitPromptModal from "../../../components/common/NextVisitPromptModal";
 import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
+import { resolveSiteDisplay } from "../../../utils/siteDisplay";
+import { getStudies } from "../../../services/studyService";
 import "./SubjectFolderWorkspace.css";
 
 const SUBJECT_DETAILS_KEY = "subjectDetailsByStudy";
@@ -192,7 +194,14 @@ function SubjectDetailsPanel({ subject, studyId, onUpdate }) {
           </div>
           <div>
             <span>Site</span>
-            <strong>{form.site || "—"}</strong>
+            <strong>
+              {form.site
+                ? resolveSiteDisplay(form.site, {
+                    sources: getStudies(),
+                    fallback: form.site
+                  })
+                : "—"}
+            </strong>
           </div>
           <div>
             <span>Screening</span>

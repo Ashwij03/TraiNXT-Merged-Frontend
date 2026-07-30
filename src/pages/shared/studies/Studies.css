@@ -295,6 +295,32 @@
   color: #dc2626;
 }
 
+/* Item 8 (Stage 5A): canonical study status badge palette. */
+.study-status.startup {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.study-status.recruitment-phase {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.study-status.conduct-phase {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.study-status.hold-suspension {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.study-status.early-termination {
+  background: #fde68a;
+  color: #92400e;
+}
+
 .study-code {
   margin-bottom: 6px;
   color: #64748b;
@@ -469,7 +495,7 @@
 
 .studies-table {
   width: 100%;
-  min-width: 1370px;
+  min-width: 1440px;
   table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
@@ -478,25 +504,25 @@
 
 .studies-table th:nth-child(1),
 .studies-table td:nth-child(1) {
-  width: 88px;
+  width: 85px;
   text-align: left;
 }
 
 .studies-table th:nth-child(2),
 .studies-table td:nth-child(2) {
-  width: 125px;
+  width: 130px;
   text-align: left;
 }
 
 .studies-table th:nth-child(3),
 .studies-table td:nth-child(3) {
-  width: 110px;
+  width: 100px;
   text-align: left;
 }
 
 .studies-table th:nth-child(4),
 .studies-table td:nth-child(4) {
-  width: 95px;
+  width: 85px;
   text-align: left;
 }
 
@@ -508,43 +534,55 @@
 
 .studies-table th:nth-child(6),
 .studies-table td:nth-child(6) {
-  width: 90px;
+  width: 85px;
   text-align: left;
 }
 
 .studies-table th:nth-child(7),
 .studies-table td:nth-child(7) {
-  width: 145px;
+  width: 110px;
   text-align: left;
 }
 
 .studies-table th:nth-child(8),
 .studies-table td:nth-child(8) {
-  width: 135px;
+  width: 95px;
   text-align: left;
 }
 
 .studies-table th:nth-child(9),
 .studies-table td:nth-child(9) {
-  width: 85px;
-  text-align: center;
+  width: 125px;
+  text-align: left;
 }
 
 .studies-table th:nth-child(10),
 .studies-table td:nth-child(10) {
-  width: 105px;
+  width: 85px;
   text-align: center;
 }
 
 .studies-table th:nth-child(11),
 .studies-table td:nth-child(11) {
-  width: 105px;
+  width: 115px;
   text-align: center;
 }
 
 .studies-table th:nth-child(12),
 .studies-table td:nth-child(12) {
-  width: 90px;
+  width: 100px;
+  text-align: center;
+}
+
+.studies-table th:nth-child(13),
+.studies-table td:nth-child(13) {
+  width: 110px;
+  text-align: center;
+}
+
+.studies-table th:nth-child(14),
+.studies-table td:nth-child(14) {
+  width: 95px;
   text-align: center;
 }
 
@@ -733,7 +771,7 @@
 .study-modal {
   width: 100%;
   max-width: 860px;
-  max-height: 90vh;
+  max-height: 75vh;
   padding: 24px;
   overflow-y: auto;
   border-radius: 10px;

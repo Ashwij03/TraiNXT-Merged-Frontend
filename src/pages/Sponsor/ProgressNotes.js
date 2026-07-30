@@ -1,12 +1,23 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import "./ProgressNotes.css";
 import { useNavigate } from "react-router-dom";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 
 
 function ProgressNotes() {
   const navigate = useNavigate();
   const [inputValue, setInputValue] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+
+  const siteSources = useMemo(() => getStudies(), []);
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   const notesData = [
     {
@@ -134,7 +145,7 @@ function ProgressNotes() {
                 <td>{note.id}</td>
                 <td>{note.subjectId}</td>
                 <td>{note.study}</td>
-                <td>{note.site}</td>
+                <td>{displaySite(note.site)}</td>
                 <td>{note.visit}</td>
                 <td>{note.category}</td>
                 <td>{note.createdBy}</td>

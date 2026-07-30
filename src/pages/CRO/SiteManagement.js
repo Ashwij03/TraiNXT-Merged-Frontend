@@ -1,11 +1,16 @@
 import React from "react";
 import { getStudies } from "../../services/studyService";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
 
 function SiteManagement() {
   const studies = getStudies();
 
-  const siteData = studies.map((study) => ({
-    site: study.site || study.location || "—",
+  const siteData = studies.map((study, index) => ({
+    siteNumber:
+      study.siteNumber ||
+      study.siteNo ||
+      `SITE-${String(index + 1).padStart(3, "0")}`,
+    siteName: study.site || study.location || "",
     pi: study.principalInvestigator || "—",
     location: study.location || study.country || "—",
     status: study.status || "Active",
@@ -22,7 +27,7 @@ function SiteManagement() {
         <table>
           <thead>
             <tr>
-              <th>Site Name</th>
+              <th>Site</th>
               <th>Principal Investigator</th>
               <th>Location</th>
               <th>Status</th>
@@ -32,7 +37,7 @@ function SiteManagement() {
           <tbody>
             {siteData.map((site, index) => (
               <tr key={index}>
-                <td>{site.site}</td>
+                <td>{resolveSiteDisplay(site)}</td>
                 <td>{site.pi}</td>
                 <td>{site.location}</td>
                 <td>{site.status}</td>

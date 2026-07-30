@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useComments } from "./CommentsContext";
+import { getCurrentUser } from "../services/roleService";
 import "./CommentModal.css";
 
 export default function CommentModal({
@@ -10,12 +11,11 @@ export default function CommentModal({
   visit = "Screening",
 }) {
   const commentsContext = useComments();
+  const currentUser = getCurrentUser();
   const [text, setText] = useState("");
   const [resolved, setResolved] = useState(false);
 
   const submit = () => {
-    const status = resolved ? "resolved" : "unresolved";
-
     if (onSubmit) {
       onSubmit({
         id: Date.now(),
@@ -23,16 +23,18 @@ export default function CommentModal({
         visit,
         date: new Date().toLocaleDateString(),
         comment: text,
-        status,
+        status: resolved ? "resolved" : "open",
       });
     } else {
-      commentsContext?.addComment?.(visitId, {
+      const record = commentsContext?.addComment?.(visitId, {
         text,
-        status,
-        visitNumber: 3,
-        week: 24,
-        visitName: "Full Physical Exam",
+        subjectId: subject,
+        visitName: visit,
       });
+
+      if (resolved && record?.id) {
+        commentsContext?.resolveComment?.(record.id);
+      }
     }
 
     onClose();
@@ -47,20 +49,20 @@ export default function CommentModal({
           <input
             type="checkbox"
             checked={resolved}
-            onChange={e => setResolved(e.target.checked)}
+            onChange={(e) => setResolved(e.target.checked)}
           />
           Mark Resolved
         </label>
 
         <div className="comment-user">
-          <b>Alice TestOne</b>
-          <small>5 months ago</small>
+          <b>{currentUser?.name || "Current User"}</b>
+          <small>{new Date().toLocaleDateString()}</small>
         </div>
 
         <textarea
           placeholder="Write a comment..."
           value={text}
-          onChange={e => setText(e.target.value)}
+          onChange={(e) => setText(e.target.value)}
         />
 
         <button onClick={submit}>Submit</button>

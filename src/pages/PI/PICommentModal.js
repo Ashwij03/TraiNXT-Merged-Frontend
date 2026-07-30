@@ -1,28 +1,41 @@
 import { useState } from "react";
+import { useComments } from "../../comments/CommentsContext";
+import { getCurrentUser } from "../../services/roleService";
 import "./PICommentModal.css";
 
 export default function PICommentModal({
   onClose,
   onSubmit,
+  subject = "",
+  visit = "",
+  study = "",
 }) {
+  const { addComment, resolveComment } = useComments();
+  const currentUser = getCurrentUser();
   const [text, setText] = useState("");
   const [resolved, setResolved] = useState(false);
 
   const submit = () => {
-    const newComment = {
-      id: `COM-${Date.now()}`,
-      subjectId: "SUB-1026",
-      visit: "Visit 4",
-      type: "General",
-      comment: text,
-      createdBy: "Dr. Nobithaa",
-      date: new Date().toLocaleDateString(),
-      status: resolved
-        ? "resolved"
-        : "unresolved",
-    };
+    if (onSubmit) {
+      onSubmit({
+        text,
+        subject,
+        visit,
+        study,
+        status: resolved ? "resolved" : "open",
+      });
+    } else {
+      const record = addComment?.("", {
+        text,
+        subjectId: subject,
+        visitName: visit,
+        study,
+      });
 
-    onSubmit(newComment);
+      if (resolved && record?.id) {
+        resolveComment?.(record.id);
+      }
+    }
 
     onClose();
   };
@@ -30,49 +43,37 @@ export default function PICommentModal({
   return (
     <div className="modal-overlay">
       <div className="modal-box">
-
         <h2>Add Comment</h2>
 
         <label>
           <input
             type="checkbox"
             checked={resolved}
-            onChange={(e) =>
-              setResolved(e.target.checked)
-            }
+            onChange={(event) => setResolved(event.target.checked)}
           />
           Mark Resolved
         </label>
 
         <div className="comment-user">
-          <b>Dr. Nobithaa</b>
-          <small>Just now</small>
+          <b>{currentUser?.name || "Current User"}</b>
+          <small>{new Date().toLocaleDateString()}</small>
         </div>
 
         <textarea
           placeholder="Write a comment..."
           value={text}
-          onChange={(e) =>
-            setText(e.target.value)
-          }
+          onChange={(event) => setText(event.target.value)}
         />
 
         <div className="modal-actions">
-          <button
-            className="cancel-btn"
-            onClick={onClose}
-          >
+          <button className="cancel-btn" onClick={onClose}>
             Cancel
           </button>
 
-          <button
-            className="submit-btn"
-            onClick={submit}
-          >
+          <button className="submit-btn" onClick={submit}>
             Submit
           </button>
         </div>
-
       </div>
     </div>
   );

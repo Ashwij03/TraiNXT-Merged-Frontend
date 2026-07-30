@@ -3,104 +3,104 @@ import { getPortfolioStudies, getSites } from "./sponsorDataStore";
 const DOCUMENT_REPORTS_EVENT = "sponsor-document-reports-updated";
 
 let documentRecords = [
-  {
-    id: "DOC-001",
-    name: "Protocol Amendment v3",
-    study: "747-303",
-    site: "Apollo Medical Center",
-    folder: "Regulatory",
-    status: "Approved",
-    owner: "Regulatory Lead",
-    version: "3.0",
-    expiryDate: "2027-01-15",
-    uploadedDate: "2026-04-15",
-    hasMetadata: true,
-    isComplete: true
-  },
-  {
-    id: "DOC-002",
-    name: "Investigator Brochure",
-    study: "747-303",
-    site: "City Hospital",
-    folder: "Regulatory",
-    status: "Approved",
-    owner: "",
-    version: "2.1",
-    expiryDate: "2026-03-01",
-    uploadedDate: "2025-11-20",
-    hasMetadata: false,
-    isComplete: false
-  },
-  {
-    id: "DOC-003",
-    name: "Monitoring Visit Report - V1",
-    study: "05151",
-    site: "Care Hospital",
-    folder: "Monitoring",
-    status: "Pending Review",
-    owner: "CRA Team",
-    version: "1.0",
-    expiryDate: "2026-08-01",
-    uploadedDate: "2026-06-01",
-    hasMetadata: true,
-    isComplete: false
-  },
-  {
-    id: "DOC-004",
-    name: "Site Contract",
-    study: "05151",
-    site: "Metro Research Clinic",
-    folder: "Site Files",
-    status: "Draft",
-    owner: "Contracts Admin",
-    version: "",
-    expiryDate: "2026-05-10",
-    uploadedDate: "2026-02-10",
-    hasMetadata: false,
-    isComplete: false
-  },
-  {
-    id: "DOC-005",
-    name: "Training Log Export",
-    study: "747-303",
-    site: "University Health System",
-    folder: "Logs",
-    status: "Approved",
-    owner: "Training Manager",
-    version: "1.2",
-    expiryDate: "2026-12-31",
-    uploadedDate: "2026-05-18",
-    hasMetadata: true,
-    isComplete: true
-  },
-  {
-    id: "DOC-006",
-    name: "Financial Disclosure Form",
-    study: "05151",
-    site: "Apollo Medical Center",
-    folder: "Site Files",
-    status: "Missing",
-    owner: "",
-    version: "",
-    expiryDate: "",
-    uploadedDate: "",
-    hasMetadata: false,
-    isComplete: false
-  }
+//   {
+//     id: "DOC-001",
+//     name: "Protocol Amendment v3",
+//     study: "747-303",
+//     site: "Apollo Medical Center",
+//     folder: "Regulatory",
+//     status: "Approved",
+//     owner: "Regulatory Lead",
+//     version: "3.0",
+//     expiryDate: "2027-01-15",
+//     uploadedDate: "2026-04-15",
+//     hasMetadata: true,
+//     isComplete: true
+//   },
+//   {
+//     id: "DOC-002",
+//     name: "Investigator Brochure",
+//     study: "747-303",
+//     site: "City Hospital",
+//     folder: "Regulatory",
+//     status: "Approved",
+//     owner: "",
+//     version: "2.1",
+//     expiryDate: "2026-03-01",
+//     uploadedDate: "2025-11-20",
+//     hasMetadata: false,
+//     isComplete: false
+//   },
+//   {
+//     id: "DOC-003",
+//     name: "Monitoring Visit Report - V1",
+//     study: "05151",
+//     site: "Care Hospital",
+//     folder: "Monitoring",
+//     status: "Pending Review",
+//     owner: "CRA Team",
+//     version: "1.0",
+//     expiryDate: "2026-08-01",
+//     uploadedDate: "2026-06-01",
+//     hasMetadata: true,
+//     isComplete: false
+//   },
+//   {
+//     id: "DOC-004",
+//     name: "Site Contract",
+//     study: "05151",
+//     site: "Metro Research Clinic",
+//     folder: "Site Files",
+//     status: "Draft",
+//     owner: "Contracts Admin",
+//     version: "",
+//     expiryDate: "2026-05-10",
+//     uploadedDate: "2026-02-10",
+//     hasMetadata: false,
+//     isComplete: false
+//   },
+//   {
+//     id: "DOC-005",
+//     name: "Training Log Export",
+//     study: "747-303",
+//     site: "University Health System",
+//     folder: "Logs",
+//     status: "Approved",
+//     owner: "Training Manager",
+//     version: "1.2",
+//     expiryDate: "2026-12-31",
+//     uploadedDate: "2026-05-18",
+//     hasMetadata: true,
+//     isComplete: true
+//   },
+//   {
+//     id: "DOC-006",
+//     name: "Financial Disclosure Form",
+//     study: "05151",
+//     site: "Apollo Medical Center",
+//     folder: "Site Files",
+//     status: "Missing",
+//     owner: "",
+//     version: "",
+//     expiryDate: "",
+//     uploadedDate: "",
+//     hasMetadata: false,
+//     isComplete: false
+//   }
 ];
 
 let reportSubscriptions = [
-  {
-    id: "SUB-001",
-    reportType: "Missing Metadata Report",
-    study: "All",
-    site: "All",
-    folder: "All",
-    status: "All",
-    frequency: "Weekly",
-    recipients: "sponsor@trianxt.com",
-    enabled: true
-  }
+//   {
+//     id: "SUB-001",
+//     reportType: "Missing Metadata Report",
+//     study: "All",
+//     site: "All",
+//     folder: "All",
+//     status: "All",
+//     frequency: "Weekly",
+//     recipients: "sponsor@trianxt.com",
+//     enabled: true
+//   }
 ];
 
 function emitUpdate() {

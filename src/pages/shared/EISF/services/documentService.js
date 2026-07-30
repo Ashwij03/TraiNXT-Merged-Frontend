@@ -5,6 +5,7 @@ import { getStorageItem, setStorageItem } from "../utils/storageUtils";
 import { filterDocuments as filterDocumentList, sortDocuments as sortDocumentList } from "../utils/searchUtils";
 
 const DEFAULT_USER = "Current User";
+export const EISF_DOCUMENTS_EVENT = "trianxt-eisf-documents-updated";
 
 function formatDate(date = new Date()) {
   return date.toLocaleDateString("en-GB", {
@@ -143,7 +144,21 @@ export function readStoredModuleDocuments(moduleConfig, studyCode, fallbackDocum
 }
 
 export function persistModuleDocuments(moduleConfig, studyCode, documents = []) {
-  return setStorageItem(getModuleStorageKey(moduleConfig, studyCode), documents);
+  const saved = setStorageItem(getModuleStorageKey(moduleConfig, studyCode), documents);
+
+  if (saved && typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent(EISF_DOCUMENTS_EVENT, {
+        detail: {
+          studyCode: studyCode || "default-study",
+          moduleId: moduleConfig?.id,
+          documentCount: Array.isArray(documents) ? documents.length : 0,
+        },
+      })
+    );
+  }
+
+  return saved;
 }
 
 export function initializeModuleDocuments(moduleConfig, studyCode, initialDocuments = null) {

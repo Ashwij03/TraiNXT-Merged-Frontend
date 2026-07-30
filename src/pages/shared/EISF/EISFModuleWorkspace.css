@@ -374,3 +374,203 @@
     width: 100%;
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/*             Sub-Module Enable/Disable + Accordion (Item 9, 10)             */
+/* -------------------------------------------------------------------------- */
+
+.eisf-module-section-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.eisf-module-section-row .eisf-module-section-btn {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.eisf-module-section-btn.disabled {
+  opacity: 0.65;
+  color: #64748b;
+}
+
+.eisf-module-section-btn.disabled .section-count {
+  background: #e2e8f0;
+  color: #64748b;
+}
+
+/* Item 9 — compact modern switch, aligned with the section title. */
+.eisf-submodule-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  user-select: none;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.eisf-submodule-toggle:focus {
+  outline: none;
+}
+
+.eisf-submodule-toggle:focus-visible .toggle-track {
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.35);
+}
+
+.eisf-submodule-toggle .toggle-track {
+  position: relative;
+  display: inline-block;
+  width: 32px;
+  height: 18px;
+  border-radius: 999px;
+  background: #cbd5e1;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.eisf-submodule-toggle .toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.25);
+  transition: transform 0.15s ease;
+}
+
+.eisf-submodule-toggle.enabled .toggle-track {
+  background: #16a34a;
+}
+
+.eisf-submodule-toggle.enabled .toggle-thumb {
+  transform: translateX(14px);
+}
+
+.eisf-submodule-disabled-panel {
+  padding: 40px 24px;
+  text-align: center;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  margin: 12px 0;
+}
+
+.eisf-submodule-disabled-panel h4 {
+  margin: 0 0 6px;
+  color: #334155;
+  font-size: 15px;
+}
+
+.eisf-submodule-disabled-panel p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.eisf-submodule-disabled-panel .disabled-icon {
+  display: inline-block;
+  margin-bottom: 8px;
+  font-size: 22px;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                     Accordion Item (Item 10) styles                        */
+/* -------------------------------------------------------------------------- */
+
+.eisf-accordion-item {
+  border: 1px solid transparent;
+  border-radius: 7px;
+  margin-bottom: 4px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.eisf-accordion-item.expanded {
+  border-color: #cfe4ff;
+  background: #f5faff;
+}
+
+.eisf-accordion-item.disabled {
+  opacity: 0.9;
+}
+
+.eisf-accordion-caret {
+  display: inline-block;
+  width: 12px;
+  margin-right: 4px;
+  color: #64748b;
+  font-size: 12px;
+  transition: transform 0.15s ease;
+  transform-origin: 50% 50%;
+}
+
+.eisf-accordion-caret.open {
+  transform: rotate(90deg);
+  color: #1c6ed4;
+}
+
+.eisf-accordion-panel {
+  padding: 10px 12px 12px;
+  border-top: 1px dashed #cfe4ff;
+  background: #ffffff;
+  border-radius: 0 0 7px 7px;
+  animation: eisf-accordion-slide 0.18s ease-out;
+}
+
+@keyframes eisf-accordion-slide {
+  from { opacity: 0; transform: translateY(-2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.eisf-accordion-panel-desc {
+  margin: 0 0 8px;
+  color: #475569;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.eisf-accordion-panel-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.eisf-accordion-panel-meta strong {
+  color: #0f172a;
+}
+
+.eisf-accordion-collapse {
+  padding: 4px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  color: #1c6ed4;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.eisf-accordion-collapse:hover {
+  background: #eef4fb;
+  border-color: #93c5fd;
+}
+
+.eisf-accordion-disabled-note {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  font-size: 12px;
+  font-weight: 600;
+}

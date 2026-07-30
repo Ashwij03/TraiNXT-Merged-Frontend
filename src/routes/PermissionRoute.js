@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { usePermission } from "../context/PermissionContext";
+import { getCurrentUser, getDashboardPath } from "../services/roleService";
 
 function PermissionRoute({
   children,
@@ -11,9 +12,12 @@ function PermissionRoute({
 
   if (!hasPermission(permission)) {
 
+    const user = getCurrentUser();
+    const destination = user?.role ? getDashboardPath(user.role) : "/login";
+
     return (
       <Navigate
-        to="/dashboard"
+        to={destination}
         replace
       />
     );

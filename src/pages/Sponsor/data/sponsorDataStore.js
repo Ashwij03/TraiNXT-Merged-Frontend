@@ -33,6 +33,34 @@ function getSafeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeValue(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+function getAdminSiteRecords() {
+  return getSafeArray(readJson("sites", []));
+}
+
+function resolveAdminSiteByStudySite(study = {}) {
+  const siteReference = study.site || study.location;
+
+  if (!siteReference) {
+    return null;
+  }
+
+  const normalizedReference = normalizeValue(siteReference);
+
+  return (
+    getAdminSiteRecords().find((site) =>
+      [site.siteNumber, site.id, site.name].some(
+        (value) => normalizeValue(value) === normalizedReference
+      )
+    ) || null
+  );
+}
+
 
 function mapStudyToPortfolio(study = {}) {
   const subjectsByStudy =
@@ -187,19 +215,36 @@ export function getSites(study) {
 
     return studiesToShow.map((matchedStudy, index) => {
       const subjects = subjectsByStudy[matchedStudy.code] || [];
+      const adminSite = resolveAdminSiteByStudySite(matchedStudy);
 
       const enrolled = subjects.length;
 
       const target = Number(matchedStudy.targetSubjects || 0);
 
-      return {
-        id: index + 1,
+      const siteName =
+        matchedStudy.site ||
+        matchedStudy.location ||
+        matchedStudy.name ||
+        "Unnamed Site";
 
-        name:
-          matchedStudy.site ||
-          matchedStudy.location ||
-          matchedStudy.name ||
-          "Unnamed Site",
+      const siteNumber =
+        matchedStudy.siteNumber ||
+        matchedStudy.siteNo ||
+        `SITE-${String(index + 1).padStart(3, "0")}`;
+
+      return {
+        id: adminSite?.id || index + 1,
+
+        // Site Number is now a first-class field used by
+        // operational/reference displays.
+        siteNumber,
+
+        // Preserve Site Name as separate master-data semantic field.
+        siteName,
+
+        // Legacy `name` retained for existing consumers (filters,
+        // search text, etc.) — DO NOT drop.
+        name: siteName,
 
         sponsor: matchedStudy.sponsor,
 
@@ -222,17 +267,30 @@ export function getSites(study) {
   // Sponsor > Site Performance, which intentionally show every study.
   const studies = getStudies();
 
-  return studies.map((singleStudy) => {
+  return studies.map((singleStudy, index) => {
     const subjects = subjectsByStudy[singleStudy.code] || [];
+    const adminSite = resolveAdminSiteByStudySite(singleStudy);
 
     const enrolled = subjects.length;
 
     const target = Number(singleStudy.targetSubjects || 0);
 
-    return {
-      id: singleStudy.code,
+    const siteName =
+      singleStudy.site || singleStudy.location || singleStudy.name;
 
-      name: singleStudy.site || singleStudy.location || singleStudy.name,
+    const siteNumber =
+      singleStudy.siteNumber ||
+      singleStudy.siteNo ||
+      `SITE-${String(index + 1).padStart(3, "0")}`;
+
+    return {
+      id: adminSite?.id || singleStudy.code,
+
+      siteNumber,
+
+      siteName,
+
+      name: siteName,
 
       sponsor: singleStudy.sponsor,
 

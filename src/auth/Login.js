@@ -161,10 +161,10 @@ localStorage.removeItem("adminPreviewRole");
     
     } else {
     
-      navigate(
-        "/dashboard",
-        { replace: true }
+      setPasswordError(
+        "Your account role is not recognized. Please contact your administrator."
       );
+      return;
     } // newly added till here
 	} else {
       setPasswordError("Invalid email or password");

@@ -33,7 +33,7 @@ const SiteRanking = () => {
           <thead>
             <tr>
               <th>Rank</th>
-              <th>Site Name</th>
+              <th>Site</th>
               <th>Enrollment</th>
               <th>Compliance</th>
             </tr>
@@ -43,21 +43,21 @@ const SiteRanking = () => {
 
             <tr>
               <td>1</td>
-              <td>Apollo Hospital</td>
+              <td>SITE-001</td>
               <td>250</td>
               <td>96%</td>
             </tr>
 
             <tr>
               <td>2</td>
-              <td>AIG Hospital</td>
+              <td>SITE-002</td>
               <td>180</td>
               <td>92%</td>
             </tr>
 
             <tr>
               <td>3</td>
-              <td>Care Hospital</td>
+              <td>SITE-003</td>
               <td>90</td>
               <td>85%</td>
             </tr>

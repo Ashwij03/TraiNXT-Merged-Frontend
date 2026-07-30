@@ -65,6 +65,7 @@ function Regulatory() {
               { key: "status", label: "Status" }
             ]}
             data={documents}
+            pagination
           />
         </div>
       </div>

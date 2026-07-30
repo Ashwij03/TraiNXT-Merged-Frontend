@@ -61,7 +61,7 @@ function StudyWorkspaceTabs({ activeTab, setActiveTab }) {
 
   const visibleTabs = STUDY_WORKSPACE_TABS.filter((tab) => {
     if (tab.id === "clinical-sites") {
-      return effectiveRole === ROLES.SPONSOR;
+      return effectiveRole === ROLES.SPONSOR || effectiveRole === ROLES.ADMIN;
     }
 
     return true;

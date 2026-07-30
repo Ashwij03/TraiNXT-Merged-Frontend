@@ -1,16 +1,27 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import CROLayout from "./CROLayout";
 import { useCROData } from "./CRODATAContext";
 import StatusBadge from "./StatusBadge";
 import EmptyState from "./EmptyState";
 import CROModal from "./CROModal";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 
 function CROSubjectManagement() {
   const location = useLocation();
   const {
     subjects,
   } = useCROData();
+
+  const siteSources = useMemo(() => getStudies(), []);
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -125,7 +136,7 @@ function CROSubjectManagement() {
                   <tr key={item.id}>
                     <td>{item.id}</td>
                     <td>{item.study}</td>
-                    <td>{item.site}</td>
+                    <td>{displaySite(item.site)}</td>
                     <td><StatusBadge status={item.status} /></td>
                     <td>{item.enrollment}</td>
                     <td>{item.visit}</td>
@@ -159,7 +170,7 @@ function CROSubjectManagement() {
           <div className="subject-detail">
             <p><strong>Subject ID:</strong> {selectedSubject.id}</p>
             <p><strong>Study:</strong> {selectedSubject.study}</p>
-            <p><strong>Site:</strong> {selectedSubject.site}</p>
+            <p><strong>Site:</strong> {displaySite(selectedSubject.site)}</p>
             <p><strong>Status:</strong> <StatusBadge status={selectedSubject.status} /></p>
             <p><strong>Enrollment:</strong> {selectedSubject.enrollment}</p>
             <p><strong>Current Visit:</strong> {selectedSubject.visit}</p>

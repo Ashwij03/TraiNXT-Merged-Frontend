@@ -4,6 +4,7 @@ import { useCROData } from "./CRODATAContext";
 import CROStatusBadge from "./CROStatusBadge";
 import EmptyState from "./EmptyState";
 import CROModal from "./CROModal";
+import { resolveSiteDisplay, formatSiteOption } from "../../utils/siteDisplay";
 
 function CROSitePerformance() {
   const { sitePerformanceData } = useCROData();
@@ -100,7 +101,7 @@ function CROSitePerformance() {
             <table className="cro-data-table">
               <thead>
                 <tr>
-                  <th>Site Name</th>
+                  <th>Site</th>
                   <th>Study</th>
                   <th>Enrollment %</th>
                   <th>Screen Failure %</th>
@@ -113,7 +114,12 @@ function CROSitePerformance() {
               <tbody>
                 {filteredSites.map((site) => (
                   <tr key={site.id}>
-                    <td>{site.site}</td>
+                    <td>
+                      {resolveSiteDisplay({
+                        siteNumber: site.siteNumber || site.siteNo || "",
+                        siteName: site.site || site.siteName || "",
+                      })}
+                    </td>
                     <td>{site.study}</td>
                     <td>{site.enrollment}</td>
                     <td>{site.screenFailure}</td>
@@ -145,7 +151,10 @@ function CROSitePerformance() {
         onClose={() => setSelectedSite(null)}
         title={
           selectedSite
-            ? `${selectedSite.site} Performance`
+            ? `${formatSiteOption({
+                siteNumber: selectedSite.siteNumber || selectedSite.siteNo || "",
+                siteName: selectedSite.site || selectedSite.siteName || "",
+              }) || selectedSite.site || "Site"} Performance`
             : "Site Details"
         }
         footer={

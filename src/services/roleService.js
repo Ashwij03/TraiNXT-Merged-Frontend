@@ -374,7 +374,7 @@ export function canAccessRoute(path, user = getCurrentUser()) {
     "/cro-details": [ROLES.SPONSOR],
     "/cro-report": [ROLES.SPONSOR],
     "/cro-contracts": [ROLES.SPONSOR],
-    "/site-details": [ROLES.SPONSOR],
+    "/site-details": [ROLES.SPONSOR, ROLES.ADMIN],
     "/report-details": [ROLES.SPONSOR],
     "/recruitment-details": [ROLES.SPONSOR],
     "/regulatory-details": [ROLES.SPONSOR],

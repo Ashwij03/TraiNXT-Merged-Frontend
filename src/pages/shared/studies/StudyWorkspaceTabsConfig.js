@@ -27,10 +27,12 @@ export const STUDY_WORKSPACE_TABS = [
     id: "eisf",
     label: "eISF",
   },
-  {
-    id: "regulatory",
-    label: "Regulatory",
-  },
+  // ===== START ITEM 16: Regulatory tab removed from Studies module =====
+  // {
+  //   id: "regulatory",
+  //   label: "Regulatory",
+  // },
+  // ===== END ITEM 16 =====
   {
     id: "reports",
     label: "Reports",

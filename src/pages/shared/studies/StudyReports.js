@@ -2,15 +2,25 @@ import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import KPICard from "../../../components/dashboard/shared/KPICard";
 import DashboardPieChart from "../../../components/dashboard/shared/DashboardPieChart";
-import { getStudyByCode } from "../../../services/studyService";
+import { getStudyByCode, getStudies } from "../../../services/studyService";
 import { getSubjectStatusAnalytics } from "../../../utils/subjectStatusAnalytics";
 import { downloadCsvReport } from "../../../utils/exportReport";
+import { resolveSiteDisplay } from "../../../utils/siteDisplay";
 import "./StudyReports.css";
 
 function StudyReports() {
   const { id } = useParams();
   const study = getStudyByCode(id);
   const [reportStatus, setReportStatus] = useState("");
+
+  const siteSources = useMemo(() => getStudies(), []);
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   const studySubjects = useMemo(() => {
     try {
@@ -62,7 +72,7 @@ function StudyReports() {
       ...studySubjects.map((subject) => [
         subject.id || subject.subjectId,
         subject.status,
-        subject.site,
+        displaySite(subject.site),
         subject.pi
       ])
     ];

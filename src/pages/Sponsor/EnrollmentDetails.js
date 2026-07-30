@@ -1,10 +1,21 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import AppLayout from "./AppLayout";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 
 function EnrollmentDetails() {
 
   const { id } = useParams();
+
+  const siteSources = useMemo(() => getStudies(), []);
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   const studies = {
 
@@ -54,7 +65,7 @@ function EnrollmentDetails() {
         <h3>Study Information</h3>
 
         <p><strong>Study ID:</strong> {id}</p>
-        <p><strong>Site:</strong> {study.site}</p>
+        <p><strong>Site:</strong> {displaySite(study.site)}</p>
         <p><strong>PI:</strong> {study.pi}</p>
         <p><strong>CRO:</strong> {study.cro}</p>
 

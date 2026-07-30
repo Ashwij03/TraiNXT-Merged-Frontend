@@ -144,6 +144,7 @@ function UserManagement() {
               )
             }))}
             emptyMessage="No users match the current search/filter"
+            pagination
           />
         </div>
       </div>

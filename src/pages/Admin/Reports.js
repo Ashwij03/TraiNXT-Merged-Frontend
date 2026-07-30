@@ -232,6 +232,7 @@ function Reports() {
             ]}
             data={reports}
             emptyMessage="No reports yet for your accessible studies"
+            pagination
           />
         </div>
       </div>

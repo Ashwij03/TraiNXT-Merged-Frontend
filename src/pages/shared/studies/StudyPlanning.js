@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import RequestPermissionButton from "../../../components/common/RequestPermissionButton";
 import { canEditStudyContent } from "../../../utils/contentAccess";
 import { getCurrentUser } from "../../../services/roleService";
+import { getStudyByCode } from "../../../services/studyService";
+import { resolveSiteDisplay } from "../../../utils/siteDisplay";
 import {
   PLANNING_UPDATED_EVENT,
   getPlanningMilestones,
@@ -46,13 +48,33 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
   const team = getStudyTeam(studyCode);
   const checklist = getRegulatoryChecklist(studyCode);
   const protocols = getProtocols(studyCode);
+  const studyRecord = getStudyByCode(studyCode);
 
   const bump = () => setVersion((v) => v + 1);
 
   return (
     <div className="study-planning-page">
       <div className="study-planning-header">
-        <h2>Planning</h2>
+        <div>
+          <h2>Planning</h2>
+          <p className="study-planning-site-ref">
+            <span>Site</span>{" "}
+            <strong>
+              {resolveSiteDisplay({
+                siteNumber:
+                  (studyRecord &&
+                    (studyRecord.siteNumber || studyRecord.siteNo)) ||
+                  "",
+                siteName:
+                  (studyRecord &&
+                    (studyRecord.siteName ||
+                      studyRecord.site ||
+                      studyRecord.location)) ||
+                  "",
+              })}
+            </strong>
+          </p>
+        </div>
         {!canEdit && (
           <RequestPermissionButton
             action="Edit Planning"
@@ -66,7 +88,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
       <section className="planning-section">
 
   <div className="planning-section-header">
-    <h3>Project Management — Milestones</h3>
+    <h3>Site Management Milestone</h3>
 
     <button
       type="button"

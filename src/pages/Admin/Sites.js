@@ -55,6 +55,7 @@ function Sites() {
               { key: "status", label: "Status" }
             ]}
             data={sites}
+            pagination
           />
         </div>
       </div>

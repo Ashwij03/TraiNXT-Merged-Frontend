@@ -1,17 +1,32 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import CROLayout from "./CROLayout";
 import { useCROData } from "./CRODATAContext";
 import StatusBadge from "./StatusBadge";
 import EmptyState from "./EmptyState";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
+import { formatScheduleDisplayDate } from "../../utils/formatScheduleDisplayDate";
+import { isPastCalendarDate } from "../../services/visitScheduleService";
 
 function CROMonitoring() {
   const { visits } = useCROData();
+
+  const siteSources = useMemo(() => getStudies(), []);
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
   const filteredVisits = visits.filter((visit) => {
-    const matchesSearch = visit.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = String(visit.id || "")
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "All" || visit.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -20,7 +35,7 @@ function CROMonitoring() {
   const pendingCount = visits.filter((v) => v.status === "Pending").length;
   const overdueCount = visits.filter((v) => {
     if (v.status === "Completed") return false;
-    return new Date(v.date) < new Date();
+    return isPastCalendarDate(v.date);
   }).length;
 
   return (
@@ -91,10 +106,10 @@ function CROMonitoring() {
                 {filteredVisits.map((visit) => (
                   <tr key={visit.id}>
                     <td>{visit.id}</td>
-                    <td>{visit.site}</td>
+                    <td>{displaySite(visit.site)}</td>
                     <td>{visit.cra}</td>
                     <td>{visit.visitType}</td>
-                    <td>{visit.date}</td>
+                    <td>{formatScheduleDisplayDate(visit.date)}</td>
                     <td><StatusBadge status={visit.status} /></td>
                   </tr>
                 ))}

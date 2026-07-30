@@ -2,7 +2,7 @@ import { normalizeStatus } from "./normalizeStatus";
 import { SUBJECT_STATUS_ORDER } from "./subjectStatusAnalytics";
 
 export const ENROLLMENT_BAR_ORDER = [
-  "Screening",
+  "Screened",
   "Enrolled",
   "Ongoing",
   "Completed",

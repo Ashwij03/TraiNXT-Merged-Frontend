@@ -14,6 +14,8 @@ import {
   getCurrentUser,
   isAdmin
 } from "../../services/roleService";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 import "./AdminPage.css";
 
 const CATEGORY_LABELS = {
@@ -29,6 +31,15 @@ function Notifications() {
   const assignedSite = getAssignedSite();
   const [filter, setFilter] = useState("all");
   const [notifications, setNotifications] = useState(getNotifications());
+
+  const siteSources = useMemo(() => getStudies(), []);
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   const scopedNotifications = useMemo(() => {
     if (adminMode) {
@@ -153,7 +164,7 @@ function Notifications() {
                   </p>
                   <small style={{ color: "#9ca3af" }}>
                     {new Date(notification.createdAt).toLocaleString()}
-                    {notification.site ? ` • ${notification.site}` : ""}
+                    {notification.site ? ` • ${displaySite(notification.site)}` : ""}
                   </small>
                 </div>
 

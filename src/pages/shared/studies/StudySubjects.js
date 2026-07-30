@@ -21,6 +21,22 @@ import {
   ROLE_LABELS,
 } from "../../../services/roleService";
 import { notifySubjectCreated } from "../../../services/notificationService";
+import {
+  deriveSubjectLifecycleStatus,
+  SUBJECT_TERMINAL_STATES,
+} from "../../../utils/subjectLifecycle";
+import { syncSubjectSchedules } from "../../../services/visitScheduleService";
+import {
+  getStudyByCode,
+  getSubjectStudyDefaults,
+  createSubject,
+  updateSubject,
+  COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE,
+  COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE,
+  getStudies,
+} from "../../../services/studyService";
+import { STUDY_STATUS_COMPLETED } from "../../../constants/studyStatus";
+import { resolveSiteDisplay } from "../../../utils/siteDisplay";
 import "./StudySubjects.css";
 
 const SUBJECTS_STORAGE_KEY = "subjectsByStudy";
@@ -114,7 +130,14 @@ function getSubjectsForStudy(subjectsByStudy, studyId) {
   return [];
 }
 
-function getSubjectDetailCards(subject) {
+function getSubjectDetailCards(subject, siteSources = []) {
+  const siteDisplay = subject?.site
+    ? resolveSiteDisplay(subject.site, {
+        sources: siteSources,
+        fallback: subject.site || "—"
+      })
+    : "—";
+
   return [
     {
       label: "Initials",
@@ -129,8 +152,12 @@ function getSubjectDetailCards(subject) {
       value: subject?.pi || "—",
     },
     {
+      label: "Study ID",
+      value: subject?.studyId || "—",
+    },
+    {
       label: "Site",
-      value: subject?.site || "—",
+      value: siteDisplay,
     },
     {
       label: "Screening Date",
@@ -173,6 +200,45 @@ function StudySubjects({
   const currentUser = getCurrentUser();
   const showAddSubject = canAddSubject(currentUser);
   const canModifySubjects = canEditSubjectContent(currentUser);
+
+  /*
+    Item 7 (Stage 5A): resolve the authoritative study for this page so the
+    UI guard can react to study status changes made elsewhere (edit-study
+    dialog, other tabs). Refreshed on `studies-updated`.
+  */
+  const [currentStudy, setCurrentStudy] = useState(() =>
+    studyId ? getStudyByCode(studyId) : null
+  );
+
+  useEffect(() => {
+    setCurrentStudy(studyId ? getStudyByCode(studyId) : null);
+
+    const refreshStudy = () => {
+      setCurrentStudy(studyId ? getStudyByCode(studyId) : null);
+    };
+
+    window.addEventListener("studies-updated", refreshStudy);
+    window.addEventListener("sponsor-data-updated", refreshStudy);
+
+    return () => {
+      window.removeEventListener("studies-updated", refreshStudy);
+      window.removeEventListener("sponsor-data-updated", refreshStudy);
+    };
+  }, [studyId]);
+
+  const isStudyCompleted =
+    currentStudy?.status === STUDY_STATUS_COMPLETED;
+
+  const inheritedSubjectFields = getSubjectStudyDefaults(studyId);
+
+  const getStudyDerivedSubjectFormFields = () => {
+    const latestDefaults = getSubjectStudyDefaults(studyId);
+
+    return {
+      pi: latestDefaults.pi || "",
+      site: latestDefaults.site || "",
+    };
+  };
 
   useEffect(() => {
     const refreshSubjects = () => {
@@ -289,6 +355,32 @@ function StudySubjects({
 
     const isEditing = Boolean(editingSubjectId);
 
+    /*
+      Item 7 (extension): Completed-study subject guard.
+      Both NEW subject creation and editing an existing subject are
+      blocked once the study is Completed.
+      Validation happens BEFORE any subject mutation.
+    */
+    if (isEditing) {
+      const authoritativeStudy = getStudyByCode(studyId);
+      if (
+        authoritativeStudy &&
+        authoritativeStudy.status === STUDY_STATUS_COMPLETED
+      ) {
+        window.alert(COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE);
+        return;
+      }
+    } else {
+      const authoritativeStudy = getStudyByCode(studyId);
+      if (
+        authoritativeStudy &&
+        authoritativeStudy.status === STUDY_STATUS_COMPLETED
+      ) {
+        window.alert(COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE);
+        return;
+      }
+    }
+
     const duplicateExists = subjectsData.some(
       (subject) =>
         normalizeValue(subject.id) === normalizeValue(subjectId) &&
@@ -304,13 +396,24 @@ function StudySubjects({
 
     let updatedSubjectsForStudy;
 
+    // Item 21: manual status control is limited to terminal workflow actions
+    // (Withdrawn / Dropout). Any other value is ignored and the authoritative
+    // status is derived from the subject's actual lifecycle fields (screening
+    // date, enrollment date, current visit, per-subject visit records). This
+    // prevents an arbitrary manual override from silently regressing an
+    // Ongoing subject back to Enrolled, marking Completed without real
+    // completion evidence, etc.
+    const requestedManualStatus = SUBJECT_TERMINAL_STATES.includes(newSubject.status)
+      ? newSubject.status
+      : "";
+
     if (isEditing) {
       updatedSubjectsForStudy = subjectsData.map((subject) => {
         if (normalizeValue(subject.id) !== normalizeValue(editingSubjectId)) {
           return subject;
         }
 
-        return {
+        const merged = {
           ...subject,
           ...newSubject,
           id: subjectId,
@@ -320,27 +423,108 @@ function StudySubjects({
           studyId,
           updatedAt: now,
         };
+
+        const derived = deriveSubjectLifecycleStatus(
+          { ...merged, status: "" },
+          { studyId }
+        );
+
+        return {
+          ...merged,
+          status: requestedManualStatus || derived || merged.status || "",
+        };
       });
+      
+      saveSubjects({
+        ...subjectsByStudy,
+        [studyId]: updatedSubjectsForStudy,
+
+      });
+
+      const editedSubject = updatedSubjectsForStudy.find(
+        (subject) => normalizeValue(subject.id) === normalizeValue(subjectId)
+      );
+
+      /*
+        Item 7 (extension): route the authoritative subject-edit write
+        through the shared service, which re-checks the Completed-study
+        rule before mutating `subjectsByStudy`. This is the defense-in-depth
+        backstop for the UI guard above.
+      */
+      try {
+        updateSubject(studyId, editingSubjectId, editedSubject);
+      } catch (error) {
+        window.alert(
+          (error && error.message) || COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE
+        );
+        return;
+      }
+
+      setSubjectsByStudy((current) => ({
+        ...current,
+        [studyId]: updatedSubjectsForStudy,
+      }));
+
+      // Push the updated Screening/Enrollment dates into the shared visit
+      // schedule store so this change is reflected on every role's
+      // "Visit Calendar & Upcoming Visits" widget (Admin, Site Staff, PI).
+      syncSubjectSchedules(studyId, subjectId, editedSubject);
     } else {
-      const subjectToAdd = {
+      const studyDerivedFields = getStudyDerivedSubjectFormFields();
+      const baseSubject = {
         ...newSubject,
         id: subjectId,
         initials: newSubject.initials.trim(),
-        pi: newSubject.pi.trim(),
-        site: newSubject.site.trim(),
+        pi: studyDerivedFields.pi,
+        site: studyDerivedFields.site,
         studyId,
         createdAt: now,
         updatedAt: now,
       };
-      updatedSubjectsForStudy = [...subjectsData, subjectToAdd];
-    }
 
-    saveSubjects({
-      ...subjectsByStudy,
-      [studyId]: updatedSubjectsForStudy,
-    });
+      const derived = deriveSubjectLifecycleStatus(
+        { ...baseSubject, status: "" },
+        { studyId }
+      );
 
-    if (!isEditing) {
+      const subjectToAdd = {
+        ...baseSubject,
+        status: requestedManualStatus || derived || "",
+      };
+
+      /*
+        Item 7 (Stage 5A): route the authoritative new-subject write through
+        the shared service, which re-checks the Completed-study rule before
+        mutating `subjectsByStudy`. This is the defense-in-depth backstop for
+        the UI guard above.
+      */
+      let createdSubject;
+
+      try {
+        createdSubject = createSubject(studyId, subjectToAdd);
+      } catch (error) {
+        window.alert(
+          (error && error.message) ||
+            COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE
+        );
+        return;
+      }
+
+      // Keep local component state consistent with what the shared service
+      // just persisted so the table renders immediately without waiting for
+      // the `subjects-updated` event dispatch to round-trip through storage.
+      setSubjectsByStudy((current) => ({
+        ...current,
+        [studyId]: [...subjectsData, createdSubject],
+      }));
+
+      // Push the new subject's Screening/Enrollment dates into the shared
+      // visit schedule store so this new subject immediately shows up on
+      // every role's "Visit Calendar & Upcoming Visits" widget (Admin,
+      // Site Staff, PI) — previously only the SubjectFolderWorkspace flow
+      // did this, so subjects added from this page never appeared there.
+      syncSubjectSchedules(studyId, subjectId, createdSubject);
+
       // notifySubjectCreated expects { subjectId, studyCode, addedByRole },
       // while this page's own subject record uses { id, studyId } — adapt the
       // field names here rather than renaming the stored record shape used by
@@ -360,13 +544,32 @@ function StudySubjects({
   };
 
   const openAddSubjectModal = () => {
+    // Item 7 (Stage 5A): prevent opening the Add Subject flow at all when
+    // the target study is Completed. Shared service still enforces this
+    // as defense in depth if the flow is somehow reached.
+    if (isStudyCompleted) {
+      window.alert(COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE);
+      return;
+    }
+
     setEditingSubjectId(null);
-    setNewSubject(emptySubjectForm);
+    setNewSubject({
+      ...emptySubjectForm,
+      ...getStudyDerivedSubjectFormFields(),
+    });
     setShowSubjectModal(true);
   };
 
   const openEditSubjectModal = (subject) => {
     if (!subject) {
+      return;
+    }
+
+    // Item 7 (extension): prevent opening the Edit Subject flow at all when
+    // the target study is Completed. Shared service still enforces this
+    // as defense in depth if the flow is somehow reached.
+    if (isStudyCompleted) {
+      window.alert(COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE);
       return;
     }
 
@@ -447,7 +650,10 @@ function StudySubjects({
       selectedSubject.id
     );
 
-    const subjectDetailCards = getSubjectDetailCards(selectedSubject);
+    const subjectDetailCards = getSubjectDetailCards(
+      selectedSubject,
+      getStudies()
+    );
 
     return (
       <div className="subjects-module">
@@ -521,6 +727,13 @@ function StudySubjects({
             type="button"
             className="add-subject-btn"
             onClick={openAddSubjectModal}
+            disabled={isStudyCompleted}
+            aria-disabled={isStudyCompleted}
+            title={
+              isStudyCompleted
+                ? COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE
+                : undefined
+            }
           >
             <FiPlus />
             Add Subject
@@ -566,7 +779,14 @@ function StudySubjects({
                     <td>{subject.initials || "—"}</td>
                     <td>{subject.status || "—"}</td>
                     <td>{subject.pi || "—"}</td>
-                    <td>{subject.site || "—"}</td>
+                    <td>
+                      {subject.site
+                        ? resolveSiteDisplay(subject.site, {
+                            sources: getStudies(),
+                            fallback: subject.site
+                          })
+                        : "—"}
+                    </td>
                     <td>{subject.screeningDate || "—"}</td>
                     <td>{subject.enrollmentDate || "—"}</td>
                     <td>{subject.currentVisit || "—"}</td>
@@ -577,8 +797,14 @@ function StudySubjects({
                             type="button"
                             className="subject-action-btn subject-action-edit"
                             onClick={() => openEditSubjectModal(subject)}
+                            disabled={isStudyCompleted}
+                            aria-disabled={isStudyCompleted}
                             aria-label={`Edit subject ${subject.id}`}
-                            title="Edit subject"
+                            title={
+                              isStudyCompleted
+                                ? COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE
+                                : "Edit subject"
+                            }
                           >
                             <FiEdit2 />
                           </button>
@@ -650,8 +876,14 @@ function StudySubjects({
                           event.stopPropagation();
                           openEditSubjectModal(subject);
                         }}
+                        disabled={isStudyCompleted}
+                        aria-disabled={isStudyCompleted}
                         aria-label={`Edit subject ${subject.id}`}
-                        title="Edit subject"
+                        title={
+                          isStudyCompleted
+                            ? COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE
+                            : "Edit subject"
+                        }
                       >
                         <FiEdit2 />
                       </button>
@@ -776,30 +1008,101 @@ function StudySubjects({
             />
 
             <label htmlFor="subject-pi">Principal Investigator</label>
-            <input
-              id="subject-pi"
-              placeholder="Principal Investigator"
-              value={newSubject.pi}
-              onChange={(event) =>
-                setNewSubject({
-                  ...newSubject,
-                  pi: event.target.value,
-                })
-              }
-            />
+            {editingSubjectId ? (
+              <input
+                id="subject-pi"
+                placeholder="Principal Investigator"
+                value={newSubject.pi}
+                onChange={(event) =>
+                  setNewSubject({
+                    ...newSubject,
+                    pi: event.target.value,
+                  })
+                }
+              />
+            ) : (
+              <input
+                id="subject-pi"
+                placeholder="Principal Investigator"
+                value={inheritedSubjectFields.pi || "—"}
+                readOnly
+                aria-readonly="true"
+              />
+            )}
 
             <label htmlFor="subject-site">Site</label>
-            <input
-              id="subject-site"
-              placeholder="Site"
-              value={newSubject.site}
-              onChange={(event) =>
-                setNewSubject({
-                  ...newSubject,
-                  site: event.target.value,
-                })
-              }
-            />
+            {editingSubjectId ? (
+              (() => {
+                const availableSites = (getStudies() || []).filter(
+                  (study) =>
+                    study && (study.siteNumber || study.site || study.location)
+                );
+
+                if (availableSites.length > 0) {
+                  return (
+                    <select
+                      id="subject-site"
+                      value={newSubject.site}
+                      onChange={(event) =>
+                        setNewSubject({
+                          ...newSubject,
+                          site: event.target.value,
+                        })
+                      }
+                    >
+                      <option value="">Select Site</option>
+                      {availableSites.map((study) => {
+                        const number =
+                          study.siteNumber ||
+                          study.number ||
+                          study.siteNo ||
+                          "";
+                        const name =
+                          study.site ||
+                          study.siteName ||
+                          study.location ||
+                          "";
+                        const optionValue = number || name;
+                        const label =
+                          number && name
+                            ? `${number} — ${name}`
+                            : number || name;
+                        return (
+                          <option
+                            key={`${study.id || study.code || optionValue}`}
+                            value={optionValue}
+                          >
+                            {label}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  );
+                }
+
+                return (
+                  <input
+                    id="subject-site"
+                    placeholder="Site"
+                    value={newSubject.site}
+                    onChange={(event) =>
+                      setNewSubject({
+                        ...newSubject,
+                        site: event.target.value,
+                      })
+                    }
+                  />
+                );
+              })()
+            ) : (
+                <input
+                  id="subject-site"
+                  placeholder="Site"
+                  value={inheritedSubjectFields.siteDisplay || "—"}
+                  readOnly
+                  aria-readonly="true"
+                />
+            )}
 
             <div className="form-group">
               <label htmlFor="subject-screening-date">
@@ -838,9 +1141,20 @@ function StudySubjects({
             </div>
 
             <label htmlFor="subject-status">Status</label>
+            {/* Item 21: normal lifecycle stages (Screened / Enrolled / Ongoing /
+                Completed) are derived automatically from the subject's actual
+                screening date, enrollment date, current visit, and visit
+                records. The manual control here is limited to terminal
+                workflow actions (Withdrawn / Dropout) plus "Auto (derived)",
+                which clears any manual override so the canonical derivation
+                applies. */}
             <select
               id="subject-status"
-              value={newSubject.status}
+              value={
+                SUBJECT_TERMINAL_STATES.includes(newSubject.status)
+                  ? newSubject.status
+                  : ""
+              }
               onChange={(event) =>
                 setNewSubject({
                   ...newSubject,
@@ -848,14 +1162,20 @@ function StudySubjects({
                 })
               }
             >
-              <option value="">Select</option>
-              <option value="Screening">Screening</option>
-              <option value="Enrolled">Enrolled</option>
-              <option value="Ongoing">Ongoing</option>
-              <option value="Completed">Completed</option>
+              <option value="">Auto (derived from lifecycle data)</option>
               <option value="Withdrawn">Withdrawn</option>
               <option value="Dropout">Dropout</option>
             </select>
+            <small
+              className="subject-status-derived-hint"
+              style={{ display: "block", marginTop: "4px", color: "#64748b" }}
+            >
+              Derived status:{" "}
+              {deriveSubjectLifecycleStatus(
+                { ...newSubject, id: newSubject.id, studyId, status: "" },
+                { studyId }
+              ) || "—"}
+            </small>
 
             <label htmlFor="subject-current-visit">Current Visit</label>
             <select
@@ -902,3 +1222,4 @@ function StudySubjects({
 }
 
 export default StudySubjects;
+

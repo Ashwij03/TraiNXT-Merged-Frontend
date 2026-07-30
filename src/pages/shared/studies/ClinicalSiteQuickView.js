@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import "./ClinicalSiteQuickView.css";
+import { resolveSiteDisplay } from "../../../utils/siteDisplay";
 
 function ClinicalSiteQuickView({ site, study, onClose }) {
   useEffect(() => {
@@ -44,7 +45,7 @@ function ClinicalSiteQuickView({ site, study, onClose }) {
               Clinical Site Quick View
             </h2>
 
-            <p>{site.name || "—"}</p>
+            <p>{resolveSiteDisplay(site)}</p>
           </div>
 
           <button
@@ -64,8 +65,8 @@ function ClinicalSiteQuickView({ site, study, onClose }) {
           </div>
 
           <div className="clinical-site-quick-view-item">
-            <span>Site Name</span>
-            <strong>{site.name || "—"}</strong>
+            <span>Site</span>
+            <strong>{resolveSiteDisplay(site)}</strong>
           </div>
 
           <div className="clinical-site-quick-view-item">

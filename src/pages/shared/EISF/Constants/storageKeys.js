@@ -73,6 +73,12 @@ const STORAGE_KEYS = Object.freeze({
 
   RECENT_DOCUMENTS: "eisf_recent_documents",
   RECENT_FOLDERS: "eisf_recent_folders",
+
+  /* -------------------------------------------------------------------------- */
+  /*                    Sub-Module Enable/Disable (Item 9)                      */
+  /* -------------------------------------------------------------------------- */
+
+  SUBMODULE_ENABLED: "eisf_submodule_enabled",
 });
 
 export default STORAGE_KEYS;

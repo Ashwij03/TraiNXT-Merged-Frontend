@@ -104,20 +104,25 @@ export function getStudyTeam(studyCode) {
 
 export function saveStudyTeamMember(studyCode, member) {
   const list = getStudyTeam(studyCode);
+
+  const existingMember = list.find((item) => item.id === member?.id);
+
   const entry = {
+    ...(existingMember || {}),
     id: member?.id || `tm-${Date.now()}`,
     name: String(member?.name ?? "").trim(),
-    role: member?.role || "",
-    email: member?.email || "",
-    organization: member?.organization || "",
-    startDate: member?.startDate || "",
-    phone: member?.phone || "",
+    role: member?.role ?? existingMember?.role ?? "",
+    email: member?.email ?? existingMember?.email ?? "",
+    organization: member?.organization ?? existingMember?.organization ?? "",
+    startDate: member?.startDate ?? existingMember?.startDate ?? "",
+    phone: member?.phone ?? existingMember?.phone ?? "",
   };
 
   const index = list.findIndex((item) => item.id === entry.id);
+
   const next =
     index >= 0
-      ? list.map((item, i) => (i === index ? { ...item, ...entry } : item))
+      ? list.map((item, i) => (i === index ? entry : item))
       : [...list, entry];
 
   return saveStudyList(STUDY_TEAM_KEY, studyCode, next);

@@ -1,12 +1,23 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AppLayout from "./AppLayout";
 import "./ProgressNoteDetails.css";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { getStudies } from "../../services/studyService";
 
 function ProgressNoteDetails() {
 
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const siteSources = useMemo(() => getStudies(), []);
+  const displaySite = (value) =>
+    value
+      ? resolveSiteDisplay(value, {
+          sources: siteSources,
+          fallback: value
+        })
+      : "—";
 
   const notesData = {
     "NOTE-001": {
@@ -75,7 +86,7 @@ function ProgressNoteDetails() {
         <p><strong>Note ID:</strong> {id}</p>
         <p><strong>Study:</strong> {note.study}</p>
         <p><strong>Subject ID:</strong> {note.subjectId}</p>
-        <p><strong>Site:</strong> {note.site}</p>
+        <p><strong>Site:</strong> {displaySite(note.site)}</p>
         <p><strong>Visit:</strong> {note.visit}</p>
         <p><strong>Category:</strong> {note.category}</p>
         <p><strong>Created By:</strong> {note.createdBy}</p>
