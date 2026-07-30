@@ -346,12 +346,6 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   };
 
   const navigateToStudySection = (studyKey, section) => {
-    const study = studies.find((item) => getStudyKey(item) === studyKey);
-
-    if (study) {
-      localStorage.setItem("selectedStudy", JSON.stringify(study));
-    }
-
     const tabMap = {
       overview: "Overview",
       subjects: "Subjects",
@@ -433,12 +427,6 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
 
     if (!subjectId) {
       return;
-    }
-
-    const study = studies.find((item) => getStudyKey(item) === studyKey);
-
-    if (study) {
-      localStorage.setItem("selectedStudy", JSON.stringify(study));
     }
 
     const selectedSubject = {

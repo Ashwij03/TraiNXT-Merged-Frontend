@@ -4,7 +4,12 @@ import {
   getStudyFinancials,
   saveStudyFinancials,
 } from "../../../services/financialService";
-import { resolveSiteDisplay } from "../../../utils/siteDisplay";
+import {
+  formatSiteOption,
+  resolveSiteRecord,
+  MISSING_SITE_DISPLAY,
+} from "../../../utils/siteDisplay";
+import { readStorageArray } from "../../../utils/storageHelpers";
 
 const FINANCIALS_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 
@@ -118,6 +123,24 @@ const BUDGET_CATEGORY_OPTIONS = [
   "Pharmacy",
 ].filter((option) => !REMOVED_BUDGET_CATEGORIES.includes(option));
 
+// Resolves the study's site against the global sites registry so the real
+// Site Number can be shown alongside Site Name — study records only store
+// a site name/location, not a number (same lookup used by Studies.js and
+// studyService.js's deriveStudySiteRelationship).
+function getStudySiteFinancialDisplay(study, sites) {
+  const siteReference = {
+    siteName:
+      (study && (study.siteName || study.site || study.location)) || "",
+    siteNumber: (study && (study.siteNumber || study.siteNo)) || "",
+  };
+
+  const matchedSite = resolveSiteRecord(siteReference, sites);
+
+  return (
+    formatSiteOption(matchedSite || siteReference) || MISSING_SITE_DISPLAY
+  );
+}
+
 function StudyFinancials({ study } = {}) {
   const studyKey =
     (study && (study.studyId || study.id || study.code || study.studyName)) ||
@@ -127,6 +150,8 @@ function StudyFinancials({ study } = {}) {
     () => getStudyFinancials(studyKey),
     [studyKey],
   );
+
+  const siteRecords = useMemo(() => readStorageArray("sites"), []);
 
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [showAllData, setShowAllData] = useState(false);
@@ -1020,13 +1045,7 @@ const handleDeleteSubjectCost = (id) => {
 
     <div>
       <span>Site</span>
-      <strong>
-        {resolveSiteDisplay({
-          siteName:
-            (study && (study.siteName || study.site || study.location)) || "",
-          siteNumber: (study && (study.siteNumber || study.siteNo)) || "",
-        })}
-      </strong>
+      <strong>{getStudySiteFinancialDisplay(study, siteRecords)}</strong>
     </div>
 
     <div>
@@ -1489,15 +1508,7 @@ Subject Costs
         </tr>
       ) : (
         <tr>
-          <td>
-            {resolveSiteDisplay({
-              siteName:
-                (study && (study.siteName || study.site || study.location)) ||
-                "",
-              siteNumber:
-                (study && (study.siteNumber || study.siteNo)) || "",
-            })}
-          </td>
+          <td>{getStudySiteFinancialDisplay(study, siteRecords)}</td>
           <td>
             {formatCurrency(totalBudget, budgets[0]?.currency)}
           </td>

@@ -194,17 +194,6 @@ function EnterpriseNavbarBase({
     return base;
   }, [userIsAdmin, effectiveRole, croOptions.length]);
 
-  // ---------------------------------------------------------------------
-  // A9 — Study Context Header
-  //
-  // The header's own Study dropdown (selectedStudyCode/SELECTED_STUDY_FILTER_KEY)
-  // is only one way a Study gets selected. Sidebar links, Quick Actions, and
-  // deep links all navigate straight to /study-dashboard/:code without ever
-  // touching that dropdown. Without this, the header could show one Study
-  // while the page underneath was showing another. Reading the code out of
-  // the route keeps every module — Admin, PI, CRO, Sponsor, Site Staff —
-  // showing the same Study context, since they all render this same header.
-  // ---------------------------------------------------------------------
   const routeStudyCode = useMemo(() => {
     const match = location.pathname.match(/^\/study-dashboard\/([^/?]+)/);
     return match ? decodeURIComponent(match[1]) : "";
@@ -396,7 +385,6 @@ function EnterpriseNavbarBase({
       return;
     }
 
-    localStorage.setItem("selectedStudy", JSON.stringify(study));
     navigate(`/study-dashboard/${study.code}`);
   };
 
@@ -786,4 +774,3 @@ function EnterpriseNavbarBase({
 }
 
 export default EnterpriseNavbarBase;
-

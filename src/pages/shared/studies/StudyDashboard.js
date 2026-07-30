@@ -109,12 +109,6 @@ function StudyDashboard() {
   }, [searchParams]);
 
   useEffect(() => {
-    const selectedStudy = getStudyByCode(id);
-
-    if (selectedStudy) {
-      localStorage.setItem("selectedStudy", JSON.stringify(selectedStudy));
-    }
-
     localStorage.setItem("sidebarStudiesOpen", JSON.stringify(true));
     localStorage.setItem("sidebarStudyBinderOpen", JSON.stringify(true));
   }, [id]);
@@ -931,4 +925,3 @@ window.dispatchEvent(new Event("studies-updated"));
 }
 
 export default StudyDashboard;
-

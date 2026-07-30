@@ -6,30 +6,25 @@ import {
   canViewComment,
   canWriteComments,
 } from "../../../services/commentService";
-import { getCurrentUser } from "../../../services/roleService";
+import { getCurrentUser, getAssignedSite } from "../../../services/roleService";
 import { useComments } from "../../../comments/CommentsContext";
 
-// "Comments" tab rendered inside a study's detail page
-// (StudyDetails.js → activeTab === "comments"). Phase 7: reads/writes go
-// through the shared CommentsContext instead of an ad-hoc window listener
-// + getVisibleComments() re-read on every event. Result: this table stays
-// in lockstep with Study Comments, Subject Comments, Open Comments,
-// Pending Comments, dashboard widgets, and counters — one source of
-// truth, no per-view API/state churn. Search/filter/permission/routing
-// behavior is preserved.
 export default function CommentsPage({ embedded = false }) {
   const { code } = useParams();
   const studyCode = code || "";
   const currentUser = getCurrentUser();
+  const assignedSite = getAssignedSite() || "";
   const {
     comments: liveComments,
     addComment,
     resolveComment,
   } = useComments();
 
+  // UI state
   const [filter, setFilter] = useState("unresolved");
   const [commentText, setCommentText] = useState("");
 
+  // Compute study-scoped, visible comments from canonical source
   const comments = useMemo(() => {
     return liveComments
       .filter((comment) => canViewComment(comment, currentUser))
@@ -63,6 +58,10 @@ export default function CommentsPage({ embedded = false }) {
     addComment("", {
       text,
       study: studyCode,
+      site: assignedSite,
+      module: "OperationsComments",
+      sourceView: "operations",
+      activity: "General",
     });
 
     setCommentText("");
