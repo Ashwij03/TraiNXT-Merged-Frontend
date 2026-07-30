@@ -202,6 +202,7 @@ const [selectedBudget, setSelectedBudget] = useState(null);
     Persist per-study financial records to localStorage whenever any
     section changes.
   */
+ // Load financial data whenever the selected study changes.
   useEffect(() => {
     saveStudyFinancials(studyKey, {
       budgets,
