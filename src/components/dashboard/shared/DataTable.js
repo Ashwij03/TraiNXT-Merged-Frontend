@@ -171,7 +171,13 @@ function DataTable({
 
       <div className="ctms-table-wrapper">
 
-        <table className="ctms-table">
+      <table
+  className="ctms-table"
+  style={{
+    tableLayout: "fixed",
+    width: "100%",
+  }}
+>
 
           <thead>
 
@@ -202,15 +208,31 @@ function DataTable({
 
                   {columns.map((column) => (
 
-                    <td
-                      key={
-                        column.key
-                      }
-                    >
-                      {typeof column.render === "function"
-                        ? column.render(row[column.key], row)
-                        : row[column.key]}
-                    </td>
+  <td
+  key={column.key}
+  style={
+    column.width
+      ? {
+          width: column.width,
+          maxWidth: column.width,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace:
+            column.key === "comment" ? "normal" : "nowrap",
+          wordBreak: "break-word",
+          verticalAlign: "top",
+        }
+      : {
+          whiteSpace: "normal",
+          wordBreak: "break-word",
+          verticalAlign: "top",
+        }
+  }
+>
+  {typeof column.render === "function"
+    ? column.render(row[column.key], row)
+    : row[column.key]}
+</td>
 
                   ))}
 

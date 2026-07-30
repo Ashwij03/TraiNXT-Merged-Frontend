@@ -7,8 +7,22 @@ export default function CommentModal({
   onClose,
   visitId,
   onSubmit,
+
   subject = "SUB001",
+
   visit = "Screening",
+
+  activityId = "",
+
+  activityName = "",
+
+  activityType = "",
+
+  module = "",
+
+  sourceView = "",
+
+  study = "",
 }) {
   const commentsContext = useComments();
   const currentUser = getCurrentUser();
@@ -26,11 +40,25 @@ export default function CommentModal({
         status: resolved ? "resolved" : "open",
       });
     } else {
-      const record = commentsContext?.addComment?.(visitId, {
-        text,
-        subjectId: subject,
-        visitName: visit,
-      });
+     const record = commentsContext?.addComment?.(visitId, {
+  text,
+
+  subjectId: subject,
+
+  visitName: visit,
+
+  study,
+
+  activityId,
+
+  activityName,
+
+  activityType,
+
+  module,
+
+  sourceView,
+});
 
       if (resolved && record?.id) {
         commentsContext?.resolveComment?.(record.id);

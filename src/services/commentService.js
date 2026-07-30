@@ -134,6 +134,11 @@ export function addCommentRecord(payload, user = getCurrentUser()) {
   const newComment = {
     id: `C-${Date.now()}`,
     visitId: payload.visitId || "",
+    activityId: payload.activityId || "",
+    activityName: payload.activityName || "",
+    activityType: payload.activityType || "",
+    module: payload.module || "",
+    sourceView: payload.sourceView || "",
     parentId,
     subjectId: payload.subjectId || "",
     document: payload.document || payload.documentName || "",
