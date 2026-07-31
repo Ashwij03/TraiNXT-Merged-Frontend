@@ -109,15 +109,36 @@ function StudyDashboard() {
   }, [searchParams]);
 
   useEffect(() => {
-    const selectedStudy = getStudyByCode(id);
-
-    if (selectedStudy) {
-      localStorage.setItem("selectedStudy", JSON.stringify(selectedStudy));
-    }
-
     localStorage.setItem("sidebarStudiesOpen", JSON.stringify(true));
     localStorage.setItem("sidebarStudyBinderOpen", JSON.stringify(true));
   }, [id]);
+  useEffect(() => {
+const handleStudyUpdated = (event) => {
+  if (event.detail?.code === id) {
+
+    console.log("EVENT STUDY:", event.detail);
+
+    localStorage.setItem(
+      "selectedStudy",
+      JSON.stringify(event.detail)
+    );
+
+    setCurrentStudy(event.detail);
+
+    setTimeout(() => {
+      console.log("AFTER EVENT:", getStudyByCode(id));
+    }, 100);
+
+    setStudyRefreshKey((value) => value + 1);
+  }
+};
+
+  window.addEventListener("study-updated", handleStudyUpdated);
+
+  return () => {
+    window.removeEventListener("study-updated", handleStudyUpdated);
+  };
+}, [id]);
 
   const { data } = useStudiesDashboard();
   const { comments: liveComments } = useComments();
@@ -132,9 +153,16 @@ function StudyDashboard() {
   const canViewActivity = hasPermission(PERMISSIONS.VIEW_SITE_ACTIVITIES, currentUser);
   // ===== END D2 PART 1 CHANGES =====
 
-  const currentStudy = getStudyByCode(id);
+  const [currentStudy, setCurrentStudy] = useState(() => getStudyByCode(id));
   const overview = useStudyOverview(id, studyRefreshKey);
 
+useEffect(() => {
+  const study = getStudyByCode(id);
+
+  console.log("USE EFFECT STUDY:", study);
+
+  setCurrentStudy(study);
+}, [id, studyRefreshKey]);
   // A2 (Role-Scoped Study Visibility): the route itself allows any
   // authenticated role to reach /study-dashboard/:id, and getStudyByCode()
   // reads the unfiltered study list, so this is the only place left that
@@ -232,21 +260,29 @@ function StudyDashboard() {
     }));
   }, [upcomingWindow]);
 
-  const filteredPendingComments = useMemo(() => {
+  // Phase 7 — IMP-4.12: derive Open Comments for this study from the
+  // canonical liveComments feed so the KPI card, PendingCommentsWidget
+  // header count, and any dashboard drilldown all update in the same
+  // tick when a comment is added / resolved / reopened. The visible
+  // list is still capped for the widget, but the total count exposed
+  // downstream is the full study-scoped open count.
+  const studyOpenComments = useMemo(() => {
     return liveComments
       .filter(isOpenComment)
       .filter(
         (comment) =>
           matchesCurrentStudy({ studyCode: comment.study }) ||
           matchesCurrentStudy(comment),
-      )
-      .slice(0, 5)
-      .map((comment) => ({
-        id: comment.id,
-        subject: comment.subjectId,
-        status: comment.status,
-      }));
+      );
   }, [liveComments, matchesCurrentStudy]);
+
+  const filteredPendingComments = useMemo(() => {
+    return studyOpenComments.slice(0, 5).map((comment) => ({
+      id: comment.id,
+      subject: comment.subjectId,
+      status: comment.status,
+    }));
+  }, [studyOpenComments]);
 
   const filteredAlerts = useMemo(() => {
     return safeArray(data?.alerts).filter(matchesCurrentStudy);
@@ -268,10 +304,13 @@ function StudyDashboard() {
   const studyKpis = useMemo(() => {
     return {
       subjects: filteredRecentSubjects.length,
-      comments: filteredPendingComments.length,
+      // Phase 7 — IMP-4.12: KPI reflects the full study-scoped Open
+      // Comments count, not the 5-row widget slice, and updates
+      // automatically when any comment status changes upstream.
+      comments: studyOpenComments.length,
       visits: filteredUpcomingVisits.length,
     };
-  }, [filteredRecentSubjects, filteredPendingComments, filteredUpcomingVisits]);
+  }, [filteredRecentSubjects, studyOpenComments, filteredUpcomingVisits]);
 
   const handleRefreshStudy = () => {
     setIsRefreshing(true);
@@ -362,15 +401,22 @@ function StudyDashboard() {
     event.preventDefault();
 
     try {
+      console.log("EDIT FORM:", JSON.stringify(editForm, null, 2))
       const updatedStudy = updateStudy(editForm.code, {
         ...editForm,
-        site: editForm.site || editForm.location,
-        location: editForm.location || editForm.site,
+       site: editForm.site,
+location: editForm.site,
         enrolled: Number(editForm.enrolled) || 0,
         targetSubjects: Number(editForm.targetSubjects) || 0,
       });
-
+ console.log("UPDATED STUDY:", JSON.stringify(updatedStudy, null, 2));
       localStorage.setItem("selectedStudy", JSON.stringify(updatedStudy));
+      window.dispatchEvent(
+  new CustomEvent("study-updated", {
+    detail: updatedStudy,
+  })
+);
+window.dispatchEvent(new Event("studies-updated"));
       setShowEditModal(false);
       setStudyRefreshKey((value) => value + 1);
     } catch (error) {
@@ -588,7 +634,10 @@ function StudyDashboard() {
                 </div>
 
                 <div className="widget-grid">
-                  <PendingCommentsWidget comments={filteredPendingComments} />
+                  <PendingCommentsWidget
+                    comments={filteredPendingComments}
+                    total={studyOpenComments.length}
+                  />
                   <QuickActionsWidget
                     study={currentStudy}
                     studyCode={id}
@@ -721,12 +770,12 @@ function StudyDashboard() {
 
                   <label>
                     Site / Hospital
-                    <input
-                      name="location"
-                      value={editForm.location || ""}
-                      onChange={handleEditFormChange}
-                      required
-                    />
+                  <input
+  name="site"
+  value={editForm.site || ""}
+  onChange={handleEditFormChange}
+  required
+/>
                   </label>
 
                   <label>
@@ -876,4 +925,3 @@ function StudyDashboard() {
 }
 
 export default StudyDashboard;
-

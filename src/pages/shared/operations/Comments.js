@@ -1,16 +1,15 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
 import {
-  addCommentRecord,
   canResolveComments,
+  canViewComment,
   canWriteComments,
-  getVisibleComments,
-  resolveCommentRecord,
 } from "../../../services/commentService";
-import { getCurrentUser } from "../../../services/roleService";
-import CommentModal from "../../../comments/CommentModal";
 
+import CommentModal from "../../../comments/CommentModal";
+import { getCurrentUser, getAssignedSite } from "../../../services/roleService";
+import { useComments } from "../../../comments/CommentsContext";
 // This is the "Comments" tab rendered inside a study's detail page
 // (StudyDetails.js → activeTab === "comments"), reached by opening a
 // study and clicking Comments. It previously held its own hardcoded
@@ -19,36 +18,30 @@ import CommentModal from "../../../comments/CommentModal";
 // added here never survived a refresh and was never visible to any
 // other role. It now reads/writes through the same shared commentService
 // used everywhere else, scoped to the current study.
-function loadStudyComments(studyCode, user) {
-  return getVisibleComments({ studyCode: studyCode || undefined }, user);
-}
 
 export default function CommentsPage({ embedded = false }) {
   const { code } = useParams();
   const studyCode = code || "";
   const currentUser = getCurrentUser();
+  const assignedSite = getAssignedSite() || "";
+  const {
+    comments: liveComments,
+    addComment,
+    resolveComment,
+  } = useComments();
 
+  // UI state
   const [filter, setFilter] = useState("unresolved");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [comments, setComments] = useState(() =>
-    loadStudyComments(studyCode, currentUser)
-  );
 
-  const refreshComments = useCallback(() => {
-    setComments(loadStudyComments(studyCode, currentUser));
-  }, [studyCode, currentUser]);
-
-  useEffect(() => {
-    refreshComments();
-
-    window.addEventListener("comments-updated", refreshComments);
-    window.addEventListener("sponsor-data-updated", refreshComments);
-
-    return () => {
-      window.removeEventListener("comments-updated", refreshComments);
-      window.removeEventListener("sponsor-data-updated", refreshComments);
-    };
-  }, [refreshComments]);
+  // Compute study-scoped, visible comments from canonical source
+  const comments = useMemo(() => {
+    return liveComments
+      .filter((comment) => canViewComment(comment, currentUser))
+      .filter(
+        (comment) => !studyCode || String(comment.study) === String(studyCode)
+      );
+  }, [liveComments, studyCode, currentUser]);
 
   const filteredComments =
     filter === "all"
@@ -61,7 +54,7 @@ export default function CommentsPage({ embedded = false }) {
 
   const toggleStatus = (comment) => {
     if (comment.status !== "Resolved") {
-      resolveCommentRecord(comment.id, currentUser);
+      resolveComment(comment.id);
     }
   };
 
@@ -79,13 +72,14 @@ export default function CommentsPage({ embedded = false }) {
       return;
     }
 
-    addCommentRecord(
-      {
-        study: studyCode,
-        description: text,
-      },
-      currentUser
-    );
+    addComment("", {
+      text,
+      study: studyCode,
+      site: assignedSite,
+      module: "OperationsComments",
+      sourceView: "operations",
+      activity: "General",
+    });
 
     setShowAddModal(false);
   };

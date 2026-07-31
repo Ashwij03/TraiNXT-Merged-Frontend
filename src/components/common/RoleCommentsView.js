@@ -71,9 +71,9 @@ export default function RoleCommentsView({ embedded = false }) {
   const [selectedVisit, setSelectedVisit] = useState("All");
   const [selectedType, setSelectedType] = useState("All");
   const [selectedComment, setSelectedComment] = useState(null);
-  const [showAddModal, setShowAddModal] = useState(false);
   const [sortField, setSortField] = useState("date");
   const [sortDir, setSortDir] = useState("desc");
+  const [showAddCommentModal, setShowAddCommentModal] = useState(false);
 
   const availableStudies = useMemo(() => {
     const studies = [
@@ -184,12 +184,6 @@ export default function RoleCommentsView({ embedded = false }) {
 
   const toggleStatus = (comment) => {
     if (comment.status === "resolved") {
-      // Reopen goes through the canonical commentService entry point so it
-      // fires the same comments-updated / sponsor-data-updated events every
-      // other consumer subscribes to (Study/Subject/Operations Comments,
-      // dashboard KPI widgets, PendingCommentsWidget). Previously this
-      // wrote via saveComments directly, which only dispatched
-      // admin-data-updated and left other views stale until reload.
       reopenComment(comment.id);
       return;
     }
@@ -201,21 +195,7 @@ export default function RoleCommentsView({ embedded = false }) {
     if (!canWriteComments(currentUser)) {
       return;
     }
-    setShowAddModal(true);
-  };
-
-  const handleModalSubmit = (payload) => {
-    const text = payload?.text || payload?.comment;
-    if (!text) {
-      return;
-    }
-
-    createComment("", {
-      text,
-      study: selectedStudy === "All Studies" ? "" : selectedStudy,
-      site: selectedSite,
-      stage: "Monitoring",
-    });
+    setShowAddCommentModal(true);
   };
 
   const totalComments = sourceComments.length;
@@ -469,16 +449,26 @@ export default function RoleCommentsView({ embedded = false }) {
         </table>
       </div>
 
-      {showAddModal && (
+      {showAddCommentModal && (
         <CommentModal
-          visitId=""
-          subject={selectedSubject !== "All" ? selectedSubject : ""}
-          visit=""
-          onSubmit={(data) => {
-            handleModalSubmit(data);
-            setShowAddModal(false);
+          onClose={() => setShowAddCommentModal(false)}
+          context={{
+            study: selectedStudy,
+            site: selectedSite,
+            module: "RoleComments",
+            sourceView: "comments-view",
           }}
-          onClose={() => setShowAddModal(false)}
+          onSubmit={(commentData) => {
+            createComment("", {
+              text: commentData.comment,
+              study: selectedStudy === "All Studies" ? "" : selectedStudy,
+              site: selectedSite,
+              module: "RoleComments",
+              sourceView: "comments-view",
+              stage: "Monitoring",
+            });
+            setShowAddCommentModal(false);
+          }}
         />
       )}
 

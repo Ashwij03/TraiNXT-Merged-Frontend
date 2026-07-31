@@ -4,8 +4,13 @@ import { useParams } from "react-router-dom";
 import DataTable from "../../../components/dashboard/shared/DataTable";
 import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
 import DelegationLog from "../../../components/DelegationLog";
+import TrainingLog from "../../../components/TrainingLog";
 
-import { getStudyLogs, getDelegationLogs } from "../../../services/adminService";
+import {
+  getStudyLogs,
+  getDelegationLogs,
+  getTrainingLogs
+} from "../../../services/adminService";
 import { getStudyByCode } from "../../../services/studyService";
 import "./StudyLogsTab.css";
 
@@ -17,6 +22,13 @@ function StudyLogsTab() {
   const studyCode = study?.code || id;
 
   const [showModal, setShowModal] = useState(false);
+
+  // ---- NEW: which sub-log is active within the Study Logs tab.
+  // Follows the same "single source of truth in the parent" pattern the
+  // Delegation Log uses, so Training Log data is fetched here and the
+  // child component stays presentational. ----
+  const [activeLog, setActiveLog] = useState("delegation");
+  const [trainingRecords, setTrainingRecords] = useState([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -149,6 +161,13 @@ const RESPONSIBILITY_MAP = {
     setStaff(formatted);
   }, []);
 
+  // ---- NEW: Training records also live here so the reused TrainingLog
+  // component stays purely presentational, matching the DelegationLog
+  // architecture (parent owns state, child receives it as a prop). ----
+  useEffect(() => {
+    setTrainingRecords(getTrainingLogs());
+  }, []);
+
   // ---- NEW: shared helpers to append a Study Log row and a History row.
   // Every delegation action (add/edit/delete/status change) goes through
   // these so Study Logs and Delegation History stay in sync automatically. ----
@@ -273,6 +292,11 @@ const RESPONSIBILITY_MAP = {
         </button>
       </div>
 
+      {/* Study Logs — the shared DataTable already enforces the required
+          data → search → filters → pagination pipeline internally. `studyLogs`
+          is the full authorized dataset from getStudyLogs(); search and
+          filters run over the full dataset (not the current page), and
+          pagination resets on any search/filter change. */}
       <DataTable
         title={`Study Logs — ${study?.name || studyCode}`}
         columns={[
@@ -285,18 +309,54 @@ const RESPONSIBILITY_MAP = {
         ]}
         data={studyLogs}
         emptyMessage="No log entries for this study"
+        searchable
+        searchPlaceholder="Search Study Logs (ID, action, user, status)..."
+        searchFields={["id", "type", "action", "user", "status"]}
+        filters={[
+          { key: "type", label: "Type" },
+          { key: "status", label: "Status" }
+        ]}
         pagination
       />
+
+      {/* ---- NEW: sub-log tab strip. Delegation Log stays the default;
+      Training Log is now reachable from inside the study (the old global
+      /logs/training page was removed by request). ---- */}
+      <div className="study-log-tabs">
+        <button
+          type="button"
+          className={activeLog === "delegation" ? "tab active" : "tab"}
+          onClick={() => setActiveLog("delegation")}
+        >
+          Delegation Log
+        </button>
+        <button
+          type="button"
+          className={activeLog === "training" ? "tab active" : "tab"}
+          onClick={() => setActiveLog("training")}
+        >
+          Training Log
+        </button>
+      </div>
 
       {/* ---- MODIFIED: staff, history, and the edit/delete handlers are now
       passed down as props instead of DelegationLog fetching/holding its own
       copy of the staff list. ---- */}
-            <DelegationLog
-        staff={staff}
-        history={delegationHistory}
-        onEdit={handleUpdateStaff}
-        onDelete={handleDeleteStaff}
-      />
+      {activeLog === "delegation" && (
+        <DelegationLog
+          staff={staff}
+          history={delegationHistory}
+          onEdit={handleUpdateStaff}
+          onDelete={handleDeleteStaff}
+        />
+      )}
+
+      {/* ---- NEW: Training Log reuses the existing TrainingLog component.
+      Records are fetched by StudyLogsTab (parent = source of truth) and
+      passed as a prop, matching the Delegation Log integration pattern. ---- */}
+      {activeLog === "training" && (
+        <TrainingLog records={trainingRecords} />
+      )}
 
       {showModal && (
         <div className="modal-overlay">

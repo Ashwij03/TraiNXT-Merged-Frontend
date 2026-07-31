@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import DataTable from "../../../components/dashboard/shared/DataTable";
 import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
-import {
-  canWriteComments,
-  getVisibleComments,
-} from "../../../services/commentService";
+import { canWriteComments, canViewComment } from "../../../services/commentService";
 import { getCurrentUser } from "../../../services/roleService";
 import { readJson } from "../../../utils/storageHelpers";
 import { useComments } from "../../../comments/CommentsContext";
@@ -50,6 +47,13 @@ function resolveStudyIdForSubject(subjectId) {
 // The underlying table + Add Comment flow is reused from the existing
 // DataTable and CommentModal components — no separate SubjectComments
 // modal component is introduced.
+//
+// Phase 7 (Cross-View Comments Synchronization): this view reads from
+// the shared CommentsContext instead of pulling from getVisibleComments()
+// on every "comments-updated" event via a local refreshTick. That local
+// listener duplicated work already done by CommentsProvider and left
+// this table one render behind the counters/widgets. All authorization
+// filtering still runs through canViewComment, unchanged.
 function SubjectComments({
   subjectId,
   asModal = false,
@@ -58,15 +62,12 @@ function SubjectComments({
 }) {
   const currentUser = getCurrentUser();
   const {
+    comments: liveComments,
     addComment,
     updateComment,
     deleteComment,
   } = useComments() || {};
 
-  // Bumped whenever "comments-updated" fires so this table reflects
-  // comments posted anywhere else (RoleCommentsView, DocumentFolderManager,
-  // CRO/Sponsor top-level comments) without needing the parent to remount.
-  const [refreshTick, setRefreshTick] = useState(0);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -83,17 +84,6 @@ function SubjectComments({
   // code was introduced.
   const [paginationResetKey, setPaginationResetKey] = useState(0);
 
-  useEffect(() => {
-    function handleCommentsUpdated() {
-      setRefreshTick((tick) => tick + 1);
-    }
-
-    window.addEventListener("comments-updated", handleCommentsUpdated);
-    return () => {
-      window.removeEventListener("comments-updated", handleCommentsUpdated);
-    };
-  }, []);
-
   // Reset pagination to page 1 whenever the Subject context changes.
   // Kept as an effect (not derived) so that we never remount the
   // DataTable — page size, filters, search input state are all
@@ -102,31 +92,31 @@ function SubjectComments({
     setPaginationResetKey((value) => value + 1);
   }, [subjectId]);
 
-  // Use the shared commentService reader instead of reading adminService
-  // directly. getVisibleComments() applies canViewComment, which enforces
-  // Sponsor's document-scoped stage-gating and the CRO/Sponsor cross-study
-  // access check.
   const fallbackStudyId = useMemo(
     () => studyIdProp || resolveStudyIdForSubject(subjectId),
     [subjectId, studyIdProp]
   );
 
   const comments = useMemo(() => {
-    return getVisibleComments({ subjectId }).map((comment) => ({
-      id: comment.id,
-      studyId: comment.study || fallbackStudyId || "—",
-      subjectDocument: comment.document
-        ? `${comment.subjectId} / ${comment.document}`
-        : comment.subjectId,
-      comment: comment.description || "—",
-      by: comment.createdBy || "—",
-      author: comment.createdBy || "—",
-      date: comment.createdAt || "—",
-      status: comment.status,
-      _raw: comment,
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subjectId, refreshTick, fallbackStudyId]);
+    return liveComments
+      .filter((comment) => canViewComment(comment, currentUser))
+      .filter(
+        (comment) => String(comment.subjectId || "") === String(subjectId || "")
+      )
+      .map((comment) => ({
+        id: comment.id,
+        studyId: comment.study || fallbackStudyId || "—",
+        subjectDocument: comment.document
+          ? `${comment.subjectId} / ${comment.document}`
+          : comment.subjectId,
+        comment: comment.description || "—",
+        by: comment.createdBy || "—",
+        author: comment.createdBy || "—",
+        date: comment.createdAt || "—",
+        status: comment.status,
+        _raw: comment,
+      }));
+  }, [liveComments, subjectId, currentUser, fallbackStudyId]);
 
   const canEditRow = (row) => {
     if (!row) {
@@ -148,8 +138,8 @@ function SubjectComments({
   };
 
   // Route the modal payload through the same useComments().addComment used
-  // everywhere else. It calls addCommentRecord under the hood, which fires
-  // the "comments-updated" event so this table refreshes automatically.
+  // everywhere else. It calls addCommentRecord under the hood, which updates
+  // CommentsContext so this table refreshes automatically.
   const handleAddSubmit = (payload) => {
     const text = (payload?.comment || payload?.text || "").trim();
     if (!text || !subjectId) {
