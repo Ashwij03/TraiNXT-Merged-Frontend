@@ -1,5 +1,6 @@
 import ROLES from "../constants/roles";
 import { getEffectiveRole, getCurrentUser } from "../services/roleService";
+import { hasApprovedScope } from "../services/accessPermissionService";
 
 const EDIT_ROLES = [ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.PI];
 const RESTRICTED_ROLES = [ROLES.CRO, ROLES.SPONSOR];
@@ -11,6 +12,18 @@ export function getEffectiveRoleForAccess(user = getCurrentUser()) {
 export function canEditStudyContent(user = getCurrentUser()) {
   const role = getEffectiveRoleForAccess(user);
   return EDIT_ROLES.includes(role);
+}
+
+// An Admin approving a Request Edit Permission request writes an approved
+// scope (see accessPermissionService.acceptAccessRequest) but nothing was
+// reading it back — the user stayed permanently locked out even after
+// approval, with the Edit Permission action doing nothing. This checks
+// that approved scope so edit access actually unlocks once granted.
+export function hasApprovedEditAccess(user = getCurrentUser(), module, studyCode = "") {
+  if (!user?.email || !module) {
+    return false;
+  }
+  return hasApprovedScope(user.email, undefined, module, "", studyCode);
 }
 
 export function canDeleteStudy(user = getCurrentUser()) {

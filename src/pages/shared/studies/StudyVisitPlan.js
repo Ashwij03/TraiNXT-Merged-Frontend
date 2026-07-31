@@ -3,8 +3,7 @@ import { useParams } from "react-router-dom";
 import useVisitPlans from "../../../hooks/useVisitPlans";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
 import RequestPermissionButton from "../../../components/common/RequestPermissionButton";
-import { canEditStudyContent } from "../../../utils/contentAccess";
-import { getCurrentUser } from "../../../services/roleService";
+import useCanEditStudyContent from "../../../hooks/useCanEditStudyContent";
 import { formatScheduleDisplayDate } from "../../../utils/formatScheduleDisplayDate";
 import {
   saveVisitPlan,
@@ -28,7 +27,7 @@ const WIZARD_STEPS = [
 
 function StudyVisitPlan() {
   const { id: studyCode } = useParams();
-  const canEdit = canEditStudyContent(getCurrentUser());
+  const canEdit = useCanEditStudyContent("Visit Plan", studyCode);
   const { plans, getPlanDetails, refresh } = useVisitPlans(studyCode);
   const { schedules, upcomingWindow } = useVisitSchedules({ studyCode });
   const upcomingVisits = useMemo(() => {
