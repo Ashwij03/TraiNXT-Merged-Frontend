@@ -10,6 +10,7 @@ import {
 import { getCurrentUser, getAssignedSite } from "../../../services/roleService";
 import { getStudyByCode } from "../../../services/studyService";
 import { useComments } from "../../../comments/CommentsContext";
+import CommentModal from "../../../comments/CommentModal";
 
 function StudyComments() {
   const { id } = useParams();
@@ -23,7 +24,7 @@ function StudyComments() {
     resolveComment,
     reopenComment,
   } = useComments();
-  const [commentText, setCommentText] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
 
   // ===== NEW: Search + Filter state =====
   const [searchTerm, setSearchTerm] = useState("");
@@ -84,7 +85,14 @@ function StudyComments() {
   ]);
 
   const handleAddComment = () => {
-    const text = commentText.trim();
+    if (!studyCode) {
+      return;
+    }
+    setShowAddModal(true);
+  };
+
+  const handleModalSubmit = (payload) => {
+    const text = (payload?.comment || payload?.text || "").trim();
 
     if (!text || !studyCode) {
       return;
@@ -99,7 +107,7 @@ function StudyComments() {
       activity: "Study",
     });
 
-    setCommentText("");
+    setShowAddModal(false);
   };
 
   return (
@@ -122,13 +130,23 @@ function StudyComments() {
           <button
             type="button"
             onClick={handleAddComment}
-            disabled={!studyCode || !commentText.trim()}
-            style={{ marginTop: "8px" }}
+            disabled={!studyCode}
           >
             Add Comment
           </button>
         </div>
       )}
+
+      {showAddModal && (
+        <CommentModal
+          visitId=""
+          subject=""
+          visit=""
+          onSubmit={handleModalSubmit}
+          onClose={() => setShowAddModal(false)}
+        />
+      )}
+
       <div
         style={{
           width: "100%",

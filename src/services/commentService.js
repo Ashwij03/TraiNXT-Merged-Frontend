@@ -296,6 +296,87 @@ export function reopenCommentRecord(commentId, user = getCurrentUser()) {
   return true;
 }
 
+// Phase-7: Subject Comments edit. Allows the author (or a role that can
+// resolve comments) to update the description text on an existing comment
+// without going through the resolve/reopen path. Fires the shared
+// comments-updated events so every subscriber (Subject Comments modal,
+// dashboard widgets, RoleCommentsView) refreshes automatically.
+export function updateCommentRecord(commentId, updates = {}, user = getCurrentUser()) {
+  if (!commentId || !updates || typeof updates !== "object") {
+    return null;
+  }
+
+  const comments = getComments(user);
+  const target = comments.find((item) => item.id === commentId);
+
+  if (!target) {
+    return null;
+  }
+
+  // Only the original author or a resolver-capable role may edit the text.
+  const role = getEffectiveRole(user);
+  const isAuthor = target.createdBy && user?.name && target.createdBy === user.name;
+  const isResolver =
+    hasPermission(PERMISSIONS.RESOLVE_COMMENT, user) &&
+    [ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.PI].includes(role);
+
+  if (!isAuthor && !isResolver) {
+    return null;
+  }
+
+  const nextComments = comments.map((item) =>
+    item.id === commentId
+      ? {
+          ...item,
+          description:
+            typeof updates.description === "string"
+              ? updates.description
+              : typeof updates.text === "string"
+              ? updates.text
+              : item.description,
+          updatedAt: new Date().toISOString(),
+          updatedBy: user?.name || item.createdBy,
+        }
+      : item
+  );
+
+  saveComments(nextComments);
+  notifyCommentsUpdated();
+  return nextComments.find((item) => item.id === commentId) || null;
+}
+
+// Phase-7: Subject Comments delete. Same gating as updateCommentRecord above.
+// The consumer (Subject Comments modal) is expected to present a proper
+// DeleteConfirmationModal beforehand — this function itself does not
+// prompt.
+export function deleteCommentRecord(commentId, user = getCurrentUser()) {
+  if (!commentId) {
+    return false;
+  }
+
+  const comments = getComments(user);
+  const target = comments.find((item) => item.id === commentId);
+
+  if (!target) {
+    return false;
+  }
+
+  const role = getEffectiveRole(user);
+  const isAuthor = target.createdBy && user?.name && target.createdBy === user.name;
+  const isResolver =
+    hasPermission(PERMISSIONS.RESOLVE_COMMENT, user) &&
+    [ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.PI].includes(role);
+
+  if (!isAuthor && !isResolver) {
+    return false;
+  }
+
+  const nextComments = comments.filter((item) => item.id !== commentId);
+  saveComments(nextComments);
+  notifyCommentsUpdated();
+  return true;
+}
+
 // Phase 7: canonical body/metadata edit. Any consumer that lets a user
 // change a comment's text, priority, or stage must funnel through this
 // entry point so the same comments-updated / sponsor-data-updated events

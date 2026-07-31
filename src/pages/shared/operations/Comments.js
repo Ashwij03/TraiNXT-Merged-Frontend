@@ -6,8 +6,18 @@ import {
   canViewComment,
   canWriteComments,
 } from "../../../services/commentService";
+
+import CommentModal from "../../../comments/CommentModal";
 import { getCurrentUser, getAssignedSite } from "../../../services/roleService";
 import { useComments } from "../../../comments/CommentsContext";
+// This is the "Comments" tab rendered inside a study's detail page
+// (StudyDetails.js → activeTab === "comments"), reached by opening a
+// study and clicking Comments. It previously held its own hardcoded
+// demo comments in local React state (never persisted, never scoped to
+// a study, never shared with any other role), which is why a comment
+// added here never survived a refresh and was never visible to any
+// other role. It now reads/writes through the same shared commentService
+// used everywhere else, scoped to the current study.
 
 export default function CommentsPage({ embedded = false }) {
   const { code } = useParams();
@@ -22,7 +32,7 @@ export default function CommentsPage({ embedded = false }) {
 
   // UI state
   const [filter, setFilter] = useState("unresolved");
-  const [commentText, setCommentText] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
 
   // Compute study-scoped, visible comments from canonical source
   const comments = useMemo(() => {
@@ -100,7 +110,14 @@ export default function CommentsPage({ embedded = false }) {
   };
 
   const handleAddComment = () => {
-    const text = commentText.trim();
+    if (!studyCode) {
+      return;
+    }
+    setShowAddModal(true);
+  };
+
+  const handleModalSubmit = (payload) => {
+    const text = (payload?.comment || payload?.text || "").trim();
 
     if (!text || !studyCode) {
       return;
@@ -115,7 +132,7 @@ export default function CommentsPage({ embedded = false }) {
       activity: "General",
     });
 
-    setCommentText("");
+    setShowAddModal(false);
   };
 
   const content = (
@@ -143,14 +160,33 @@ export default function CommentsPage({ embedded = false }) {
           <button
             type="button"
             onClick={handleAddComment}
-            disabled={!studyCode || !commentText.trim()}
-            style={{ marginTop: "8px" }}
+            disabled={!studyCode}
           >
             Add Comment
           </button>
         </div>
       )}
 
+      {showAddModal && (
+        <CommentModal
+          visitId=""
+          subject=""
+          visit=""
+          onSubmit={handleModalSubmit}
+          onClose={() => setShowAddModal(false)}
+        />
+      )}
+
+      <div style={{ marginBottom: "20px", marginTop: "10px" }}>
+        <button type="button" onClick={() => setFilter("unresolved")}>
+          Unresolved Comments
+        </button>
+        <button type="button" onClick={() => setFilter("resolved")}>
+          Resolved Comments
+        </button>
+        <button type="button" onClick={() => setFilter("all")}>
+          All
+        </button>
       {/* ===== SEARCH + FILTER ===== */}
       <div
         style={{
