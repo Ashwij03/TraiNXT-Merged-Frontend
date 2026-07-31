@@ -8,6 +8,7 @@ import {
 } from "../../services/commentService";
 import { getAssignedSite, getCurrentUser } from "../../services/roleService";
 import { useComments } from "../../comments/CommentsContext";
+import CommentModal from "../../comments/CommentModal";
 
 const SORT_FIELDS = {
   id: "id",
@@ -70,6 +71,7 @@ export default function RoleCommentsView({ embedded = false }) {
   const [selectedVisit, setSelectedVisit] = useState("All");
   const [selectedType, setSelectedType] = useState("All");
   const [selectedComment, setSelectedComment] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [sortField, setSortField] = useState("date");
   const [sortDir, setSortDir] = useState("desc");
 
@@ -199,8 +201,11 @@ export default function RoleCommentsView({ embedded = false }) {
     if (!canWriteComments(currentUser)) {
       return;
     }
+    setShowAddModal(true);
+  };
 
-    const text = prompt("Enter comment");
+  const handleModalSubmit = (payload) => {
+    const text = payload?.text || payload?.comment;
     if (!text) {
       return;
     }
@@ -463,6 +468,19 @@ export default function RoleCommentsView({ embedded = false }) {
           </tbody>
         </table>
       </div>
+
+      {showAddModal && (
+        <CommentModal
+          visitId=""
+          subject={selectedSubject !== "All" ? selectedSubject : ""}
+          visit=""
+          onSubmit={(data) => {
+            handleModalSubmit(data);
+            setShowAddModal(false);
+          }}
+          onClose={() => setShowAddModal(false)}
+        />
+      )}
 
       {selectedComment && (
         <div className="modal-overlay">

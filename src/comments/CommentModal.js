@@ -9,11 +9,22 @@ export default function CommentModal({
   onSubmit,
   subject = "SUB001",
   visit = "Screening",
+  // Phase-7: edit-mode support. When initialText is supplied the modal
+  // re-uses the existing Add Comment layout for editing so no separate
+  // component is introduced.
+  initialText = "",
+  initialResolved = false,
+  mode = "add",
+  title,
+  submitLabel,
 }) {
   const commentsContext = useComments();
   const currentUser = getCurrentUser();
-  const [text, setText] = useState("");
-  const [resolved, setResolved] = useState(false);
+  const [text, setText] = useState(initialText);
+  const [resolved, setResolved] = useState(initialResolved);
+  const isEdit = mode === "edit";
+  const headerTitle = title || (isEdit ? "Edit Comment" : "Add Comment");
+  const submitText = submitLabel || (isEdit ? "Save" : "Submit");
 
   const submit = () => {
     if (onSubmit) {
@@ -43,7 +54,7 @@ export default function CommentModal({
   return (
     <div className="modal-overlay">
       <div className="modal-box">
-        <h3>Add Comment</h3>
+        <h3>{headerTitle}</h3>
 
         <label>
           <input
@@ -65,7 +76,7 @@ export default function CommentModal({
           onChange={(e) => setText(e.target.value)}
         />
 
-        <button onClick={submit}>Submit</button>
+        <button onClick={submit}>{submitText}</button>
         <button onClick={onClose} style={{ marginLeft: "10px" }}>
           Cancel
         </button>

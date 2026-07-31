@@ -9,9 +9,11 @@ import React, {
 import { getComments } from "../services/adminService";
 import {
   addCommentRecord,
+  deleteCommentRecord,
   isOpenComment,
   reopenCommentRecord,
   resolveCommentRecord,
+  updateCommentRecord,
 } from "../services/commentService";
 import { getCurrentUser } from "../services/roleService";
 
@@ -82,6 +84,28 @@ export function CommentsProvider({ children }) {
     [currentUser, refreshComments]
   );
 
+  // Phase-7 Subject Comments: expose edit/delete on the shared context so
+  // the SubjectComments modal doesn't have to reach into commentService
+  // directly and can reuse the same refresh flow every other consumer
+  // subscribes to.
+  const updateComment = useCallback(
+    (id, updates) => {
+      const record = updateCommentRecord(id, updates, currentUser);
+      refreshComments();
+      return record;
+    },
+    [currentUser, refreshComments]
+  );
+
+  const deleteComment = useCallback(
+    (id) => {
+      const ok = deleteCommentRecord(id, currentUser);
+      refreshComments();
+      return ok;
+    },
+    [currentUser, refreshComments]
+  );
+
   return (
     <CommentsContext.Provider
       value={{
@@ -90,6 +114,8 @@ export function CommentsProvider({ children }) {
         addComment,
         resolveComment,
         reopenComment,
+        updateComment,
+        deleteComment,
         refreshComments,
       }}
     >

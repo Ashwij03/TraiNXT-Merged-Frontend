@@ -9,6 +9,7 @@ import {
   resolveCommentRecord,
 } from "../../../services/commentService";
 import { getCurrentUser } from "../../../services/roleService";
+import CommentModal from "../../../comments/CommentModal";
 
 // This is the "Comments" tab rendered inside a study's detail page
 // (StudyDetails.js → activeTab === "comments"), reached by opening a
@@ -28,7 +29,7 @@ export default function CommentsPage({ embedded = false }) {
   const currentUser = getCurrentUser();
 
   const [filter, setFilter] = useState("unresolved");
-  const [commentText, setCommentText] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
   const [comments, setComments] = useState(() =>
     loadStudyComments(studyCode, currentUser)
   );
@@ -65,7 +66,14 @@ export default function CommentsPage({ embedded = false }) {
   };
 
   const handleAddComment = () => {
-    const text = commentText.trim();
+    if (!studyCode) {
+      return;
+    }
+    setShowAddModal(true);
+  };
+
+  const handleModalSubmit = (payload) => {
+    const text = (payload?.comment || payload?.text || "").trim();
 
     if (!text || !studyCode) {
       return;
@@ -79,7 +87,7 @@ export default function CommentsPage({ embedded = false }) {
       currentUser
     );
 
-    setCommentText("");
+    setShowAddModal(false);
   };
 
   const content = (
@@ -88,23 +96,24 @@ export default function CommentsPage({ embedded = false }) {
 
       {canWriteComments(currentUser) && (
         <div style={{ marginBottom: "20px" }}>
-          <textarea
-            value={commentText}
-            onChange={(event) => setCommentText(event.target.value)}
-            placeholder="Add a comment..."
-            rows={3}
-            style={{ width: "100%", maxWidth: "480px", display: "block" }}
-            disabled={!studyCode}
-          />
           <button
             type="button"
             onClick={handleAddComment}
-            disabled={!studyCode || !commentText.trim()}
-            style={{ marginTop: "8px" }}
+            disabled={!studyCode}
           >
             Add Comment
           </button>
         </div>
+      )}
+
+      {showAddModal && (
+        <CommentModal
+          visitId=""
+          subject=""
+          visit=""
+          onSubmit={handleModalSubmit}
+          onClose={() => setShowAddModal(false)}
+        />
       )}
 
       <div style={{ marginBottom: "20px", marginTop: "10px" }}>

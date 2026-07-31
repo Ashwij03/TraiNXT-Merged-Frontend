@@ -9,6 +9,7 @@ import {
 import { getCurrentUser } from "../../../services/roleService";
 import { getStudyByCode } from "../../../services/studyService";
 import { useComments } from "../../../comments/CommentsContext";
+import CommentModal from "../../../comments/CommentModal";
 
 function StudyComments() {
   const { id } = useParams();
@@ -16,7 +17,7 @@ function StudyComments() {
   const studyCode = study?.code || id;
   const currentUser = getCurrentUser();
   const { comments: liveComments, addComment, resolveComment } = useComments();
-  const [commentText, setCommentText] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const comments = useMemo(() => {
     return liveComments
@@ -53,7 +54,14 @@ function StudyComments() {
   }, [liveComments, studyCode, study?.status, currentUser, resolveComment]);
 
   const handleAddComment = () => {
-    const text = commentText.trim();
+    if (!studyCode) {
+      return;
+    }
+    setShowAddModal(true);
+  };
+
+  const handleModalSubmit = (payload) => {
+    const text = (payload?.comment || payload?.text || "").trim();
 
     if (!text || !studyCode) {
       return;
@@ -64,30 +72,31 @@ function StudyComments() {
       study: studyCode,
     });
 
-    setCommentText("");
+    setShowAddModal(false);
   };
 
   return (
     <div className="module-card">
       {canWriteComments(currentUser) && (
         <div style={{ marginBottom: "20px" }}>
-          <textarea
-            value={commentText}
-            onChange={(event) => setCommentText(event.target.value)}
-            placeholder="Add a comment..."
-            rows={3}
-            style={{ width: "100%", maxWidth: "480px", display: "block" }}
-            disabled={!studyCode}
-          />
           <button
             type="button"
             onClick={handleAddComment}
-            disabled={!studyCode || !commentText.trim()}
-            style={{ marginTop: "8px" }}
+            disabled={!studyCode}
           >
             Add Comment
           </button>
         </div>
+      )}
+
+      {showAddModal && (
+        <CommentModal
+          visitId=""
+          subject=""
+          visit=""
+          onSubmit={handleModalSubmit}
+          onClose={() => setShowAddModal(false)}
+        />
       )}
 
       <div style={{ overflowX: "auto" }}>

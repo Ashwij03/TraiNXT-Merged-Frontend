@@ -63,6 +63,11 @@ export default function DocumentViewer({
             <span>{document.fileSize}</span>
           </div>
 
+          <div className="viewer-info-comments">
+            <label>Comments</label>
+            <span>{document.comments ? document.comments : "-"}</span>
+          </div>
+
         </div>
 
         <div className="viewer-preview">
