@@ -7,7 +7,7 @@ import {
   canViewComment,
   canWriteComments,
 } from "../../../services/commentService";
-import { getCurrentUser } from "../../../services/roleService";
+import { getCurrentUser, getAssignedSite } from "../../../services/roleService";
 import { getStudyByCode } from "../../../services/studyService";
 import { useComments } from "../../../comments/CommentsContext";
 
@@ -16,13 +16,13 @@ function StudyComments() {
   const study = getStudyByCode(id);
   const studyCode = study?.code || id;
   const currentUser = getCurrentUser();
-
+  const assignedSite = getAssignedSite() || "";
   const {
     comments: liveComments,
     addComment,
     resolveComment,
+    reopenComment,
   } = useComments();
-
   const [commentText, setCommentText] = useState("");
 
   // ===== NEW: Search + Filter state =====
@@ -37,73 +37,50 @@ function StudyComments() {
         canViewComment(comment, currentUser, study?.status),
       )
       .filter(
-        (comment) =>
-          !studyCode || String(comment.study) === String(studyCode),
-      );
-
-    // Status filter
-    if (statusFilter !== "All") {
-      result = result.filter(
-        (comment) => comment.status === statusFilter,
-      );
-    }
-
-    // Search filter
-    const query = searchTerm.trim().toLowerCase();
-
-    if (query) {
-      result = result.filter((comment) => {
-        const searchableText = [
-          comment.id,
-          comment.study,
-          comment.subjectId,
-          comment.document,
-          comment.description,
-          comment.createdBy,
-          comment.createdAt,
-          comment.status,
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-
-        return searchableText.includes(query);
-      });
-    }
-
-    return result.map((comment) => ({
-  id: comment.id,
-  studyId: comment.study || studyCode || "—",
-  subjectDocument: comment.documentDeleted
-    ? `${comment.subjectId} / ${comment.document || "Deleted document"}`
-    : comment.document
-      ? `${comment.subjectId} / ${comment.document}`
-      : comment.subjectId || "—",
-  comment: comment.description || "—",
-  by: comment.createdBy || "—",
-  date: comment.createdAt || "—",
-  status: comment.status,
-  action:
-    comment.status === "Open" && canResolveComments() ? (
-      <button
-        type="button"
-        className="btn btn-sm btn-success"
-        onClick={() => resolveComment(comment.id)}
-      >
-        Resolve
-      </button>
-    ) : (
-      "—"
-    ),
-}));
+        (comment) => !studyCode || String(comment.study) === String(studyCode),
+      )
+      .map((comment) => ({
+        id: `C-${String(comment.id).slice(-6)}`,
+        studyId: comment.study || studyCode || "—",
+        subjectDocument: comment.documentDeleted
+          ? `${comment.subjectId} / ${comment.document || "Deleted document"}`
+          : comment.document
+            ? `${comment.subjectId} / ${comment.document}`
+            : comment.subjectId,
+        comment: (
+          <div
+            style={{
+              whiteSpace: "normal",
+              wordBreak: "break-word",
+              maxWidth: "250px",
+            }}
+          >
+            {comment.description || "—"}
+          </div>
+        ),
+        by: comment.createdBy || "—",
+        date: comment.createdAt || "—",
+        status: comment.status,
+        action:
+          comment.status === "Open" && canResolveComments(currentUser) ? (
+            <button type="button" onClick={() => resolveComment(comment.id)}>
+              Resolve
+            </button>
+          ) : comment.status === "Resolved" && canResolveComments(currentUser) ? (
+            <button type="button" onClick={() => reopenComment(comment.id)}>
+              Reopen
+            </button>
+          ) : (
+            "—"
+          ),
+      }));
   }, [
     liveComments,
     studyCode,
     study?.status,
     currentUser,
     resolveComment,
-    searchTerm,
-    statusFilter,
+    reopenComment,
   ]);
 
   const handleAddComment = () => {
@@ -116,6 +93,10 @@ function StudyComments() {
     addComment("", {
       text,
       study: studyCode,
+      site: assignedSite,
+      module: "StudyComments",
+      sourceView: "study-comments",
+      activity: "Study",
     });
 
     setCommentText("");
@@ -148,43 +129,12 @@ function StudyComments() {
           </button>
         </div>
       )}
-
-      {/* ===== NEW: Search + Filter controls ===== */}
       <div
         style={{
-          display: "flex",
-          gap: "12px",
-          flexWrap: "wrap",
-          marginBottom: "16px",
+          width: "100%",
+          overflowX: "auto",
         }}
       >
-        <input
-          type="text"
-          placeholder="Search comments, subjects, documents, users..."
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-          style={{
-            flex: "1 1 320px",
-            minWidth: "260px",
-            padding: "10px 12px",
-          }}
-        />
-
-        <select
-          value={statusFilter}
-          onChange={(event) => setStatusFilter(event.target.value)}
-          style={{
-            minWidth: "160px",
-            padding: "10px 12px",
-          }}
-        >
-          <option value="All">All Statuses</option>
-          <option value="Open">Open</option>
-          <option value="Resolved">Resolved</option>
-        </select>
-      </div>
-
-      <div style={{ overflowX: "auto" }}>
         <DataTable
           title={`Comments — ${study?.name || studyCode}`}
           columns={[
@@ -199,7 +149,7 @@ function StudyComments() {
             { key: "by", label: "By", width: "170px" },
             { key: "date", label: "Date", width: "180px" },
             { key: "status", label: "Status", width: "120px" },
-            ...(canResolveComments()
+            ...(canResolveComments(currentUser)
               ? [{ key: "action", label: "Action", width: "120px" }]
               : []),
           ]}

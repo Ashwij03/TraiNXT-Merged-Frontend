@@ -317,7 +317,6 @@ function PIDashboard({ embeddedInLayout = false }) {
 
     const studyKey = getStudyKey(targetStudy);
 
-    localStorage.setItem("selectedStudy", JSON.stringify(targetStudy));
     navigate(
       `/study-dashboard/${encodeURIComponent(
         studyKey,

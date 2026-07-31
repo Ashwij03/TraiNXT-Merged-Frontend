@@ -243,14 +243,6 @@ export function useRoleStudiesSidebar({ onNavigate } = {}) {
   };
 
   const navigateToStudySection = (studyKey, sectionKey) => {
-    const selectedStudy = studies.find(
-      (study) => getStudyKey(study) === String(studyKey),
-    );
-
-    if (selectedStudy) {
-      localStorage.setItem("selectedStudy", JSON.stringify(selectedStudy));
-    }
-
     const tabMap = {
       overview: "Overview",
       subjects: "Subjects",
@@ -332,14 +324,6 @@ export function useRoleStudiesSidebar({ onNavigate } = {}) {
 
     if (!subjectId) {
       return;
-    }
-
-    const selectedStudy = studies.find(
-      (study) => getStudyKey(study) === String(studyKey),
-    );
-
-    if (selectedStudy) {
-      localStorage.setItem("selectedStudy", JSON.stringify(selectedStudy));
     }
 
     const selectedSubject = {

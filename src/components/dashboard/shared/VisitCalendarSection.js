@@ -4,7 +4,7 @@ import CalendarWidget from "./CalendarWidget";
 import DataTable from "./DataTable";
 import {
   compareScheduleDates,
-  isCompletedVisitSchedule
+  isUpcomingVisitSchedule
 } from "../../../services/visitScheduleService";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
 import { resolveSiteDisplay } from "../../../utils/siteDisplay";
@@ -70,8 +70,16 @@ function VisitCalendarSection({
     [getVisitsForDate, selectedScheduleDate]
   );
 
+  // BUG-2 fix: the Calendar previously only excluded Completed visits,
+  // so past-dated visits and Cancelled/Missed visits kept rendering as
+  // markers even after they had disappeared from the Upcoming Visits
+  // list. Switching to the shared `isUpcomingVisitSchedule` predicate
+  // applies the exact same active-view rule the Upcoming Visits list
+  // uses: date >= today AND status not in (Completed/Cancelled/Missed).
+  // No hardcoded dates, no duplicated logic — the two views stay in
+  // lock-step through a single source of truth in visitScheduleService.
   const calendarSchedules = useMemo(
-    () => schedules.filter((item) => !isCompletedVisitSchedule(item)),
+    () => schedules.filter((item) => isUpcomingVisitSchedule(item)),
     [schedules]
   );
 

@@ -34,6 +34,12 @@ export default function DocumentTable({
   sortField = "documentName",
   sortDirection = "asc",
   variant = "default",
+  // Permission flags — computed via hasPermission() in EISFModuleWorkspace
+  // and passed down here. DocumentTable has no direct access to the
+  // permission service; it only respects the flags it's given. Default to
+  // true so any other consumer that doesn't pass these keeps prior behavior.
+  canEdit = true,
+  canDelete = true,
 }) {
   const [openMenuId, setOpenMenuId] = useState(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
@@ -243,12 +249,16 @@ export default function DocumentTable({
                             <button type="button" role="menuitem" onClick={() => runAction(onAudit, doc)}>
                               <FiEye /> Audit Trail
                             </button>
-                            <button type="button" role="menuitem" onClick={() => runAction(onEdit, doc)}>
-                              <FiEdit2 /> Edit
-                            </button>
-                            <button type="button" role="menuitem" className="danger" onClick={() => runAction(onDelete, doc)}>
-                              <FiTrash2 /> Delete
-                            </button>
+                            {canEdit && (
+                              <button type="button" role="menuitem" onClick={() => runAction(onEdit, doc)}>
+                                <FiEdit2 /> Edit
+                              </button>
+                            )}
+                            {canDelete && (
+                              <button type="button" role="menuitem" className="danger" onClick={() => runAction(onDelete, doc)}>
+                                <FiTrash2 /> Delete
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
@@ -259,8 +269,12 @@ export default function DocumentTable({
                       <button className="action-btn history-btn" onClick={() => onHistory(doc)}>History</button>
                       <button className="action-btn audit-btn" onClick={() => onAudit(doc)}>Audit</button>
                       <button className="action-btn download-btn" onClick={() => onDownload(doc)}>Download</button>
-                      <button className="action-btn edit-btn" onClick={() => onEdit(doc)}>Edit</button>
-                      <button className="action-btn delete-btn" onClick={() => onDelete(doc)}>Delete</button>
+                      {canEdit && (
+                        <button className="action-btn edit-btn" onClick={() => onEdit(doc)}>Edit</button>
+                      )}
+                      {canDelete && (
+                        <button className="action-btn delete-btn" onClick={() => onDelete(doc)}>Delete</button>
+                      )}
                     </>
                   )}
                 </td>

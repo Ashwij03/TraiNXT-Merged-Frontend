@@ -484,13 +484,7 @@ export function canAccessRoute(path, user = getCurrentUser()) {
     "/security": Object.values(ROLES),
     "/comments": Object.values(ROLES),
     "/studies": Object.values(ROLES),
-    "/logs": Object.values(ROLES),
-    "/logs/training": Object.values(ROLES),
-    "/logs/delegation": Object.values(ROLES),
-    "/audit-logs": [ROLES.ADMIN, ROLES.SITE_STAFF],
-    "/upcoming-visits": Object.values(ROLES),
-    "/training": Object.values(ROLES),
-    "/delegation": Object.values(ROLES)
+    "/audit-logs": [ROLES.ADMIN, ROLES.SITE_STAFF]
   };
 
   const normalizedPath = path.split("?")[0].replace(/\/$/, "") || "/";

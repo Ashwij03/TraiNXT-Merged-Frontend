@@ -1,16 +1,28 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import DataTable from "./dashboard/shared/DataTable";
 import "./DelegationLog.css";
 
 // ---- MODIFIED: staff is no longer fetched here — it's the single source of
 // truth living in StudyLogsTab and passed down as a prop. `history` is also
 // passed down (was previously hardcoded inside the History modal). `onEdit`
 // and `onDelete` are callbacks that update the parent's state. ----
+// Phase 6 — IMP-3 (Delegation Log Pagination, Search & Filters).
+// The raw <table className="staff-table"> was replaced with the shared
+// DataTable so the Delegation Log follows the canonical pipeline
+// (authorized dataset → search/filter → pagination). Search and the
+// Role/Status filters operate on the FULL `staff` array passed in from
+// StudyLogsTab, never on a pre-sliced page. All existing Edit / Delete /
+// View flows and their modals are preserved verbatim — only the row
+// container/columns changed.
 const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
 
-  const [showModal, setShowModal] = useState(false);
+  // ---- Phase 6 cleanup: replaced the boolean `showModal` (which drove a
+  // hardcoded "Megan Richards / Investigator / A2 / A3 / Physical Exam /
+  // Medical Review" dialog) with a `viewTarget` that stores the actual
+  // delegation record the user clicked. The dialog now renders that
+  // record's real fields. ----
+  const [viewTarget, setViewTarget] = useState(null);
   const [showHistory, setShowHistory] = useState(false);
-
-  const [tab, setTab] = useState("active");
 
   // ---- NEW: Edit flow state — step 1 (confirm) then step 2 (edit form). ----
   const [editConfirmTarget, setEditConfirmTarget] = useState(null);
@@ -69,12 +81,72 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
     setDeleteReasonTarget(null);
   };
 
+  // Phase 6 — IMP-3: normalize the incoming staff array so DataTable's
+  // built-in search / filter / auto-derived filter options see stable
+  // primitive fields regardless of the record shape emitted by
+  // StudyLogsTab (some legacy rows use delegateName/description). Keep
+  // the original object accessible via `_raw` so the row-action buttons
+  // in the render column can still hand the untouched record back to
+  // the Edit/Delete flows.
+  const normalizedStaff = useMemo(
+    () =>
+      (Array.isArray(staff) ? staff : []).map((member) => ({
+        id: member.id,
+        name: member.name || member.delegateName || "",
+        role: member.role || "-",
+        responsibility: member.responsibility || member.description || "",
+        status: member.status || "Active",
+        _raw: member
+      })),
+    [staff]
+  );
+
+  // Column definitions for the shared DataTable. `render` on Actions is
+  // the exact same button set that was in the raw <table> — Edit opens
+  // the "Confirm Edit" popup, Delete opens the "Delete Delegation"
+  // popup, View opens the profile modal. No behavior change.
+  const delegationColumns = useMemo(
+    () => [
+      { key: "name", label: "Name" },
+      { key: "role", label: "Role" },
+      { key: "responsibility", label: "Responsibility" },
+      { key: "status", label: "Status" },
+      {
+        key: "actions",
+        label: "Actions",
+        render: (_value, row) => (
+          <div className="delegation-actions">
+            <button
+              type="button"
+              onClick={() => setEditConfirmTarget(row._raw || row)}
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              onClick={() => setDeleteConfirmTarget(row._raw || row)}
+            >
+              Delete
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewTarget(row._raw || row)}
+            >
+              View
+            </button>
+          </div>
+        )
+      }
+    ],
+    []
+  );
+
   return (
 
     <div className="delegation-container">
 
       <h2 className="delegation-title">
-        B. Electronic Delegation Log
+         Electronic Delegation Log
       </h2>
       <div className="delegation-header">
 
@@ -88,274 +160,140 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
 
       </div>
 
-      {/* CARD */}
-
-      <table className="staff-table">
-
-        <thead>
-
-          <tr>
-
-            <th>Name</th>
-
-            <th>Role</th>
-
-            <th>Responsibility</th>
-
-            <th>Actions</th>
-
-          </tr>
-
-        </thead>
-
-        <tbody>
-
-          {staff.map((member) => (
-
-            <tr key={member.id}>
-
-              <td>{member.name || member.delegateName}</td>
-              <td>{member.role || "-"}</td>
-
-              <td>{member.responsibility || member.description}</td>
-
-              <td>
-
-                {/* ---- MODIFIED: Edit now opens the "Confirm Edit" popup
-                instead of firing an alert. ---- */}
-                <button
-                  onClick={() => setEditConfirmTarget(member)}
-                >
-                  Edit
-                </button>
-
-                {/* ---- MODIFIED: Delete now opens the "Delete Delegation"
-                popup instead of firing an alert. ---- */}
-                <button
-                  onClick={() => setDeleteConfirmTarget(member)}
-                >
-                  Delete
-                </button>
-
-                <button
-                  onClick={() => setShowModal(true)}
-                >
-                  View
-                </button>
-
-              </td>
-
-            </tr>
-
-          ))}
-
-        </tbody>
-
-      </table>
+      {/* Phase 6 — IMP-3: shared DataTable replaces the raw staff table.
+          - `data={normalizedStaff}` is the full authorized dataset.
+          - `searchable` + `searchFields` power the search box.
+          - `filters` power Role and Status dropdowns (options are
+            auto-derived by DataTable from the same full dataset, so
+            they never go stale after add/edit/delete).
+          - `pagination` gives Previous/Next, page totals, and
+            rows-per-page. Every action (search, filter, page-size
+            change) resets pagination via DataTable's internal effects.
+          - The Actions column preserves the existing Edit / Delete /
+            View flows exactly — they still fire the same Confirm-Edit
+            and Delete-Reason modals rendered below. */}
+      <DataTable
+        columns={delegationColumns}
+        data={normalizedStaff}
+        emptyMessage="No delegation records found"
+        searchable
+        searchPlaceholder="Search delegations by name, role, or responsibility..."
+        searchFields={["name", "role", "responsibility", "status"]}
+        filters={[
+          { key: "role", label: "Role" },
+          { key: "status", label: "Status" }
+        ]}
+        pagination
+        initialPageSize={10}
+      />
 
 
-      {/* MODAL */}
-
-      {showModal && (
-
+      {/* ============================================================ */}
+      {/* Delegation History modal — driven entirely by the `history`   */}
+      {/* prop from StudyLogsTab.                                       */}
+      {/* ============================================================ */}
+      {showHistory && (
         <div className="modal-overlay">
-
           <div className="modal-box">
-            {showHistory && (
-
-              <div className="modal-overlay">
-
-                <div className="modal-box">
-
-                  <div className="modal-header">
-
-                    <h3>Delegation History</h3>
-
-                    <span
-                      className="close-btn"
-                      onClick={() => setShowHistory(false)}
-                    >
-                      ✖
-                    </span>
-
-                  </div>
-
-                  <table className="delegation-table">
-
-                    <thead>
-
-                      <tr>
-
-                        <th>Date</th>
-
-                        <th>Action</th>
-
-                        <th>User</th>
-
-                      </tr>
-
-                    </thead>
-
-                    {/* ---- MODIFIED: rows now come from the `history` prop
-                    (populated automatically by StudyLogsTab on every
-                    add/edit/delete/status change) instead of 3 hardcoded rows. ---- */}
-                    <tbody>
-
-                      {history.length === 0 ? (
-                        <tr>
-                          <td colSpan={3} style={{ textAlign: "center", color: "#98a2b3" }}>
-                            No history yet.
-                          </td>
-                        </tr>
-                      ) : (
-                        history.map((entry) => (
-                          <tr key={entry.id}>
-                            <td>{entry.date}</td>
-                            <td>
-                              {entry.action}
-                              {entry.reason ? ` — ${entry.reason}` : ""}
-                            </td>
-                            <td>{entry.user}</td>
-                          </tr>
-                        ))
-                      )}
-
-                    </tbody>
-
-                  </table>
-
-                </div>
-
-              </div>
-
-            )}
-
-            {/* HEADER */}
-
             <div className="modal-header">
-
-              <div className="modal-user">
-
-                <img
-                  src="https://randomuser.me/api/portraits/women/44.jpg"
-                  alt=""
-                />
-
-                <div>
-
-                  <h3>Megan Richards</h3>
-
-                  <p>Investigator</p>
-
-                </div>
-
-              </div>
-
+              <h3>Delegation History</h3>
               <span
                 className="close-btn"
-                onClick={() => setShowModal(false)}
+                onClick={() => setShowHistory(false)}
               >
                 ✖
               </span>
-
             </div>
-
-            {/* TABS */}
-
-            <div className="modal-tabs">
-
-              <button
-                className={tab === "active" ? "tab active" : "tab"}
-                onClick={() => setTab("active")}
-              >
-                Active
-              </button>
-
-              <button
-                className={tab === "inactive" ? "tab active" : "tab"}
-                onClick={() => setTab("inactive")}
-              >
-                Inactive
-              </button>
-
-            </div>
-
-            {/* TABLE */}
 
             <table className="delegation-table">
-
               <thead>
-
                 <tr>
-
-                  <th>Staff Name</th>
-
-                  <th>Delegated Role</th>
-
-                  <th>Start Date</th>
-
-                  <th>End Date</th>
-
-                  <th>Status</th>
-
+                  <th>Date</th>
+                  <th>Action</th>
+                  <th>User</th>
                 </tr>
-
               </thead>
-
               <tbody>
-
-                {/* ACTIVE */}
-
-                {tab === "active" && (
-                  <>
-                    <tr>
-                      <td>A2</td>
-                      <td>Physical Exam</td>
-                      <td>1/27/2020 - Present</td>
-                      <td>1/27/2020</td>
-                      <td>1/27/2020</td>
+                {history.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} style={{ textAlign: "center", color: "#98a2b3" }}>
+                      No history yet.
+                    </td>
+                  </tr>
+                ) : (
+                  history.map((entry) => (
+                    <tr key={entry.id}>
+                      <td>{entry.date}</td>
+                      <td>
+                        {entry.action}
+                        {entry.reason ? ` — ${entry.reason}` : ""}
+                      </td>
+                      <td>{entry.user}</td>
                     </tr>
-
-                    <tr>
-                      <td>A3</td>
-                      <td>Medical Review</td>
-                      <td>2/10/2020 - Present</td>
-                      <td>2/10/2020</td>
-                      <td>2/10/2020</td>
-                    </tr>
-                  </>
+                  ))
                 )}
-
-                {/* INACTIVE */}
-
-                {tab === "inactive" && (
-                  <>
-                    <tr>
-                      <td>2</td>
-                      <td>eReg Access</td>
-                      <td>1/27/2020 - 4/13/2020</td>
-                      <td>1/27/2020</td>
-                      <td>1/27/2020</td>
-                    </tr>
-
-                    <tr>
-                      <td>5</td>
-                      <td>Data Verification</td>
-                      <td>3/01/2020 - 6/20/2020</td>
-                      <td>3/01/2020</td>
-                      <td>3/01/2020</td>
-                    </tr>
-                  </>
-                )}
-
               </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
+      {/* ============================================================ */}
+      {/* Phase 6 cleanup: View Delegation modal — the OLD static      */}
+      {/* dialog (Megan Richards / Investigator / A2 / A3 / Physical    */}
+      {/* Exam / Medical Review) has been removed. This modal now       */}
+      {/* renders the fields of the delegation record the user clicked. */}
+      {/* ============================================================ */}
+      {viewTarget && (
+        <div className="modal-overlay">
+          <div className="modal-box" style={{ width: "560px" }}>
+            <div className="modal-header">
+              <div className="modal-user">
+                <div>
+                  <h3>{viewTarget.name || viewTarget.delegateName || "—"}</h3>
+                  <p>{viewTarget.role || "—"}</p>
+                </div>
+              </div>
+              <span
+                className="close-btn"
+                onClick={() => setViewTarget(null)}
+              >
+                ✖
+              </span>
+            </div>
+
+            <table className="delegation-table" style={{ marginTop: "20px" }}>
+              <tbody>
+                <tr>
+                  <th style={{ width: "35%" }}>Name</th>
+                  <td>{viewTarget.name || viewTarget.delegateName || "—"}</td>
+                </tr>
+                <tr>
+                  <th>Role</th>
+                  <td>{viewTarget.role || "—"}</td>
+                </tr>
+                <tr>
+                  <th>Responsibility</th>
+                  <td>
+                    {viewTarget.responsibility ||
+                      viewTarget.description ||
+                      "—"}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Status</th>
+                  <td>{viewTarget.status || "Active"}</td>
+                </tr>
+              </tbody>
             </table>
 
+            <div className="modal-footer" style={{ marginTop: "20px", textAlign: "right" }}>
+              <button className="cancel-btn" onClick={() => setViewTarget(null)}>
+                Close
+              </button>
+            </div>
           </div>
-
         </div>
-
       )}
 
       {/* ============================================================ */}
