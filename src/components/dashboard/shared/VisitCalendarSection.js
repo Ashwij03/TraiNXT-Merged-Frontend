@@ -47,6 +47,7 @@ function VisitCalendarSection({
     institutionFilter,
     daysAhead
   });
+  console.log("Dashboard schedules:", schedules);
 
   const [selectedScheduleDate, setSelectedScheduleDate] = useState(null);
 
@@ -84,12 +85,29 @@ function VisitCalendarSection({
 
   
   const baseRows = useMemo(() => {
-    if (selectedScheduleDate) {
-      return selectedDaySchedules;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const isUpcoming = (item) => {
+    if (!item?.date) {
+      return false;
     }
 
-    return [...upcomingWindow].sort(compareScheduleDates);
-  }, [selectedDaySchedules, selectedScheduleDate, upcomingWindow]);
+    const visitDate = new Date(item.date);
+    visitDate.setHours(0, 0, 0, 0);
+
+    // only today and future visits
+    return visitDate >= today;
+  };
+
+  if (selectedScheduleDate) {
+    return selectedDaySchedules.filter(isUpcoming);
+  }
+
+  return [...upcomingWindow]
+    .filter(isUpcoming)
+    .sort(compareScheduleDates);
+}, [selectedDaySchedules, selectedScheduleDate, upcomingWindow]);
 
   // Item 17 — Site column renders resolved Site Number (not stored Site Name).
   // Authoritative schedule/site data is left untouched; this is display only.

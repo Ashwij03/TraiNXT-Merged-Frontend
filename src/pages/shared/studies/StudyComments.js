@@ -1,3 +1,4 @@
+
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import DataTable from "../../../components/dashboard/shared/DataTable";
@@ -24,8 +25,14 @@ function StudyComments() {
   } = useComments();
   const [commentText, setCommentText] = useState("");
 
+  // ===== NEW: Search + Filter state =====
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  // ===== Canonical pipeline =====
+  // authorized → study filter → search/filter → table
   const comments = useMemo(() => {
-    return liveComments
+    let result = liveComments
       .filter((comment) =>
         canViewComment(comment, currentUser, study?.status),
       )
@@ -104,9 +111,14 @@ function StudyComments() {
             onChange={(event) => setCommentText(event.target.value)}
             placeholder="Add a comment..."
             rows={3}
-            style={{ width: "100%", maxWidth: "480px", display: "block" }}
+            style={{
+              width: "100%",
+              maxWidth: "560px",
+              display: "block",
+            }}
             disabled={!studyCode}
           />
+
           <button
             type="button"
             onClick={handleAddComment}
@@ -128,7 +140,11 @@ function StudyComments() {
           columns={[
             { key: "id", label: "ID", width: "90px" },
             { key: "studyId", label: "Study ID", width: "120px" },
-            { key: "subjectDocument", label: "Subject / Document", width: "220px" },
+            {
+              key: "subjectDocument",
+              label: "Subject / Document",
+              width: "220px",
+            },
             { key: "comment", label: "Comment", width: "320px" },
             { key: "by", label: "By", width: "170px" },
             { key: "date", label: "Date", width: "180px" },
@@ -140,6 +156,7 @@ function StudyComments() {
           data={comments}
           emptyMessage="No comments for this study"
           pagination
+          searchable={false}
         />
       </div>
     </div>

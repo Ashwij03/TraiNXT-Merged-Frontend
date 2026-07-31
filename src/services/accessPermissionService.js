@@ -101,7 +101,8 @@ export function hasApprovedScope(
   studyCode = "",
 ) {
   return getApprovedPermissionScopes(email).some((scope) => {
-    const actionMatch = scope.action === action || scope.accessType === action;
+    const actionMatch =
+      !action || scope.action === action || scope.accessType === action;
     const moduleMatch = scope.module === module;
     const recordMatch = !scope.recordId || !recordId || scope.recordId === recordId;
     const studyMatch =
