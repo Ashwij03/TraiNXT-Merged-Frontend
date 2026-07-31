@@ -46,10 +46,15 @@ function dispatchSchedulesChange() {
 }
 
 export function isCompletedVisitStatus(status) {
-  return (
-    String(status || "").trim().toLowerCase() ===
-    VISIT_STATUS_COMPLETED.toLowerCase()
-  );
+  const normalized = String(status || "").trim().toLowerCase();
+
+  return [
+    "completed",
+    "dropout",
+    "withdrawn",
+    "auto withdraw",
+    "auto-withdraw"
+  ].includes(normalized);
 }
 
 export function isCompletedVisitSchedule(schedule) {
@@ -268,7 +273,12 @@ function readSubjectDetails(studyId, subjectId) {
 }
 
 function readSubjectVisits(subjectId) {
-  return readJson(`subject_${subjectId}_visits`, []);
+  const visits = readJson(`subject_${subjectId}_visits`, []);
+
+  // Include all statuses except deleted visits
+  return Array.isArray(visits)
+    ? visits.filter((visit) => visit && visit.name)
+    : [];
 }
 
 function buildScheduleId(studyKey, subjectId, visit) {
@@ -282,7 +292,14 @@ function isCalendarScheduleEntry(entry) {
 }
 
 function filterCalendarSchedules(schedules) {
-  return schedules.filter(isCalendarScheduleEntry);
+  return (Array.isArray(schedules) ? schedules : []).filter((item) => {
+    if (!item || !item.date) {
+      return false;
+    }
+
+    // Exclude only Enrollment visits
+    return String(item.visit || "") !== "Enrollment";
+  });
 }
 
 function createScheduleEntry({
@@ -422,16 +439,21 @@ export function buildSchedulesFromSubjects() {
       }
 
       readSubjectVisits(subjectId).forEach((visit) => {
-        const entry = createScheduleEntry({
-          studyKey,
-          subject: { ...subject, ...details },
-          visit: visit.name,
-          date: visit.plannedDate || visit.actualDate,
-          status: visit.status || "Scheduled",
-          time: visit.time || "09:00 AM",
-          source: "visit-record"
-        });
-
+  const entry = createScheduleEntry({
+    studyKey,
+    subject: { ...subject, ...details },
+    visit: visit.name,
+    // FIX: support all possible date fields
+    date:
+      visit.plannedDate ||
+      visit.actualDate ||
+      visit.date ||
+      visit.visitDate ||
+      "",
+    status: visit.status || "Scheduled",
+    time: visit.time || "09:00 AM",
+    source: "visit-record"
+  });
         if (entry) {
           generated.push(entry);
         }
@@ -481,21 +503,20 @@ export function syncSubjectSchedules(studyId, subjectId, subject = {}) {
   }
 
   readSubjectVisits(subjectId).forEach((visit) => {
-    const entry = createScheduleEntry({
-      studyKey: studyId,
-      subject: mergedSubject,
-      visit: visit.name,
-      date: visit.plannedDate || visit.actualDate,
-      status: visit.status || "Scheduled",
-      time: visit.time || "09:00 AM",
-      source: "visit-record"
-    });
-
-    if (entry) {
-      generated.push(entry);
-    }
+  const entry = createScheduleEntry({
+    studyKey: studyId,
+    subject: mergedSubject,
+    visit: visit.name,
+    date: visit.plannedDate || visit.actualDate,
+    status: visit.status || "Scheduled",
+    time: visit.time || "09:00 AM",
+    source: "visit-record"
   });
 
+  if (entry) {
+    generated.push(entry);
+  }
+});
   const existing = readJson(SCHEDULES_STORAGE_KEY, []);
   const subjectPrefix = `${studyId}::${subjectId}::`;
   const manualEntries = existing.filter(
@@ -666,21 +687,27 @@ function matchesHeaderFilters(schedule, filters, studyMap) {
 }
 
 export function getMergedSchedules(user = getCurrentUser()) {
-  const schedules = filterCalendarSchedules(readJson(SCHEDULES_STORAGE_KEY, []));
-  return isAdmin(user)
-    ? schedules
-    : filterBySite(schedules, "site", user);
-}
+  const schedules = filterCalendarSchedules(
+    readJson(SCHEDULES_STORAGE_KEY, [])
+  );
 
-export function getFilteredSchedules(
-  user = getCurrentUser(),
-  options = {}
-) {
+  // TEMPORARY: return all schedules for debugging
+  return schedules;
+}
+export function getFilteredSchedules(user = getCurrentUser(), options = {}) {
   const schedules = getMergedSchedules(user);
+
+  // When the dashboard calendar does not pass any filters,
+  // return all available schedules directly.
+  if (!options.studyCode && !options.institutionFilter) {
+    return schedules;
+  }
+
   const filters = {
     ...getFilterState(),
-    ...options
+    ...options,
   };
+
   const studyMap = getStudyMap();
 
   return schedules.filter((schedule) =>
@@ -757,4 +784,8 @@ export function getUpcomingVisitsWindow(
     })
     .sort(compareScheduleDates)
     .map(mapScheduleToTableRow);
+}
+// Force rebuild of calendar schedules from all subject visits
+export function refreshVisitCalendar() {
+  return rebuildSchedulesFromSubjects();
 }

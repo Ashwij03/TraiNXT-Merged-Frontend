@@ -37,7 +37,6 @@ import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal
 import RecentSubjectsWidget from "../../../components/dashboard/shared/RecentSubjectsWidget";
 import UpcomingVisitsWidget from "../../../components/dashboard/shared/UpcomingVisitsWidget";
 import PendingCommentsWidget from "../../../components/dashboard/shared/PendingCommentsWidget";
-import QuickActionsWidget from "../../../components/dashboard/shared/QuickActionsWidget";
 import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
 import EISFWorkspace from "../EISF/EISFWorkspace";
 import {
@@ -51,9 +50,9 @@ import {
 } from "react-icons/fi";
 import {
   canDeleteStudy,
-  canEditStudyContent,
   requiresPermissionRequest,
 } from "../../../utils/contentAccess";
+import useCanEditStudyContent from "../../../hooks/useCanEditStudyContent";
 import { submitAccessRequest } from "../../../services/accessPermissionService";
 import {
   getCurrentUser,
@@ -123,9 +122,9 @@ function StudyDashboard() {
   const { comments: liveComments } = useComments();
   const currentUser = getCurrentUser();
 
-  const canEditStudy = canEditStudyContent(currentUser);
+  const canEditStudy = useCanEditStudyContent("Study Overview", id);
   const canRemoveStudy = canDeleteStudy(currentUser);
-  const needsPermissionRequest = requiresPermissionRequest(currentUser);
+  const needsPermissionRequest = requiresPermissionRequest(currentUser) && !canEditStudy;
   // ===== START D2 PART 1 CHANGES =====
   // Role-based Activity visibility, backed by the shared rolePermissions
   // map (VIEW_SITE_ACTIVITIES) rather than a hardcoded role check.
@@ -292,6 +291,8 @@ function StudyDashboard() {
     submitAccessRequest(
       {
         studySubject: currentStudy?.code || id,
+        studyCode: currentStudy?.code || id,
+        module: "Study Overview",
         accessType: "Edit Access",
         notes: "Study overview edit request",
       },
@@ -588,18 +589,8 @@ function StudyDashboard() {
                 </div>
 
                 <div className="widget-grid">
-                  <PendingCommentsWidget comments={filteredPendingComments} />
-                  <QuickActionsWidget
-                    study={currentStudy}
-                    studyCode={id}
-                    onAddSubject={() => {
-                      setActiveTab("Subjects");
-                      navigate(
-                        `/study-dashboard/${encodeURIComponent(id)}?tab=Subjects`
-                      );
-                    }}
-                  />
-                </div>
+  <PendingCommentsWidget comments={filteredPendingComments} />
+</div>
 
                 <div className="study-dashboard-alerts">
                   <AlertsPanel alerts={filteredAlerts} />

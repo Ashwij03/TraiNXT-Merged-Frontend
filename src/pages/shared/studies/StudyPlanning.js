@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import RequestPermissionButton from "../../../components/common/RequestPermissionButton";
-import { canEditStudyContent } from "../../../utils/contentAccess";
-import { getCurrentUser } from "../../../services/roleService";
+import useCanEditStudyContent from "../../../hooks/useCanEditStudyContent";
 import { getStudyByCode } from "../../../services/studyService";
 import { resolveSiteDisplay } from "../../../utils/siteDisplay";
 import {
@@ -29,7 +28,7 @@ function StudyPlanning() {
   const [editingProtocol, setEditingProtocol] = useState(null);
   const [editingMember, setEditingMember] = useState(null);
   const { id: studyCode } = useParams();
-  const canEdit = canEditStudyContent(getCurrentUser());
+  const canEdit = useCanEditStudyContent("Study Planning", studyCode);
   const [version, setVersion] = useState(0);
   const [editingMilestone, setEditingMilestone] = useState(null);
 const [editingTask, setEditingTask] = useState(null);

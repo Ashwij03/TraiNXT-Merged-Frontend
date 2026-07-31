@@ -32,6 +32,7 @@ import LogsPage from "./pages/shared/logs/LogsPage";
 import TrainingLogPage from "./pages/shared/logs/TrainingLogPage";
 import DelegationLogPage from "./pages/shared/logs/DelegationLogPage";
 import AuditLogsPage from "./pages/shared/audit/AuditLogsPage";
+import UpcomingVisits from "./pages/shared/visits/UpcomingVisits";
 import {
   getDashboardPath,
   getCurrentUser,
@@ -279,6 +280,15 @@ function App() {
         element={
           <ProtectedRoute>
             <AuditLogsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/upcoming-visits"
+        element={
+          <ProtectedRoute>
+            <UpcomingVisits />
           </ProtectedRoute>
         }
       />

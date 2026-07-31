@@ -1,111 +1,80 @@
-.access-permissions-page {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 4px 0 24px;
-}
-
-.access-permissions-header h1 {
-  margin: 0;
-  font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
-  color: #111827;
-}
-
-.access-permissions-header p {
-  margin: 8px 0 0;
-  color: #6b7280;
-}
+/* ======================================================
+   Access Permissions Page
+====================================================== */
 
 .access-permissions-tabs {
   display: flex;
-  gap: 8px;
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 0;
+  gap: 12px;
+  margin: 20px 0;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
 }
 
 .access-tab {
-  background: transparent;
   border: none;
-  border-bottom: 3px solid transparent;
-  color: #6b7280;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
+  background: transparent;
   padding: 10px 16px;
-  transition: color 0.2s ease, border-color 0.2s ease;
-}
-
-.access-tab:hover {
-  color: #2563eb;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .access-tab.active {
-  border-bottom-color: #2563eb;
-  color: black;
+  background: #e2e8f0;
+  color: #0f172a;
 }
 
 .access-tab-badge {
-  background: #e5e7eb;
+  background: #2563eb;
+  color: #fff;
   border-radius: 999px;
-  color: #374151;
-  font-size: 11px;
-  font-weight: 700;
-  margin-left: 8px;
   padding: 2px 8px;
+  font-size: 12px;
 }
 
-.access-tab.active .access-tab-badge {
-  background: #dbeafe;
-  color: #1d4ed8;
-}
-
-.access-actions-cell {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
+/* ======================================================
+   Action Buttons
+====================================================== */
 
 .access-action-link {
-  background: none;
   border: none;
-  color: #2563eb;
+  background: #0ea5e9;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
-  font-weight: 600;
-  padding: 0;
-  text-decoration: none;
+  margin-right: 6px;
 }
 
 .access-action-link:hover {
-  text-decoration: underline;
+  opacity: 0.92;
+}
+
+.access-action-link.edit {
+  background: #2563eb;
 }
 
 .access-action-link.revoke {
-  color: #dc2626;
+  background: #dc2626;
 }
 
-.permission-remove-btn,
-.remove-permission-btn {
-  background: none;
-  border: none;
-  color: #2563eb;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 0;
-}
-
-.permission-remove-btn:hover,
-.remove-permission-btn:hover {
-  text-decoration: underline;
-}
+/* ======================================================
+   Status Pills
+====================================================== */
 
 .status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
   border-radius: 999px;
-  display: inline-block;
   font-size: 12px;
   font-weight: 600;
-  padding: 4px 10px;
 }
 
 .status-pill.active {
@@ -113,19 +82,9 @@
   color: #166534;
 }
 
-.status-pill.inactive {
-  background: #f3f4f6;
-  color: #6b7280;
-}
-
 .status-pill.pending {
   background: #fef3c7;
   color: #92400e;
-}
-
-.status-pill.accepted {
-  background: #dcfce7;
-  color: #166534;
 }
 
 .status-pill.revoked {
@@ -133,215 +92,124 @@
   color: #991b1b;
 }
 
-.request-permission-btn {
-  background: #2563eb;
-  border: none;
-  border-radius: 8px;
-  color: #ffffff;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 8px 14px;
+.status-pill.inactive {
+  background: #e2e8f0;
+  color: #475569;
 }
 
-.request-permission-btn:hover {
-  background: #1d4ed8;
-}
+/* ======================================================
+   Edit Permission Modal
+====================================================== */
 
-.request-permission-btn--sm {
-  font-size: 12px;
-  padding: 6px 10px;
-}
-
-.permission-request-overlay {
-  align-items: center;
-  background: rgba(15, 23, 42, 0.45);
-  display: flex;
-  inset: 0;
-  justify-content: center;
-  padding: 16px;
+.modal-overlay {
   position: fixed;
-  z-index: 1200;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 }
 
-.permission-request-modal {
+.permission-modal {
+  width: 560px;
+  max-width: 92vw;
   background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
-  max-height: 90vh;
-  max-width: 520px;
-  overflow: auto;
-  padding: 24px;
-  width: 100%;
+  border-radius: 14px;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.28);
+  overflow: hidden;
+  animation: permissionModalFade 0.18s ease-out;
 }
 
-.permission-request-modal h2 {
-  margin: 0 0 8px;
+@keyframes permissionModalFade {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-.permission-request-subtitle {
-  color: #64748b;
-  margin: 0 0 16px;
+.permission-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  background: #082b3d;
+  color: #ffffff;
 }
 
-.permission-request-details {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin: 0 0 16px;
-}
-
-.permission-request-details dt {
-  color: #64748b;
-  font-size: 12px;
-  margin-bottom: 2px;
-}
-
-.permission-request-details dd {
-  font-weight: 600;
+.permission-modal-header h3 {
   margin: 0;
+  font-size: 18px;
+  font-weight: 700;
 }
 
-.permission-request-reason {
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.permission-modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 22px;
+}
+
+.permission-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.permission-request-reason textarea {
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font: inherit;
-  padding: 10px;
-  resize: vertical;
-}
-
-.permission-request-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
-.permission-request-cancel {
-  background: #f1f5f9;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 8px 14px;
-}
-
-.sidebar-tree-label--muted {
-  color: #94a3b8;
-  font-style: italic;
-}
-
-.subject-status-kpi-grid {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  margin-bottom: 20px;
-}
-
-.subject-status-kpi {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 16px;
-  text-align: center;
-}
-
-.subject-status-kpi strong {
-  color: #2563eb;
-  display: block;
-  font-size: 28px;
-  line-height: 1.1;
-  margin-bottom: 6px;
-}
-
-.subject-status-kpi span {
-  color: #64748b;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.study-reports-toolbar {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-bottom: 20px;
-}
-
-.study-reports-toolbar button {
-  background: #2563eb;
-  border: none;
-  border-radius: 8px;
-  color: #ffffff;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 10px 16px;
-}
-
-.study-reports-toolbar button.secondary {
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  color: #334155;
-}
-
-.study-reports-overview-grid {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  margin-bottom: 24px;
-}
-
-.study-reports-overview-card {
-  background: #f8fafc;
+  gap: 6px;
+  padding: 12px;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
-  padding: 14px 16px;
+  background: #f8fafc;
 }
 
-.study-reports-overview-card label {
-  color: #64748b;
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 6px;
+.permission-field span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
+  color: #64748b;
 }
 
-.study-reports-overview-card p {
+.permission-field strong {
   color: #0f172a;
-  font-size: 15px;
-  font-weight: 600;
-  margin: 0;
+  font-size: 14px;
+  word-break: break-word;
 }
 
-.access-request-form {
-  display: grid;
-  gap: 16px;
-  max-width: 560px;
+.permission-field.full-width {
+  grid-column: 1 / -1;
 }
 
-.access-request-form label {
-  color: #374151;
+.modal-actions {
   display: flex;
-  flex-direction: column;
-  font-size: 14px;
-  font-weight: 600;
-  gap: 8px;
+  justify-content: flex-end;
+  padding: 16px 22px 22px;
+  border-top: 1px solid #e2e8f0;
 }
 
-.access-request-form input,
-.access-request-form select,
-.access-request-form textarea {
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 14px;
-  padding: 10px 12px;
+/* ======================================================
+   Responsive
+====================================================== */
+
+@media (max-width: 640px) {
+  .permission-modal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .access-permissions-tabs {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }

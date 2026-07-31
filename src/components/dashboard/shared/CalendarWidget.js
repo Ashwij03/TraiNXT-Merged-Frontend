@@ -22,15 +22,51 @@ function CalendarWidget({
 }) {
   const isControlled = typeof onDateSelect === "function";
 
-  const [internalSelectedDate, setInternalSelectedDate] = useState(null);
+  const todayDateKey = getCalendarDateKey(new Date());
+
+  // First upcoming schedule date only
+  const firstScheduleDate = useMemo(() => {
+    if (selectedDate) {
+      return selectedDate;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const upcoming = [...schedules]
+      .filter((item) => {
+        if (!item?.date) {
+          return false;
+        }
+
+        const visitDate = new Date(item.date);
+        visitDate.setHours(0, 0, 0, 0);
+
+        return visitDate >= today;
+      })
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    return upcoming.length > 0
+      ? getCalendarDateKey(upcoming[0].date)
+      : todayDateKey;
+  }, [selectedDate, schedules, todayDateKey]);
+
+  const [internalSelectedDate, setInternalSelectedDate] =
+    useState(firstScheduleDate);
 
   const [currentMonth, setCurrentMonth] = useState(() => {
-    const baseDate = selectedDate ? parseCalendarDateKey(selectedDate) : new Date();
+    const baseDate = firstScheduleDate
+      ? parseCalendarDateKey(firstScheduleDate)
+      : new Date();
+
     return baseDate.getMonth();
   });
 
   const [currentYear, setCurrentYear] = useState(() => {
-    const baseDate = selectedDate ? parseCalendarDateKey(selectedDate) : new Date();
+    const baseDate = firstScheduleDate
+      ? parseCalendarDateKey(firstScheduleDate)
+      : new Date();
+
     return baseDate.getFullYear();
   });
 
@@ -44,17 +80,17 @@ function CalendarWidget({
     }
   }, [isControlled, selectedDate]);
 
-  const todayDateKey = getCalendarDateKey(new Date());
+  useEffect(() => {
+    if (!selectedDate && firstScheduleDate) {
+      setInternalSelectedDate(firstScheduleDate);
 
-  const weekDays = [
-    "Sun",
-    "Mon",
-    "Tue",
-    "Wed",
-    "Thu",
-    "Fri",
-    "Sat",
-  ];
+      const d = parseCalendarDateKey(firstScheduleDate);
+      setCurrentMonth(d.getMonth());
+      setCurrentYear(d.getFullYear());
+    }
+  }, [firstScheduleDate, selectedDate]);
+
+  const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const monthNames = [
     "January",
@@ -71,17 +107,9 @@ function CalendarWidget({
     "December",
   ];
 
-  const daysInMonth = new Date(
-    currentYear,
-    currentMonth + 1,
-    0
-  ).getDate();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
-  const firstDayOfMonth = new Date(
-    currentYear,
-    currentMonth,
-    1
-  ).getDay();
+  const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
 
   const handleDateSelect = (date) => {
     if (isControlled) {
@@ -96,7 +124,9 @@ function CalendarWidget({
       return [];
     }
 
-    return schedules.filter((schedule) => getCalendarDateKey(schedule.date) === date);
+    return schedules.filter(
+      (schedule) => getCalendarDateKey(schedule.date) === date
+    );
   };
 
   const changeMonth = (direction) => {
@@ -129,7 +159,6 @@ function CalendarWidget({
 
   const selectedSchedules = getSchedulesForDate(activeDate);
 
-  // Item 17 — resolve schedule.site to the actual Site Number for display.
   const siteSources = useMemo(() => {
     try {
       return getStudies();
@@ -142,6 +171,7 @@ function CalendarWidget({
     <div className="calendar-widget">
       <div className="calendar-header">
         <button
+          type="button"
           className="calendar-nav-btn"
           onClick={() => changeMonth("prev")}
         >
@@ -149,16 +179,14 @@ function CalendarWidget({
         </button>
 
         <div>
-          <span className="calendar-eyebrow">
-            Visit Calendar
-          </span>
-
+          <span className="calendar-eyebrow">Visit Calendar</span>
           <h3 className="calendar-title">
             {monthNames[currentMonth]} {currentYear}
           </h3>
         </div>
 
         <button
+          type="button"
           className="calendar-nav-btn"
           onClick={() => changeMonth("next")}
         >
@@ -184,16 +212,20 @@ function CalendarWidget({
             );
           }
 
-          const date =
-            `${currentYear}-${String(
-              currentMonth + 1
-            ).padStart(2, "0")}-${String(day).padStart(
-              2,
-              "0"
-            )}`;
+          const date = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
           const daySchedules = getSchedulesForDate(date);
-          const hasSchedule = daySchedules.length > 0;
+
+          // IMPORTANT: highlight only today and future schedule dates
+          const currentDate = parseCalendarDateKey(date);
+          currentDate.setHours(0, 0, 0, 0);
+
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+          const hasSchedule =
+            daySchedules.length > 0 && currentDate >= today;
+
           const isSelected = activeDate === date;
           const isToday = todayDateKey === date;
 
@@ -201,9 +233,6 @@ function CalendarWidget({
             <button
               key={date}
               type="button"
-              aria-label={`${date}${isToday ? " Today" : ""}${
-                hasSchedule ? ` ${daySchedules.length} scheduled visit${daySchedules.length !== 1 ? "s" : ""}` : ""
-              }`}
               className={[
                 "calendar-day",
                 hasSchedule ? "has-schedule" : "",
@@ -216,17 +245,9 @@ function CalendarWidget({
             >
               <span>{day}</span>
 
-              {isToday && (
-                <em>
-                  Today
-                </em>
-              )}
+              {isToday && <em>Today</em>}
 
-              {hasSchedule && (
-                <small>
-                  {daySchedules.length}
-                </small>
-              )}
+              {hasSchedule && <small>{daySchedules.length}</small>}
             </button>
           );
         })}
@@ -235,19 +256,14 @@ function CalendarWidget({
       <div className="calendar-details">
         <div className="calendar-details-title">
           <div>
-            <span>
-              Schedule Details
-            </span>
-
+            <span>Schedule Details</span>
             <p>
               {selectedSchedules.length} item
               {selectedSchedules.length !== 1 ? "s" : ""}
             </p>
           </div>
 
-          <strong>
-            {activeDate || "Select a date"}
-          </strong>
+          <strong>{activeDate || "Select a date"}</strong>
         </div>
 
         {!activeDate ? (
@@ -256,40 +272,27 @@ function CalendarWidget({
           </div>
         ) : selectedSchedules.length > 0 ? (
           selectedSchedules.map((schedule, index) => (
-            <div
-              key={index}
-              className="schedule-card"
-            >
+            <div key={index} className="schedule-card">
               <div className="schedule-card-top">
                 <div>
-                  <strong>
-                    {schedule.visit}
-                  </strong>
-
-                  <small>
-                    {schedule.time}
-                  </small>
+                  <strong>{schedule.visit}</strong>
+                  <small>{schedule.time || "09:00 AM"}</small>
                 </div>
 
-                <span>
-                  {schedule.status}
-                </span>
+                <span>{schedule.status}</span>
               </div>
 
               <div className="schedule-meta">
                 <p>
-                  <b>Subject:</b>{" "}
-                  {schedule.subjectId}
+                  <b>Subject:</b> {schedule.subjectId}
                 </p>
 
                 <p>
-                  <b>Study:</b>{" "}
-                  {schedule.study}
+                  <b>Study:</b> {schedule.study}
                 </p>
 
                 <p>
-                  <b>Site:</b>{" "}
-                  {resolveSiteDisplay(schedule.site, {
+                  <b>Site:</b> {resolveSiteDisplay(schedule.site, {
                     sources: siteSources,
                     fallback: schedule.site || "—",
                   })}

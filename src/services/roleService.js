@@ -488,6 +488,7 @@ export function canAccessRoute(path, user = getCurrentUser()) {
     "/logs/training": Object.values(ROLES),
     "/logs/delegation": Object.values(ROLES),
     "/audit-logs": [ROLES.ADMIN, ROLES.SITE_STAFF],
+    "/upcoming-visits": Object.values(ROLES),
     "/training": Object.values(ROLES),
     "/delegation": Object.values(ROLES)
   };
