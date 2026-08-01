@@ -16,7 +16,6 @@ import StudyVisitPlan from "./StudyVisitPlan";
 import EssentialDocumentsWidget from "../../../components/studies/EssentialDocumentsWidget";
 import StudyProgressSummary from "../../../components/studies/StudyProgressSummary";
 import StudyMilestoneTimeline from "../../../components/studies/StudyMilestoneTimeline";
-import SitePerformanceSummary from "../../../components/studies/SitePerformanceSummary";
 import SiteActivationStatus from "../../../components/studies/SiteActivationStatus";
 import StudyHealthSummary from "../../../components/studies/StudyHealthSummary";
 import useStudyOverview from "../../../hooks/useStudyOverview";
@@ -35,7 +34,6 @@ import {
 } from "../../../constants/studyStatus";
 import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
 import RecentSubjectsWidget from "../../../components/dashboard/shared/RecentSubjectsWidget";
-import UpcomingVisitsWidget from "../../../components/dashboard/shared/UpcomingVisitsWidget";
 import PendingCommentsWidget from "../../../components/dashboard/shared/PendingCommentsWidget";
 import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
 import EISFWorkspace from "../EISF/EISFWorkspace";
@@ -283,10 +281,6 @@ useEffect(() => {
     }));
   }, [studyOpenComments]);
 
-  const filteredAlerts = useMemo(() => {
-    return safeArray(data?.alerts).filter(matchesCurrentStudy);
-  }, [data?.alerts, safeArray, matchesCurrentStudy]);
-
   const filteredRecentSubjects = useMemo(() => {
     if (studySubjectsFromStorage.length > 0) {
       return studySubjectsFromStorage;
@@ -298,6 +292,112 @@ useEffect(() => {
     studySubjectsFromStorage,
     safeArray,
     matchesCurrentStudy,
+  ]);
+
+  // Study-scoped Alerts: build a fully dynamic feed from the same live
+  // data that already powers the KPIs and widgets on this Overview tab
+  // (open comments, upcoming visits, recent subjects, study progress /
+  // health). We reuse the existing AlertsPanel component — this just
+  // gives it real, per-study rows instead of the empty result the old
+  // `data.alerts.filter(matchesCurrentStudy)` produced (dashboard-level
+  // alerts have no study key, so the filter always yielded []).
+  const filteredAlerts = useMemo(() => {
+    const alerts = [];
+    const openCommentCount = studyOpenComments.length;
+    const upcomingVisitCount = filteredUpcomingVisits.length;
+    const subjectCount = filteredRecentSubjects.length;
+    const targetSubjects = Number(currentStudy?.targetSubjects) || 0;
+    const enrolled = Number(currentStudy?.enrolled) || subjectCount;
+    const enrollmentRatio =
+      targetSubjects > 0 ? enrolled / targetSubjects : null;
+    const overdueDocs = Number(overview?.documents?.overdue) || 0;
+    const missingDocs = Number(overview?.documents?.missing) || 0;
+    const healthScore =
+      typeof overview?.health?.score === "number"
+        ? overview.health.score
+        : null;
+
+    if (openCommentCount > 0) {
+      alerts.push({
+        type: openCommentCount >= 5 ? "danger" : "warning",
+        title: "Open Comments",
+        message: `${openCommentCount} comment${openCommentCount === 1 ? "" : "s"} awaiting resolution`,
+      });
+    }
+
+    if (upcomingVisitCount > 0) {
+      alerts.push({
+        type: "info",
+        title: "Upcoming Visits",
+        message: `${upcomingVisitCount} visit${upcomingVisitCount === 1 ? "" : "s"} scheduled in the next window`,
+      });
+    }
+
+    if (overdueDocs > 0) {
+      alerts.push({
+        type: "danger",
+        title: "Overdue Documents",
+        message: `${overdueDocs} essential document${overdueDocs === 1 ? "" : "s"} past due`,
+      });
+    }
+
+    if (missingDocs > 0) {
+      alerts.push({
+        type: "warning",
+        title: "Missing Documents",
+        message: `${missingDocs} essential document${missingDocs === 1 ? "" : "s"} not yet uploaded`,
+      });
+    }
+
+    if (enrollmentRatio !== null) {
+      if (enrollmentRatio >= 1) {
+        alerts.push({
+          type: "success",
+          title: "Enrollment Target Met",
+          message: `${enrolled} of ${targetSubjects} subjects enrolled`,
+        });
+      } else if (enrollmentRatio < 0.5) {
+        alerts.push({
+          type: "warning",
+          title: "Enrollment Behind Target",
+          message: `${enrolled} of ${targetSubjects} subjects enrolled (${Math.round(
+            enrollmentRatio * 100,
+          )}%)`,
+        });
+      }
+    }
+
+    if (healthScore !== null) {
+      if (healthScore < 60) {
+        alerts.push({
+          type: "danger",
+          title: "Study Health Low",
+          message: `Composite health score is ${healthScore}`,
+        });
+      } else if (healthScore >= 85) {
+        alerts.push({
+          type: "success",
+          title: "Study Health Strong",
+          message: `Composite health score is ${healthScore}`,
+        });
+      }
+    }
+
+    if (currentStudy?.status) {
+      alerts.push({
+        type: "info",
+        title: "Study Status",
+        message: `Currently in ${currentStudy.status}`,
+      });
+    }
+
+    return alerts;
+  }, [
+    studyOpenComments,
+    filteredUpcomingVisits,
+    filteredRecentSubjects,
+    currentStudy,
+    overview,
   ]);
 
   const studyKpis = useMemo(() => {
@@ -603,19 +703,7 @@ window.dispatchEvent(new Event("studies-updated"));
                   <StudyHealthSummary health={overview.health} />
 
                   <SiteActivationStatus counts={overview.siteActivation} />
-
-                  {/* Item 14 — GCP Certification Status removed;
-                      the existing Site Performance Summary widget is
-                      reused in its place (single instance, live data). */}
-                  <SitePerformanceSummary records={overview.sitePerformance} />
                 </div>
-
-                <StudyMilestoneTimeline
-                  studyCode={id}
-                  milestones={overview.milestones}
-                  canEdit={canEditStudy}
-                  onUpdated={() => setStudyRefreshKey((value) => value + 1)}
-                />
 
                 <VisitCalendarSection studyCode={id} />
 
@@ -625,31 +713,29 @@ window.dispatchEvent(new Event("studies-updated"));
                   studyCode={id}
                 />
 
+                {/* Recent Subjects + Pending Comments now share the same
+                    widget-grid so Pending Comments sits beside Recent
+                    Subjects (replacing the removed Upcoming Visits slot).
+                    widget-grid is already auto-fit responsive, so the
+                    pair collapses to a single column on narrow viewports. */}
                 <div className="widget-grid">
-                  <RecentSubjectsWidget subjects={filteredRecentSubjects} />
-
-                  <UpcomingVisitsWidget
-                    visits={filteredUpcomingVisits}
-                    emptyMessage="No upcoming visits scheduled"
+                  <RecentSubjectsWidget
+                    subjects={filteredRecentSubjects}
+                    studyId={id}
                   />
-                </div>
 
-                <div className="widget-grid">
                   <PendingCommentsWidget
                     comments={filteredPendingComments}
                     total={studyOpenComments.length}
                   />
-                  <QuickActionsWidget
-                    study={currentStudy}
-                    studyCode={id}
-                    onAddSubject={() => {
-                      setActiveTab("Subjects");
-                      navigate(
-                        `/study-dashboard/${encodeURIComponent(id)}?tab=Subjects`
-                      );
-                    }}
-                  />
                 </div>
+
+                <StudyMilestoneTimeline
+                  studyCode={id}
+                  milestones={overview.milestones}
+                  canEdit={canEditStudy}
+                  onUpdated={() => setStudyRefreshKey((value) => value + 1)}
+                />
 
                 <div className="study-dashboard-alerts">
                   <AlertsPanel alerts={filteredAlerts} />

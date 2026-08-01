@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import DataTable from "../../../components/dashboard/shared/DataTable";
@@ -29,6 +28,7 @@ function StudyComments() {
   // ===== NEW: Search + Filter state =====
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [commentText, setCommentText] = useState("");
 
   // ===== Canonical pipeline =====
   // authorized → study filter → search/filter → table

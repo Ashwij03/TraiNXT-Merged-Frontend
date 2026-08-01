@@ -4,7 +4,8 @@
 import "./dashboard.css";
 
 function RecentSubjectsWidget({
-  subjects = []
+  subjects = [],
+  studyId
 }) {
 
   return (
@@ -61,7 +62,12 @@ function RecentSubjectsWidget({
 
                   <td>
                     {
-                      subject.studyCode
+                      studyId
+                        ?? subject.studyId
+                        ?? subject.studyCode
+                        ?? subject.study?.studyId
+                        ?? subject.study?.code
+                        ?? "—"
                     }
                   </td>
 
