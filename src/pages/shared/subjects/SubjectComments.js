@@ -73,7 +73,7 @@ function SubjectComments({
   const [deleteTarget, setDeleteTarget] = useState(null);
   // Phase-6 Subject Comments Pagination.
   // Bumped whenever we want the shared DataTable to reset to page 1
-  // without changing what data it holds. Driven by:
+  // without changing what data it holds. Driven  by:
   //   • subject switch (subjectId change) — Behaviour: "Reset to Page 1
   //     when Subject changes"
   //   • successful Add Comment — Behaviour: "Reset to Page 1 after

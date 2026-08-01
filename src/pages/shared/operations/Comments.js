@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
 import {
@@ -33,6 +33,11 @@ export default function CommentsPage({ embedded = false }) {
   // UI state
   const [filter, setFilter] = useState("unresolved");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [commentText, setCommentText] = useState("");
 
   // Compute study-scoped, visible comments from canonical source
   const comments = useMemo(() => {
@@ -187,6 +192,7 @@ export default function CommentsPage({ embedded = false }) {
         <button type="button" onClick={() => setFilter("all")}>
           All
         </button>
+      </div>
       {/* ===== SEARCH + FILTER ===== */}
       <div
         style={{
