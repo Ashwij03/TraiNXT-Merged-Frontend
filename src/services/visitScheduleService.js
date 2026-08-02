@@ -1,13 +1,8 @@
-
 import { readJson } from "../utils/storageHelpers";
 // Dynamic visit schedules from subject data, folder workflows, and header filters.
 
 import { getStudies } from "./studyService";
-import {
-  filterBySite,
-  getCurrentUser,
-  isAdmin
-} from "./roleService";
+import { getCurrentUser } from "./roleService";
 import { getFilterState } from "./filterService";
 import ROLES from "../constants/roles";
 import {
@@ -320,8 +315,7 @@ function filterCalendarSchedules(schedules) {
       return false;
     }
 
-    // Exclude only Enrollment visits
-    return String(item.visit || "") !== "Enrollment";
+    return isCalendarScheduleEntry(item);
   });
 }
 

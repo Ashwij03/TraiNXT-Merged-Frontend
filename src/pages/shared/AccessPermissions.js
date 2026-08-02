@@ -205,14 +205,10 @@ function AccessPermissions() {
 
   return (
     <DashboardLayout>
-      <div className="admin-page">
-        <div className="admin-page-header">
-          <div>
-            <h1>Access Permission</h1>
-            <p>
-              Review signup approvals and manage access permission requests
-            </p>
-          </div>
+      <div className="access-permissions-page tnxt-compact">
+        <div className="access-permissions-header">
+          <h1>Access Permission</h1>
+          <p>Review signup approvals and manage access permission requests</p>
         </div>
 
         <div className="access-permissions-tabs">
@@ -252,6 +248,7 @@ function AccessPermissions() {
 
         {activeTab === "signup" ? (
           <DataTable
+            className="ctms-standard-table"
             title="Pending Signup Approvals"
             columns={signupColumns}
             data={signupData}
@@ -260,6 +257,7 @@ function AccessPermissions() {
           />
         ) : activeTab === "pending" ? (
           <DataTable
+            className="ctms-standard-table"
             title="Pending Requests"
             columns={pendingColumns}
             data={pendingData}
@@ -268,6 +266,7 @@ function AccessPermissions() {
           />
         ) : (
           <DataTable
+            className="ctms-standard-table"
             title="Request History"
             columns={historyColumns}
             data={historyData}

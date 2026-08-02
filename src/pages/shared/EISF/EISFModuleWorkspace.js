@@ -302,10 +302,6 @@ export default function EISFModuleWorkspace({
       return;
     }
 
-    const documentName = (updatedDocument.documentName || "")
-      .trim()
-      .toLowerCase();
-
     const version = String(updatedDocument.version || "").trim();
 
     const duplicate = documents.some((doc) => {

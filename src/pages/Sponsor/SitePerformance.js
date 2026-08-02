@@ -8,7 +8,7 @@ import EnterpriseModal from './EnterpriseModal';
 import { FiHome, FiUsers, FiTrendingUp, FiBarChart2 } from 'react-icons/fi';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { getSites, getSiteKPIs } from './data/sponsorDataStore';
-import { resolveSiteDisplay, formatSiteOption } from '../../utils/siteDisplay';
+import { resolveSiteDisplay, formatSiteOption, MISSING_SITE_DISPLAY } from '../../utils/siteDisplay';
 
 const SitePerformance = () => {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ const SitePerformance = () => {
 
   return (
     <AppLayout>
-      <div className="site-performance-page">
+      <div className="site-performance-page tnxt-compact">
         <div className="sponsor-page-header">
           <h1>Site Performance</h1>
           <p>Track enrollment and performance metrics across clinical sites.</p>
@@ -103,7 +103,7 @@ const SitePerformance = () => {
       </div>
 
       {viewSite && (
-        <EnterpriseModal title={formatSiteOption(viewSite) || viewSite.name} onClose={() => setViewSite(null)}>
+        <EnterpriseModal title={formatSiteOption(viewSite) || MISSING_SITE_DISPLAY} onClose={() => setViewSite(null)}>
           <p><strong>Site ID:</strong> {viewSite.id}</p>
           <p><strong>Study:</strong> {viewSite.study}</p>
           <p><strong>Enrollment:</strong> {viewSite.enrolled} / {viewSite.target}</p>

@@ -174,7 +174,7 @@ function ClinicalSitesDashboard({ study }) {
   );
 
   return (
-    <div className="clinical-sites-page">
+    <div className="clinical-sites-page tnxt-compact">
       <h2>Clinical Sites</h2>
 
       <div className="studies-kpi-grid">
@@ -298,9 +298,9 @@ function ClinicalSitesDashboard({ study }) {
                 <tr key={site.id}>
                   <td>{site.siteNumber || site.id}</td>
 
-                  <td>{site.siteName || site.name}</td>
+                  <td>{resolveSiteDisplay(site)}</td>
 
-                  {/* <td>{resolveSiteDisplay(site)}</td> */}
+                  
 
                   <td>{site.country || "—"}</td>
 

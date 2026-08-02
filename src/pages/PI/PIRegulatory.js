@@ -87,7 +87,7 @@ function PIRegulatory({ selectedStudy: studyProp }) {
   ];
 
   return (
-    <div className="pi-page-content">
+    <div className="pi-page-content tnxt-compact">
       <div className="dashboard-header">
         <div>
           <h2>Regulatory Management</h2>
@@ -127,7 +127,7 @@ function PIRegulatory({ selectedStudy: studyProp }) {
           <button type="button" className="view-all-btn" onClick={() => setStatusFilter("All")}>View All</button>
         </div>
         <div className="pi-table-responsive">
-          <table className="pi-table">
+          <table className="pi-table ctms-standard-table">
             <thead>
               <tr>
                 <th>Document</th>
@@ -181,7 +181,7 @@ function PIRegulatory({ selectedStudy: studyProp }) {
           <h2>Regulatory Submissions</h2>
         </div>
         <div className="pi-table-responsive">
-          <table className="pi-table">
+          <table className="pi-table ctms-standard-table">
             <thead>
               <tr>
                 <th>Title</th>

@@ -21,10 +21,11 @@ function Files() {
   return (
 
     <AppLayout>
+      <div className="sponsor-files-page tnxt-compact">
 
       <h1>Study Documents</h1>
 
-      <table className="subjects-table">
+      <table className="subjects-table ctms-standard-table">
 
         <thead>
 
@@ -52,6 +53,7 @@ function Files() {
 
       </table>
 
+          </div>
     </AppLayout>
 
   );

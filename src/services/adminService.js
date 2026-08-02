@@ -1013,6 +1013,7 @@ import {
   getCurrentUser,
   isAdmin
 } from "./roleService";
+import { getSiteNumberDirectory } from "./filterService";
 import {
   getFilteredSchedules,
   getMergedSchedules,
@@ -1188,23 +1189,6 @@ export function rejectSignupRequest(email) {
 
   writeJson("users", nextUsers);
   return updatedUser;
-}
-
-// UPDATED: generic filter by an arbitrary site/institution name, used by the
-// Admin header's Institution filter to scope dashboard data on demand.
-function filterByExactSite(items, siteField, siteName) {
-  if (!Array.isArray(items) || !siteName) {
-    return items;
-  }
-
-  return items.filter((item) => {
-    const value = item[siteField] || item.siteName || item.site || item.location || item.assignedSite || "";
-    return (
-      value === siteName ||
-      String(value).includes(siteName) ||
-      siteName.includes(String(value))
-    );
-  });
 }
 
 // UPDATED: Sites are no longer read from a phantom "sites" storage key that
@@ -1687,7 +1671,18 @@ export function getComplianceScore() {
   return `${score}%`;
 }
 
-export function getAdminDashboardData(siteFilter = "") {
+export function getAdminDashboardData(filters = "") {
+  // Backward/forward compatible: accept either a plain institution-name
+  // string (legacy call shape) or a filters object covering every header
+  // dropdown that applies to this page (institution, indication, siteNumber,
+  // studyCode).
+  const {
+    institution = "",
+    indication = "",
+    siteNumber = "",
+    studyCode = ""
+  } = typeof filters === "string" ? { institution: filters } : filters || {};
+
   initializeAdminData();
 
   const allUsers = getUsers();
@@ -1696,31 +1691,83 @@ export function getAdminDashboardData(siteFilter = "") {
   const allComments = getComments();
   const allSchedules = getSchedules();
 
-  const users = siteFilter
-    ? filterByExactSite(allUsers, "assignedSite", siteFilter)
-    : allUsers;
+  // The "Site Number" dropdown identifies a site by its number/id rather
+  // than its display name, but every other record in this file (users,
+  // studies, comments, schedules) is only ever tagged with the site's
+  // *name*. Resolve the chosen site number back to that name so it can
+  // feed into the same name-based filtering everything else already uses.
+  const siteNumberInstitution = siteNumber
+    ? getSiteNumberDirectory().find(
+        (entry) => String(entry.number) === String(siteNumber)
+      )?.name || ""
+    : "";
 
-  const studies = siteFilter
-    ? filterByExactSite(allStudies, "site", siteFilter)
-    : allStudies;
+  const effectiveInstitution = institution || siteNumberInstitution;
 
-  const sites = siteFilter
-    ? allSites.filter(
-        (site) =>
-          site.name === siteFilter ||
-          site.id === siteFilter ||
-          site.name?.includes(siteFilter) ||
-          siteFilter.includes(site.name || "")
-      )
-    : allSites;
+  // Indication and Study Number narrow things down at the *study* level
+  // first. Whatever site(s) the matching studies run at then become the
+  // effective site filter for users/sites/comments/schedules, the same way
+  // an explicit Institution selection already does.
+  let indicationSites = null;
 
-  const comments = siteFilter
-    ? filterByExactSite(allComments, "site", siteFilter)
-    : allComments;
+  if (indication || studyCode) {
+    const matchingStudies = allStudies.filter((study) => {
+      const matchesIndication =
+        !indication || (study.indication || "General") === indication;
+      const matchesStudyCode =
+        !studyCode || String(study.code) === String(studyCode);
+      return matchesIndication && matchesStudyCode;
+    });
 
-  const schedules = siteFilter
-    ? filterByExactSite(allSchedules, "site", siteFilter)
-    : allSchedules;
+    indicationSites = new Set(
+      matchingStudies.map((study) => study.site).filter(Boolean)
+    );
+  }
+
+  const matchesEffectiveInstitution = (value) =>
+    !effectiveInstitution ||
+    value === effectiveInstitution ||
+    String(value).includes(effectiveInstitution) ||
+    effectiveInstitution.includes(String(value || ""));
+
+  const matchesIndicationSites = (value) =>
+    !indicationSites ||
+    [...indicationSites].some(
+      (siteName) =>
+        value === siteName ||
+        String(value).includes(siteName) ||
+        siteName.includes(String(value || ""))
+    );
+
+  const passesSiteFilters = (value) =>
+    matchesEffectiveInstitution(value) && matchesIndicationSites(value);
+
+  const users = allUsers.filter((user) => passesSiteFilters(user.assignedSite));
+
+  const studies = allStudies.filter((study) => {
+    const matchesIndication =
+      !indication || (study.indication || "General") === indication;
+    const matchesStudyCode =
+      !studyCode || String(study.code) === String(studyCode);
+
+    return (
+      matchesIndication &&
+      matchesStudyCode &&
+      passesSiteFilters(study.site)
+    );
+  });
+
+  const sites = allSites.filter((site) =>
+    passesSiteFilters(site.name || site.id)
+  );
+
+  const comments = allComments.filter((comment) =>
+    passesSiteFilters(comment.site)
+  );
+
+  const schedules = allSchedules.filter((schedule) =>
+    passesSiteFilters(schedule.site)
+  );
 
   const pendingUsers = users.filter(
     (user) => user.approvalStatus === "Pending"

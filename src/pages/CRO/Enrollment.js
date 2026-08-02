@@ -58,7 +58,7 @@ function Enrollment() {
   );
 
   return (
-    <div className="dashboard-layout">
+    <div className="dashboard-layout tnxt-compact">
       <CROSidebar />
       <div className="main-content">
         <CRONavbar />
@@ -108,7 +108,7 @@ function Enrollment() {
           {filteredEnrollments.length === 0 ? (
             <p>No data available yet</p>
           ) : (
-            <table width="100%" cellPadding="10">
+            <table className="ctms-standard-table" width="100%" cellPadding="10">
               <thead>
                 <tr>
                   <th>Subject ID</th>

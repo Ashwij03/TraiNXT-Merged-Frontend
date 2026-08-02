@@ -31,7 +31,6 @@ export default function CommentsPage({ embedded = false }) {
   } = useComments();
 
   // UI state
-  const [filter, setFilter] = useState("unresolved");
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -141,7 +140,7 @@ export default function CommentsPage({ embedded = false }) {
   };
 
   const content = (
-    <div className="module-card" style={{ padding: "20px" }}>
+    <div className="operations-comments-page tnxt-compact" style={{ padding: "20px" }}>
       <h2 style={{ marginBottom: "20px" }}>
         Comments — {studyCode || "Study"}
       </h2>
@@ -183,13 +182,13 @@ export default function CommentsPage({ embedded = false }) {
       )}
 
       <div style={{ marginBottom: "20px", marginTop: "10px" }}>
-        <button type="button" onClick={() => setFilter("unresolved")}>
+        <button type="button" onClick={() => setStatusFilter("unresolved")}>
           Unresolved Comments
         </button>
-        <button type="button" onClick={() => setFilter("resolved")}>
+        <button type="button" onClick={() => setStatusFilter("resolved")}>
           Resolved Comments
         </button>
-        <button type="button" onClick={() => setFilter("all")}>
+        <button type="button" onClick={() => setStatusFilter("all")}>
           All
         </button>
       </div>

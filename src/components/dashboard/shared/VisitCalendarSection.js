@@ -163,6 +163,9 @@ function VisitCalendarSection({
             columns={UPCOMING_COLUMNS}
             data={upcomingRows}
             emptyMessage={tableEmptyMessage}
+            pagination
+            initialPageSize={5}
+            pageSizeOptions={[5, 10, 20, 50]}
           />
         </div>
       </div>

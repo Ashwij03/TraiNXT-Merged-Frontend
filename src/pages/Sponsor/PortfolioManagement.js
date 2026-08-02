@@ -99,7 +99,7 @@ const PortfolioManagement = () => {
 
   return (
     <AppLayout>
-      <div className="page-container">
+      <div className="page-container tnxt-compact">
         <div className="sponsor-page-header">
           <h1>Portfolio Management</h1>
           <p>Overview of your clinical trial portfolio and study pipeline.</p>
@@ -168,7 +168,7 @@ const PortfolioManagement = () => {
         </div>
 
         <div className="sponsor-table-wrap">
-          <table className="sponsor-table portfolio-table">
+          <table className="sponsor-table portfolio-table ctms-standard-table">
             <thead>
               <tr>
                 <th>Study ID</th>

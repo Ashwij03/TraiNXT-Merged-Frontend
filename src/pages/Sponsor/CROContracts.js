@@ -9,7 +9,7 @@ const CROContracts = () => {
   return (
     <AppLayout>
 
-      <div style={{ padding: "24px" }}>
+      <div style={{ padding: "24px" }} className="cro-contracts-page tnxt-compact">
 
         <button
           onClick={() => navigate(-1)}
@@ -28,7 +28,7 @@ const CROContracts = () => {
 
         <h1>CRO Contracts</h1>
 
-        <table className="cro-table">
+        <table className="cro-table ctms-standard-table">
 
           <thead>
             <tr>

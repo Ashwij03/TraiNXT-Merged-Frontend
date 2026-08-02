@@ -9,7 +9,7 @@ const SiteRanking = () => {
   return (
     <AppLayout>
 
-      <div style={{ padding: "24px" }}>
+      <div style={{ padding: "24px" }} className="site-ranking-page tnxt-compact">
 
         <button
           onClick={() => navigate(-1)}

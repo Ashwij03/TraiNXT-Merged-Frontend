@@ -52,7 +52,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
   const bump = () => setVersion((v) => v + 1);
 
   return (
-    <div className="study-planning-page">
+    <div className="study-planning-page tnxt-compact">
       <div className="study-planning-header">
         <div>
           <h2>Planning</h2>
@@ -102,7 +102,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
         {milestones.length === 0 ? (
           <p className="planning-empty">No planning milestones yet</p>
         ) : (
-          <table className="planning-table">
+          <table className="planning-table ctms-standard-table">
             <thead>
               <tr>
                 <th>Title</th>
@@ -175,7 +175,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
         {tasks.length === 0 ? (
           <p className="planning-empty">No tasks yet</p>
         ) : (
-          <table className="planning-table">
+          <table className="planning-table ctms-standard-table">
             <thead>
   <tr>
     <th>Task ID</th>
@@ -240,7 +240,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
         {team.length === 0 ? (
           <p className="planning-empty">No team members added yet</p>
         ) : (
-          <table className="planning-table">
+          <table className="planning-table ctms-standard-table">
             <thead>
               <tr>
                 <th>Name</th>

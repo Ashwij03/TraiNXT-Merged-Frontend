@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import AppLayout from "./AppLayout";
 import "./Visits.css";
 import { useNavigate } from "react-router-dom";
+import DataTable from "../../components/dashboard/shared/DataTable";
 import { resolveSiteDisplay } from "../../utils/siteDisplay";
 import { getStudies } from "../../services/studyService";
 import useVisitSchedules from "../../hooks/useVisitSchedules";
@@ -11,9 +12,13 @@ import {
 } from "../../services/visitScheduleService";
 import { formatScheduleDisplayDate } from "../../utils/formatScheduleDisplayDate";
 
+// Full, top-level "Visit Tracking" business table for the Sponsor role
+// (route /visits). Same shape of gap as CROMonitoring.js had: a full,
+// unbounded business table that was rendering every row with no pagination.
+// This now goes through the shared DataTable (search -> filter -> pagination)
+// per the Upcoming Visits Pagination requirement, matching the CRO page.
 function Visits() {
   const navigate = useNavigate();
-  const [inputValue, setInputValue] = useState("");
   const { schedules, upcomingWindow } = useVisitSchedules({ daysAhead: 365 });
   const siteSources = useMemo(() => getStudies(), []);
 
@@ -52,15 +57,57 @@ function Visits() {
     Boolean(schedule.deviation)
   ).length;
 
-  const filteredVisits = visits.filter((item) =>
-    String(item.visitId || "")
-      .toLowerCase()
-      .includes(inputValue.toLowerCase())
+  const columns = useMemo(
+    () => [
+      { key: "visitId", label: "Visit ID" },
+      { key: "studyId", label: "Study" },
+      { key: "subject", label: "Subject" },
+      {
+        key: "site",
+        label: "Site",
+        render: (value) => displaySite(value)
+      },
+      { key: "visit", label: "Visit Type" },
+      {
+        key: "scheduledDate",
+        label: "Scheduled Date",
+        render: (value) => formatScheduleDisplayDate(value)
+      },
+      {
+        key: "actualDate",
+        label: "Actual Date",
+        render: (value) => (value ? formatScheduleDisplayDate(value) : "-")
+      },
+      {
+        key: "status",
+        label: "Status",
+        render: (value) => (
+          <span className={`status-badge ${value}`}>{value}</span>
+        )
+      },
+      { key: "deviation", label: "Deviation" },
+      {
+        key: "action",
+        label: "Action",
+        render: (_value, row) => (
+          <button
+            className="view-btn"
+            onClick={() =>
+              navigate(`/visit-details/${encodeURIComponent(row.visitId)}`)
+            }
+          >
+            View
+          </button>
+        )
+      }
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [siteSources]
   );
 
   return (
     <AppLayout>
-      <div className="visits-page">
+      <div className="visits-page tnxt-compact">
         <h1>Visit Tracking</h1>
 
         <div className="visit-summary">
@@ -85,75 +132,18 @@ function Visits() {
           </div>
         </div>
 
-        <div className="visits-filters">
-          <input
-            type="text"
-            placeholder="Search Visit ID..."
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-          />
-        </div>
-
-        <div className="visits-table-card">
-          <table className="subjects-table">
-            <thead>
-              <tr>
-                <th>Visit ID</th>
-                <th>Study</th>
-                <th>Subject</th>
-                <th>Site</th>
-                <th>Visit Type</th>
-                <th>Scheduled Date</th>
-                <th>Actual Date</th>
-                <th>Status</th>
-                <th>Deviation</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {filteredVisits.length === 0 ? (
-                <tr>
-                  <td colSpan="10">No visits found.</td>
-                </tr>
-              ) : (
-                filteredVisits.map((item) => (
-                  <tr key={item.visitId}>
-                    <td>{item.visitId}</td>
-                    <td>{item.studyId}</td>
-                    <td>{item.subject}</td>
-                    <td>{displaySite(item.site)}</td>
-                    <td>{item.visit}</td>
-                    <td>{formatScheduleDisplayDate(item.scheduledDate)}</td>
-                    <td>
-                      {item.actualDate
-                        ? formatScheduleDisplayDate(item.actualDate)
-                        : "-"}
-                    </td>
-                    <td>
-                      <span className={`status-badge ${item.status}`}>
-                        {item.status}
-                      </span>
-                    </td>
-                    <td>{item.deviation}</td>
-                    <td>
-                      <button
-                        className="view-btn"
-                        onClick={() =>
-                          navigate(
-                            `/visit-details/${encodeURIComponent(item.visitId)}`
-                          )
-                        }
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          title="Visit Tracking"
+          columns={columns}
+          data={visits}
+          emptyMessage="No visits found."
+          searchable
+          searchPlaceholder="Search Visit ID..."
+          searchFields={["visitId"]}
+          pagination
+          initialPageSize={10}
+          pageSizeOptions={[5, 10, 20, 50]}
+        />
       </div>
     </AppLayout>
   );

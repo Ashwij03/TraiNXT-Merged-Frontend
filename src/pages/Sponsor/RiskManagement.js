@@ -43,7 +43,7 @@ const RiskManagement = () => {
 
   return (
     <AppLayout>
-      <div className="risk-page">
+      <div className="risk-page tnxt-compact">
         <div className="sponsor-page-header">
           <h1>Risk Management</h1>
           <p>Identify, track, and mitigate clinical trial risks.</p>
@@ -101,7 +101,7 @@ const RiskManagement = () => {
 
         <div className="sponsor-table-wrap">
           <h2>Risk Overview</h2>
-          <table className="sponsor-table risk-table">
+          <table className="sponsor-table risk-table ctms-standard-table">
             <thead>
               <tr>
                 <th>Risk ID</th>

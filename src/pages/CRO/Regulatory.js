@@ -24,11 +24,11 @@ function Regulatory() {
   ];
 
   return (
-    <div style={{ padding: "30px" }}>
+    <div style={{ padding: "30px" }} className="regulatory-documents-page tnxt-compact">
 
       <h1>Regulatory Documents</h1>
 
-      <table>
+      <table className="ctms-standard-table">
         <thead>
           <tr>
             <th>Document Name</th>

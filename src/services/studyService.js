@@ -14,16 +14,7 @@ import {
   getRecentActivityLogs as getCanonicalRecentActivityLogs
 } from "./auditService";
 
-import {
-    canEditStudyContent,
-    saveStudyTeamMember,
-    deleteStudyTeamMember,
-    saveRegulatoryChecklistItem,
-    deleteRegulatoryChecklistItem
-} from "./planningService";
-
 const STUDIES_STORAGE_KEY = "trianxtStudies";
-const AUDIT_LOG_KEY = "auditLogs";
 const SUBJECTS_STORAGE_KEY = "subjectsByStudy";
 
 function getStoredStudies() {

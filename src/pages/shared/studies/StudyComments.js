@@ -39,8 +39,34 @@ function StudyComments() {
       )
       .filter(
         (comment) => !studyCode || String(comment.study) === String(studyCode),
-      )
-      .map((comment) => ({
+      );
+
+    if (statusFilter !== "All") {
+      result = result.filter((comment) => comment.status === statusFilter);
+    }
+
+    const query = searchTerm.trim().toLowerCase();
+
+    if (query) {
+      result = result.filter((comment) => {
+        const searchableText = [
+          comment.id,
+          comment.study,
+          comment.subjectId,
+          comment.createdBy,
+          comment.description,
+          comment.status,
+          comment.createdAt,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return searchableText.includes(query);
+      });
+    }
+
+    return result.map((comment) => ({
         id: `C-${String(comment.id).slice(-6)}`,
         studyId: comment.study || studyCode || "—",
         subjectDocument: comment.documentDeleted
@@ -74,7 +100,7 @@ function StudyComments() {
           ) : (
             "—"
           ),
-      }));
+    }));
   }, [
     liveComments,
     studyCode,
@@ -82,6 +108,8 @@ function StudyComments() {
     currentUser,
     resolveComment,
     reopenComment,
+    statusFilter,
+    searchTerm,
   ]);
 
   const handleAddComment = () => {
@@ -146,6 +174,41 @@ function StudyComments() {
           onClose={() => setShowAddModal(false)}
         />
       )}
+
+      {/* ===== Search + Filter ===== */}
+      <div
+        style={{
+          display: "flex",
+          gap: "12px",
+          flexWrap: "wrap",
+          marginBottom: "20px",
+        }}
+      >
+        <input
+          type="text"
+          placeholder="Search comments, subjects, users..."
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+          style={{
+            flex: "1 1 320px",
+            minWidth: "260px",
+            padding: "10px 12px",
+          }}
+        />
+
+        <select
+          value={statusFilter}
+          onChange={(event) => setStatusFilter(event.target.value)}
+          style={{
+            minWidth: "180px",
+            padding: "10px 12px",
+          }}
+        >
+          <option value="All">All Comments</option>
+          <option value="Open">Open / Unresolved</option>
+          <option value="Resolved">Resolved</option>
+        </select>
+      </div>
 
       <div
         style={{

@@ -20,7 +20,10 @@ function getAlertMeta(type) {
 }
 
 function AlertsPanel({ title = "Alerts", alerts = [] }) {
-  const safeAlerts = Array.isArray(alerts) ? alerts : [];
+  const safeAlerts = useMemo(
+    () => (Array.isArray(alerts) ? alerts : []),
+    [alerts],
+  );
 
   const summary = useMemo(() => {
     return safeAlerts.reduce(

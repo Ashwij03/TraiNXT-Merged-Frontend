@@ -64,7 +64,7 @@ const Enrollment = () => {
 
     <AppLayout>
 
-      <div className="enrollment-page">
+      <div className="enrollment-page tnxt-compact">
 
         <h1>Enrollment</h1>
 		<div className="enrollment-summary">
@@ -91,7 +91,7 @@ const Enrollment = () => {
 
 		</div>
 
-        <table className="enrollment-table">
+        <table className="enrollment-table ctms-standard-table">
 
           <thead>
 

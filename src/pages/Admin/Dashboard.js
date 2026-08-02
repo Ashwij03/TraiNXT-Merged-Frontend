@@ -16,8 +16,12 @@ import {
 } from "../../services/adminService";
 import { useComments } from "../../comments/CommentsContext";
 import {
+  HEADER_FILTERS_EVENT,
   INSTITUTION_FILTER_EVENT,
-  getStoredInstitutionFilter
+  getStoredIndicationFilter,
+  getStoredInstitutionFilter,
+  getStoredSiteNumberFilter,
+  getStoredStudyFilter
 } from "../../constants/headerFilters";
 
 import "./Dashboard.css";
@@ -35,10 +39,42 @@ function AdminDashboard() {
   const [institutionFilter, setInstitutionFilter] = useState(
     getStoredInstitutionFilter()
   );
-  const [dashboardData, setDashboardData] = useState(() =>
-    getAdminDashboardData(getStoredInstitutionFilter())
+  const [indicationFilter, setIndicationFilter] = useState(
+    getStoredIndicationFilter()
+  );
+  const [siteNumberFilter, setSiteNumberFilter] = useState(
+    getStoredSiteNumberFilter()
+  );
+  const [studyCodeFilter, setStudyCodeFilter] = useState(
+    getStoredStudyFilter()
   );
 
+  // Every header dropdown that scopes this page's data, bundled together so
+  // a single object always reflects what's currently selected.
+  const activeFilters = useMemo(
+    () => ({
+      institution: institutionFilter,
+      indication: indicationFilter,
+      siteNumber: siteNumberFilter,
+      studyCode: studyCodeFilter
+    }),
+    [institutionFilter, indicationFilter, siteNumberFilter, studyCodeFilter]
+  );
+
+  const [dashboardData, setDashboardData] = useState(() =>
+    getAdminDashboardData({
+      institution: getStoredInstitutionFilter(),
+      indication: getStoredIndicationFilter(),
+      siteNumber: getStoredSiteNumberFilter(),
+      studyCode: getStoredStudyFilter()
+    })
+  );
+
+  // The Institution dropdown gets its own dedicated event (kept for
+  // backward compatibility with other pages that only care about that one
+  // filter), while Indication, Site Number, and Study Number all fire the
+  // shared HEADER_FILTERS_EVENT. Listening to both keeps every dropdown in
+  // this page's filter order in sync with the dashboard's data.
   useEffect(() => {
     const handleFilterChange = (event) => {
       setInstitutionFilter(event?.detail || getStoredInstitutionFilter());
@@ -55,12 +91,29 @@ function AdminDashboard() {
   }, []);
 
   useEffect(() => {
-    setDashboardData(getAdminDashboardData(institutionFilter));
-  }, [institutionFilter]);
+    const handleHeaderFiltersChange = () => {
+      setIndicationFilter(getStoredIndicationFilter());
+      setSiteNumberFilter(getStoredSiteNumberFilter());
+      setStudyCodeFilter(getStoredStudyFilter());
+    };
+
+    window.addEventListener(HEADER_FILTERS_EVENT, handleHeaderFiltersChange);
+
+    return () => {
+      window.removeEventListener(
+        HEADER_FILTERS_EVENT,
+        handleHeaderFiltersChange
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    setDashboardData(getAdminDashboardData(activeFilters));
+  }, [activeFilters]);
 
   useEffect(() => {
     const refreshDashboard = () => {
-      setDashboardData(getAdminDashboardData(institutionFilter));
+      setDashboardData(getAdminDashboardData(activeFilters));
     };
 
     window.addEventListener("studies-updated", refreshDashboard);
@@ -68,7 +121,7 @@ function AdminDashboard() {
     return () => {
       window.removeEventListener("studies-updated", refreshDashboard);
     };
-  }, [institutionFilter]);
+  }, [activeFilters]);
 
   const navigate = useNavigate();
 
@@ -81,15 +134,37 @@ function AdminDashboard() {
     complianceScore
   } = dashboardData;
 
+  // Sites touched by whichever studies match the current Indication/Study
+  // Number filters, so subject analytics narrows down the same way the KPI
+  // cards above it do, not just by Institution.
+  const filteredStudySites = useMemo(() => {
+    if (!indicationFilter && !studyCodeFilter) {
+      return null;
+    }
+
+    return new Set(studies.map((study) => study.site).filter(Boolean));
+  }, [indicationFilter, studyCodeFilter, studies]);
+
   const analyticsSubjects = useMemo(() => {
-    return getSubjectsForAnalytics().filter(
-      (subject) =>
+    return getSubjectsForAnalytics().filter((subject) => {
+      const matchesInstitution =
         !institutionFilter ||
         subject.site === institutionFilter ||
         subject.site?.includes(institutionFilter) ||
-        institutionFilter.includes(subject.site || "")
-    );
-  }, [institutionFilter]);
+        institutionFilter.includes(subject.site || "");
+
+      const matchesIndicationSites =
+        !filteredStudySites ||
+        [...filteredStudySites].some(
+          (siteName) =>
+            subject.site === siteName ||
+            subject.site?.includes(siteName) ||
+            siteName.includes(subject.site || "")
+        );
+
+      return matchesInstitution && matchesIndicationSites;
+    });
+  }, [institutionFilter, filteredStudySites]);
 
   const portfolioStudies = useMemo(() => getStudies(), []);
 
@@ -161,7 +236,10 @@ function AdminDashboard() {
           />
         </div>
 
-        <VisitCalendarSection institutionFilter={institutionFilter} />
+        <VisitCalendarSection
+          institutionFilter={institutionFilter}
+          studyCode={studyCodeFilter}
+        />
 
         <SubjectAnalyticsSection
           subjects={analyticsSubjects}

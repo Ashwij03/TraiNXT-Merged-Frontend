@@ -131,8 +131,8 @@ function CRORegulatoryDocuments() {
         {filteredDocuments.length === 0 ? (
           <EmptyState title="No data available yet" />
         ) : (
-          <div className="table-scroll-wrap">
-            <table className="cro-table">
+          <div className="table-scroll-wrap tnxt-compact">
+            <table className="cro-table ctms-standard-table">
               <thead>
                 <tr>
                   <th>Document ID</th>

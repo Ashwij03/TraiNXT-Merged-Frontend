@@ -93,7 +93,7 @@ const TrainingLog = ({ records = [] }) => {
   );
 
   return (
-    <div className="training-container">
+    <div className="training-container tnxt-compact">
       <h2 className="delegation-title">C. Training Log</h2>
 
       {/* Same canonical DataTable pipeline that Delegation Log uses:

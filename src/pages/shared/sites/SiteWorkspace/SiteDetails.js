@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import AppLayout from "./AppLayout";
 import "./SiteDetails.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getStudyByCode } from "../../../../services/studyService";

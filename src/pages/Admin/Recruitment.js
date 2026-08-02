@@ -26,7 +26,7 @@ function Recruitment() {
 
   return (
     <DashboardLayout>
-      <div className="admin-page">
+      <div className="admin-page tnxt-compact">
         <div className="admin-page-title">
           <h1>Recruitment</h1>
           <p>Screening funnel and conversion metrics by source</p>
@@ -59,6 +59,7 @@ function Recruitment() {
 
         <div className="admin-table-section">
           <DataTable
+            className="ctms-standard-table"
             title="Recruitment Sources"
             columns={[
               { key: "source", label: "Source" },

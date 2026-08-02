@@ -16,7 +16,7 @@ function Regulatory() {
 
   return (
     <DashboardLayout>
-      <div className="admin-page">
+      <div className="admin-page tnxt-compact">
         <div className="admin-page-title">
           <h1>Regulatory</h1>
           <p>Site-level regulatory document compliance overview</p>
@@ -56,6 +56,7 @@ function Regulatory() {
 
         <div className="admin-table-section">
           <DataTable
+            className="ctms-standard-table"
             title="Regulatory Documents"
             columns={[
               { key: "id", label: "ID" },

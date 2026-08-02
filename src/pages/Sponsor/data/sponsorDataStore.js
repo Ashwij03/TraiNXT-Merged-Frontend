@@ -14,6 +14,15 @@ import {
 
 import { getStudies } from "../../../services/studyService";
 
+// Item 8 (Stage 5A) statuses that represent an ongoing/active study:
+// Startup, Recruitment Phase, and Conduct Phase. Kept in sync with the
+// same list used on the Admin Dashboard (ONGOING_STUDY_STATUSES).
+const ACTIVE_STUDY_STATUSES = [
+  "Startup",
+  "Recruitment Phase",
+  "Conduct Phase",
+];
+
 const STORAGE_PREFIX = "sponsor_data_";
 const SETTINGS_KEY = "sponsor_settings";
 const SUBSCRIPTION_KEY = "sponsor_subscription";
@@ -523,7 +532,7 @@ export function getQuickActions() {
       icon: "study",
       color: "#2563eb",
       bg: "#eff6ff",
-      route: "/portfolio",
+      route: "/studies",
     },
     {
       id: "QA-002",
@@ -676,7 +685,7 @@ export function getDashboardKPIs() {
   const notifications = getNotifications();
 
   const activeStudies = portfolio.filter((study) =>
-    ["Active", "Recruiting"].includes(study.status),
+    ACTIVE_STUDY_STATUSES.includes(study.status),
   ).length;
 
   const totalEnrolled = portfolio.reduce(

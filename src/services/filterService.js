@@ -52,7 +52,7 @@ function getBaseStudies(user = getCurrentUser()) {
   return studies;
 }
 
-function filterStudies(studies, filters) {
+function filterStudies(studies, filters, user = getCurrentUser()) {
   let result = studies;
 
   if (filters.indication) {
@@ -69,13 +69,20 @@ function filterStudies(studies, filters) {
     result = result.filter((study) => study.cro === filters.cro);
   }
 
-  if (filters.institution) {
+  // Site Name and Site Number both describe the same institution, so
+  // whichever one was actually selected should narrow the studies. If only
+  // a Site Number was picked, resolve it back to its institution name via
+  // the shared directory before filtering.
+  const effectiveInstitution =
+    filters.institution || getInstitutionForSiteNumber(filters.siteNumber, user);
+
+  if (effectiveInstitution) {
     result = result.filter((study) => {
       const site = study.site || study.location || "";
       return (
-        site === filters.institution ||
-        site.includes(filters.institution) ||
-        filters.institution.includes(site)
+        site === effectiveInstitution ||
+        site.includes(effectiveInstitution) ||
+        effectiveInstitution.includes(site)
       );
     });
   }
@@ -87,6 +94,38 @@ function filterStudies(studies, filters) {
   }
 
   return result;
+}
+
+// Resolves the institution name paired with a given Site Number, and vice
+// versa, using the same stable directory getSiteNumberOptions/
+// getInstitutionOptions are built from. This is what lets selecting either
+// field in the header filter show the correct value in the other.
+export function getInstitutionForSiteNumber(siteNumber, user = getCurrentUser()) {
+  if (!siteNumber) {
+    return "";
+  }
+
+  const entry = getSiteNumberDirectory(user).find(
+    (candidate) => String(candidate.number) === String(siteNumber)
+  );
+
+  return entry ? entry.name : "";
+}
+
+export function getSiteNumberForInstitution(institution, user = getCurrentUser()) {
+  if (!institution) {
+    return "";
+  }
+
+  const directory = getSiteNumberDirectory(user);
+  const entry =
+    directory.find((candidate) => candidate.name === institution) ||
+    directory.find(
+      (candidate) =>
+        candidate.name.includes(institution) || institution.includes(candidate.name)
+    );
+
+  return entry ? entry.number : "";
 }
 
 export function getFilterState() {
@@ -164,11 +203,18 @@ export function getRecruitedCROOptions(user = getCurrentUser()) {
 
 export function getInstitutionOptions(user = getCurrentUser()) {
   const filters = getFilterState();
-  const studies = filterStudies(getBaseStudies(user), filters);
+  const studies = filterStudies(getBaseStudies(user), filters, user);
   const studySites = [...new Set(studies.map((study) => study.site).filter(Boolean))];
   const accessibleSites = getAccessibleSites(user).map((site) => site.name);
 
-  const merged = [...new Set([...studySites, ...accessibleSites])].sort((a, b) =>
+  let merged = [...new Set([...studySites, ...accessibleSites])];
+
+  if (filters.siteNumber) {
+    const matchedName = getInstitutionForSiteNumber(filters.siteNumber, user);
+    merged = matchedName ? merged.filter((name) => name === matchedName) : [];
+  }
+
+  merged = merged.sort((a, b) =>
     a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })
   );
 
@@ -178,28 +224,68 @@ export function getInstitutionOptions(user = getCurrentUser()) {
   ];
 }
 
+// Institutions in this app aren't backed by a real "sites" table that a Site
+// Number is ever entered into — institution names only ever come from what's
+// typed on a Study's Site/Hospital field or a user's Organization Type. This
+// builds the Site Number <-> Site Name pairing everywhere else in the app
+// already assumes exists, deriving one stable "SITE-00N" per distinct
+// institution name (alphabetical order keeps the numbering the same across
+// renders/sessions) while still honoring a real siteNumber if one was ever
+// entered directly on a study.
+export function getSiteNumberDirectory(user = getCurrentUser()) {
+  const studies = getBaseStudies(user);
+  const accessibleSites = getAccessibleSites(user);
+
+  const studySiteNames = studies.map((study) => study.site).filter(Boolean);
+  const accessibleSiteNames = accessibleSites
+    .map((site) => site.name)
+    .filter(Boolean);
+
+  const siteNames = [
+    ...new Set([...studySiteNames, ...accessibleSiteNames])
+  ].sort((a, b) =>
+    a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })
+  );
+
+  return siteNames.map((name, index) => {
+    const matchedStudy = studies.find(
+      (study) => study.site === name && (study.siteNumber || study.siteNo)
+    );
+    const matchedAccessibleSite = accessibleSites.find(
+      (site) => site.name === name && (site.siteNumber || site.id)
+    );
+
+    const number =
+      matchedStudy?.siteNumber ||
+      matchedStudy?.siteNo ||
+      matchedAccessibleSite?.siteNumber ||
+      matchedAccessibleSite?.id ||
+      `SITE-${String(index + 1).padStart(3, "0")}`;
+
+    return { number: String(number), name };
+  });
+}
+
 export function getSiteNumberOptions(user = getCurrentUser()) {
   const filters = getFilterState();
-  const sites = getAccessibleSites(user);
 
-  const filteredSites = filters.institution
-    ? sites.filter(
-        (site) =>
-          site.name === filters.institution ||
-          site.name?.includes(filters.institution) ||
-          filters.institution?.includes(site.name)
-      )
-    : sites;
+  const directory = getSiteNumberDirectory(user).filter(
+    (entry) =>
+      !filters.institution ||
+      entry.name === filters.institution ||
+      entry.name?.includes(filters.institution) ||
+      filters.institution?.includes(entry.name)
+  );
 
   return [
     { value: "", label: "All Site Numbers" },
-    ...filteredSites
-      .map((site) => ({
-        value: site.siteNumber || site.id,
-        label: site.siteNumber || site.id
+    ...directory
+      .map((entry) => ({
+        value: entry.number,
+        label: entry.number
       }))
       .sort((a, b) =>
-        String(a.label).localeCompare(String(b.label), undefined, {
+        String(a.value).localeCompare(String(b.value), undefined, {
           numeric: true,
           sensitivity: "base"
         })
@@ -211,17 +297,21 @@ export function getStudyOptions(user = getCurrentUser()) {
   const filters = getFilterState();
 
   // Study options are only meaningful once the list has been narrowed down
-  // by Indication or Institution — otherwise every study across every site
-  // would show up at once. Require one of those two filters first.
-  if (!filters.indication && !filters.institution) {
+  // by Indication or Institution (Site Name/Site Number) — otherwise every
+  // study across every site would show up at once. Require one of those
+  // filters first.
+  const effectiveInstitution =
+    filters.institution || getInstitutionForSiteNumber(filters.siteNumber, user);
+
+  if (!filters.indication && !effectiveInstitution) {
     return [];
   }
 
-  let studies = filterStudies(getBaseStudies(user), filters);
+  let studies = filterStudies(getBaseStudies(user), filters, user);
 
-  if (filters.institution && isAdmin(user)) {
-    studies = getStudiesForSite(filters.institution).map(normalizeStudy);
-    studies = filterStudies(studies, { ...filters, institution: "" });
+  if (effectiveInstitution && isAdmin(user)) {
+    studies = getStudiesForSite(effectiveInstitution).map(normalizeStudy);
+    studies = filterStudies(studies, { ...filters, institution: "" }, user);
   }
 
   return studies
@@ -242,13 +332,17 @@ export function getSubjectOptions(user = getCurrentUser()) {
 
   // Same rule as studies: don't surface subjects from every study across
   // every site until the list has been narrowed by Indication or
-  // Institution (a specific Study selection also narrows things further
-  // down below, but that itself requires reaching this point first).
-  if (!filters.indication && !filters.institution) {
+  // Institution (Site Name/Site Number) — a specific Study selection also
+  // narrows things further down below, but that itself requires reaching
+  // this point first.
+  const effectiveInstitution =
+    filters.institution || getInstitutionForSiteNumber(filters.siteNumber, user);
+
+  if (!filters.indication && !effectiveInstitution) {
     return [];
   }
 
-  const studies = filterStudies(getBaseStudies(user), filters);
+  const studies = filterStudies(getBaseStudies(user), filters, user);
   const studyCodes = new Set(studies.map((study) => String(study.code)));
   const subjectsByStudy = readSubjectsByStudy();
 
@@ -283,6 +377,7 @@ export function getDefaultInstitution(user = getCurrentUser()) {
 export function getFilteredStudies(user = getCurrentUser()) {
     return filterStudies(
         getBaseStudies(user),
-        getFilterState()
+        getFilterState(),
+        user
     );
 }

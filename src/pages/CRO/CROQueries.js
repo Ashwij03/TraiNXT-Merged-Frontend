@@ -4,7 +4,7 @@ import CRONavbar from "./CRONavbar";
 
 function Queries() {
   return (
-    <div className="dashboard-layout">
+    <div className="dashboard-layout tnxt-compact">
 
       <CROSidebar />
 
@@ -54,7 +54,7 @@ function Queries() {
               }}
             />
 
-            <table
+            <table className="ctms-standard-table"
               style={{
                 width: "100%",
                 borderCollapse: "collapse"

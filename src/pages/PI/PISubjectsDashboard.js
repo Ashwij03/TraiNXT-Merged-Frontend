@@ -243,7 +243,7 @@ function PISubjectsDashboard({ onProfileClick }) {
   const [selectedSubject, setSelectedSubject] = useState(null);
 
   return (
-    <div className="subjects-dashboard">
+    <div className="subjects-dashboard tnxt-compact">
       <div className="subjects-header">
         <div>
           <h2>Subjects</h2>
@@ -311,7 +311,7 @@ function PISubjectsDashboard({ onProfileClick }) {
       </div>
 
       <div className="subjects-table-card">
-        <table className="subjects-table">
+        <table className="subjects-table ctms-standard-table">
           <thead>
             <tr>
               <th>Subject ID</th>

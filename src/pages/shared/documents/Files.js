@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 	  const navigate = useNavigate(); // ✅ CORRECT PLACE
 
 	  return (
-	    <div className="files-box">
+	    <div className="files-box tnxt-compact">
       <h3>Files</h3>
 
       {/* TOP */}
@@ -38,7 +38,7 @@ import { useNavigate } from "react-router-dom";
       </div>
 
       {/* TABLE */}
-      <table className="files-table">
+      <table className="files-table ctms-standard-table">
         <thead>
           <tr>
             <th>File Name</th>

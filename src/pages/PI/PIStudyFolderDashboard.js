@@ -2,7 +2,7 @@ import React from "react";
 
 function StudyFolderDashboard() {
   return (
-    <div className="pi-page-content">
+    <div className="pi-page-content tnxt-compact">
       <h1>Study Folder</h1>
 
       <div className="cards-container">
@@ -32,7 +32,7 @@ function StudyFolderDashboard() {
       <div className="table-container">
         <h2>Study Documents</h2>
 
-        <table>
+        <table className="ctms-standard-table">
           <thead>
             <tr>
               <th>Document</th>

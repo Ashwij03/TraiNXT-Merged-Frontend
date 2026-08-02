@@ -1,4 +1,3 @@
-
 // newly added
 
 import React from "react";
@@ -16,7 +15,7 @@ function QuickActions({
 
   return (
 
-    <div className="quick-actions-card">
+    <div className="quick-actions-card tnxt-shared-quick-actions">
 
       <div className="quick-actions-header">
 

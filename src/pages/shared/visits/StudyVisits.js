@@ -6,7 +6,7 @@ function StudyVisits({ setActiveTab }) {
   const { schedules } = useVisitSchedules();
 
   return (
-    <div className="visits-page">
+    <div className="visits-page tnxt-compact">
       <button className="back-btn" onClick={() => setActiveTab("Overview")}>
         ← Back
       </button>
@@ -14,7 +14,7 @@ function StudyVisits({ setActiveTab }) {
       <h2>Visits Management</h2>
 
       <div className="visit-table-wrapper">
-        <table className="visit-table">
+        <table className="visit-table ctms-standard-table">
           <thead>
             <tr>
               <th>Visit ID</th>

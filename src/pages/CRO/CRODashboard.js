@@ -103,7 +103,7 @@ function CRODashboard() {
 
   return (
     <CROLayout>
-      <div className="cro-dashboard">
+      <div className="cro-dashboard tnxt-compact">
         <div className="cro-header">
 
            <div className="dashboard-header">
@@ -188,7 +188,7 @@ function CRODashboard() {
                   <EmptyState title="No Sites Found" />
                 ) : (
                   <div className="cro-table-wrap">
-                    <table>
+                    <table className="ctms-standard-table">
                       <thead>
                         <tr>
                           <th>Site</th>
@@ -239,7 +239,7 @@ function CRODashboard() {
                   <EmptyState title="No Visits Found" />
                 ) : (
                   <div className="cro-table-wrap">
-                    <table>
+                    <table className="ctms-standard-table">
                       <thead>
                         <tr>
                           <th>Visit ID</th>
@@ -282,7 +282,7 @@ function CRODashboard() {
                     <EmptyState title="No Activities" />
                   ) : (
                     <div className="cro-table-wrap">
-                      <table>
+                      <table className="ctms-standard-table">
                         <thead>
                           <tr>
                             <th>Site</th>
@@ -316,7 +316,7 @@ function CRODashboard() {
                     <EmptyState title="No Comments Found" />
                   ) : (
                     <div className="cro-table-wrap">
-                      <table>
+                      <table className="ctms-standard-table">
                         <thead>
                           <tr>
                             <th>Subject</th>

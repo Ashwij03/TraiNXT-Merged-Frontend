@@ -122,7 +122,7 @@ function SitePerformanceSummary({ records }) {
         <p className="study-widget-empty">No site performance data for this study</p>
       ) : (
         <div className="study-table-wrap">
-          <table>
+          <table className="ctms-standard-table">
             <thead>
               <tr>
                 {columns.map((column) => (

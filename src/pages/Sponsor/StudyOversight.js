@@ -61,7 +61,7 @@ const StudyOversight = () => {
 
   return (
     <AppLayout>
-      <div className="page-container">
+      <div className="page-container tnxt-compact">
         <div className="sponsor-page-header">
           <h1>Study Oversight</h1>
           <p>Monitor study progress, milestones, and enrollment targets.</p>
@@ -148,7 +148,7 @@ const StudyOversight = () => {
         </div>
 
         <div className="sponsor-table-wrap">
-          <table className="sponsor-table oversight-table">
+          <table className="sponsor-table oversight-table ctms-standard-table">
             <thead>
               <tr>
                 <th>Study ID</th>

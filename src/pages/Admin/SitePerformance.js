@@ -67,40 +67,34 @@ function SitePerformance() {
 
   return (
     <DashboardLayout>
-      <div className="admin-page">
-        {/* ===== PAGE HEADER ===== */}
-        <div className="page-header">
-          <div>
-            <h1>Site Performance</h1>
-            <p>
-              Enrollment, compliance, and operational metrics by
-              site
-            </p>
-          </div>
+      <div className="admin-page tnxt-compact">
+        <div className="admin-page-title">
+          <h1>Site Performance</h1>
+          <p>Enrollment, compliance, and operational metrics by site</p>
         </div>
 
         {/* ===== SEARCH + FILTERS ===== */}
-       <div className="site-performance-filters">
-  <input
-    type="text"
-    className="site-performance-search"
-    placeholder="Search site, number, enrollment, compliance..."
-    value={searchTerm}
-    onChange={(event) => setSearchTerm(event.target.value)}
-  />
+        <div className="site-performance-filters">
+          <input
+            type="text"
+            className="site-performance-search"
+            placeholder="Search site, number, enrollment, compliance..."
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+          />
 
-  <select
-    className="site-performance-select"
-    value={siteFilter}
-    onChange={(event) => setSiteFilter(event.target.value)}
-  >
-    {siteOptions.map((site) => (
-      <option key={site} value={site}>
-        {site}
-      </option>
-    ))}
-  </select>
-</div>
+          <select
+            className="site-performance-select"
+            value={siteFilter}
+            onChange={(event) => setSiteFilter(event.target.value)}
+          >
+            {siteOptions.map((site) => (
+              <option key={site} value={site}>
+                {site}
+              </option>
+            ))}
+          </select>
+        </div>
 
         {/* ===== CHART ===== */}
         <DashboardCard title="Enrollment by Site">
@@ -110,6 +104,7 @@ function SitePerformance() {
         {/* ===== PERFORMANCE TABLE ===== */}
         <div className="admin-table-section">
           <DataTable
+            className="ctms-standard-table"
             title="Performance Metrics"
             columns={[
               {

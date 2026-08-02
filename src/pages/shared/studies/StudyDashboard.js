@@ -18,6 +18,7 @@ import StudyProgressSummary from "../../../components/studies/StudyProgressSumma
 import StudyMilestoneTimeline from "../../../components/studies/StudyMilestoneTimeline";
 import SiteActivationStatus from "../../../components/studies/SiteActivationStatus";
 import StudyHealthSummary from "../../../components/studies/StudyHealthSummary";
+import StudyModal from "../../../components/studies/StudyModal";
 import useStudyOverview from "../../../hooks/useStudyOverview";
 import StudyFinancials from "../../Sponsor/Financials/StudyFinancials";
 import AlertsPanel from "../../../components/dashboard/shared/AlertsPanel";
@@ -474,6 +475,7 @@ useEffect(() => {
       indication: currentStudy.indication || "",
       location: currentStudy.location || currentStudy.site || "",
       site: currentStudy.site || currentStudy.location || "",
+      siteNumber: currentStudy.siteNumber || "",
       country: currentStudy.country || "",
       enrolled: currentStudy.enrolled ?? "",
       targetSubjects: currentStudy.targetSubjects ?? "",
@@ -546,7 +548,7 @@ window.dispatchEvent(new Event("studies-updated"));
         <div className="dashboard-loading">Loading Dashboard...</div>
       ) : (
         <>
-          <div className="study-dashboard-page">
+          <div className="study-dashboard-page tnxt-compact">
             <div className="study-dashboard-topbar">
               <button
                 type="button"
@@ -579,6 +581,12 @@ window.dispatchEvent(new Event("studies-updated"));
                     <span className="study-quick-detail-label">Indication</span>
                     <span className="study-quick-detail-value">
                       {currentStudy?.indication || "-"}
+                    </span>
+                  </span>
+                  <span className="study-quick-detail">
+                    <span className="study-quick-detail-label">Site No</span>
+                    <span className="study-quick-detail-value">
+                      {currentStudy?.siteNumber || currentStudy?.location || "-"}
                     </span>
                   </span>
                   <span className="study-quick-detail">
@@ -804,193 +812,177 @@ window.dispatchEvent(new Event("studies-updated"));
           </div>
 
           {showEditModal && (
-            <div className="study-modal-overlay">
-              <form className="study-modal" onSubmit={handleSaveStudyEdit}>
-                <div className="study-modal-header">
-                  <div>
-                    <h2>Edit Study</h2>
-                    <p>Update all study details and save changes.</p>
-                  </div>
+            <StudyModal
+              mode="edit"
+              onClose={() => setShowEditModal(false)}
+              onSubmit={handleSaveStudyEdit}
+            >
+              <div className="study-form-grid">
+                <label>
+                  Study ID
+                  <input name="code" value={editForm.code || ""} readOnly />
+                </label>
 
-                  <button
-                    type="button"
-                    onClick={() => setShowEditModal(false)}
-                    aria-label="Close edit study modal"
-                  >
-                    ×
-                  </button>
-                </div>
-
-                <div className="study-form-grid">
-                  <label>
-                    Study ID
-                    <input name="code" value={editForm.code || ""} readOnly />
-                  </label>
-
-                  <label>
-                    Study Name
-                    <input
-                      name="name"
-                      value={editForm.name || ""}
-                      onChange={handleEditFormChange}
-                      required
-                    />
-                  </label>
-
-                  <label>
-                    Protocol
-                    <input
-                      name="protocol"
-                      value={editForm.protocol || ""}
-                      onChange={handleEditFormChange}
-                    />
-                  </label>
-
-                  <label>
-                    Indication
-                    <input
-                      name="indication"
-                      value={editForm.indication || ""}
-                      onChange={handleEditFormChange}
-                    />
-                  </label>
-
-                  <label>
-                    Site / Hospital
+                <label>
+                  Study Name
                   <input
-  name="site"
-  value={editForm.site || ""}
-  onChange={handleEditFormChange}
-  required
-/>
-                  </label>
+                    name="name"
+                    value={editForm.name || ""}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </label>
 
-                  <label>
-                    Country
-                    <input
-                      name="country"
-                      value={editForm.country || ""}
-                      onChange={handleEditFormChange}
-                      required
-                    />
-                  </label>
+                <label>
+                  Protocol
+                  <input
+                    name="protocol"
+                    value={editForm.protocol || ""}
+                    onChange={handleEditFormChange}
+                  />
+                </label>
 
-                  <label>
-                    Subjects Enrolled
-                    <input
-                      name="enrolled"
-                      type="number"
-                      min="0"
-                      value={editForm.enrolled ?? ""}
-                      onChange={handleEditFormChange}
-                      required
-                    />
-                  </label>
+                <label>
+                  Indication
+                  <input
+                    name="indication"
+                    value={editForm.indication || ""}
+                    onChange={handleEditFormChange}
+                  />
+                </label>
 
-                  <label>
-                    Target Subjects
-                    <input
-                      name="targetSubjects"
-                      type="number"
-                      min="0"
-                      value={editForm.targetSubjects ?? ""}
-                      onChange={handleEditFormChange}
-                      required
-                    />
-                  </label>
+                <label>
+                  Site Number
+                  <input
+                    name="siteNumber"
+                    value={editForm.siteNumber || ""}
+                    onChange={handleEditFormChange}
+                    required
+                    placeholder="Example: 001"
+                  />
+                </label>
 
-                  <label>
-                    Study Status
-                    <select
-                      name="status"
-                      value={editForm.status || STUDY_STATUS_DEFAULT}
-                      onChange={handleEditFormChange}
-                      required
-                    >
-                      {STUDY_STATUS_OPTIONS.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                <label>
+                  Site / Hospital
+                  <input
+                    name="location"
+                    value={editForm.location || ""}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </label>
 
-                  <label>
-                    Principal Investigator
-                    <input
-                      name="principalInvestigator"
-                      value={editForm.principalInvestigator || ""}
-                      onChange={handleEditFormChange}
-                      required
-                    />
-                  </label>
+                <label>
+                  Country
+                  <input
+                    name="country"
+                    value={editForm.country || ""}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </label>
 
-                  <label>
-                    Sponsor
-                    <input
-                      name="sponsor"
-                      value={editForm.sponsor || ""}
-                      onChange={handleEditFormChange}
-                      required
-                    />
-                  </label>
+                <label>
+                  Subjects Enrolled
+                  <input
+                    name="enrolled"
+                    type="number"
+                    min="0"
+                    value={editForm.enrolled ?? ""}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </label>
 
-                  <label>
-                    CRO
-                    <input
-                      name="cro"
-                      value={editForm.cro || ""}
-                      onChange={handleEditFormChange}
-                    />
-                  </label>
+                <label>
+                  Target Subjects
+                  <input
+                    name="targetSubjects"
+                    type="number"
+                    min="0"
+                    value={editForm.targetSubjects ?? ""}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </label>
 
-                  <label>
-                    Start Date
-                    <input
-                      name="startDate"
-                      type="date"
-                      value={editForm.startDate || ""}
-                      onChange={handleEditFormChange}
-                      required
-                    />
-                  </label>
-
-                  <label>
-                    Completed Date
-                    <input
-                      name="completedDate"
-                      type="date"
-                      value={editForm.completedDate || ""}
-                      onChange={handleEditFormChange}
-                    />
-                  </label>
-
-                  <label className="study-form-wide">
-                    Study Description
-                    <textarea
-                      name="description"
-                      value={editForm.description || ""}
-                      onChange={handleEditFormChange}
-                      rows="3"
-                    />
-                  </label>
-                </div>
-
-                <div className="study-modal-actions">
-                  <button
-                    type="button"
-                    className="secondary-btn"
-                    onClick={() => setShowEditModal(false)}
+                <label>
+                  Study Status
+                  <select
+                    name="status"
+                    value={editForm.status || STUDY_STATUS_DEFAULT}
+                    onChange={handleEditFormChange}
+                    required
                   >
-                    Cancel
-                  </button>
+                    {STUDY_STATUS_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
-                  <button type="submit" className="add-study-btn">
-                    Save Changes
-                  </button>
-                </div>
-              </form>
-            </div>
+                <label>
+                  Principal Investigator
+                  <input
+                    name="principalInvestigator"
+                    value={editForm.principalInvestigator || ""}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </label>
+
+                <label>
+                  Sponsor
+                  <input
+                    name="sponsor"
+                    value={editForm.sponsor || ""}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </label>
+
+                <label>
+                  CRO
+                  <input
+                    name="cro"
+                    value={editForm.cro || ""}
+                    onChange={handleEditFormChange}
+                  />
+                </label>
+
+                <label>
+                  Start Date
+                  <input
+                    name="startDate"
+                    type="date"
+                    value={editForm.startDate || ""}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </label>
+
+                <label>
+                  Completed Date
+                  <input
+                    name="completedDate"
+                    type="date"
+                    value={editForm.completedDate || ""}
+                    onChange={handleEditFormChange}
+                  />
+                </label>
+
+                <label className="study-form-wide">
+                  Study Description
+                  <textarea
+                    name="description"
+                    value={editForm.description || ""}
+                    onChange={handleEditFormChange}
+                    rows="3"
+                  />
+                </label>
+              </div>
+            </StudyModal>
           )}
 
           {showDeleteModal && currentStudy && (

@@ -5,6 +5,7 @@ import useVisitSchedules from "../../../hooks/useVisitSchedules";
 import RequestPermissionButton from "../../../components/common/RequestPermissionButton";
 import useCanEditStudyContent from "../../../hooks/useCanEditStudyContent";
 import { formatScheduleDisplayDate } from "../../../utils/formatScheduleDisplayDate";
+import { compareScheduleDates } from "../../../services/visitScheduleService";
 import {
   saveVisitPlan,
   deleteVisitPlan,
@@ -31,7 +32,7 @@ function StudyVisitPlan() {
   const { plans, getPlanDetails, refresh } = useVisitPlans(studyCode);
   const { schedules, upcomingWindow } = useVisitSchedules({ studyCode });
   const upcomingVisits = useMemo(() => {
-    return upcomingWindow.slice(0, 5);
+    return [...upcomingWindow].sort(compareScheduleDates);
   }, [upcomingWindow]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -121,7 +122,7 @@ function StudyVisitPlan() {
   };
 
   return (
-    <div className="study-visit-plan-page">
+    <div className="study-visit-plan-page tnxt-compact">
       <div className="visit-plan-toolbar">
         <div>
           <h2>Visit Plan</h2>

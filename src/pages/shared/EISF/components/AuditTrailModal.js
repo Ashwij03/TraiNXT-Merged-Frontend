@@ -27,14 +27,14 @@ export default function AuditTrailModal({
   const auditTrail = getAuditTrail(document);
 
   return (
-    <div className="audit-overlay">
+    <div className="audit-overlay tnxt-compact">
       <div className="audit-modal">
         <div className="audit-header">
           <h3>Audit Trail</h3>
           <button type="button" onClick={onClose}>✕</button>
         </div>
 
-        <table className="audit-table">
+        <table className="audit-table ctms-standard-table">
           <thead>
             <tr>
               <th>Date</th>

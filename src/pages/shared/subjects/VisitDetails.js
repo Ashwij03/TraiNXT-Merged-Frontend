@@ -17,7 +17,7 @@ function VisitDetails({ setActiveTab }) {
 
   return (
 
-    <div className="visit-details-page">
+    <div className="visit-details-page tnxt-compact">
 
       <div className="visit-header">
 
@@ -189,7 +189,7 @@ function VisitDetails({ setActiveTab }) {
               Procedures
             </h2>
 
-            <table>
+            <table className="ctms-standard-table">
 
               <thead>
                 <tr>

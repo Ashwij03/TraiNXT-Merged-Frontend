@@ -22,7 +22,7 @@ function UpcomingMonitoringVisits() {
       : "—";
 
   return (
-    <div className="upcoming-visits-widget">
+    <div className="upcoming-visits-widget tnxt-compact">
       <div className="upcoming-visits-header">
         <h2>Upcoming Monitoring Visits</h2>
         <button
@@ -41,7 +41,7 @@ function UpcomingMonitoringVisits() {
         />
       ) : (
         <div className="upcoming-visits-table-wrap">
-          <table className="upcoming-visits-table">
+          <table className="upcoming-visits-table ctms-standard-table">
             <thead>
               <tr>
                 <th>Visit ID</th>

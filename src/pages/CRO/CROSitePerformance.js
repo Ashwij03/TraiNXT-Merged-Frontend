@@ -97,8 +97,8 @@ function CROSitePerformance() {
         {filteredSites.length === 0 ? (
           <EmptyState title="No Sites Found" />
         ) : (
-          <div className="cro-table-wrap">
-            <table className="cro-data-table">
+          <div className="cro-table-wrap tnxt-compact">
+            <table className="cro-data-table ctms-standard-table">
               <thead>
                 <tr>
                   <th>Site</th>

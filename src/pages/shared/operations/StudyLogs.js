@@ -4,7 +4,7 @@ import DashboardLayout from "../../../components/dashboard/shared/DashboardLayou
 export default function StudyLogs() {
   return (
     <DashboardLayout>
-    <div className="logs-page">
+    <div className="logs-page tnxt-compact">
 
       <h2>Subject Logs</h2>
 
@@ -54,7 +54,7 @@ export default function StudyLogs() {
 
       </div>
 
-      <table>
+      <table className="ctms-standard-table">
 
         <thead>
           <tr>

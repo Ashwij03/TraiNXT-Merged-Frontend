@@ -941,7 +941,7 @@ const handleDeleteSubjectCost = (id) => {
   };
 
   return (
-    <div className="financial-page">
+    <div className="financial-page tnxt-compact">
       <div className="financial-header">
         <div>
           <h2>Study Financials</h2>
@@ -1292,7 +1292,7 @@ Subject Costs
       </section>
 
       <div className="budget-table">
-        <table>
+        <table className="ctms-standard-table">
           <thead>
   <tr>
     <th onClick={() => handleSort("name")}>
@@ -1463,7 +1463,7 @@ Subject Costs
 
 <h3>Investigator Grants</h3>
 
-<table>
+<table className="ctms-standard-table">
 
 <thead>
 <tr>
@@ -1491,7 +1491,7 @@ Subject Costs
 
   <h3>Site Management</h3>
 
-  <table>
+  <table className="ctms-standard-table">
     <thead>
       <tr>
         <th>Site</th>
@@ -1532,7 +1532,7 @@ Subject Costs
 
     <h3>Subject Costs</h3>
 
-    <table>
+    <table className="ctms-standard-table">
       <thead>
         <tr>
           <th>Subject</th>
@@ -1593,7 +1593,7 @@ Subject Costs
       <section className="payment-table">
         <h3>Study Payments</h3>
 
-        <table>
+        <table className="ctms-standard-table">
           <thead>
             <tr>
               <th>Milestone</th>
@@ -1654,7 +1654,7 @@ Subject Costs
       <section className="financial-receivable-table">
         <h3>Study Receivables</h3>
 
-        <table>
+        <table className="ctms-standard-table">
           <thead>
             <tr>
               <th>Payer</th>
@@ -1719,7 +1719,7 @@ Subject Costs
       <section className="financial-receivable-table">
         <h3>Study Invoices</h3>
 
-        <table>
+        <table className="ctms-standard-table">
           <thead>
             <tr>
               <th>Invoice No</th>

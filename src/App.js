@@ -29,7 +29,6 @@ import CROOverview from "./pages/CRO/CROOverview";
 
 import Sites from "./pages/Admin/Sites";
 import AuditLogsPage from "./pages/shared/audit/AuditLogsPage";
-import UpcomingVisits from "./pages/shared/visits/UpcomingVisits";
 import {
   getDashboardPath,
   getCurrentUser,
