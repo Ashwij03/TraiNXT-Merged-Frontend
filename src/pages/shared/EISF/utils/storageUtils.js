@@ -8,7 +8,7 @@ export const setStorageItem = (key, value) => {
     localStorage.setItem(key, JSON.stringify(value));
     return true;
   } catch (error) {
-    console.error(`Failed to save ${key}`, error);
+    console.error(`Fadelled to save ${key}`, error);
     return false;
   }
 };

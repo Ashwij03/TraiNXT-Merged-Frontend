@@ -14,7 +14,16 @@ import {
   getRecentActivityLogs as getCanonicalRecentActivityLogs
 } from "./auditService";
 
+import {
+    canEditStudyContent,
+    saveStudyTeamMember,
+    deleteStudyTeamMember,
+    saveRegulatoryChecklistItem,
+    deleteRegulatoryChecklistItem
+} from "./planningService";
+
 const STUDIES_STORAGE_KEY = "trianxtStudies";
+const AUDIT_LOG_KEY = "auditLogs";
 const SUBJECTS_STORAGE_KEY = "subjectsByStudy";
 
 function getStoredStudies() {
@@ -338,7 +347,6 @@ function readSubjectsByStudy() {
     return {};
   }
 }
-
 function saveSubjectsByStudy(subjectsByStudy) {
   if (typeof window === "undefined") {
     return;
@@ -493,15 +501,6 @@ export function isStudyCompletedByCode(studyCode) {
   return Boolean(study && study.status === STUDY_STATUS_COMPLETED);
 }
 
-// CANONICAL AUDIT ARCHITECTURE (Batch A): studyService no longer owns a
-// private "auditLogs" store. Persistence, normalization, and the
-// activity-log-updated sync event now live in the single canonical
-// src/services/auditService.js. These two functions are kept here, with
-// their exact original signatures, purely so every existing caller across
-// the app (dashboardService.js, adminService.js, StudyActivity.js,
-// SubjectVisits.js, VisitDetails.js, PIStudySubjectsProfile.js, and the
-// direct localStorage["auditLogs"] read in SubjectAuditTrail.js) keeps
-// working unchanged while recording through the one canonical service.
 export function addAuditLog(action, details) {
   return recordCanonicalAuditLog(action, details);
 }

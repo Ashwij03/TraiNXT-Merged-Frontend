@@ -9,6 +9,7 @@ import {
 } from "../../../services/roleService";
 import { canAddStudy } from "../../../utils/contentAccess";
 import { readStorage } from "../../../utils/storageHelpers";
+import ROLES from "../../../constants/roles";
 import {
   STUDY_STATUS_OPTIONS,
   STUDY_STATUS_DEFAULT,

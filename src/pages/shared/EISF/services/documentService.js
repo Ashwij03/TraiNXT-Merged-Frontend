@@ -89,6 +89,43 @@ export function buildAuditTrail(document = {}, action = "Updated", remarks = "Do
     },
   ];
 }
+export function isDuplicateVersion(
+  documents = [],
+  candidate = {},
+  studyCode = "",
+  moduleId = "",
+  sectionId = ""
+) {
+  const name = (
+    candidate.documentName ||
+    candidate.name ||
+    ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const version = String(candidate.version || "").trim();
+
+  return documents.some((doc) => {
+    if (candidate.id && doc.id === candidate.id) {
+      return false;
+    }
+
+    return (
+      (doc.studyCode || "") === studyCode &&
+      (doc.moduleId || "") === moduleId &&
+      (doc.section || doc.sectionId || "") === sectionId &&
+(
+        doc.documentName ||
+        doc.name ||
+        ""
+      )
+        .trim()
+        .toLowerCase() === name &&
+      String(doc.version || "").trim() === version
+    );
+  });
+}
 
 export function getModuleMockDocuments(moduleConfig = {}, initialDocuments = null) {
   const sections = Array.isArray(moduleConfig.sections) ? moduleConfig.sections : [];
@@ -166,7 +203,7 @@ export function initializeModuleDocuments(moduleConfig, studyCode, initialDocume
   return readStoredModuleDocuments(moduleConfig, studyCode, seedDocuments);
 }
 
-export function createUploadedDocument(formData = {}, section = {}, moduleConfig = {}, user = DEFAULT_USER) {
+export function createUploadedDocument(formData = {}, section = {}, moduleConfig = {}, studyCode = "", user = DEFAULT_USER) {
   const documentName = formData.documentName || formData.file?.name || "Uploaded Document";
   const category = formData.category || section.title || moduleConfig.title;
   const now = formatDate();
@@ -201,22 +238,55 @@ export function createUploadedDocument(formData = {}, section = {}, moduleConfig
 
   return {
     ...document,
+
+    // Business scope
+    studyCode,
+    moduleId: moduleConfig.id,
+    moduleTitle: moduleConfig.title,
+    section: section.id,
+    sectionId: section.id,
+
     history: buildVersionHistory(document),
     versions: buildVersionHistory(document),
-    auditTrail: buildAuditTrail(document, "Uploaded", formData.comments || "Document uploaded."),
+    auditTrail: buildAuditTrail(
+      document,
+      "Uploaded",
+      formData.comments || "Document uploaded."
+    ),
   };
 }
 
-export function updateDocumentRecord(originalDocument = {}, updatedDocument = {}, user = DEFAULT_USER) {
+export function updateDocumentRecord(
+  originalDocument = {},
+  updatedDocument = {},
+  user = DEFAULT_USER
+) {
   const modifiedDate = formatDate();
+
   const document = {
     ...originalDocument,
     ...updatedDocument,
-    name: updatedDocument.documentName || updatedDocument.name || originalDocument.name,
-    documentType: updatedDocument.documentType || updatedDocument.category || originalDocument.documentType,
-    category: updatedDocument.category || updatedDocument.documentType || originalDocument.category,
+    name:
+      updatedDocument.documentName ||
+      updatedDocument.name ||
+      originalDocument.name,
+
+    documentType:
+      updatedDocument.documentType ||
+      updatedDocument.category ||
+      originalDocument.documentType,
+
+    category:
+      updatedDocument.category ||
+      updatedDocument.documentType ||
+      originalDocument.category,
+
     modifiedDate,
-    uploadedBy: updatedDocument.uploadedBy || originalDocument.uploadedBy || user,
+
+    uploadedBy:
+      updatedDocument.uploadedBy ||
+      originalDocument.uploadedBy ||
+      user,
   };
 
   const versionEntry = {
@@ -225,6 +295,41 @@ export function updateDocumentRecord(originalDocument = {}, updatedDocument = {}
     user,
     status: document.status,
   };
+
+  const existingHistory =
+    originalDocument.history ||
+    originalDocument.versions ||
+    [];
+
+  let history = [...existingHistory];
+
+  const existingIndex = history.findIndex(
+    (entry) =>
+      String(entry.version || "").trim() ===
+      String(versionEntry.version || "").trim()
+  );
+
+  if (existingIndex !== -1) {
+    history[existingIndex] = {
+      ...history[existingIndex],
+      date: modifiedDate,
+      user,
+      status: document.status,
+    };
+  } else {
+    history.unshift(versionEntry);
+  }
+
+  history.sort((a, b) => {
+    const va = parseFloat(a.version || 0);
+    const vb = parseFloat(b.version || 0);
+
+    if (!Number.isNaN(va) && !Number.isNaN(vb)) {
+      return vb - va;
+    }
+
+    return String(b.version).localeCompare(String(a.version));
+  });
 
   const auditEntry = {
     date: modifiedDate,
@@ -235,9 +340,12 @@ export function updateDocumentRecord(originalDocument = {}, updatedDocument = {}
 
   return {
     ...document,
-    history: [versionEntry, ...(originalDocument.history || originalDocument.versions || [])],
-    versions: [versionEntry, ...(originalDocument.versions || originalDocument.history || [])],
-    auditTrail: [auditEntry, ...(originalDocument.auditTrail || [])],
+    history,
+    versions: history,
+    auditTrail: [
+      auditEntry,
+      ...(originalDocument.auditTrail || []),
+    ],
   };
 }
 
