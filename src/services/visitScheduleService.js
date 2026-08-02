@@ -1,13 +1,8 @@
-
 import { readJson } from "../utils/storageHelpers";
 // Dynamic visit schedules from subject data, folder workflows, and header filters.
 
 import { getStudies } from "./studyService";
-import {
-  filterBySite,
-  getCurrentUser,
-  isAdmin
-} from "./roleService";
+import { getCurrentUser } from "./roleService";
 import { getFilterState } from "./filterService";
 import ROLES from "../constants/roles";
 import {
@@ -46,14 +41,37 @@ function dispatchSchedulesChange() {
 }
 
 export function isCompletedVisitStatus(status) {
-  return (
-    String(status || "").trim().toLowerCase() ===
-    VISIT_STATUS_COMPLETED.toLowerCase()
-  );
+  const normalized = String(status || "").trim().toLowerCase();
+
+  return [
+    "completed",
+    "dropout",
+    "withdrawn",
+    "auto withdraw",
+    "auto-withdraw"
+  ].includes(normalized);
 }
 
 export function isCompletedVisitSchedule(schedule) {
   return isCompletedVisitStatus(schedule?.status);
+}
+
+// BUG-2 fix: statuses that mean the visit is operationally closed and
+// must NOT appear on the active Calendar / Upcoming Visits views. These
+// mirror the Add/Edit Visit modal options ("Completed", "Missed",
+// "Cancelled"). Kept as a shared constant so every consumer (calendar,
+// upcoming list, day-drill-down) uses the exact same predicate — no
+// duplicated status vocabulary.
+export const INACTIVE_VISIT_STATUSES = ["completed", "cancelled", "missed"];
+
+export function isInactiveVisitStatus(status) {
+  return INACTIVE_VISIT_STATUSES.includes(
+    String(status || "").trim().toLowerCase()
+  );
+}
+
+export function isInactiveVisitSchedule(schedule) {
+  return isInactiveVisitStatus(schedule?.status);
 }
 
 export function toLocalDateKey(date) {
@@ -117,9 +135,14 @@ export function isPastCalendarDate(value, referenceDate = new Date()) {
 }
 
 export function isUpcomingVisitSchedule(item, referenceDate = new Date()) {
+  // BUG-2 fix: the calendar and Upcoming Visits list must agree on which
+  // visits are still "operationally active". A visit is upcoming only if
+  // it has a real date, its status is NOT Completed/Cancelled/Missed,
+  // and its date is on/after today. Reused by both the calendar filter
+  // and the upcoming-visits table so the two views can never disagree.
   return Boolean(
     item?.date &&
-      !isCompletedVisitSchedule(item) &&
+      !isInactiveVisitSchedule(item) &&
       !isPastCalendarDate(item.date, referenceDate)
   );
 }
@@ -268,7 +291,12 @@ function readSubjectDetails(studyId, subjectId) {
 }
 
 function readSubjectVisits(subjectId) {
-  return readJson(`subject_${subjectId}_visits`, []);
+  const visits = readJson(`subject_${subjectId}_visits`, []);
+
+  // Include all statuses except deleted visits
+  return Array.isArray(visits)
+    ? visits.filter((visit) => visit && visit.name)
+    : [];
 }
 
 function buildScheduleId(studyKey, subjectId, visit) {
@@ -282,7 +310,13 @@ function isCalendarScheduleEntry(entry) {
 }
 
 function filterCalendarSchedules(schedules) {
-  return schedules.filter(isCalendarScheduleEntry);
+  return (Array.isArray(schedules) ? schedules : []).filter((item) => {
+    if (!item || !item.date) {
+      return false;
+    }
+
+    return isCalendarScheduleEntry(item);
+  });
 }
 
 function createScheduleEntry({
@@ -422,16 +456,21 @@ export function buildSchedulesFromSubjects() {
       }
 
       readSubjectVisits(subjectId).forEach((visit) => {
-        const entry = createScheduleEntry({
-          studyKey,
-          subject: { ...subject, ...details },
-          visit: visit.name,
-          date: visit.plannedDate || visit.actualDate,
-          status: visit.status || "Scheduled",
-          time: visit.time || "09:00 AM",
-          source: "visit-record"
-        });
-
+  const entry = createScheduleEntry({
+    studyKey,
+    subject: { ...subject, ...details },
+    visit: visit.name,
+    // FIX: support all possible date fields
+    date:
+      visit.plannedDate ||
+      visit.actualDate ||
+      visit.date ||
+      visit.visitDate ||
+      "",
+    status: visit.status || "Scheduled",
+    time: visit.time || "09:00 AM",
+    source: "visit-record"
+  });
         if (entry) {
           generated.push(entry);
         }
@@ -481,21 +520,20 @@ export function syncSubjectSchedules(studyId, subjectId, subject = {}) {
   }
 
   readSubjectVisits(subjectId).forEach((visit) => {
-    const entry = createScheduleEntry({
-      studyKey: studyId,
-      subject: mergedSubject,
-      visit: visit.name,
-      date: visit.plannedDate || visit.actualDate,
-      status: visit.status || "Scheduled",
-      time: visit.time || "09:00 AM",
-      source: "visit-record"
-    });
-
-    if (entry) {
-      generated.push(entry);
-    }
+  const entry = createScheduleEntry({
+    studyKey: studyId,
+    subject: mergedSubject,
+    visit: visit.name,
+    date: visit.plannedDate || visit.actualDate,
+    status: visit.status || "Scheduled",
+    time: visit.time || "09:00 AM",
+    source: "visit-record"
   });
 
+  if (entry) {
+    generated.push(entry);
+  }
+});
   const existing = readJson(SCHEDULES_STORAGE_KEY, []);
   const subjectPrefix = `${studyId}::${subjectId}::`;
   const manualEntries = existing.filter(
@@ -535,8 +573,39 @@ export function addOrUpdateVisitSchedule({
   }
 
   const existing = readJson(SCHEDULES_STORAGE_KEY, []);
-  const wasExisting = existing.some((item) => item.id === entry.id);
-  const withoutDuplicate = existing.filter((item) => item.id !== entry.id);
+
+  // BUG-1 fix: dedupe both by exact schedule id AND by the logical
+  // (study, subject, normalized-visit-name) tuple. Previously we only
+  // matched on the raw id string, which meant any drift in casing,
+  // whitespace, or subjectId form left a stale calendar marker with the
+  // OLD date after a reschedule. Now, on every save/update the previous
+  // entry for the same subject+visit is always removed before the new
+  // entry is inserted, so the calendar can never show duplicate/stale
+  // markers for the same rescheduled visit.
+  const normalizedStudy = String(studyId || "").trim();
+  const normalizedSubject = String(subjectId || "").trim();
+  const normalizedVisit = String(visitName || "").trim().toLowerCase();
+
+  const matchesReschedule = (item) => {
+    if (item.id === entry.id) {
+      return true;
+    }
+
+    const sameStudy =
+      String(item.study || item.studyKey || "").trim() === normalizedStudy;
+    const sameSubject =
+      String(item.subjectId || "").trim() === normalizedSubject;
+    const sameVisit =
+      String(item.visit || "").trim().toLowerCase() === normalizedVisit;
+
+    return sameStudy && sameSubject && sameVisit;
+  };
+
+  const wasExisting = existing.some(matchesReschedule);
+  const withoutDuplicate = existing.filter((item) => !matchesReschedule(item));
+  // saveSchedules dispatches SCHEDULES_EVENT, which useVisitSchedules
+  // already listens on — so the Calendar re-renders with only the new
+  // date, no page refresh needed.
   saveSchedules([...withoutDuplicate, entry]);
   clearNextVisitPrompt(studyId, subjectId);
 
@@ -564,17 +633,31 @@ export function saveNextVisitDetails(studyId, subjectId, details, subject = {}) 
     return null;
   }
 
+  // BUG-1 fix: upsert the subject-visit record by visit name instead of
+  // always appending a brand-new Date.now()-keyed record. The old code
+  // pushed a second row for the same visit every time it was
+  // "rescheduled", which caused buildSchedulesFromSubjects() to emit two
+  // calendar entries (old date + new date) for the same logical visit.
+  const visits = readSubjectVisits(subjectId);
+  const normalizedNextStage = String(nextStage || "").trim().toLowerCase();
+  const existingVisitIndex = visits.findIndex(
+    (v) => String(v.name || "").trim().toLowerCase() === normalizedNextStage
+  );
+  const existingVisit = existingVisitIndex >= 0 ? visits[existingVisitIndex] : null;
+
   const visitRecord = {
-    id: Date.now(),
+    id: existingVisit?.id || Date.now(),
     name: nextStage,
     plannedDate: details.date,
-    actualDate: "",
+    actualDate: existingVisit?.actualDate || "",
     status: details.status || "Scheduled",
     time: details.time || "09:00 AM"
   };
 
-  const visits = readSubjectVisits(subjectId);
-  const updatedVisits = [...visits, visitRecord];
+  const updatedVisits =
+    existingVisitIndex >= 0
+      ? visits.map((v, i) => (i === existingVisitIndex ? visitRecord : v))
+      : [...visits, visitRecord];
   writeJson(`subject_${subjectId}_visits`, updatedVisits);
 
   return addOrUpdateVisitSchedule({
@@ -666,21 +749,27 @@ function matchesHeaderFilters(schedule, filters, studyMap) {
 }
 
 export function getMergedSchedules(user = getCurrentUser()) {
-  const schedules = filterCalendarSchedules(readJson(SCHEDULES_STORAGE_KEY, []));
-  return isAdmin(user)
-    ? schedules
-    : filterBySite(schedules, "site", user);
-}
+  const schedules = filterCalendarSchedules(
+    readJson(SCHEDULES_STORAGE_KEY, [])
+  );
 
-export function getFilteredSchedules(
-  user = getCurrentUser(),
-  options = {}
-) {
+  // TEMPORARY: return all schedules for debugging
+  return schedules;
+}
+export function getFilteredSchedules(user = getCurrentUser(), options = {}) {
   const schedules = getMergedSchedules(user);
+
+  // When the dashboard calendar does not pass any filters,
+  // return all available schedules directly.
+  if (!options.studyCode && !options.institutionFilter) {
+    return schedules;
+  }
+
   const filters = {
     ...getFilterState(),
-    ...options
+    ...options,
   };
+
   const studyMap = getStudyMap();
 
   return schedules.filter((schedule) =>
@@ -688,7 +777,7 @@ export function getFilteredSchedules(
   );
 }
 
-export function getUpcomingVisitsForDate(schedules, date) {
+export function getUpcomingVisitsForDate(schedules, date, referenceDate = new Date()) {
   const targetDate = getCalendarDateKey(date);
 
   if (!targetDate) {
@@ -698,7 +787,11 @@ export function getUpcomingVisitsForDate(schedules, date) {
   return schedules
     .filter(
       (item) =>
-        !isCompletedVisitSchedule(item) &&
+        // BUG-2 fix: use the shared upcoming predicate so a selected
+        // calendar day never drills into stale (past/cancelled/missed/
+        // completed) events. The active-view check is applied first,
+        // then the "on this date" match.
+        isUpcomingVisitSchedule(item, referenceDate) &&
         getCalendarDateKey(item.date) === targetDate
     )
     .sort(compareScheduleDates)
@@ -746,7 +839,14 @@ export function getUpcomingVisitsWindow(
   return schedules
     .filter((item) => {
       const visitValue = getCalendarDateSortValue(item.date);
-      if (!Number.isFinite(visitValue) || isCompletedVisitSchedule(item)) {
+      // BUG-2 fix: exclude Completed/Cancelled/Missed via the shared
+      // predicate so the Upcoming Visits list vocabulary matches the
+      // calendar view. Past-date exclusion is enforced by the window
+      // bounds below (startValue = today).
+      if (
+        !Number.isFinite(visitValue) ||
+        isInactiveVisitSchedule(item)
+      ) {
         return false;
       }
 
@@ -757,4 +857,8 @@ export function getUpcomingVisitsWindow(
     })
     .sort(compareScheduleDates)
     .map(mapScheduleToTableRow);
+}
+// Force rebuild of calendar schedules from all subject visits
+export function refreshVisitCalendar() {
+  return rebuildSchedulesFromSubjects();
 }

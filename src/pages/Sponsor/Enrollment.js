@@ -164,11 +164,6 @@ const Enrollment = () => {
   <button
     className="view-btn"
     onClick={() => {
-      localStorage.setItem(
-        "selectedStudy",
-        JSON.stringify(study)
-      );
-
       navigate(`/study/${study.studyId}`);
     }}
   >

@@ -1,11 +1,6 @@
 import EISF_ASSIGNED_MODULES from "../eisfAssignedModuleConfig";
-import {
-  EISF_DOCUMENTS_EVENT,
-  initializeModuleDocuments,
-} from "./documentService";
-
-export { EISF_DOCUMENTS_EVENT };
-
+import { getEISFModuleDocuments } from "./eisfService";
+export const EISF_DOCUMENTS_EVENT = "trianxt-eisf-documents-updated";
 export const FIXED_EISF_MODULE_TOTAL = 22;
 
 export function getFixedEISFModules() {
@@ -23,7 +18,7 @@ export function getEssentialDocumentsHealth(studyCode) {
   const code = String(studyCode || "");
 
   const moduleBreakdown = modules.map((moduleConfig) => {
-    const documents = initializeModuleDocuments(moduleConfig, code);
+    const documents = getEISFModuleDocuments(moduleConfig, code);
     const documentCount = Array.isArray(documents) ? documents.length : 0;
 
     return {

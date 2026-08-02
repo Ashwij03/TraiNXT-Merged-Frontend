@@ -26,6 +26,8 @@ import {
   getSubModuleEnabledMap,
   setSubModuleEnabled,
 } from "./utils/subModuleStateUtils";
+import { hasPermission } from "../../../services/roleService";
+import PERMISSIONS from "../../../constants/permissions";
 import "./EISFModuleWorkspace.css";
 
 export default function EISFModuleWorkspace({
@@ -41,6 +43,13 @@ export default function EISFModuleWorkspace({
   const [documents, setDocuments] = useState(() =>
     initializeModuleDocuments(moduleConfig, studyCode, initialDocuments)
   );
+  // [Phase 11–13] Role Based Permission – eISF Module. Reuses the existing
+  // RBAC system (roleService.hasPermission + rolePermissions) — no new
+  // permission service. Monitor maps to the existing CRO role already
+  // defined in rolePermissions.js, so no per-role branching is needed here.
+  const canUploadDocs = useMemo(() => hasPermission(PERMISSIONS.UPLOAD_REGULATORY_DOCS), []);
+  const canEditDocs = useMemo(() => hasPermission(PERMISSIONS.EDIT_REGULATORY_DOCS), []);
+  const canDeleteDocs = useMemo(() => hasPermission(PERMISSIONS.DELETE_REGULATORY_DOCS), []);
   const [selectedSectionId, setSelectedSectionId] = useState(
     activeSectionId || moduleConfig.sections[0]?.id
   );
@@ -213,24 +222,124 @@ export default function EISFModuleWorkspace({
   };
 
   const handleUpload = (formData) => {
-    // Item 9 guard: disabled sub-modules must not expose upload actions.
     if (!activeSectionEnabled) return;
+    // RBAC guard: block upload even if the modal was reachable by some
+    // other path — the Upload button itself is also hidden below.
+    if (!canUploadDocs) return;
+
+    const incomingName = (
+      formData.documentName ||
+      formData.name ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+    const incomingVersion = String(formData.version || "").trim();
+
+    const duplicate = documents.some((doc) => {
+      const existingName = (
+        doc.documentName ||
+        doc.name ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
+
+      const existingVersion = String(doc.version || "").trim();
+
+      const sameStudy =
+        (doc.studyCode || studyCode) === studyCode;
+
+      const sameModule =
+        (doc.moduleId || moduleConfig.id) === moduleConfig.id;
+
+      const sameSection =
+        (doc.section || doc.sectionId || "") === activeSection.id;
+
+      return (
+        sameStudy &&
+        sameModule &&
+        sameSection &&
+        existingName === incomingName &&
+        existingVersion === incomingVersion
+      );
+    });
+
+    if (duplicate) {
+      window.alert(
+        `Version ${incomingVersion} already exists for "${formData.documentName}". Please upload a higher version.`
+      );
+      return;
+    }
 
     const newDocument = createUploadedDocument(
       formData,
       activeSection,
       moduleConfig,
+      studyCode,
       "Current User"
     );
 
     setDocuments((prev) => [newDocument, ...prev]);
+
+    setShowUpload(false);
   };
 
+
   const handleSaveDocument = (updatedDocument) => {
-    // Item 9 guard: disabled sub-modules must not allow edits.
     if (!activeSectionEnabled) {
       setEditOpen(false);
       setSelectedDocument(null);
+      return;
+    }
+
+    // RBAC guard: block save even if the Edit modal was reachable by some
+    // other path — the Edit action itself is also hidden in DocumentTable.
+    if (!canEditDocs) {
+      setEditOpen(false);
+      setSelectedDocument(null);
+      return;
+    }
+
+    const version = String(updatedDocument.version || "").trim();
+
+    const duplicate = documents.some((doc) => {
+      if (doc.id === updatedDocument.id) {
+        return false;
+      }
+
+      const existingName = (
+        doc.documentName ||
+        doc.name ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
+
+      const updatedName = (
+        updatedDocument.documentName ||
+        updatedDocument.name ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
+
+      return (
+        (doc.studyCode || studyCode) === studyCode &&
+        (doc.moduleId || moduleConfig.id) === moduleConfig.id &&
+        (doc.section || doc.sectionId || "") ===
+        activeSection.id &&
+        existingName === updatedName &&
+        String(doc.version || "").trim() ===
+        String(updatedDocument.version || "").trim()
+      );
+    });
+
+    if (duplicate) {
+      window.alert(
+        `Version ${version} already exists for "${updatedDocument.documentName}".`
+      );
       return;
     }
 
@@ -241,6 +350,7 @@ export default function EISFModuleWorkspace({
           : document
       )
     );
+
     setEditOpen(false);
     setSelectedDocument(null);
   };
@@ -248,6 +358,9 @@ export default function EISFModuleWorkspace({
   const handleDelete = (document) => {
     // Item 9 guard: disabled sub-modules must not expose delete actions.
     if (!activeSectionEnabled) return;
+    // RBAC guard: block delete even if the action was reachable by some
+    // other path — the Delete action itself is also hidden in DocumentTable.
+    if (!canDeleteDocs) return;
 
     if (window.confirm(`Delete ${document.documentName}?`)) {
       setDocuments((prev) => prev.filter((item) => item.id !== document.id));
@@ -406,7 +519,9 @@ export default function EISFModuleWorkspace({
 
             <div className="eisf-documents-actions">
               <button type="button" onClick={handleExport}>⇩ Export</button>
-              <button type="button" className="primary" onClick={() => setShowUpload(true)}>Upload</button>
+              {canUploadDocs && (
+                <button type="button" className="primary" onClick={() => setShowUpload(true)}>Upload</button>
+              )}
               <button
                 type="button"
                 className="more-action"
@@ -465,6 +580,8 @@ export default function EISFModuleWorkspace({
             onDownload={handleDownload}
             onEdit={(document) => openModal(document, setEditOpen)}
             onDelete={handleDelete}
+            canEdit={canEditDocs}
+            canDelete={canDeleteDocs}
           />
 
           <div className="eisf-table-footer">
@@ -518,7 +635,7 @@ export default function EISFModuleWorkspace({
       </div>
 
       <UploadDocumentModal
-        open={showUpload && activeSectionEnabled}
+        open={showUpload && activeSectionEnabled && canUploadDocs}
         onClose={() => setShowUpload(false)}
         onUpload={handleUpload}
         categoryOptions={categoryOptions}

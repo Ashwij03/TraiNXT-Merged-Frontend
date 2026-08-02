@@ -5,8 +5,74 @@
 
 .delegation-title{
   margin-bottom:25px;
-  font-size:32px;
+  font-size:20px;
   color:#222;
+}
+
+/* Phase 6 — IMP-3: row actions inside the shared DataTable's Actions
+   column. Keeps the same button styling that the raw <table> emitted
+   without leaking new global rules onto other tables. */
+.delegation-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.delegation-actions button{
+  padding:4px 10px;
+  border:1px solid #d5dce5;
+  background:#fff;
+  border-radius:4px;
+  cursor:pointer;
+  font-size:13px;
+}
+
+.delegation-actions button:hover{
+  background:#f5f7fa;
+}
+
+/* Phase 6 — IMP-3: delegate-picker search + role filter toolbar on
+   DelegationLogPage. Sits directly above the delegate card grid. */
+.delegate-toolbar{
+  display:flex;
+  gap:16px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin:12px 0 16px;
+}
+
+.delegate-search{
+  flex:1 1 260px;
+  min-width:220px;
+  padding:8px 12px;
+  border:1px solid #d5dce5;
+  border-radius:6px;
+  font-size:14px;
+}
+
+.delegate-filter{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  color:#4b5563;
+}
+
+.delegate-filter select{
+  padding:6px 10px;
+  border:1px solid #d5dce5;
+  border-radius:6px;
+  font-size:14px;
+  background:#fff;
+}
+
+.delegate-empty{
+  padding:24px;
+  text-align:center;
+  color:#98a2b3;
+  background:#fff;
+  border:1px dashed #d5dce5;
+  border-radius:10px;
 }
 
 /* CARD */
@@ -171,12 +237,15 @@
 
 .delegation-table th{
   background:#f3f3f3;
+  color:#1f2937;
+  font-weight:600;
   padding:16px;
   border:1px solid #ddd;
   text-align:left;
 }
 
 .delegation-table td{
+  color:#1f2937;
   padding:16px;
   border:1px solid #ddd;
 }

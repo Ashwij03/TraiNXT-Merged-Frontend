@@ -1,28 +1,26 @@
-import React, { useEffect, useState } from "react";
-import AppLayout from "./AppLayout";
+import React, { useState, useEffect } from "react";
 import "./SiteDetails.css";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getStudyByCode } from "../../services/studyService";
+import { getStudyByCode } from "../../../../services/studyService";
 import {
+  PLANNING_UPDATED_EVENT,
   getStudyTeam,
   getRegulatoryChecklist,
   saveStudyTeamMember,
   deleteStudyTeamMember,
   saveRegulatoryChecklistItem,
   deleteRegulatoryChecklistItem,
-  PLANNING_UPDATED_EVENT,
-} from "../../services/planningService";
-import { canEditStudyContent } from "../../utils/contentAccess";
+} from "../../../../services/planningService";
 import {
   getAllSubjectsFromStorage,
   getSubjectStatusAnalytics,
-} from "../../utils/subjectStatusAnalytics";
+} from "../../../../utils/subjectStatusAnalytics";
 import {
   getEssentialDocumentsCompletion,
   getStudyScopedSitePerformance,
   getStudyHealthSummary,
-} from "../../services/studyOverviewService";
-import { getStudyLogs } from "../../services/adminService";
+} from "../../../../services/studyOverviewService";
+import { getStudyLogs } from "../../../../services/adminService";
 
 import {
   BarChart,
@@ -33,6 +31,10 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
+
+import SiteTeamMemberForm from "./SiteTeamMemberForm";
+import SiteContactForm from "./SiteContactForm";
+import SiteRegulatoryForm from "./SiteRegulatoryForm";
 
 const SiteDetails = () => {
   const navigate = useNavigate();
@@ -52,7 +54,7 @@ const SiteDetails = () => {
   }, []);
   void planningVersion;
 
-  const canEdit = canEditStudyContent();
+  const canEdit = true;
 
   const [teamFormOpen, setTeamFormOpen] = useState(false);
   const [contactFormOpen, setContactFormOpen] = useState(false);
@@ -130,7 +132,7 @@ const SiteDetails = () => {
 
   if (!siteData) {
     return (
-      <AppLayout>
+    
         <div className="site-details-page">
           <h2>No Site Selected</h2>
 
@@ -142,7 +144,7 @@ const SiteDetails = () => {
             ← Back
           </button>
         </div>
-      </AppLayout>
+      
     );
   }
 
@@ -202,7 +204,7 @@ const SiteDetails = () => {
   ];
 
   return (
-    <AppLayout>
+    <>
       <div className="site-details-page">
         <div className="site-workspace-header">
           <div>
@@ -482,7 +484,10 @@ const SiteDetails = () => {
                 <div>
                   <strong>Site</strong>
                   <p>
-                    {studyData?.site ||
+                    {siteData.siteNumber
+                      ? `${siteData.siteNumber}${siteData.name ? ` — ${siteData.name}` : ""
+                      }`
+                      : studyData?.site ||
                       studyData?.location ||
                       "—"}
                   </p>
@@ -1231,251 +1236,8 @@ const SiteDetails = () => {
           </div>
         )}
       </div>
-    </AppLayout>
+    </>
   );
 };
-
-function SiteTeamMemberForm({ initialData, onSave, onCancel }) {
-  const [form, setForm] = useState({
-    name: "",
-    role: "",
-    email: "",
-    organization: "",
-    startDate: "",
-  });
-
-  useEffect(() => {
-    if (initialData) {
-      setForm({
-        name: initialData.name || "",
-        role: initialData.role || "",
-        email: initialData.email || "",
-        organization: initialData.organization || "",
-        startDate: initialData.startDate || "",
-        ...(initialData.id ? { id: initialData.id } : {}),
-      });
-    }
-  }, [initialData]);
-
-  return (
-    <form
-      className="site-inline-form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!form.name.trim()) return;
-        onSave(form);
-      }}
-    >
-      <input
-        placeholder="Name"
-        value={form.name}
-        onChange={(e) => setForm({ ...form, name: e.target.value })}
-        required
-      />
-      <input
-        placeholder="Role"
-        value={form.role}
-        onChange={(e) => setForm({ ...form, role: e.target.value })}
-      />
-      <input
-        type="date"
-        value={form.startDate}
-        onChange={(e) =>
-          setForm({ ...form, startDate: e.target.value })
-        }
-      />
-      <input
-        placeholder="Email"
-        value={form.email}
-        onChange={(e) => setForm({ ...form, email: e.target.value })}
-      />
-      <input
-        placeholder="Organization"
-        value={form.organization}
-        onChange={(e) =>
-          setForm({ ...form, organization: e.target.value })
-        }
-      />
-      <div className="site-inline-form-actions">
-        <button type="submit" className="site-empty-btn">
-          {form.id ? "Update Member" : "Add Member"}
-        </button>
-        <button
-          type="button"
-          className="link-btn"
-          onClick={onCancel}
-        >
-          Cancel
-        </button>
-      </div>
-    </form>
-  );
-}
-
-function SiteContactForm({ initialData, onSave, onCancel }) {
-  const [form, setForm] = useState({
-    name: "",
-    role: "",
-    email: "",
-    phone: "",
-    organization: "",
-  });
-
-  useEffect(() => {
-    if (initialData) {
-      setForm({
-        name: initialData.name || "",
-        role: initialData.role || "",
-        email: initialData.email || "",
-        phone: initialData.phone || "",
-        organization: initialData.organization || "",
-        ...(initialData.id ? { id: initialData.id } : {}),
-      });
-    }
-  }, [initialData]);
-
-  return (
-    <form
-      className="site-inline-form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!form.name.trim()) return;
-        onSave(form);
-      }}
-    >
-      <input
-        placeholder="Name"
-        value={form.name}
-        onChange={(e) => setForm({ ...form, name: e.target.value })}
-        required
-      />
-      <input
-        placeholder="Role"
-        value={form.role}
-        onChange={(e) => setForm({ ...form, role: e.target.value })}
-      />
-      <input
-        placeholder="Email"
-        type="email"
-        value={form.email}
-        onChange={(e) => setForm({ ...form, email: e.target.value })}
-      />
-      <input
-        placeholder="Phone"
-        value={form.phone}
-        onChange={(e) => setForm({ ...form, phone: e.target.value })}
-      />
-      <input
-        placeholder="Organization"
-        value={form.organization}
-        onChange={(e) =>
-          setForm({ ...form, organization: e.target.value })
-        }
-      />
-      <div className="site-inline-form-actions">
-        <button type="submit" className="site-empty-btn">
-          {form.id ? "Update Contact" : "Add Contact"}
-        </button>
-        <button
-          type="button"
-          className="link-btn"
-          onClick={onCancel}
-        >
-          Cancel
-        </button>
-      </div>
-    </form>
-  );
-}
-
-function SiteRegulatoryForm({ initialData, onSave, onCancel }) {
-  const [form, setForm] = useState({
-    label: "",
-    documentDate: "",
-    dueDate: "",
-    status: "Pending",
-    documentName: "",
-    documentUrl: "",
-  });
-
-  useEffect(() => {
-    if (initialData) {
-      setForm({
-        label: initialData.label || "",
-        documentDate: initialData.documentDate || "",
-        dueDate: initialData.dueDate || "",
-        status: initialData.status || "Pending",
-        documentName: initialData.documentName || "",
-        documentUrl: initialData.documentUrl || "",
-        ...(initialData.id ? { id: initialData.id } : {}),
-      });
-    }
-  }, [initialData]);
-
-  return (
-    <form
-      className="site-inline-form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!form.label.trim()) return;
-        onSave({ ...form, completed: false });
-      }}
-    >
-      <input
-        placeholder="Regulatory Record Label"
-        value={form.label}
-        onChange={(e) => setForm({ ...form, label: e.target.value })}
-        required
-      />
-      <input
-        type="date"
-        value={form.documentDate}
-        onChange={(e) =>
-          setForm({ ...form, documentDate: e.target.value })
-        }
-      />
-      <input
-        type="date"
-        value={form.dueDate}
-        onChange={(e) =>
-          setForm({ ...form, dueDate: e.target.value })
-        }
-      />
-      <select
-        value={form.status}
-        onChange={(e) => setForm({ ...form, status: e.target.value })}
-      >
-        <option>Pending</option>
-        <option>Submitted</option>
-        <option>Approved</option>
-        <option>Rejected</option>
-      </select>
-      <input
-        type="file"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (!file) return;
-          setForm({
-            ...form,
-            documentName: file.name,
-            documentUrl: URL.createObjectURL(file),
-          });
-        }}
-      />
-      <div className="site-inline-form-actions">
-        <button type="submit" className="site-empty-btn">
-          {form.id ? "Update Record" : "Add Record"}
-        </button>
-        <button
-          type="button"
-          className="link-btn"
-          onClick={onCancel}
-        >
-          Cancel
-        </button>
-      </div>
-    </form>
-  );
-}
 
 export default SiteDetails;

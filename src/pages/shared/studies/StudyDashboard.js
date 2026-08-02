@@ -16,7 +16,6 @@ import StudyVisitPlan from "./StudyVisitPlan";
 import EssentialDocumentsWidget from "../../../components/studies/EssentialDocumentsWidget";
 import StudyProgressSummary from "../../../components/studies/StudyProgressSummary";
 import StudyMilestoneTimeline from "../../../components/studies/StudyMilestoneTimeline";
-import SitePerformanceSummary from "../../../components/studies/SitePerformanceSummary";
 import SiteActivationStatus from "../../../components/studies/SiteActivationStatus";
 import StudyHealthSummary from "../../../components/studies/StudyHealthSummary";
 import StudyModal from "../../../components/studies/StudyModal";
@@ -36,9 +35,7 @@ import {
 } from "../../../constants/studyStatus";
 import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
 import RecentSubjectsWidget from "../../../components/dashboard/shared/RecentSubjectsWidget";
-import UpcomingVisitsWidget from "../../../components/dashboard/shared/UpcomingVisitsWidget";
 import PendingCommentsWidget from "../../../components/dashboard/shared/PendingCommentsWidget";
-import QuickActionsWidget from "../../../components/dashboard/shared/QuickActionsWidget";
 import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
 import EISFWorkspace from "../EISF/EISFWorkspace";
 import {
@@ -52,9 +49,9 @@ import {
 } from "react-icons/fi";
 import {
   canDeleteStudy,
-  canEditStudyContent,
   requiresPermissionRequest,
 } from "../../../utils/contentAccess";
+import useCanEditStudyContent from "../../../hooks/useCanEditStudyContent";
 import { submitAccessRequest } from "../../../services/accessPermissionService";
 import {
   getCurrentUser,
@@ -110,32 +107,60 @@ function StudyDashboard() {
   }, [searchParams]);
 
   useEffect(() => {
-    const selectedStudy = getStudyByCode(id);
-
-    if (selectedStudy) {
-      localStorage.setItem("selectedStudy", JSON.stringify(selectedStudy));
-    }
-
     localStorage.setItem("sidebarStudiesOpen", JSON.stringify(true));
     localStorage.setItem("sidebarStudyBinderOpen", JSON.stringify(true));
   }, [id]);
+  useEffect(() => {
+const handleStudyUpdated = (event) => {
+  if (event.detail?.code === id) {
+
+    console.log("EVENT STUDY:", event.detail);
+
+    localStorage.setItem(
+      "selectedStudy",
+      JSON.stringify(event.detail)
+    );
+
+    setCurrentStudy(event.detail);
+
+    setTimeout(() => {
+      console.log("AFTER EVENT:", getStudyByCode(id));
+    }, 100);
+
+    setStudyRefreshKey((value) => value + 1);
+  }
+};
+
+  window.addEventListener("study-updated", handleStudyUpdated);
+
+  return () => {
+    window.removeEventListener("study-updated", handleStudyUpdated);
+  };
+}, [id]);
 
   const { data } = useStudiesDashboard();
   const { comments: liveComments } = useComments();
   const currentUser = getCurrentUser();
 
-  const canEditStudy = canEditStudyContent(currentUser);
+  const canEditStudy = useCanEditStudyContent("Study Overview", id);
   const canRemoveStudy = canDeleteStudy(currentUser);
-  const needsPermissionRequest = requiresPermissionRequest(currentUser);
+  const needsPermissionRequest = requiresPermissionRequest(currentUser) && !canEditStudy;
   // ===== START D2 PART 1 CHANGES =====
   // Role-based Activity visibility, backed by the shared rolePermissions
   // map (VIEW_SITE_ACTIVITIES) rather than a hardcoded role check.
   const canViewActivity = hasPermission(PERMISSIONS.VIEW_SITE_ACTIVITIES, currentUser);
   // ===== END D2 PART 1 CHANGES =====
 
-  const currentStudy = getStudyByCode(id);
+  const [currentStudy, setCurrentStudy] = useState(() => getStudyByCode(id));
   const overview = useStudyOverview(id, studyRefreshKey);
 
+useEffect(() => {
+  const study = getStudyByCode(id);
+
+  console.log("USE EFFECT STUDY:", study);
+
+  setCurrentStudy(study);
+}, [id, studyRefreshKey]);
   // A2 (Role-Scoped Study Visibility): the route itself allows any
   // authenticated role to reach /study-dashboard/:id, and getStudyByCode()
   // reads the unfiltered study list, so this is the only place left that
@@ -233,25 +258,29 @@ function StudyDashboard() {
     }));
   }, [upcomingWindow]);
 
-  const filteredPendingComments = useMemo(() => {
+  // Phase 7 — IMP-4.12: derive Open Comments for this study from the
+  // canonical liveComments feed so the KPI card, PendingCommentsWidget
+  // header count, and any dashboard drilldown all update in the same
+  // tick when a comment is added / resolved / reopened. The visible
+  // list is still capped for the widget, but the total count exposed
+  // downstream is the full study-scoped open count.
+  const studyOpenComments = useMemo(() => {
     return liveComments
       .filter(isOpenComment)
       .filter(
         (comment) =>
           matchesCurrentStudy({ studyCode: comment.study }) ||
           matchesCurrentStudy(comment),
-      )
-      .slice(0, 5)
-      .map((comment) => ({
-        id: comment.id,
-        subject: comment.subjectId,
-        status: comment.status,
-      }));
+      );
   }, [liveComments, matchesCurrentStudy]);
 
-  const filteredAlerts = useMemo(() => {
-    return safeArray(data?.alerts).filter(matchesCurrentStudy);
-  }, [data?.alerts, safeArray, matchesCurrentStudy]);
+  const filteredPendingComments = useMemo(() => {
+    return studyOpenComments.slice(0, 5).map((comment) => ({
+      id: comment.id,
+      subject: comment.subjectId,
+      status: comment.status,
+    }));
+  }, [studyOpenComments]);
 
   const filteredRecentSubjects = useMemo(() => {
     if (studySubjectsFromStorage.length > 0) {
@@ -266,13 +295,122 @@ function StudyDashboard() {
     matchesCurrentStudy,
   ]);
 
+  // Study-scoped Alerts: build a fully dynamic feed from the same live
+  // data that already powers the KPIs and widgets on this Overview tab
+  // (open comments, upcoming visits, recent subjects, study progress /
+  // health). We reuse the existing AlertsPanel component — this just
+  // gives it real, per-study rows instead of the empty result the old
+  // `data.alerts.filter(matchesCurrentStudy)` produced (dashboard-level
+  // alerts have no study key, so the filter always yielded []).
+  const filteredAlerts = useMemo(() => {
+    const alerts = [];
+    const openCommentCount = studyOpenComments.length;
+    const upcomingVisitCount = filteredUpcomingVisits.length;
+    const subjectCount = filteredRecentSubjects.length;
+    const targetSubjects = Number(currentStudy?.targetSubjects) || 0;
+    const enrolled = Number(currentStudy?.enrolled) || subjectCount;
+    const enrollmentRatio =
+      targetSubjects > 0 ? enrolled / targetSubjects : null;
+    const overdueDocs = Number(overview?.documents?.overdue) || 0;
+    const missingDocs = Number(overview?.documents?.missing) || 0;
+    const healthScore =
+      typeof overview?.health?.score === "number"
+        ? overview.health.score
+        : null;
+
+    if (openCommentCount > 0) {
+      alerts.push({
+        type: openCommentCount >= 5 ? "danger" : "warning",
+        title: "Open Comments",
+        message: `${openCommentCount} comment${openCommentCount === 1 ? "" : "s"} awaiting resolution`,
+      });
+    }
+
+    if (upcomingVisitCount > 0) {
+      alerts.push({
+        type: "info",
+        title: "Upcoming Visits",
+        message: `${upcomingVisitCount} visit${upcomingVisitCount === 1 ? "" : "s"} scheduled in the next window`,
+      });
+    }
+
+    if (overdueDocs > 0) {
+      alerts.push({
+        type: "danger",
+        title: "Overdue Documents",
+        message: `${overdueDocs} essential document${overdueDocs === 1 ? "" : "s"} past due`,
+      });
+    }
+
+    if (missingDocs > 0) {
+      alerts.push({
+        type: "warning",
+        title: "Missing Documents",
+        message: `${missingDocs} essential document${missingDocs === 1 ? "" : "s"} not yet uploaded`,
+      });
+    }
+
+    if (enrollmentRatio !== null) {
+      if (enrollmentRatio >= 1) {
+        alerts.push({
+          type: "success",
+          title: "Enrollment Target Met",
+          message: `${enrolled} of ${targetSubjects} subjects enrolled`,
+        });
+      } else if (enrollmentRatio < 0.5) {
+        alerts.push({
+          type: "warning",
+          title: "Enrollment Behind Target",
+          message: `${enrolled} of ${targetSubjects} subjects enrolled (${Math.round(
+            enrollmentRatio * 100,
+          )}%)`,
+        });
+      }
+    }
+
+    if (healthScore !== null) {
+      if (healthScore < 60) {
+        alerts.push({
+          type: "danger",
+          title: "Study Health Low",
+          message: `Composite health score is ${healthScore}`,
+        });
+      } else if (healthScore >= 85) {
+        alerts.push({
+          type: "success",
+          title: "Study Health Strong",
+          message: `Composite health score is ${healthScore}`,
+        });
+      }
+    }
+
+    if (currentStudy?.status) {
+      alerts.push({
+        type: "info",
+        title: "Study Status",
+        message: `Currently in ${currentStudy.status}`,
+      });
+    }
+
+    return alerts;
+  }, [
+    studyOpenComments,
+    filteredUpcomingVisits,
+    filteredRecentSubjects,
+    currentStudy,
+    overview,
+  ]);
+
   const studyKpis = useMemo(() => {
     return {
       subjects: filteredRecentSubjects.length,
-      comments: filteredPendingComments.length,
+      // Phase 7 — IMP-4.12: KPI reflects the full study-scoped Open
+      // Comments count, not the 5-row widget slice, and updates
+      // automatically when any comment status changes upstream.
+      comments: studyOpenComments.length,
       visits: filteredUpcomingVisits.length,
     };
-  }, [filteredRecentSubjects, filteredPendingComments, filteredUpcomingVisits]);
+  }, [filteredRecentSubjects, studyOpenComments, filteredUpcomingVisits]);
 
   const handleRefreshStudy = () => {
     setIsRefreshing(true);
@@ -293,6 +431,8 @@ function StudyDashboard() {
     submitAccessRequest(
       {
         studySubject: currentStudy?.code || id,
+        studyCode: currentStudy?.code || id,
+        module: "Study Overview",
         accessType: "Edit Access",
         notes: "Study overview edit request",
       },
@@ -364,15 +504,22 @@ function StudyDashboard() {
     event.preventDefault();
 
     try {
+      console.log("EDIT FORM:", JSON.stringify(editForm, null, 2))
       const updatedStudy = updateStudy(editForm.code, {
         ...editForm,
-        site: editForm.site || editForm.location,
-        location: editForm.location || editForm.site,
+       site: editForm.site,
+location: editForm.site,
         enrolled: Number(editForm.enrolled) || 0,
         targetSubjects: Number(editForm.targetSubjects) || 0,
       });
-
+ console.log("UPDATED STUDY:", JSON.stringify(updatedStudy, null, 2));
       localStorage.setItem("selectedStudy", JSON.stringify(updatedStudy));
+      window.dispatchEvent(
+  new CustomEvent("study-updated", {
+    detail: updatedStudy,
+  })
+);
+window.dispatchEvent(new Event("studies-updated"));
       setShowEditModal(false);
       setStudyRefreshKey((value) => value + 1);
     } catch (error) {
@@ -564,19 +711,7 @@ function StudyDashboard() {
                   <StudyHealthSummary health={overview.health} />
 
                   <SiteActivationStatus counts={overview.siteActivation} />
-
-                  {/* Item 14 — GCP Certification Status removed;
-                      the existing Site Performance Summary widget is
-                      reused in its place (single instance, live data). */}
-                  <SitePerformanceSummary records={overview.sitePerformance} />
                 </div>
-
-                <StudyMilestoneTimeline
-                  studyCode={id}
-                  milestones={overview.milestones}
-                  canEdit={canEditStudy}
-                  onUpdated={() => setStudyRefreshKey((value) => value + 1)}
-                />
 
                 <VisitCalendarSection studyCode={id} />
 
@@ -586,28 +721,29 @@ function StudyDashboard() {
                   studyCode={id}
                 />
 
+                {/* Recent Subjects + Pending Comments now share the same
+                    widget-grid so Pending Comments sits beside Recent
+                    Subjects (replacing the removed Upcoming Visits slot).
+                    widget-grid is already auto-fit responsive, so the
+                    pair collapses to a single column on narrow viewports. */}
                 <div className="widget-grid">
-                  <RecentSubjectsWidget subjects={filteredRecentSubjects} />
+                  <RecentSubjectsWidget
+                    subjects={filteredRecentSubjects}
+                    studyId={id}
+                  />
 
-                  <UpcomingVisitsWidget
-                    visits={filteredUpcomingVisits}
-                    emptyMessage="No upcoming visits scheduled"
+                  <PendingCommentsWidget
+                    comments={filteredPendingComments}
+                    total={studyOpenComments.length}
                   />
                 </div>
 
-                <div className="widget-grid">
-                  <PendingCommentsWidget comments={filteredPendingComments} />
-                  <QuickActionsWidget
-                    study={currentStudy}
-                    studyCode={id}
-                    onAddSubject={() => {
-                      setActiveTab("Subjects");
-                      navigate(
-                        `/study-dashboard/${encodeURIComponent(id)}?tab=Subjects`
-                      );
-                    }}
-                  />
-                </div>
+                <StudyMilestoneTimeline
+                  studyCode={id}
+                  milestones={overview.milestones}
+                  canEdit={canEditStudy}
+                  onUpdated={() => setStudyRefreshKey((value) => value + 1)}
+                />
 
                 <div className="study-dashboard-alerts">
                   <AlertsPanel alerts={filteredAlerts} />

@@ -449,7 +449,6 @@ function Studies() {
       localStorage.setItem("subjectsByStudy", JSON.stringify(subjectsByStudy));
     }
 
-    localStorage.setItem("selectedStudy", JSON.stringify(createdStudy));
     localStorage.setItem("sidebarStudiesOpen", JSON.stringify(true));
     localStorage.setItem("sidebarStudyBinderOpen", JSON.stringify(true));
 
@@ -462,7 +461,6 @@ function Studies() {
   };
 
   const handleStudyCardClick = (study) => {
-    localStorage.setItem("selectedStudy", JSON.stringify(study));
     localStorage.setItem("sidebarStudiesOpen", JSON.stringify(true));
     localStorage.setItem("sidebarStudyBinderOpen", JSON.stringify(true));
 

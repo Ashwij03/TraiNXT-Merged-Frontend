@@ -1,1 +1,3 @@
-export { default } from "../../components/dashboard/cro/CRONavbar";
+import CRONavbar from "../../components/dashboard/cro/CRONavbar";
+
+export default CRONavbar;

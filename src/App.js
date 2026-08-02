@@ -28,9 +28,6 @@ import UserManagement from "./pages/shared/UserManagement";
 import CROOverview from "./pages/CRO/CROOverview";
 
 import Sites from "./pages/Admin/Sites";
-import LogsPage from "./pages/shared/logs/LogsPage";
-import TrainingLogPage from "./pages/shared/logs/TrainingLogPage";
-import DelegationLogPage from "./pages/shared/logs/DelegationLogPage";
 import AuditLogsPage from "./pages/shared/audit/AuditLogsPage";
 import {
   getDashboardPath,
@@ -66,7 +63,7 @@ import SiteDocuments from "./pages/Sponsor/SiteDocuments";
 import SponsorCRODetails from "./pages/Sponsor/CRODetails";
 import SponsorCROReport from "./pages/Sponsor/CROReport";
 import SponsorCROContracts from "./pages/Sponsor/CROContracts";
-import SiteDetails from "./pages/Sponsor/SiteDetails";
+import SiteDetailsPage from "./pages/shared/sites/SiteWorkspace/SiteDetailsPage";
 import ReportDetails from "./pages/Sponsor/ReportDetails";
 import RecruitmentDetails from "./pages/Sponsor/RecruitmentDetails";
 import RegulatoryDetails from "./pages/Sponsor/RegulatoryDetails";
@@ -248,33 +245,6 @@ function App() {
       />
 
       <Route
-        path="/logs"
-        element={
-          <ProtectedRoute>
-            <LogsPage />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/logs/training"
-        element={
-          <ProtectedRoute>
-            <TrainingLogPage />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/logs/delegation"
-        element={
-          <ProtectedRoute>
-            <DelegationLogPage />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
         path="/audit-logs"
         element={
           <ProtectedRoute>
@@ -283,15 +253,10 @@ function App() {
         }
       />
 
-      <Route
-        path="/delegation"
-        element={<Navigate to="/logs/delegation" replace />}
-      />
-
-      <Route
-        path="/training"
-        element={<Navigate to="/logs/training" replace />}
-      />
+      {/* ---- Global Logs module removed by request. Training & Delegation
+      logs now live inside each study at Studies → Study → Logs tab. Old
+      /logs, /logs/training, /logs/delegation, /delegation, /training
+      routes have been removed. ---- */}
 
       <Route
         path="/ereg-comments"
@@ -599,7 +564,7 @@ function App() {
         path="/site-details"
         element={
           <ProtectedRoute allowedRoles={SPONSOR_ADMIN_ROLES}>
-            <SiteDetails />
+            <SiteDetailsPage />
           </ProtectedRoute>
         }
       />

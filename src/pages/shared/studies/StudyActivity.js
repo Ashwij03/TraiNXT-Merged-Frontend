@@ -1,5 +1,6 @@
 import RecentActivity from "../../../components/dashboard/shared/RecentActivity";
 import StudyComments from "./StudyComments";
+import CommentModal from "../../../comments/CommentModal";
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { getStudyLogs } from "../../../services/adminService";
@@ -35,6 +36,8 @@ const upcomingActivities = [
 function StudyActivity() {
     const { id: studyCode } = useParams();
     const [showComposeModal, setShowComposeModal] = useState(false);
+    const [showCommentModal, setShowCommentModal] = useState(false);
+    const [selectedActivity, setSelectedActivity] = useState(null);
 
     // D2 (Activity Access Control): Recent Activity is sourced from the
     // shared, already role/site-scoped getStudyLogs() service (same source
@@ -115,17 +118,29 @@ function StudyActivity() {
                     <th>Owner</th>
                     <th>Due Date</th>
                     <th>Status</th>
+                    <th>Comment</th>
                 </tr>
             </thead>
 
             <tbody>
                 {upcomingActivities.map((item) => (
-                    <tr key={item.id}>
-                        <td>{item.activity}</td>
-                        <td>{item.owner}</td>
-                        <td>{item.dueDate}</td>
-                        <td>{item.status}</td>
-                    </tr>
+                  <tr key={item.id}>
+    <td>{item.activity}</td>
+    <td>{item.owner}</td>
+    <td>{item.dueDate}</td>
+    <td>{item.status}</td>
+
+    <td>
+        <button
+            onClick={() => {
+                setSelectedActivity(item);
+                setShowCommentModal(true);
+            }}
+        >
+            Comment
+        </button>
+    </td>
+</tr>
                 ))}
             </tbody>
         </table>
@@ -139,18 +154,30 @@ function StudyActivity() {
                     <th>Activity</th>
                     <th>Owner</th>
                     <th>Due Date</th>
-                    <th>Status</th>
+                  <th>Status</th>
+                  <th>Comment</th>
                 </tr>
             </thead>
 
             <tbody>
                 {overdueActivities.map((item) => (
                     <tr key={item.id}>
-                        <td>{item.activity}</td>
-                        <td>{item.owner}</td>
-                        <td>{item.dueDate}</td>
-                        <td>{item.status}</td>
-                    </tr>
+    <td>{item.activity}</td>
+    <td>{item.owner}</td>
+    <td>{item.dueDate}</td>
+    <td>{item.status}</td>
+
+    <td>
+        <button
+            onClick={() => {
+                setSelectedActivity(item);
+                setShowCommentModal(true);
+            }}
+        >
+            Comment
+        </button>
+    </td>
+</tr>
                 ))}
             </tbody>
         </table>
@@ -215,6 +242,23 @@ function StudyActivity() {
 
         </div>
       )}
+      {showCommentModal && selectedActivity && (
+  <CommentModal
+    onClose={() => {
+      setShowCommentModal(false);
+      setSelectedActivity(null);
+    }}
+    visitId={selectedActivity.id}
+    subject="Study Activity"
+    visit={selectedActivity.activity}
+    study={studyCode}
+    activityId={selectedActivity.id}
+    activityName={selectedActivity.activity}
+    activityType={selectedActivity.status}
+    module="Study Activity"
+    sourceView="StudyActivity"
+  />
+)}
 
     </div>
     

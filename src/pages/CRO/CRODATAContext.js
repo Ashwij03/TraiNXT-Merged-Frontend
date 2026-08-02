@@ -15,6 +15,7 @@ import {
   getUpcomingVisitsWindow,
   SCHEDULES_EVENT
 } from "../../services/visitScheduleService";
+import { useComments } from "../../comments/CommentsContext";
 
 const CRODataContext = createContext();
 
@@ -95,16 +96,6 @@ function getSharedReports() {
   return readStorageArray("reports");
 }
 
-function getSharedComments() {
-  return readStorageArray("comments").map((comment) => ({
-    ...comment,
-    message: comment.description || comment.message || comment.text || "",
-    author: comment.createdBy || comment.author || "Unknown",
-    subject: comment.subjectId || comment.subject || "",
-    date: comment.createdAt || comment.date || "",
-  }));
-}
-
 function getSharedNotifications() {
   return readStorageArray("notifications");
 }
@@ -116,12 +107,14 @@ function getSharedFiles() {
 export const CROProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
+  // Consume canonical comments from CommentsContext instead of maintaining duplicate state
+  const { comments } = useComments();
+
   const [studies, setStudies] = useState(() => getSharedStudies());
   const [subjects, setSubjects] = useState(() => getSharedSubjects());
   const [visits, setVisits] = useState(() => getSharedVisits());
   const [documents, setDocuments] = useState(() => getSharedDocuments());
   const [reports, setReports] = useState(() => getSharedReports());
-  const [comments, setComments] = useState(() => getSharedComments());
   const [notifications, setNotifications] = useState(() =>
     getSharedNotifications(),
   );
@@ -139,7 +132,6 @@ export const CROProvider = ({ children }) => {
     setVisits(getSharedVisits());
     setDocuments(getSharedDocuments());
     setReports(getSharedReports());
-    setComments(getSharedComments());
     setNotifications(getSharedNotifications());
     setFiles(getSharedFiles());
   }, []);
@@ -157,7 +149,6 @@ export const CROProvider = ({ children }) => {
     window.addEventListener(SCHEDULES_EVENT, handleSharedDataUpdate);
     window.addEventListener("documents-updated", handleSharedDataUpdate);
     window.addEventListener("reports-updated", handleSharedDataUpdate);
-    window.addEventListener("comments-updated", handleSharedDataUpdate);
     window.addEventListener("notifications-updated", handleSharedDataUpdate);
     window.addEventListener("files-updated", handleSharedDataUpdate);
     window.addEventListener("sponsor-data-updated", handleSharedDataUpdate);
@@ -170,7 +161,6 @@ export const CROProvider = ({ children }) => {
       window.removeEventListener(SCHEDULES_EVENT, handleSharedDataUpdate);
       window.removeEventListener("documents-updated", handleSharedDataUpdate);
       window.removeEventListener("reports-updated", handleSharedDataUpdate);
-      window.removeEventListener("comments-updated", handleSharedDataUpdate);
       window.removeEventListener(
         "notifications-updated",
         handleSharedDataUpdate,

@@ -11,6 +11,8 @@ import {
   FiTrash2,
 } from "react-icons/fi";
 import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
+import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
+import SubjectComments from "../subjects/SubjectComments";
 import {
   canAddSubject,
   canEditSubjectContent,
@@ -131,12 +133,15 @@ function getSubjectsForStudy(subjectsByStudy, studyId) {
 }
 
 function getSubjectDetailCards(subject, siteSources = []) {
-  const siteDisplay = subject?.site
-    ? resolveSiteDisplay(subject.site, {
-        sources: siteSources,
-        fallback: subject.site || "—"
-      })
-    : "—";
+  const latestSite =
+  getSubjectStudyDefaults(subject?.studyId).site || subject?.site;
+
+const siteDisplay = latestSite
+  ? resolveSiteDisplay(latestSite, {
+      sources: siteSources,
+      fallback: latestSite,
+    })
+  : "—";
 
   return [
     {
@@ -147,10 +152,13 @@ function getSubjectDetailCards(subject, siteSources = []) {
       label: "Status",
       value: subject?.status || "—",
     },
-    {
-      label: "Principal Investigator",
-      value: subject?.pi || "—",
-    },
+   {
+  label: "Principal Investigator",
+  value:
+    getSubjectStudyDefaults(subject?.studyId).pi ||
+    subject?.pi ||
+    "—",
+},
     {
       label: "Study ID",
       value: subject?.studyId || "—",
@@ -192,8 +200,15 @@ function StudySubjects({
   const [searchTerm, setSearchTerm] = useState("");
   const [showSubjectModal, setShowSubjectModal] = useState(false);
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
+  // Phase-7: Subject Details "Comments" button toggles a shared modal.
+  const [showSubjectCommentsModal, setShowSubjectCommentsModal] = useState(false);
   const [newSubject, setNewSubject] = useState(emptySubjectForm);
   const [editingSubjectId, setEditingSubjectId] = useState(null);
+  const [subjectModalError, setSubjectModalError] = useState("");
+  // Phase-7 IMP-MOD-2: replace window.alert/window.confirm with standardized
+  // modals so subject flows never use browser-native dialogs.
+  const [subjectNotice, setSubjectNotice] = useState(null);
+  const [subjectToDelete, setSubjectToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -253,15 +268,6 @@ function StudySubjects({
       window.removeEventListener("storage", refreshSubjects);
     };
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem(
-      "selectedStudy",
-      JSON.stringify({
-        code: studyId,
-      })
-    );
-  }, [studyId]);
 
   useEffect(() => {
   const loadSelectedSubject = () => {
@@ -356,11 +362,17 @@ function StudySubjects({
     );
   };
 
-  const handleSaveSubject = () => {
+  const handleSaveSubject = (event) => {
+    if (event && typeof event.preventDefault === "function") {
+      event.preventDefault();
+    }
+
+    setSubjectModalError("");
+
     const subjectId = newSubject.id.trim();
 
     if (!studyId || !subjectId) {
-      window.alert("Subject ID is required.");
+      setSubjectModalError("Subject ID is required.");
       return;
     }
 
@@ -378,7 +390,7 @@ function StudySubjects({
         authoritativeStudy &&
         authoritativeStudy.status === STUDY_STATUS_COMPLETED
       ) {
-        window.alert(COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE);
+        setSubjectModalError(COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE);
         return;
       }
     } else {
@@ -387,7 +399,7 @@ function StudySubjects({
         authoritativeStudy &&
         authoritativeStudy.status === STUDY_STATUS_COMPLETED
       ) {
-        window.alert(COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE);
+        setSubjectModalError(COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE);
         return;
       }
     }
@@ -399,7 +411,7 @@ function StudySubjects({
     );
 
     if (duplicateExists) {
-      window.alert("A subject with this Subject ID already exists.");
+      setSubjectModalError("A subject with this Subject ID already exists.");
       return;
     }
 
@@ -423,14 +435,14 @@ function StudySubjects({
         if (normalizeValue(subject.id) !== normalizeValue(editingSubjectId)) {
           return subject;
         }
-
+      const latestDefaults = getSubjectStudyDefaults(studyId);
         const merged = {
           ...subject,
           ...newSubject,
           id: subjectId,
           initials: newSubject.initials.trim(),
-          pi: newSubject.pi.trim(),
-          site: newSubject.site.trim(),
+          pi: latestDefaults.pi,
+          site: latestDefaults.site,
           studyId,
           updatedAt: now,
         };
@@ -465,7 +477,7 @@ function StudySubjects({
       try {
         updateSubject(studyId, editingSubjectId, editedSubject);
       } catch (error) {
-        window.alert(
+        setSubjectModalError(
           (error && error.message) || COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE
         );
         return;
@@ -514,7 +526,7 @@ function StudySubjects({
       try {
         createdSubject = createSubject(studyId, subjectToAdd);
       } catch (error) {
-        window.alert(
+        setSubjectModalError(
           (error && error.message) ||
             COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE
         );
@@ -551,7 +563,15 @@ function StudySubjects({
 
     setNewSubject(emptySubjectForm);
     setEditingSubjectId(null);
+    setSubjectModalError("");
     setShowSubjectModal(false);
+  };
+
+  const closeSubjectModal = () => {
+    setShowSubjectModal(false);
+    setNewSubject(emptySubjectForm);
+    setEditingSubjectId(null);
+    setSubjectModalError("");
   };
 
   const openAddSubjectModal = () => {
@@ -559,11 +579,15 @@ function StudySubjects({
     // the target study is Completed. Shared service still enforces this
     // as defense in depth if the flow is somehow reached.
     if (isStudyCompleted) {
-      window.alert(COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE);
+      setSubjectNotice({
+        title: "Add Subject Unavailable",
+        message: COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE,
+      });
       return;
     }
 
     setEditingSubjectId(null);
+    setSubjectModalError("");
     setNewSubject({
       ...emptySubjectForm,
       ...getStudyDerivedSubjectFormFields(),
@@ -580,11 +604,15 @@ function StudySubjects({
     // the target study is Completed. Shared service still enforces this
     // as defense in depth if the flow is somehow reached.
     if (isStudyCompleted) {
-      window.alert(COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE);
+      setSubjectNotice({
+        title: "Edit Subject Unavailable",
+        message: COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE,
+      });
       return;
     }
 
     setEditingSubjectId(subject.id);
+    setSubjectModalError("");
     setNewSubject({
       id: subject.id || "",
       initials: subject.initials || "",
@@ -592,8 +620,8 @@ function StudySubjects({
       screeningDate: subject.screeningDate || "",
       enrollmentDate: subject.enrollmentDate || "",
       currentVisit: subject.currentVisit || "",
-      pi: subject.pi || "",
-      site: subject.site || "",
+      pi: getSubjectStudyDefaults(studyId).pi || subject.pi || "",
+      site: getSubjectStudyDefaults(studyId).site || subject.site || "",
     });
     setShowSubjectModal(true);
   };
@@ -603,13 +631,17 @@ function StudySubjects({
       return;
     }
 
-    const confirmed = window.confirm(
-      `Delete subject ${subject.id}? This cannot be undone.`
-    );
+    // Phase-7 IMP-MOD-2: open the shared DeleteConfirmationModal instead of
+    // window.confirm. The actual delete happens in confirmDeleteSubject.
+    setSubjectToDelete(subject);
+  };
 
-    if (!confirmed) {
+  const confirmDeleteSubject = () => {
+    if (!subjectToDelete) {
       return;
     }
+
+    const subject = subjectToDelete;
 
     const updatedSubjectsForStudy = subjectsData.filter(
       (item) => normalizeValue(item.id) !== normalizeValue(subject.id)
@@ -627,6 +659,8 @@ function StudySubjects({
       localStorage.removeItem(SELECTED_SUBJECT_STORAGE_KEY);
       setSelectedSubjectId(null);
     }
+
+    setSubjectToDelete(null);
   };
 
   const openSubjectFolder = (subject, shouldNavigate = false) => {
@@ -680,6 +714,17 @@ function StudySubjects({
 
           <div className="subject-details-title-row">
             <h2>{selectedSubject.id}</h2>
+            {/* Phase-7: opens the shared Subject Comments modal.
+                We deliberately don't add another Subject Comments
+                component — the existing SubjectComments.js is rendered
+                in modal mode. */}
+            <button
+              type="button"
+              className="subject-details-comments-btn"
+              onClick={() => setShowSubjectCommentsModal(true)}
+            >
+              Comments
+            </button>
           </div>
 
           <div className="subject-details-grid">
@@ -707,6 +752,15 @@ function StudySubjects({
             onBackToSubjects={closeSubjectFolder}
           />
         </div>
+
+        {showSubjectCommentsModal && (
+          <SubjectComments
+            asModal
+            subjectId={selectedSubject.id}
+            studyId={studyId}
+            onClose={() => setShowSubjectCommentsModal(false)}
+          />
+        )}
       </div>
     );
   }
@@ -789,14 +843,21 @@ function StudySubjects({
                     <td>{subject.id || "—"}</td>
                     <td>{subject.initials || "—"}</td>
                     <td>{subject.status || "—"}</td>
-                    <td>{subject.pi || "—"}</td>
+                    <td>{getSubjectStudyDefaults(studyId).pi || subject.pi || "—"}</td>
                     <td>
-                      {subject.site
-                        ? resolveSiteDisplay(subject.site, {
-                            sources: getStudies(),
-                            fallback: subject.site
-                          })
-                        : "—"}
+                     {
+  (() => {
+    const latestSite =
+      getSubjectStudyDefaults(studyId).site || subject.site;
+
+    return latestSite
+      ? resolveSiteDisplay(latestSite, {
+          sources: getStudies(),
+          fallback: latestSite,
+        })
+      : "—";
+  })()
+}
                     </td>
                     <td>{subject.screeningDate || "—"}</td>
                     <td>{subject.enrollmentDate || "—"}</td>
@@ -988,245 +1049,348 @@ function StudySubjects({
       )}
 
       {showSubjectModal && (
-        <div className="subject-modal-overlay">
-          <div className="subject-modal">
-            <h3>{editingSubjectId ? "Edit Subject" : "Add New Subject"}</h3>
+        <div className="subject-modal-overlay" role="presentation">
+          <div
+            className="subject-modal"
+            role="dialog"
+            aria-labelledby="subject-modal-title"
+            aria-modal="true"
+          >
+            <div className="subject-modal-header">
+              <div>
+                <h3 id="subject-modal-title">
+                  {editingSubjectId ? "Edit Subject" : "Add New Subject"}
+                </h3>
+                <p className="subject-modal-subtitle">
+                  {editingSubjectId
+                    ? "Update the subject details below and save your changes."
+                    : "Enter the details for the new subject."}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="subject-modal-close"
+                onClick={closeSubjectModal}
+                aria-label="Close modal"
+              >
+                ×
+              </button>
+            </div>
 
-            <label htmlFor="subject-id">Subject ID</label>
-            <input
-              id="subject-id"
-              placeholder="Subject ID"
-              value={newSubject.id}
-              onChange={(event) =>
-                setNewSubject({
-                  ...newSubject,
-                  id: event.target.value,
-                })
-              }
-            />
+            <form
+              className="subject-modal-form"
+              onSubmit={handleSaveSubject}
+              noValidate
+            >
+              <div className="form-group">
+                <label htmlFor="subject-id">Subject ID</label>
+                <input
+                  id="subject-id"
+                  type="text"
+                  placeholder="Subject ID"
+                  value={newSubject.id}
+                  onChange={(event) =>
+                    setNewSubject({
+                      ...newSubject,
+                      id: event.target.value,
+                    })
+                  }
+                  required
+                />
+              </div>
 
-            <label htmlFor="subject-initials">Initials</label>
-            <input
-              id="subject-initials"
-              placeholder="Initials"
-              value={newSubject.initials}
-              onChange={(event) =>
-                setNewSubject({
-                  ...newSubject,
-                  initials: event.target.value,
-                })
-              }
-            />
+              <div className="form-group">
+                <label htmlFor="subject-initials">Initials</label>
+                <input
+                  id="subject-initials"
+                  type="text"
+                  placeholder="Initials"
+                  value={newSubject.initials}
+                  onChange={(event) =>
+                    setNewSubject({
+                      ...newSubject,
+                      initials: event.target.value,
+                    })
+                  }
+                />
+              </div>
 
-            <label htmlFor="subject-pi">Principal Investigator</label>
-            {editingSubjectId ? (
-              <input
-                id="subject-pi"
-                placeholder="Principal Investigator"
-                value={newSubject.pi}
-                onChange={(event) =>
-                  setNewSubject({
-                    ...newSubject,
-                    pi: event.target.value,
-                  })
-                }
-              />
-            ) : (
-              <input
-                id="subject-pi"
-                placeholder="Principal Investigator"
-                value={inheritedSubjectFields.pi || "—"}
-                readOnly
-                aria-readonly="true"
-              />
-            )}
-
-            <label htmlFor="subject-site">Site</label>
-            {editingSubjectId ? (
-              (() => {
-                const availableSites = (getStudies() || []).filter(
-                  (study) =>
-                    study && (study.siteNumber || study.site || study.location)
-                );
-
-                if (availableSites.length > 0) {
-                  return (
-                    <select
-                      id="subject-site"
-                      value={newSubject.site}
-                      onChange={(event) =>
-                        setNewSubject({
-                          ...newSubject,
-                          site: event.target.value,
-                        })
-                      }
-                    >
-                      <option value="">Select Site</option>
-                      {availableSites.map((study) => {
-                        const number =
-                          study.siteNumber ||
-                          study.number ||
-                          study.siteNo ||
-                          "";
-                        const name =
-                          study.site ||
-                          study.siteName ||
-                          study.location ||
-                          "";
-                        const optionValue = number || name;
-                        const label =
-                          number && name
-                            ? `${number} — ${name}`
-                            : number || name;
-                        return (
-                          <option
-                            key={`${study.id || study.code || optionValue}`}
-                            value={optionValue}
-                          >
-                            {label}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  );
-                }
-
-                return (
+              <div className="form-group">
+                <label htmlFor="subject-pi">Principal Investigator</label>
+                {editingSubjectId ? (
                   <input
-                    id="subject-site"
-                    placeholder="Site"
-                    value={newSubject.site}
+                    id="subject-pi"
+                    type="text"
+                    placeholder="Principal Investigator"
+                    value={newSubject.pi}
                     onChange={(event) =>
                       setNewSubject({
                         ...newSubject,
-                        site: event.target.value,
+                        pi: event.target.value,
                       })
                     }
                   />
-                );
-              })()
-            ) : (
+                ) : (
+                  <input
+                    id="subject-pi"
+                    type="text"
+                    placeholder="Principal Investigator"
+                    value={inheritedSubjectFields.pi || "—"}
+                    readOnly
+                    aria-readonly="true"
+                  />
+                )}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="subject-site">Site</label>
+                {editingSubjectId ? (
+                  (() => {
+                    const availableSites = (getStudies() || []).filter(
+                      (study) =>
+                        study &&
+                        (study.siteNumber || study.site || study.location)
+                    );
+
+                    if (availableSites.length > 0) {
+                      return (
+                        <select
+                          id="subject-site"
+                          value={newSubject.site}
+                          onChange={(event) =>
+                            setNewSubject({
+                              ...newSubject,
+                              site: event.target.value,
+                            })
+                          }
+                        >
+                          <option value="">Select Site</option>
+                          {availableSites.map((study) => {
+                            const number =
+                              study.siteNumber ||
+                              study.number ||
+                              study.siteNo ||
+                              "";
+                            const name =
+                              study.site ||
+                              study.siteName ||
+                              study.location ||
+                              "";
+                            const optionValue = number || name;
+                            const label =
+                              number && name
+                                ? `${number} — ${name}`
+                                : number || name;
+                            return (
+                              <option
+                                key={`${
+                                  study.id || study.code || optionValue
+                                }`}
+                                value={optionValue}
+                              >
+                                {label}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      );
+                    }
+
+                    return (
+                      <input
+                        id="subject-site"
+                        type="text"
+                        placeholder="Site"
+                        value={newSubject.site}
+                        onChange={(event) =>
+                          setNewSubject({
+                            ...newSubject,
+                            site: event.target.value,
+                          })
+                        }
+                      />
+                    );
+                  })()
+                ) : (
+                  <input
+                    id="subject-site"
+                    type="text"
+                    placeholder="Site"
+                    value={inheritedSubjectFields.siteDisplay || "—"}
+                    readOnly
+                    aria-readonly="true"
+                  />
+                )}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="subject-screening-date">Screening Date</label>
                 <input
-                  id="subject-site"
-                  placeholder="Site"
-                  value={inheritedSubjectFields.siteDisplay || "—"}
-                  readOnly
-                  aria-readonly="true"
+                  id="subject-screening-date"
+                  type="date"
+                  value={newSubject.screeningDate}
+                  onChange={(event) =>
+                    setNewSubject({
+                      ...newSubject,
+                      screeningDate: event.target.value,
+                    })
+                  }
                 />
-            )}
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="subject-screening-date">
-                Screening Date
-              </label>
+              <div className="form-group">
+                <label htmlFor="subject-enrollment-date">Enrollment Date</label>
+                <input
+                  id="subject-enrollment-date"
+                  type="date"
+                  value={newSubject.enrollmentDate}
+                  onChange={(event) =>
+                    setNewSubject({
+                      ...newSubject,
+                      enrollmentDate: event.target.value,
+                    })
+                  }
+                />
+              </div>
 
-              <input
-                id="subject-screening-date"
-                type="date"
-                value={newSubject.screeningDate}
-                onChange={(event) =>
-                  setNewSubject({
-                    ...newSubject,
-                    screeningDate: event.target.value,
-                  })
-                }
-              />
-            </div>
+              <div className="form-group">
+                <label htmlFor="subject-status">Status</label>
+                {/* Item 21: normal lifecycle stages (Screened / Enrolled /
+                    Ongoing / Completed) are derived automatically from the
+                    subject's actual screening date, enrollment date, current
+                    visit, and visit records. The manual control here is
+                    limited to terminal workflow actions (Withdrawn / Dropout)
+                    plus "Auto (derived)", which clears any manual override so
+                    the canonical derivation applies. */}
+                <select
+                  id="subject-status"
+                  value={
+                    SUBJECT_TERMINAL_STATES.includes(newSubject.status)
+                      ? newSubject.status
+                      : ""
+                  }
+                  onChange={(event) =>
+                    setNewSubject({
+                      ...newSubject,
+                      status: event.target.value,
+                    })
+                  }
+                >
+                  <option value="">Auto (derived from lifecycle data)</option>
+                  <option value="Withdrawn">Withdrawn</option>
+                  <option value="Dropout">Dropout</option>
+                </select>
+                <small className="subject-status-derived-hint">
+                  Derived status:{" "}
+                  {deriveSubjectLifecycleStatus(
+                    {
+                      ...newSubject,
+                      id: newSubject.id,
+                      studyId,
+                      status: "",
+                    },
+                    { studyId }
+                  ) || "—"}
+                </small>
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="subject-enrollment-date">
-                Enrollment Date
-              </label>
+              <div className="form-group">
+                <label htmlFor="subject-current-visit">Current Visit</label>
+                <select
+                  id="subject-current-visit"
+                  value={newSubject.currentVisit}
+                  onChange={(event) =>
+                    setNewSubject({
+                      ...newSubject,
+                      currentVisit: event.target.value,
+                    })
+                  }
+                >
+                  <option value="">Select</option>
+                  <option value="Screening">Screening</option>
+                  <option value="Enrollment">Enrollment</option>
+                  <option value="Visit 1">Visit 1</option>
+                  <option value="Visit 2">Visit 2</option>
+                  <option value="Visit 3">Visit 3</option>
+                  <option value="Follow-up">Follow-up</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
 
-              <input
-                id="subject-enrollment-date"
-                type="date"
-                value={newSubject.enrollmentDate}
-                onChange={(event) =>
-                  setNewSubject({
-                    ...newSubject,
-                    enrollmentDate: event.target.value,
-                  })
-                }
-              />
-            </div>
+              {subjectModalError && (
+                <p className="subject-modal-error" role="alert">
+                  {subjectModalError}
+                </p>
+              )}
 
-            <label htmlFor="subject-status">Status</label>
-            {/* Item 21: normal lifecycle stages (Screened / Enrolled / Ongoing /
-                Completed) are derived automatically from the subject's actual
-                screening date, enrollment date, current visit, and visit
-                records. The manual control here is limited to terminal
-                workflow actions (Withdrawn / Dropout) plus "Auto (derived)",
-                which clears any manual override so the canonical derivation
-                applies. */}
-            <select
-              id="subject-status"
-              value={
-                SUBJECT_TERMINAL_STATES.includes(newSubject.status)
-                  ? newSubject.status
-                  : ""
-              }
-              onChange={(event) =>
-                setNewSubject({
-                  ...newSubject,
-                  status: event.target.value,
-                })
-              }
-            >
-              <option value="">Auto (derived from lifecycle data)</option>
-              <option value="Withdrawn">Withdrawn</option>
-              <option value="Dropout">Dropout</option>
-            </select>
-            <small
-              className="subject-status-derived-hint"
-              style={{ display: "block", marginTop: "4px", color: "#64748b" }}
-            >
-              Derived status:{" "}
-              {deriveSubjectLifecycleStatus(
-                { ...newSubject, id: newSubject.id, studyId, status: "" },
-                { studyId }
-              ) || "—"}
-            </small>
+              <div className="subject-modal-actions">
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={closeSubjectModal}
+                >
+                  Cancel
+                </button>
+                <button type="submit">
+                  {editingSubjectId ? "Save Changes" : "Add Subject"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
-            <label htmlFor="subject-current-visit">Current Visit</label>
-            <select
-              id="subject-current-visit"
-              value={newSubject.currentVisit}
-              onChange={(event) =>
-                setNewSubject({
-                  ...newSubject,
-                  currentVisit: event.target.value,
-                })
-              }
-            >
-              <option value="">Select</option>
-              <option value="Screening">Screening</option>
-              <option value="Enrollment">Enrollment</option>
-              <option value="Visit 1">Visit 1</option>
-              <option value="Visit 2">Visit 2</option>
-              <option value="Visit 3">Visit 3</option>
-              <option value="Follow-up">Follow-up</option>
-              <option value="Completed">Completed</option>
-            </select>
-
-            <div className="modal-actions">
-              <button type="button" onClick={handleSaveSubject}>
-                {editingSubjectId ? "Save Changes" : "Add Subject"}
-              </button>
-
+      {/* Phase-7 IMP-MOD-2: standardized notice modal replaces window.alert()
+          for the completed-study guards. Uses the same subject-modal shell
+          for header/spacing/button consistency. */}
+      {subjectNotice && (
+        <div className="subject-modal-overlay" role="presentation">
+          <div
+            className="subject-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="subject-notice-title"
+          >
+            <div className="subject-modal-header">
+              <div>
+                <h3 id="subject-notice-title">{subjectNotice.title}</h3>
+                <p className="subject-modal-subtitle">
+                  This action is not allowed for the current study state.
+                </p>
+              </div>
               <button
                 type="button"
-                onClick={() => {
-                  setShowSubjectModal(false);
-                  setNewSubject(emptySubjectForm);
-                  setEditingSubjectId(null);
-                }}
+                className="subject-modal-close"
+                onClick={() => setSubjectNotice(null)}
+                aria-label="Close modal"
               >
-                Cancel
+                ×
+              </button>
+            </div>
+
+            <p className="subject-modal-error" role="alert">
+              {subjectNotice.message}
+            </p>
+
+            <div className="subject-modal-actions">
+              <button type="button" onClick={() => setSubjectNotice(null)}>
+                OK
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Phase-7 IMP-MOD-2: reuse shared DeleteConfirmationModal instead of
+          window.confirm(). Preserves existing subject delete behavior. */}
+      {subjectToDelete && (
+        <DeleteConfirmationModal
+          title="Delete Subject"
+          itemType="subject"
+          message={`Are you sure you want to delete subject ${subjectToDelete.id}? This action cannot be undone.`}
+          onClose={() => setSubjectToDelete(null)}
+          onConfirm={confirmDeleteSubject}
+        />
       )}
     </div>
   );
