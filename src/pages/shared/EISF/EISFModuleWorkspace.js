@@ -26,6 +26,8 @@ import {
   getSubModuleEnabledMap,
   setSubModuleEnabled,
 } from "./utils/subModuleStateUtils";
+import { hasPermission } from "../../../services/roleService";
+import PERMISSIONS from "../../../constants/permissions";
 import "./EISFModuleWorkspace.css";
 
 export default function EISFModuleWorkspace({
@@ -41,6 +43,13 @@ export default function EISFModuleWorkspace({
   const [documents, setDocuments] = useState(() =>
     initializeModuleDocuments(moduleConfig, studyCode, initialDocuments)
   );
+  // [Phase 11–13] Role Based Permission – eISF Module. Reuses the existing
+  // RBAC system (roleService.hasPermission + rolePermissions) — no new
+  // permission service. Monitor maps to the existing CRO role already
+  // defined in rolePermissions.js, so no per-role branching is needed here.
+  const canUploadDocs = useMemo(() => hasPermission(PERMISSIONS.UPLOAD_REGULATORY_DOCS), []);
+  const canEditDocs = useMemo(() => hasPermission(PERMISSIONS.EDIT_REGULATORY_DOCS), []);
+  const canDeleteDocs = useMemo(() => hasPermission(PERMISSIONS.DELETE_REGULATORY_DOCS), []);
   const [selectedSectionId, setSelectedSectionId] = useState(
     activeSectionId || moduleConfig.sections[0]?.id
   );
@@ -214,6 +223,9 @@ export default function EISFModuleWorkspace({
 
   const handleUpload = (formData) => {
     if (!activeSectionEnabled) return;
+    // RBAC guard: block upload even if the modal was reachable by some
+    // other path — the Upload button itself is also hidden below.
+    if (!canUploadDocs) return;
 
     const incomingName = (
       formData.documentName ||
@@ -282,6 +294,14 @@ export default function EISFModuleWorkspace({
       return;
     }
 
+    // RBAC guard: block save even if the Edit modal was reachable by some
+    // other path — the Edit action itself is also hidden in DocumentTable.
+    if (!canEditDocs) {
+      setEditOpen(false);
+      setSelectedDocument(null);
+      return;
+    }
+
     const documentName = (updatedDocument.documentName || "")
       .trim()
       .toLowerCase();
@@ -342,6 +362,9 @@ export default function EISFModuleWorkspace({
   const handleDelete = (document) => {
     // Item 9 guard: disabled sub-modules must not expose delete actions.
     if (!activeSectionEnabled) return;
+    // RBAC guard: block delete even if the action was reachable by some
+    // other path — the Delete action itself is also hidden in DocumentTable.
+    if (!canDeleteDocs) return;
 
     if (window.confirm(`Delete ${document.documentName}?`)) {
       setDocuments((prev) => prev.filter((item) => item.id !== document.id));
@@ -500,7 +523,9 @@ export default function EISFModuleWorkspace({
 
             <div className="eisf-documents-actions">
               <button type="button" onClick={handleExport}>⇩ Export</button>
-              <button type="button" className="primary" onClick={() => setShowUpload(true)}>Upload</button>
+              {canUploadDocs && (
+                <button type="button" className="primary" onClick={() => setShowUpload(true)}>Upload</button>
+              )}
               <button
                 type="button"
                 className="more-action"
@@ -559,6 +584,8 @@ export default function EISFModuleWorkspace({
             onDownload={handleDownload}
             onEdit={(document) => openModal(document, setEditOpen)}
             onDelete={handleDelete}
+            canEdit={canEditDocs}
+            canDelete={canDeleteDocs}
           />
 
           <div className="eisf-table-footer">
@@ -612,7 +639,7 @@ export default function EISFModuleWorkspace({
       </div>
 
       <UploadDocumentModal
-        open={showUpload && activeSectionEnabled}
+        open={showUpload && activeSectionEnabled && canUploadDocs}
         onClose={() => setShowUpload(false)}
         onUpload={handleUpload}
         categoryOptions={categoryOptions}

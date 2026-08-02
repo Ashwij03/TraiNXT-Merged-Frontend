@@ -21,8 +21,8 @@
 
 .ctms-table-header h3 {
   margin: 0;
-  font-size: var(--tnxt-font-size-xl);
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 800;
   color: var(--tnxt-text);
 }
 

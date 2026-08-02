@@ -149,7 +149,7 @@ function ProfilePhotoCard({
         )}
         {!compact && (
           <p className="profile-photo-help">
-            JPG or PNG recommended. Your photo appears in the header avatar.
+            
           </p>
         )}
         {message && (

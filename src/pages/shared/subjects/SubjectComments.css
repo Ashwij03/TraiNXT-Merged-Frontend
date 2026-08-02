@@ -1,0 +1,144 @@
+/* Phase-7 Subject Comments modal styles.
+ * Kept intentionally minimal — layout leans on the existing DataTable
+ * card styles and the shared modal-overlay pattern used elsewhere in
+ * the project. */
+
+.subject-comments-inline {
+  width: 100%;
+}
+
+.subject-comments-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.subject-comments-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.subject-comments-add-btn {
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.subject-comments-add-btn:hover {
+  background: #1765c1;
+}
+
+.subject-comments-row-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.subject-comments-action-btn {
+  background: #f1f3f4;
+  border: 1px solid #dadce0;
+  color: #202124;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.subject-comments-action-btn:hover:not(:disabled) {
+  background: #e8eaed;
+}
+
+.subject-comments-action-btn.danger {
+  color: #c5221f;
+  border-color: #f6c6c4;
+  background: #fdecea;
+}
+
+.subject-comments-action-btn.danger:hover:not(:disabled) {
+  background: #f9d7d5;
+}
+
+.subject-comments-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.subject-comments-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1500;
+  padding: 24px;
+}
+
+.subject-comments-modal {
+  background: #fff;
+  width: min(1200px, 100%);
+  max-height: 90vh;
+  border-radius: 8px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.subject-comments-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.subject-comments-modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.subject-comments-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  color: #5f6368;
+}
+
+.subject-comments-modal-close:hover {
+  color: #202124;
+}
+
+.subject-comments-modal-content {
+  padding: 20px 24px;
+  overflow: auto;
+  flex: 1;
+}
+
+.subject-comments-modal-footer {
+  padding: 12px 24px;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.subject-comments-close-btn {
+  background: #f1f3f4;
+  border: 1px solid #dadce0;
+  color: #202124;
+  padding: 8px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.subject-comments-close-btn:hover {
+  background: #e8eaed;
+}

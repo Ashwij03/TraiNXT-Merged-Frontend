@@ -3,8 +3,7 @@ import { useParams } from "react-router-dom";
 import useVisitPlans from "../../../hooks/useVisitPlans";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
 import RequestPermissionButton from "../../../components/common/RequestPermissionButton";
-import { canEditStudyContent } from "../../../utils/contentAccess";
-import { getCurrentUser } from "../../../services/roleService";
+import useCanEditStudyContent from "../../../hooks/useCanEditStudyContent";
 import { formatScheduleDisplayDate } from "../../../utils/formatScheduleDisplayDate";
 import {
   saveVisitPlan,
@@ -28,7 +27,7 @@ const WIZARD_STEPS = [
 
 function StudyVisitPlan() {
   const { id: studyCode } = useParams();
-  const canEdit = canEditStudyContent(getCurrentUser());
+  const canEdit = useCanEditStudyContent("Visit Plan", studyCode);
   const { plans, getPlanDetails, refresh } = useVisitPlans(studyCode);
   const { schedules, upcomingWindow } = useVisitSchedules({ studyCode });
   const upcomingVisits = useMemo(() => {
@@ -152,67 +151,128 @@ function StudyVisitPlan() {
         </div>
       </div>
 
-      <div className="visit-plan-filters">
-        <div className="visit-plan-upcoming">
-          <h3>Upcoming Visits</h3>
-
-          {upcomingVisits.length === 0 ? (
-            <p>No upcoming visits scheduled.</p>
-          ) : (
-            <>
-              <input
-                type="search"
-                placeholder="Search Procedure..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="planning-search"
-              />
-
-              <table className="planning-table">
-                <thead>
-                  <tr>
-                    <th>Subject</th>
-
-                    <th>Visit</th>
-
-                    <th>Date</th>
-
-                    <th>Status</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {upcomingVisits.map((visit, index) => (
-                    <tr key={visit.id || index}>
-                      <td>{visit.subjectId || "—"}</td>
-
-                      <td>{visit.visit}</td>
-
-                      <td>{formatScheduleDisplayDate(visit.date)}</td>
-
-                      <td>{visit.status}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </>
-          )}
+      <div className="visit-plan-upcoming">
+        <div className="visit-plan-upcoming-header">
+          <div className="visit-plan-upcoming-title">
+            <span className="visit-plan-upcoming-icon" aria-hidden="true">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+            </span>
+            <div>
+              <h3>Upcoming Visits</h3>
+              <p className="visit-plan-upcoming-subtitle">
+                Next scheduled visits for this study
+              </p>
+            </div>
+          </div>
+          <span className="visit-plan-upcoming-count">
+            {upcomingVisits.length} scheduled
+          </span>
         </div>
-        <input
-          type="search"
-          placeholder="Search visit plans..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="all">All statuses</option>
-          <option value="Draft">Draft</option>
-          <option value="Active">Active</option>
-          <option value="Archived">Archived</option>
-        </select>
+
+        {upcomingVisits.length === 0 ? (
+          <div className="visit-plan-upcoming-empty">
+            <p>No upcoming visits scheduled.</p>
+          </div>
+        ) : (
+          <div className="visit-plan-upcoming-table-wrap">
+            <table className="planning-table visit-plan-upcoming-table">
+              <thead>
+                <tr>
+                  <th>Subject</th>
+                  <th>Visit</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {upcomingVisits.map((visit, index) => (
+                  <tr key={visit.id || index}>
+                    <td>
+                      <span className="visit-plan-subject-cell">
+                        {visit.subjectId || "—"}
+                      </span>
+                    </td>
+                    <td>{visit.visit}</td>
+                    <td>{formatScheduleDisplayDate(visit.date)}</td>
+                    <td>
+                      <span
+                        className={`status-pill status-${String(
+                          visit.status || "scheduled",
+                        )
+                          .toLowerCase()
+                          .replace(/\s+/g, "-")}`}
+                      >
+                        {visit.status || "Scheduled"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <div className="visit-plan-filters">
+        <div className="visit-plan-filters-header">
+          <h3>Search Visit Plan</h3>
+          <p className="visit-plan-filters-subtitle">
+            Filter visit plans by name or status
+          </p>
+        </div>
+        <div className="visit-plan-filters-controls">
+          <div className="visit-plan-search-wrap">
+            <span className="visit-plan-search-icon" aria-hidden="true">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </span>
+            <input
+              type="search"
+              placeholder="Search visit plans..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="visit-plan-search-input"
+            />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="visit-plan-status-select"
+          >
+            <option value="all">All statuses</option>
+            <option value="Draft">Draft</option>
+            <option value="Active">Active</option>
+            <option value="Archived">Archived</option>
+          </select>
+        </div>
       </div>
 
       {filteredPlans.length === 0 ? (

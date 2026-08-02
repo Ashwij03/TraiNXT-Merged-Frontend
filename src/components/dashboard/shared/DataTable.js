@@ -16,7 +16,12 @@ function DataTable({
   filters = [],
   pagination = false,
   initialPageSize = 10,
-  pageSizeOptions = [5, 10, 20, 50]
+  pageSizeOptions = [5, 10, 20, 50],
+  // Phase-6 Subject Comments: consumer-supplied key that forces the
+  // pagination state back to page 1 when it changes. Used by
+  // SubjectComments so switching to a different subject always lands
+  // on page 1 even if the row count happens to be identical.
+  resetPageKey
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterValues, setFilterValues] = useState({});
@@ -87,6 +92,14 @@ function DataTable({
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, filterValues, pageSize, data.length]);
+
+  // Phase-6: external reset trigger (e.g. Subject change in
+  // SubjectComments). Kept separate from the data.length effect above
+  // so the two triggers don't collide when the row count is unchanged
+  // but the underlying context is different.
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [resetPageKey]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -171,7 +184,13 @@ function DataTable({
 
       <div className="ctms-table-wrapper">
 
-        <table className="ctms-table">
+      <table
+  className="ctms-table"
+  style={{
+    tableLayout: "fixed",
+    width: "100%",
+  }}
+>
 
           <thead>
 
@@ -202,15 +221,31 @@ function DataTable({
 
                   {columns.map((column) => (
 
-                    <td
-                      key={
-                        column.key
-                      }
-                    >
-                      {typeof column.render === "function"
-                        ? column.render(row[column.key], row)
-                        : row[column.key]}
-                    </td>
+  <td
+  key={column.key}
+  style={
+    column.width
+      ? {
+          width: column.width,
+          maxWidth: column.width,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace:
+            column.key === "comment" ? "normal" : "nowrap",
+          wordBreak: "break-word",
+          verticalAlign: "top",
+        }
+      : {
+          whiteSpace: "normal",
+          wordBreak: "break-word",
+          verticalAlign: "top",
+        }
+  }
+>
+  {typeof column.render === "function"
+    ? column.render(row[column.key], row)
+    : row[column.key]}
+</td>
 
                   ))}
 

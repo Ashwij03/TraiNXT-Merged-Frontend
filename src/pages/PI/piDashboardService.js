@@ -18,8 +18,14 @@ import {
 } from "../../services/visitScheduleService";
 import {
   addCommentRecord,
+  editCommentRecord,
   resolveCommentRecord,
+  updateCommentStatusRecord,
 } from "../../services/commentService";
+// BUG-5.4 Finding 1: studies are no longer duplicated into
+// localStorage["piDashboardData"]. studyService.getStudies() is now the
+// single canonical source; the dashboard layer only reads from it.
+import { getStudies } from "../../services/studyService";
 
 const STORAGE_KEYS = {
   dashboard: "piDashboardData",
@@ -43,9 +49,10 @@ const writeStorage = (key, data) => {
 };
 
 /*
-  IMPORTANT:
-  Studies are intentionally empty here.
-  Actual studies must come from the Admin-created / saved PI dashboard data.
+  BUG-5.4 Finding 1:
+  Studies are no longer part of this default object. Studies are now
+  always derived live from studyService.getStudies() in getDashboardData()
+  rather than being defaulted/merged here.
 */
 export const getDefaultDashboardData = () => ({
   kpis: {
@@ -61,7 +68,6 @@ export const getDefaultDashboardData = () => ({
     openComments: 0,
     comments: 0,
   },
-  studies: [],
   recentSubjects: [],
   upcomingVisits: [],
   pendingQueries: [],
@@ -88,10 +94,20 @@ export const getDashboardData = () => {
   const saved = readStorage(STORAGE_KEYS.dashboard, {});
   const dynamicUpcomingVisits = getDynamicUpcomingVisits();
 
+  // BUG-5.4 Finding 1: studies are read live from studyService, never from
+  // the saved piDashboardData copy, eliminating the duplicate store.
+  let canonicalStudies = [];
+  try {
+    const result = getStudies();
+    canonicalStudies = Array.isArray(result) ? result : [];
+  } catch {
+    canonicalStudies = [];
+  }
+
   const mergedData = {
     ...defaults,
     ...saved,
-    studies: Array.isArray(saved.studies) ? saved.studies : defaults.studies,
+    studies: canonicalStudies,
     recentSubjects: Array.isArray(saved.recentSubjects)
       ? saved.recentSubjects
       : defaults.recentSubjects,
@@ -126,7 +142,15 @@ export const saveDashboardData = (data) => {
     lastUpdated: new Date().toLocaleString(),
   };
 
-  writeStorage(STORAGE_KEYS.dashboard, payload);
+  // BUG-5.4 Finding 1: studies must never be written back into
+  // localStorage["piDashboardData"] — studyService is the sole store of
+  // record. Everything else about the payload is preserved as-is, and the
+  // returned object still carries studies for immediate in-memory use by
+  // callers.
+  const storablePayload = { ...payload };
+  delete storablePayload.studies;
+
+  writeStorage(STORAGE_KEYS.dashboard, storablePayload);
   dispatchNotificationsUpdated();
 
   return payload;
@@ -346,6 +370,9 @@ export const addComment = (comment = {}) => {
       study: comment.study || comment.studyCode || "",
       site: comment.site || "",
       stage: comment.type || comment.stage || "General",
+      module: "PIDashboard",
+      sourceView: "pi-dashboard",
+      activity: comment.type || comment.stage || comment.activity || "General",
     },
     user
   );
@@ -361,40 +388,35 @@ export const updateComment = (commentId, updates = {}) => {
   const user = getCurrentUser();
   const nextStatus = updates.status;
 
-  if (
-    nextStatus === "resolved" ||
-    nextStatus === "Resolved" ||
-    nextStatus === "open" ||
-    nextStatus === "Open" ||
-    nextStatus === "unresolved"
-  ) {
-    if (nextStatus === "resolved" || nextStatus === "Resolved") {
-      resolveCommentRecord(commentId, user);
-      return getCommentsData().find((comment) => comment.id === commentId) || null;
-    }
+  // Phase 7 (Cross-View Comments Synchronization): every mutation on a
+  // comment must go through commentService, which dispatches both
+  // "comments-updated" and "sponsor-data-updated". Previously the
+  // non-status branch here wrote via saveCommentsData, which only fired
+  // "comments-updated" + "pi-comments-updated", leaving the Sponsor and
+  // Study views one step behind until reload.
 
-    const updatedComments = getCommentsData().map((comment) =>
-      comment.id === commentId
-        ? {
-            ...comment,
-            ...updates,
-            status: "Open",
-          }
-        : comment
-    );
-
-    return saveCommentsData(updatedComments).find(
-      (comment) => comment.id === commentId
-    );
+  // 1) Status transitions (open/unresolved/resolved/pending-review/etc.)
+  //    always funnel through updateCommentStatusRecord so the same
+  //    permission checks + event broadcast apply everywhere.
+  if (nextStatus !== undefined && nextStatus !== null && nextStatus !== "") {
+    updateCommentStatusRecord(commentId, nextStatus, user);
   }
 
-  const updatedComments = getCommentsData().map((comment) =>
-    comment.id === commentId ? { ...comment, ...updates } : comment
-  );
+  // 2) Body/priority/stage edits go through editCommentRecord (which is
+  //    also permission-checked via canEditComment). We hand it the same
+  //    update payload; editCommentRecord whitelists which fields it will
+  //    actually apply.
+  const hasBodyEdit =
+    typeof updates.description === "string" ||
+    typeof updates.text === "string" ||
+    typeof updates.priority === "string" ||
+    typeof updates.stage === "string";
 
-  return saveCommentsData(updatedComments).find(
-    (comment) => comment.id === commentId
-  );
+  if (hasBodyEdit) {
+    editCommentRecord(commentId, updates, user);
+  }
+
+  return getCommentsData().find((comment) => comment.id === commentId) || null;
 };
 
 export const deleteComment = (commentId) => {

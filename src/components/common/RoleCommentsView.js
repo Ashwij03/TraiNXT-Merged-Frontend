@@ -8,6 +8,7 @@ import {
 } from "../../services/commentService";
 import { getAssignedSite, getCurrentUser } from "../../services/roleService";
 import { useComments } from "../../comments/CommentsContext";
+import CommentModal from "../../comments/CommentModal";
 
 const SORT_FIELDS = {
   id: "id",
@@ -72,6 +73,7 @@ export default function RoleCommentsView({ embedded = false }) {
   const [selectedComment, setSelectedComment] = useState(null);
   const [sortField, setSortField] = useState("date");
   const [sortDir, setSortDir] = useState("desc");
+  const [showAddCommentModal, setShowAddCommentModal] = useState(false);
 
   const availableStudies = useMemo(() => {
     const studies = [
@@ -182,12 +184,6 @@ export default function RoleCommentsView({ embedded = false }) {
 
   const toggleStatus = (comment) => {
     if (comment.status === "resolved") {
-      // Reopen goes through the canonical commentService entry point so it
-      // fires the same comments-updated / sponsor-data-updated events every
-      // other consumer subscribes to (Study/Subject/Operations Comments,
-      // dashboard KPI widgets, PendingCommentsWidget). Previously this
-      // wrote via saveComments directly, which only dispatched
-      // admin-data-updated and left other views stale until reload.
       reopenComment(comment.id);
       return;
     }
@@ -199,18 +195,7 @@ export default function RoleCommentsView({ embedded = false }) {
     if (!canWriteComments(currentUser)) {
       return;
     }
-
-    const text = prompt("Enter comment");
-    if (!text) {
-      return;
-    }
-
-    createComment("", {
-      text,
-      study: selectedStudy === "All Studies" ? "" : selectedStudy,
-      site: selectedSite,
-      stage: "Monitoring",
-    });
+    setShowAddCommentModal(true);
   };
 
   const totalComments = sourceComments.length;
@@ -229,7 +214,7 @@ export default function RoleCommentsView({ embedded = false }) {
 
   return (
     <div
-      className={`pi-page-content comments-content${
+      className={`pi-page-content comments-content tnxt-compact${
         embedded ? " embedded" : ""
       }`}
     >
@@ -375,7 +360,7 @@ export default function RoleCommentsView({ embedded = false }) {
       </div>
 
       <div className="table-container">
-        <table className="pi-table comments-table">
+        <table className="pi-table comments-table ctms-standard-table">
           <thead>
             <tr>
               <th onClick={() => handleSort("id")} className="pi-sortable-th">
@@ -463,6 +448,29 @@ export default function RoleCommentsView({ embedded = false }) {
           </tbody>
         </table>
       </div>
+
+      {showAddCommentModal && (
+        <CommentModal
+          onClose={() => setShowAddCommentModal(false)}
+          context={{
+            study: selectedStudy,
+            site: selectedSite,
+            module: "RoleComments",
+            sourceView: "comments-view",
+          }}
+          onSubmit={(commentData) => {
+            createComment("", {
+              text: commentData.comment,
+              study: selectedStudy === "All Studies" ? "" : selectedStudy,
+              site: selectedSite,
+              module: "RoleComments",
+              sourceView: "comments-view",
+              stage: "Monitoring",
+            });
+            setShowAddCommentModal(false);
+          }}
+        />
+      )}
 
       {selectedComment && (
         <div className="modal-overlay">

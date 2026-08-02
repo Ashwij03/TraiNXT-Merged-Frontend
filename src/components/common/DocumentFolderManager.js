@@ -45,6 +45,7 @@ import { VISIT_STAGES } from "../../services/visitScheduleService";
 import { notifyDocumentAdded } from "../../services/notificationService";
 import {
   getCurrentUser,
+  getAssignedSite,
   getEffectiveRole,
   ROLE_LABELS,
 } from "../../services/roleService";
@@ -228,11 +229,29 @@ function DocumentCommentsPanel({
   documentName,
   studyCode,
   subjectId,
+  sectionId,
 }) {
   const study = getStudyByCode(studyCode);
   const studyStage = study?.status || "Monitoring";
+  const currentUser = getCurrentUser();
+  const assignedSite = getAssignedSite() || "";
   const [commentText, setCommentText] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Derive module and sourceView from sectionId
+  const getModuleAndSourceView = (section) => {
+    const mapping = {
+      subjects: { module: "DocumentMgmt:Subjects", sourceView: "subjects" },
+      studyFolder: { module: "DocumentMgmt:StudyFolder", sourceView: "study-folder" },
+      regulatory: { module: "DocumentMgmt:Regulatory", sourceView: "regulatory" },
+      eISF: { module: "DocumentMgmt:eISF", sourceView: "eisf" },
+      others: { module: "DocumentMgmt:Others", sourceView: "others" },
+      logs: { module: "DocumentMgmt:Logs", sourceView: "logs" },
+    };
+    return mapping[section] || { module: "DocumentMgmt", sourceView: "documents" };
+  };
+
+  const { module, sourceView } = getModuleAndSourceView(sectionId);
 
   const comments = useMemo(() => {
     void refreshKey;
@@ -248,7 +267,7 @@ function DocumentCommentsPanel({
   }, [studyCode, subjectId, documentId, documentName, studyStage, refreshKey]);
 
   const handleAdd = () => {
-    if (!commentText.trim() || !canWriteComments()) {
+    if (!commentText.trim() || !canWriteComments(currentUser)) {
       return;
     }
 
@@ -259,6 +278,10 @@ function DocumentCommentsPanel({
       documentName,
       description: commentText.trim(),
       stage: studyStage,
+      site: assignedSite,
+      module,
+      sourceView,
+      activity: documentName || "Document",
     });
 
     setCommentText("");
@@ -277,7 +300,7 @@ function DocumentCommentsPanel({
         <FiMessageSquare /> Document Comments
       </h5>
 
-      {canWriteComments() && (
+      {canWriteComments(currentUser) && (
         <div className="dfm-comment-compose">
           <textarea
             placeholder="Add a comment about this document..."
@@ -316,7 +339,7 @@ function DocumentCommentsPanel({
                 {comment.status}
               </span>
 
-              {comment.status === "Open" && canResolveComments() && (
+              {comment.status === "Open" && canResolveComments(currentUser) && (
                 <button type="button" onClick={() => handleResolve(comment.id)}>
                   Resolve
                 </button>
@@ -1648,6 +1671,7 @@ function DocumentFolderManager({
               documentName={viewDoc.name}
               studyCode={studyCode || contextKey.split("::")[0]}
               subjectId={subjectId || contextKey.split("::")[1]}
+              sectionId={sectionId}
             />
           </div>
         </div>

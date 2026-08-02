@@ -34,6 +34,7 @@ import {
 } from "../../../services/roleService";
 import { getStudies } from "../../../services/studyService";
 import { resolveSiteDisplay } from "../../../utils/siteDisplay";
+import "../../Admin/AdminPage.css";
 import "./AuditLogsPage.css";
 
 function buildDisplayRow(event, siteSources) {

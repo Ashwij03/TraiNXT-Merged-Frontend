@@ -1,5 +1,9 @@
 import React, { useMemo, useState } from "react";
 import "./PISubjectsDashboard.css";
+// Phase 7 — IMP-MOD-2: reuse the standardized Subject Modal styles so the PI
+// Subject create flow matches the shared standardized modal layout, spacing,
+// validation, and button placement.
+import "../shared/studies/StudySubjects.css";
 import { FaEye, FaFileAlt, FaEllipsisV } from "react-icons/fa";
 import {
   COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE,
@@ -14,6 +18,7 @@ import { resolveSiteDisplay } from "../../utils/siteDisplay";
 
 function PISubjectsDashboard({ onProfileClick }) {
   const [search, setSearch] = useState("");
+  const [subjectModalError, setSubjectModalError] = useState("");
 
   const siteSources = useMemo(() => getStudies(), []);
   const displaySite = (value) =>
@@ -34,9 +39,15 @@ function PISubjectsDashboard({ onProfileClick }) {
   const [subjects, setSubjects] = useState(() => {
     return JSON.parse(localStorage.getItem("subjectsData")) || [];
   });
-  const handleAddSubject = () => {
+  const handleAddSubject = (event) => {
+    if (event && typeof event.preventDefault === "function") {
+      event.preventDefault();
+    }
+
+    setSubjectModalError("");
+
     if (!newSubject.id || !newSubject.initials || !newSubject.study) {
-      alert("Please fill required fields");
+      setSubjectModalError("Please fill required fields.");
       return;
     }
 
@@ -44,7 +55,7 @@ function PISubjectsDashboard({ onProfileClick }) {
     // creation for Completed studies BEFORE any mutation.
     const targetStudy = getStudyByCode(newSubject.study);
     if (targetStudy && targetStudy.status === STUDY_STATUS_COMPLETED) {
-      alert(COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE);
+      setSubjectModalError(COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE);
       return;
     }
 
@@ -67,7 +78,7 @@ function PISubjectsDashboard({ onProfileClick }) {
         subjectForCanonicalStore
       );
     } catch (error) {
-      alert(
+      setSubjectModalError(
         (error && error.message) ||
           COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE
       );
@@ -93,6 +104,7 @@ function PISubjectsDashboard({ onProfileClick }) {
     window.dispatchEvent(new Event("subjects-updated"));
 
     setShowModal(false);
+    setSubjectModalError("");
 
     setNewSubject({
       id: "",
@@ -357,104 +369,192 @@ function PISubjectsDashboard({ onProfileClick }) {
         </table>
       </div>
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-box">
-            <h3>Add Subject</h3>
-
-            <input
-              placeholder="Subject ID"
-              value={newSubject.id}
-              onChange={(e) =>
-                setNewSubject({
-                  ...newSubject,
-                  id: e.target.value,
-                })
-              }
-            />
-
-            <input
-              placeholder="Initials"
-              value={newSubject.initials}
-              onChange={(e) =>
-                setNewSubject({
-                  ...newSubject,
-                  initials: e.target.value,
-                })
-              }
-            />
-
-            <select
-              value={newSubject.study}
-              onChange={(e) =>
-                setNewSubject({
-                  ...newSubject,
-                  study: e.target.value,
-                  site: getSubjectStudyDefaults(e.target.value).site,
-                })
-              }
-            >
-              <option value="">Select active study</option>
-              {studyOptions.map((study) => (
-                <option key={study.code} value={study.code}>
-                  {study.code} — {study.name || study.protocol || "Untitled"}
-                </option>
-              ))}
-            </select>
-
-            <input
-              placeholder="Principal Investigator"
-              value={selectedStudyDefaults.pi || "—"}
-              readOnly
-              aria-readonly="true"
-            />
-
-            <input
-              placeholder="Site"
-              value={selectedStudyDefaults.siteDisplay || "—"}
-              readOnly
-              aria-readonly="true"
-            />
-            <input
-              type="date"
-              value={newSubject.enrollmentDate}
-              onChange={(e) =>
-                setNewSubject({
-                  ...newSubject,
-                  enrollmentDate: e.target.value,
-                })
-              }
-            />
-            <input
-              placeholder="Last Visit"
-              value={newSubject.lastVisit}
-              onChange={(e) =>
-                setNewSubject({
-                  ...newSubject,
-                  lastVisit: e.target.value,
-                })
-              }
-            />
-
-            <select
-              value={newSubject.status}
-              onChange={(e) =>
-                setNewSubject({
-                  ...newSubject,
-                  status: e.target.value,
-                })
-              }
-            >
-              <option>Screening</option>
-              <option>Enrolled</option>
-              <option>Completed</option>
-              <option>Withdrawn</option>
-            </select>
-
-            <div className="modal-buttons">
-              <button onClick={() => setShowModal(false)}>Cancel</button>
-
-              <button onClick={handleAddSubject}>Save Subject</button>
+        <div className="subject-modal-overlay" role="presentation">
+          <div
+            className="subject-modal"
+            role="dialog"
+            aria-labelledby="pi-subject-modal-title"
+            aria-modal="true"
+          >
+            <div className="subject-modal-header">
+              <div>
+                <h3 id="pi-subject-modal-title">Add Subject</h3>
+                <p className="subject-modal-subtitle">
+                  Enter the details for the new subject.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="subject-modal-close"
+                onClick={() => {
+                  setShowModal(false);
+                  setSubjectModalError("");
+                }}
+                aria-label="Close modal"
+              >
+                ×
+              </button>
             </div>
+
+            <form
+              className="subject-modal-form"
+              onSubmit={handleAddSubject}
+              noValidate
+            >
+              <div className="form-group">
+                <label htmlFor="pi-subject-id">Subject ID</label>
+                <input
+                  id="pi-subject-id"
+                  type="text"
+                  placeholder="Subject ID"
+                  value={newSubject.id}
+                  onChange={(e) =>
+                    setNewSubject({
+                      ...newSubject,
+                      id: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="pi-subject-initials">Initials</label>
+                <input
+                  id="pi-subject-initials"
+                  type="text"
+                  placeholder="Initials"
+                  value={newSubject.initials}
+                  onChange={(e) =>
+                    setNewSubject({
+                      ...newSubject,
+                      initials: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="pi-subject-study">Study</label>
+                <select
+                  id="pi-subject-study"
+                  value={newSubject.study}
+                  onChange={(e) =>
+                    setNewSubject({
+                      ...newSubject,
+                      study: e.target.value,
+                      site: getSubjectStudyDefaults(e.target.value).site,
+                    })
+                  }
+                  required
+                >
+                  <option value="">Select active study</option>
+                  {studyOptions.map((study) => (
+                    <option key={study.code} value={study.code}>
+                      {study.code} —{" "}
+                      {study.name || study.protocol || "Untitled"}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="pi-subject-pi">Principal Investigator</label>
+                <input
+                  id="pi-subject-pi"
+                  type="text"
+                  placeholder="Principal Investigator"
+                  value={selectedStudyDefaults.pi || "—"}
+                  readOnly
+                  aria-readonly="true"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="pi-subject-site">Site</label>
+                <input
+                  id="pi-subject-site"
+                  type="text"
+                  placeholder="Site"
+                  value={selectedStudyDefaults.siteDisplay || "—"}
+                  readOnly
+                  aria-readonly="true"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="pi-subject-enrollment-date">
+                  Enrollment Date
+                </label>
+                <input
+                  id="pi-subject-enrollment-date"
+                  type="date"
+                  value={newSubject.enrollmentDate}
+                  onChange={(e) =>
+                    setNewSubject({
+                      ...newSubject,
+                      enrollmentDate: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="pi-subject-last-visit">Last Visit</label>
+                <input
+                  id="pi-subject-last-visit"
+                  type="text"
+                  placeholder="Last Visit"
+                  value={newSubject.lastVisit}
+                  onChange={(e) =>
+                    setNewSubject({
+                      ...newSubject,
+                      lastVisit: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="pi-subject-status">Status</label>
+                <select
+                  id="pi-subject-status"
+                  value={newSubject.status}
+                  onChange={(e) =>
+                    setNewSubject({
+                      ...newSubject,
+                      status: e.target.value,
+                    })
+                  }
+                >
+                  <option>Screening</option>
+                  <option>Enrolled</option>
+                  <option>Completed</option>
+                  <option>Withdrawn</option>
+                </select>
+              </div>
+
+              {subjectModalError && (
+                <p className="subject-modal-error" role="alert">
+                  {subjectModalError}
+                </p>
+              )}
+
+              <div className="subject-modal-actions">
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => {
+                    setShowModal(false);
+                    setSubjectModalError("");
+                  }}
+                >
+                  Cancel
+                </button>
+                <button type="submit">Save Subject</button>
+              </div>
+            </form>
           </div>
         </div>
       )}
