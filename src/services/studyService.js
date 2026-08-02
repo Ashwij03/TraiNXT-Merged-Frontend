@@ -14,6 +14,14 @@ import {
   getRecentActivityLogs as getCanonicalRecentActivityLogs
 } from "./auditService";
 
+import {
+    canEditStudyContent,
+    saveStudyTeamMember,
+    deleteStudyTeamMember,
+    saveRegulatoryChecklistItem,
+    deleteRegulatoryChecklistItem
+} from "./planningService";
+
 const STUDIES_STORAGE_KEY = "trianxtStudies";
 const AUDIT_LOG_KEY = "auditLogs";
 const SUBJECTS_STORAGE_KEY = "subjectsByStudy";
@@ -339,7 +347,6 @@ function readSubjectsByStudy() {
     return {};
   }
 }
-
 function saveSubjectsByStudy(subjectsByStudy) {
   if (typeof window === "undefined") {
     return;
@@ -494,181 +501,6 @@ export function isStudyCompletedByCode(studyCode) {
   return Boolean(study && study.status === STUDY_STATUS_COMPLETED);
 }
 
-function getAuditLogs() {
-  if (typeof window === "undefined") {
-    return {};
-  }
-
-  try {
-    return JSON.parse(localStorage.getItem(SUBJECTS_STORAGE_KEY)) || {};
-  } catch {
-    return {};
-  }
-}
-
-function saveSubjectsByStudy(subjectsByStudy) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  localStorage.setItem(
-    SUBJECTS_STORAGE_KEY,
-    JSON.stringify(subjectsByStudy)
-  );
-
-  window.dispatchEvent(new Event("subjects-updated"));
-}
-
-export function createSubject(studyCode, subject) {
-  if (!studyCode) {
-    throw new Error("Study code is required to create a subject.");
-  }
-
-  if (!subject || typeof subject !== "object") {
-    throw new Error("Subject data is required.");
-  }
-
-  const study = getStoredStudies().find(
-    (item) => String(item.code) === String(studyCode)
-  );
-
-  if (!study) {
-    throw new Error("Study not found");
-  }
-
-  // Completed-study business rule — validated BEFORE any mutation.
-  if (study.status === STUDY_STATUS_COMPLETED) {
-    throw new Error(COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE);
-  }
-
-  const subjectsByStudy = readSubjectsByStudy();
-  const currentSubjectsForStudy = Array.isArray(subjectsByStudy[studyCode])
-    ? subjectsByStudy[studyCode]
-    : [];
-
-  const normalizedNewId = String(subject.id || "").trim().toLowerCase();
-
-  if (!normalizedNewId) {
-    throw new Error("Subject ID is required.");
-  }
-
-  const duplicateExists = currentSubjectsForStudy.some(
-    (existing) =>
-      String(existing.id || "").trim().toLowerCase() === normalizedNewId
-  );
-
-  if (duplicateExists) {
-    throw new Error("A subject with this Subject ID already exists.");
-  }
-
-  /*
-    Stage 7A: PI and Site are authoritative study relationships, not
-    caller-controlled subject form values. Re-resolve them immediately before
-    persistence so direct routes, stale modals, and alternate role pages cannot
-    create a subject with a mismatched PI/Site.
-  */
-  const inheritedStudyFields = getSubjectStudyDefaults(studyCode);
-
-  const subjectToStore = {
-    ...subject,
-    studyId: studyCode,
-    pi: inheritedStudyFields.pi,
-    principalInvestigator: inheritedStudyFields.principalInvestigator,
-    site: inheritedStudyFields.site,
-    siteNumber: inheritedStudyFields.siteNumber,
-    siteId: inheritedStudyFields.siteId,
-  };
-
-  const nextSubjectsByStudy = {
-    ...subjectsByStudy,
-    [studyCode]: [...currentSubjectsForStudy, subjectToStore],
-  };
-
-  saveSubjectsByStudy(nextSubjectsByStudy);
-
-  return subjectToStore;
-}
-
-/*
-  Item 7 (extension): shared authoritative subject edit guard.
-
-  Mirrors createSubject above — any code path that edits an existing
-  subject must route through this function so the Completed-study
-  business rule (no adding OR editing subjects once a study is
-  Completed) cannot be bypassed. Validation happens BEFORE any
-  mutation of `subjectsByStudy`.
-*/
-export const COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE =
-  "Subjects cannot be edited because this study is completed.";
-
-export function updateSubject(studyCode, subjectId, updatedFields) {
-  if (!studyCode) {
-    throw new Error("Study code is required to update a subject.");
-  }
-
-  if (!subjectId) {
-    throw new Error("Subject ID is required to update a subject.");
-  }
-
-  const study = getStoredStudies().find(
-    (item) => String(item.code) === String(studyCode)
-  );
-
-  if (!study) {
-    throw new Error("Study not found");
-  }
-
-  // Completed-study business rule — validated BEFORE any mutation.
-  if (study.status === STUDY_STATUS_COMPLETED) {
-    throw new Error(COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE);
-  }
-
-  const subjectsByStudy = readSubjectsByStudy();
-  const currentSubjectsForStudy = Array.isArray(subjectsByStudy[studyCode])
-    ? subjectsByStudy[studyCode]
-    : [];
-
-  const normalizedId = String(subjectId).trim().toLowerCase();
-
-  const nextSubjectsForStudy = currentSubjectsForStudy.map((existing) =>
-    String(existing.id || "").trim().toLowerCase() === normalizedId
-      ? { ...existing, ...updatedFields }
-      : existing
-  );
-
-  const nextSubjectsByStudy = {
-    ...subjectsByStudy,
-    [studyCode]: nextSubjectsForStudy,
-  };
-
-  saveSubjectsByStudy(nextSubjectsByStudy);
-
-  return nextSubjectsForStudy.find(
-    (item) => String(item.id || "").trim().toLowerCase() === normalizedId
-  );
-}
-
-export function isStudyCompletedByCode(studyCode) {
-  if (!studyCode) {
-    return false;
-  }
-
-  const study = getStoredStudies().find(
-    (item) => String(item.code) === String(studyCode)
-  );
-
-  return Boolean(study && study.status === STUDY_STATUS_COMPLETED);
-}
-
-// CANONICAL AUDIT ARCHITECTURE (Batch A): studyService no longer owns a
-// private "auditLogs" store. Persistence, normalization, and the
-// activity-log-updated sync event now live in the single canonical
-// src/services/auditService.js. These two functions are kept here, with
-// their exact original signatures, purely so every existing caller across
-// the app (dashboardService.js, adminService.js, StudyActivity.js,
-// SubjectVisits.js, VisitDetails.js, PIStudySubjectsProfile.js, and the
-// direct localStorage["auditLogs"] read in SubjectAuditTrail.js) keeps
-// working unchanged while recording through the one canonical service.
 export function addAuditLog(action, details) {
   return recordCanonicalAuditLog(action, details);
 }

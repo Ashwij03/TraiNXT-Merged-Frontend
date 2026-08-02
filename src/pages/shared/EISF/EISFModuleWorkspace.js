@@ -213,24 +213,117 @@ export default function EISFModuleWorkspace({
   };
 
   const handleUpload = (formData) => {
-    // Item 9 guard: disabled sub-modules must not expose upload actions.
     if (!activeSectionEnabled) return;
+
+    const incomingName = (
+      formData.documentName ||
+      formData.name ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+    const incomingVersion = String(formData.version || "").trim();
+
+    const duplicate = documents.some((doc) => {
+      const existingName = (
+        doc.documentName ||
+        doc.name ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
+
+      const existingVersion = String(doc.version || "").trim();
+
+      const sameStudy =
+        (doc.studyCode || studyCode) === studyCode;
+
+      const sameModule =
+        (doc.moduleId || moduleConfig.id) === moduleConfig.id;
+
+      const sameSection =
+        (doc.section || doc.sectionId || "") === activeSection.id;
+
+      return (
+        sameStudy &&
+        sameModule &&
+        sameSection &&
+        existingName === incomingName &&
+        existingVersion === incomingVersion
+      );
+    });
+
+    if (duplicate) {
+      window.alert(
+        `Version ${incomingVersion} already exists for "${formData.documentName}". Please upload a higher version.`
+      );
+      return;
+    }
 
     const newDocument = createUploadedDocument(
       formData,
       activeSection,
       moduleConfig,
+      studyCode,
       "Current User"
     );
 
     setDocuments((prev) => [newDocument, ...prev]);
+
+    setShowUpload(false);
   };
 
+
   const handleSaveDocument = (updatedDocument) => {
-    // Item 9 guard: disabled sub-modules must not allow edits.
     if (!activeSectionEnabled) {
       setEditOpen(false);
       setSelectedDocument(null);
+      return;
+    }
+
+    const documentName = (updatedDocument.documentName || "")
+      .trim()
+      .toLowerCase();
+
+    const version = String(updatedDocument.version || "").trim();
+
+    const duplicate = documents.some((doc) => {
+      if (doc.id === updatedDocument.id) {
+        return false;
+      }
+
+      const existingName = (
+        doc.documentName ||
+        doc.name ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
+
+      const updatedName = (
+        updatedDocument.documentName ||
+        updatedDocument.name ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
+
+      return (
+        (doc.studyCode || studyCode) === studyCode &&
+        (doc.moduleId || moduleConfig.id) === moduleConfig.id &&
+        (doc.section || doc.sectionId || "") ===
+        activeSection.id &&
+        existingName === updatedName &&
+        String(doc.version || "").trim() ===
+        String(updatedDocument.version || "").trim()
+      );
+    });
+
+    if (duplicate) {
+      window.alert(
+        `Version ${version} already exists for "${updatedDocument.documentName}".`
+      );
       return;
     }
 
@@ -241,6 +334,7 @@ export default function EISFModuleWorkspace({
           : document
       )
     );
+
     setEditOpen(false);
     setSelectedDocument(null);
   };

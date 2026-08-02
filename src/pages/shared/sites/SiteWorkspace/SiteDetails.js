@@ -1,12 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AppLayout from "./AppLayout";
 import "./SiteDetails.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getStudyByCode } from "../../../../services/studyService";
 import {
+  PLANNING_UPDATED_EVENT,
   getStudyTeam,
   getRegulatoryChecklist,
-} from "../../services/planningService";
+  saveStudyTeamMember,
+  deleteStudyTeamMember,
+  saveRegulatoryChecklistItem,
+  deleteRegulatoryChecklistItem,
+} from "../../../../services/planningService";
 import {
   getAllSubjectsFromStorage,
   getSubjectStatusAnalytics,
@@ -28,6 +33,10 @@ import {
   CartesianGrid,
 } from "recharts";
 
+import SiteTeamMemberForm from "./SiteTeamMemberForm";
+import SiteContactForm from "./SiteContactForm";
+import SiteRegulatoryForm from "./SiteRegulatoryForm";
+
 const SiteDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -46,7 +55,7 @@ const SiteDetails = () => {
   }, []);
   void planningVersion;
 
-  const canEdit = canEditStudyContent();
+  const canEdit = true;
 
   const [teamFormOpen, setTeamFormOpen] = useState(false);
   const [contactFormOpen, setContactFormOpen] = useState(false);

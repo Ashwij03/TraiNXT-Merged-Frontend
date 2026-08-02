@@ -1,11 +1,13 @@
 import React from "react";
 import AppLayout from "./AppLayout";
-import SiteDetails from "./SiteDetails";
+import SiteDetails from "../shared/sites/SiteWorkspace/SiteDetails";
 
-export default function SiteDetailsPage() {
+const SiteDetailsPage = () => {
   return (
     <AppLayout>
       <SiteDetails />
     </AppLayout>
   );
-}
+};
+
+export default SiteDetailsPage;

@@ -66,7 +66,7 @@ import SiteDocuments from "./pages/Sponsor/SiteDocuments";
 import SponsorCRODetails from "./pages/Sponsor/CRODetails";
 import SponsorCROReport from "./pages/Sponsor/CROReport";
 import SponsorCROContracts from "./pages/Sponsor/CROContracts";
-import SiteDetailsPage from "./pages/Sponsor/SiteDetailsPage";
+import SiteDetailsPage from "./pages/shared/sites/SiteWorkspace/SiteDetailsPage";
 import ReportDetails from "./pages/Sponsor/ReportDetails";
 import RecruitmentDetails from "./pages/Sponsor/RecruitmentDetails";
 import RegulatoryDetails from "./pages/Sponsor/RegulatoryDetails";
