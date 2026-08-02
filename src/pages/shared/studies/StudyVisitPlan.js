@@ -3,9 +3,11 @@ import { useParams } from "react-router-dom";
 import useVisitPlans from "../../../hooks/useVisitPlans";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
 import RequestPermissionButton from "../../../components/common/RequestPermissionButton";
+import DataTable from "../../../components/dashboard/shared/DataTable";
 import { canEditStudyContent } from "../../../utils/contentAccess";
 import { getCurrentUser } from "../../../services/roleService";
 import { formatScheduleDisplayDate } from "../../../utils/formatScheduleDisplayDate";
+import { compareScheduleDates } from "../../../services/visitScheduleService";
 import {
   saveVisitPlan,
   deleteVisitPlan,
@@ -26,13 +28,30 @@ const WIZARD_STEPS = [
   "Review & Schedule",
 ];
 
+const UPCOMING_VISIT_PLAN_COLUMNS = [
+  {
+    key: "subjectId",
+    label: "Subject",
+    width: "25%",
+    render: (value) => value || "—"
+  },
+  { key: "visit", label: "Visit", width: "25%" },
+  {
+    key: "date",
+    label: "Date",
+    width: "25%",
+    render: (value) => formatScheduleDisplayDate(value)
+  },
+  { key: "status", label: "Status", width: "25%" }
+];
+
 function StudyVisitPlan() {
   const { id: studyCode } = useParams();
   const canEdit = canEditStudyContent(getCurrentUser());
   const { plans, getPlanDetails, refresh } = useVisitPlans(studyCode);
   const { schedules, upcomingWindow } = useVisitSchedules({ studyCode });
   const upcomingVisits = useMemo(() => {
-    return upcomingWindow.slice(0, 5);
+    return [...upcomingWindow].sort(compareScheduleDates);
   }, [upcomingWindow]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -122,7 +141,7 @@ function StudyVisitPlan() {
   };
 
   return (
-    <div className="study-visit-plan-page">
+    <div className="study-visit-plan-page tnxt-compact">
       <div className="visit-plan-toolbar">
         <div>
           <h2>Visit Plan</h2>
@@ -156,47 +175,23 @@ function StudyVisitPlan() {
         <div className="visit-plan-upcoming">
           <h3>Upcoming Visits</h3>
 
-          {upcomingVisits.length === 0 ? (
-            <p>No upcoming visits scheduled.</p>
-          ) : (
-            <>
-              <input
-                type="search"
-                placeholder="Search Procedure..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="planning-search"
-              />
+          <input
+            type="search"
+            placeholder="Search Procedure..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="planning-search"
+          />
 
-              <table className="planning-table">
-                <thead>
-                  <tr>
-                    <th>Subject</th>
-
-                    <th>Visit</th>
-
-                    <th>Date</th>
-
-                    <th>Status</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {upcomingVisits.map((visit, index) => (
-                    <tr key={visit.id || index}>
-                      <td>{visit.subjectId || "—"}</td>
-
-                      <td>{visit.visit}</td>
-
-                      <td>{formatScheduleDisplayDate(visit.date)}</td>
-
-                      <td>{visit.status}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </>
-          )}
+          <DataTable
+            className="planning-table ctms-standard-table"
+            columns={UPCOMING_VISIT_PLAN_COLUMNS}
+            data={upcomingVisits}
+            emptyMessage="No upcoming visits scheduled."
+            pagination
+            initialPageSize={5}
+            pageSizeOptions={[5, 10, 20, 50]}
+          />
         </div>
         <input
           type="search"

@@ -89,7 +89,7 @@ console.log("STATE =", location.state);
   const dashboardStudies = getDashboardData().studies || [];
 
   const renderProfileView = () => (
-    <div className="table-container">
+    <div className="table-container tnxt-compact">
       <h2>PI Profile Information</h2>
       <ProfilePhotoCard
         photo={profilePhoto}
@@ -125,7 +125,7 @@ console.log("STATE =", location.state);
 
       <h3 style={{ marginTop: 32 }}>Study Assignments</h3>
       <div className="pi-table-responsive">
-        <table className="pi-table">
+        <table className="pi-table ctms-standard-table">
           <thead>
             <tr>
               <th>Study ID</th>

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import AppLayout from "./AppLayout";
 import { useLocation, useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
+import { getStudies } from "../../services/studyService";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
 
 const RiskDetails = () => {
 
@@ -20,7 +22,7 @@ const [riskStatus, setRiskStatus] = useState(
   if (!risk) {
     return (
       <AppLayout>
-        <div style={{ padding: "24px" }}>
+        <div style={{ padding: "24px" }} className="risk-details-page tnxt-compact">
           <h2>No Risk Selected</h2>
         </div>
       </AppLayout>
@@ -216,7 +218,7 @@ const handleResolveRisk = () => {
 <div className="details-card">
   <h2>Affected Sites</h2>
 
-  <table className="sponsor-table">
+  <table className="sponsor-table ctms-standard-table">
     <thead>
       <tr>
         <th>Site</th>
@@ -228,14 +230,14 @@ const handleResolveRisk = () => {
 
     <tbody>
       <tr>
-        <td>Apollo Hospital</td>
+        <td>{resolveSiteDisplay("Apollo Hospital", { sources: getStudies() })}</td>
         <td>Active</td>
         <td>72%</td>
         <td>High</td>
       </tr>
 
       <tr>
-        <td>Care Hospital</td>
+        <td>{resolveSiteDisplay("Care Hospital", { sources: getStudies() })}</td>
         <td>Active</td>
         <td>68%</td>
         <td>Medium</td>
@@ -247,7 +249,7 @@ const handleResolveRisk = () => {
 <div className="details-card">
   <h2>Risk Timeline</h2>
 
-  <table className="sponsor-table">
+  <table className="sponsor-table ctms-standard-table">
     <thead>
       <tr>
         <th>Date</th>
@@ -283,7 +285,7 @@ const handleResolveRisk = () => {
 
           <h2>Mitigation Plan</h2>
 
-          <table className="metrics-table">
+          <table className="metrics-table ctms-standard-table">
 
             <thead>
               <tr>

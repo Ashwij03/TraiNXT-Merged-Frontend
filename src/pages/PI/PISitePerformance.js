@@ -131,7 +131,7 @@ function PISitePerformance({ selectedStudy: studyProp }) {
   ];
 
   return (
-    <div className="pi-page-content">
+    <div className="pi-page-content tnxt-compact">
       <div className="dashboard-header">
         <div>
           <h2>Site Performance</h2>
@@ -217,7 +217,7 @@ function PISitePerformance({ selectedStudy: studyProp }) {
           </button>
         </div>
         <div className="pi-table-responsive">
-          <table className="pi-table">
+          <table className="pi-table ctms-standard-table">
             <thead>
               <tr>
                 <th>Metric</th>

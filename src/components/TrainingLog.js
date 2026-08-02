@@ -5,7 +5,7 @@ const TrainingLog = () => {
 
   return (
 
-    <div className="training-container">
+    <div className="training-container tnxt-compact">
 
       <p className="entry-text">
         Showing 1 to 2 of 2 entries
@@ -39,7 +39,7 @@ const TrainingLog = () => {
 
       {/* TABLE */}
 
-      <table className="training-table">
+      <table className="training-table ctms-standard-table">
 
         <thead>
 

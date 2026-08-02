@@ -236,7 +236,7 @@ function Screening() {
   return (
     <AppLayout>
 
-      <div className="screening-page">
+      <div className="screening-page tnxt-compact">
 
         <div className="page-header">
 		
@@ -286,7 +286,7 @@ function Screening() {
 		  Total Records: {filteredScreenings.length}
 		</p>
 
-          <table className="screening-table">
+          <table className="screening-table ctms-standard-table">
 
 		  <thead>
 		    <tr>

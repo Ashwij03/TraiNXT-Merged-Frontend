@@ -5,20 +5,20 @@ import DashboardCard from "../../components/dashboard/shared/DashboardCard";
 import DashboardBarChart from "../../components/dashboard/shared/DashboardBarChart";
 import DataTable from "../../components/dashboard/shared/DataTable";
 import { getSitePerformance } from "../../services/adminService";
-import { formatSiteLabel } from "../../utils/siteDisplay";
+import { resolveSiteDisplay, formatSiteLabel } from "../../utils/siteDisplay";
 import "./AdminPage.css";
 
 function SitePerformance() {
   const performance = getSitePerformance();
 
   const chartData = performance.map((site) => ({
-    name: site.siteName,
+    name: resolveSiteDisplay(site),
     value: Number(site.enrolled || 0)
   }));
 
   return (
     <DashboardLayout>
-      <div className="admin-page">
+      <div className="admin-page tnxt-compact">
         <div className="admin-page-title">
           <h1>Site Performance</h1>
           <p>Enrollment, compliance, and operational metrics by site</p>
@@ -30,6 +30,7 @@ function SitePerformance() {
 
         <div className="admin-table-section">
           <DataTable
+            className="ctms-standard-table"
             title="Performance Metrics"
             columns={[
               {

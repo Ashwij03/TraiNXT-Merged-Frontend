@@ -75,6 +75,7 @@ function SubjectComments({ subjectId }) {
 
   return (
     <DataTable
+      className="ctms-standard-table"
       title="Subject Comments"
       columns={[
         { key: "id", label: "ID" },

@@ -167,7 +167,7 @@ function PIReports({ selectedStudy = "All Studies" }) {
   };
 
   return (
-    <div className="pi-page-content">
+    <div className="pi-page-content tnxt-compact">
       <div className="dashboard-header">
         <div>
           <h2>Reports Dashboard</h2>
@@ -259,7 +259,7 @@ function PIReports({ selectedStudy = "All Studies" }) {
           <button type="button" className="view-all-btn" onClick={() => setTypeFilter("All")}>View All</button>
         </div>
         <div className="pi-table-responsive">
-          <table className="pi-table">
+          <table className="pi-table ctms-standard-table">
             <thead>
               <tr>
                 <th>Report Name</th>

@@ -118,8 +118,8 @@ function CROSubjectManagement() {
         {filteredSubjects.length === 0 ? (
           <EmptyState title="No Subjects Found" message="No subjects available yet." />
         ) : (
-          <div className="table-scroll-wrap">
-            <table className="cro-table">
+          <div className="table-scroll-wrap tnxt-compact">
+            <table className="cro-table ctms-standard-table">
               <thead>
                 <tr>
                   <th>Subject ID</th>

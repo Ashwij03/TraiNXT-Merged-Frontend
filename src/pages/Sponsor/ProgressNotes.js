@@ -62,7 +62,7 @@ function ProgressNotes() {
   );
 
   return (
-    <div className="pn-page">
+    <div className="pn-page tnxt-compact">
 
       <h1>Progress Notes</h1>
 
@@ -119,7 +119,7 @@ function ProgressNotes() {
 
       <div className="notes-table-card">
 
-        <table className="notes-table">
+        <table className="notes-table ctms-standard-table">
 
           <thead>
             <tr>

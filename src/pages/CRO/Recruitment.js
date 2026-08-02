@@ -38,11 +38,11 @@ function Recruitment() {
   ];
 
   return (
-    <div style={{ padding: "30px" }}>
+    <div style={{ padding: "30px" }} className="recruitment-tracking-page tnxt-compact">
 
       <h1>Recruitment Tracking</h1>
 
-      <table>
+      <table className="ctms-standard-table">
         <thead>
           <tr>
             <th>Site</th>

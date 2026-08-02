@@ -64,7 +64,7 @@ function UserManagement() {
 
   return (
     <DashboardLayout>
-      <div className="admin-page">
+      <div className="admin-page tnxt-compact">
         <div className="admin-page-title">
           <h1>User Management</h1>
           <p>Manage user accounts, roles, and site assignments.</p>
@@ -116,6 +116,7 @@ function UserManagement() {
 
         <div className="admin-table-section">
           <DataTable
+            className="ctms-standard-table"
             title="User Directory"
             columns={[
               { key: "name", label: "Name" },

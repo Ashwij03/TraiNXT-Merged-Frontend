@@ -36,7 +36,7 @@ const CROOversight = () => {
 
   return (
     <AppLayout>
-      <div className="cro-page">
+      <div className="cro-page tnxt-compact">
         <div className="sponsor-page-header">
           <h1>CRO Oversight</h1>
           <p>Monitor CRO partner performance and study delivery metrics.</p>
@@ -59,7 +59,7 @@ const CROOversight = () => {
 
         <div className="sponsor-table-wrap">
           <h2>CRO Performance Overview</h2>
-          <table className="sponsor-table cro-table">
+          <table className="sponsor-table cro-table ctms-standard-table">
             <thead>
               <tr>
                 <th>CRO Name</th>

@@ -25,13 +25,13 @@ function SubjectAuditTrail() {
 
   return (
 
-    <div className="subject-tab-card">
+    <div className="subject-tab-card tnxt-compact">
 
       <div className="audit-header">
         <h2>Audit Trail</h2>
       </div>
 
-      <table>
+      <table className="ctms-standard-table">
 
         <thead>
 

@@ -117,8 +117,8 @@ export default function DocumentTable({
   };
 
   return (
-    <div className={`document-table-card ${isReferenceView ? "reference-table-card" : ""}`}>
-      <table className="document-table">
+    <div className={`document-table-card tnxt-compact ${isReferenceView ? "reference-table-card" : ""}`}>
+      <table className="document-table ctms-standard-table">
         <thead>
           <tr>
             {isReferenceView && <th className="select-col"><input type="checkbox" aria-label="Select all documents" /></th>}

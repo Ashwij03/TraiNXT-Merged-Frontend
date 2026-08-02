@@ -80,7 +80,7 @@ function Subjects() {
 
     <AppLayout>
 
-      <div className="subjects-page">
+      <div className="subjects-page tnxt-compact">
 
 	  <div className="page-header">
 	    <div>
@@ -112,7 +112,7 @@ function Subjects() {
 
         <div className="subjects-card">
 
-          <table className="subjects-table">
+          <table className="subjects-table ctms-standard-table">
 
             <thead>
 

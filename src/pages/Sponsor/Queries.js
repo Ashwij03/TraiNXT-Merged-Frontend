@@ -32,11 +32,11 @@ const Queries = () => {
 
     <AppLayout>
 
-      <div className="queries-page">
+      <div className="queries-page tnxt-compact">
 
         <h1>Queries</h1>
 
-        <table className="queries-table">
+        <table className="queries-table ctms-standard-table">
 
           <thead>
 

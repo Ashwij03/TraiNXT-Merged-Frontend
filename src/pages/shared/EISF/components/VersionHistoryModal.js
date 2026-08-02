@@ -27,14 +27,14 @@ export default function VersionHistoryModal({
   const history = getHistory(document);
 
   return (
-    <div className="history-overlay">
+    <div className="history-overlay tnxt-compact">
       <div className="history-modal">
         <div className="history-header">
           <h3>Version History</h3>
           <button type="button" onClick={onClose}>✕</button>
         </div>
 
-        <table className="history-table">
+        <table className="history-table ctms-standard-table">
           <thead>
             <tr>
               <th>Version</th>

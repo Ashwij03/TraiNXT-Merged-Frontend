@@ -203,7 +203,7 @@ Diabetes,900,Delayed
 
   return (
     <AppLayout>
-      <div className="report-details-page">
+      <div className="report-details-page tnxt-compact">
         <div className="page-header">
           <h1 className="report-title">{reportType}</h1>
         </div>
@@ -348,7 +348,7 @@ Diabetes,900,Delayed
           reportType !== "Compliance Analytics Chart" && (
             <div className="report-table-section">
               <h2>{reportType}</h2>
-              <table className="report-table">
+              <table className="report-table ctms-standard-table">
                 <thead>
                   <tr>
                     <th>Document</th>
@@ -414,7 +414,7 @@ Diabetes,900,Delayed
 
             <div className="report-table-section">
               <h2>{reportType} Summary</h2>
-              <table className="report-table">
+              <table className="report-table ctms-standard-table">
                 <thead>
                   <tr>
                     <th>Study</th>

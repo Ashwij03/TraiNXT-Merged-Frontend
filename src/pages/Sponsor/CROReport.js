@@ -71,7 +71,7 @@ const complianceData = [
 
   return (
     <AppLayout>
-  <div style={{ padding: "24px" }}>
+  <div style={{ padding: "24px" }} className="cro-report-page tnxt-compact">
 
     <button
       onClick={() => navigate(-1)}
@@ -114,7 +114,7 @@ const complianceData = [
 
 </div>
 
-        <table className="cro-table">
+        <table className="cro-table ctms-standard-table">
 
           <thead>
             <tr>
@@ -147,7 +147,7 @@ const complianceData = [
         <div className="sponsor-table-wrap" style={{ marginTop: "24px" }}>
   <h3>Compliance & Risk Matrix</h3>
 
-  <table className="sponsor-table">
+  <table className="sponsor-table ctms-standard-table">
     <thead>
       <tr>
         <th>CRO</th>

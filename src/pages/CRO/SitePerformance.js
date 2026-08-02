@@ -3,7 +3,7 @@ import CROSidebar from "./CROSidebar";
 import CRONavbar from "./CRONavbar";
 import RequestPermissionButton from "../../components/common/RequestPermissionButton";
 import { getSitePerformance } from "../../services/adminService";
-import { formatSiteLabel } from "../../utils/siteDisplay";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
 
 function loadSites() {
   try {
@@ -37,7 +37,7 @@ function SitePerformance() {
   );
 
   return (
-    <div className="dashboard-layout">
+    <div className="dashboard-layout tnxt-compact">
       <CROSidebar />
       <div className="main-content">
         <CRONavbar />
@@ -75,7 +75,7 @@ function SitePerformance() {
           {filteredSites.length === 0 ? (
             <p>No data available yet</p>
           ) : (
-            <table width="100%" border="1" cellPadding="10">
+            <table className="ctms-standard-table" width="100%" border="1" cellPadding="10">
               <thead>
                 <tr>
                   <th>Site</th>
@@ -88,7 +88,7 @@ function SitePerformance() {
               <tbody>
                 {filteredSites.map((site) => (
                   <tr key={site.id || site.siteName || site.site}>
-                    <td>{formatSiteLabel(site) || site.siteName || site.site || site.name || "—"}</td>
+                    <td>{resolveSiteDisplay(site)}</td>
                     <td>{site.enrollment ?? "—"}</td>
                     <td>{site.queries ?? "—"}</td>
                     <td>{site.compliance ?? "—"}</td>

@@ -79,7 +79,7 @@ function PINotifications({ selectedStudy = "All Studies" }) {
   ];
 
   return (
-    <div className="pi-page-content">
+    <div className="pi-page-content tnxt-compact">
       <div className="dashboard-header">
         <div>
           <h2>Notifications</h2>
@@ -132,7 +132,7 @@ function PINotifications({ selectedStudy = "All Studies" }) {
           </button>
         </div>
         <div className="pi-table-responsive">
-          <table className="pi-table">
+          <table className="pi-table ctms-standard-table">
             <thead>
               <tr>
                 <th>Message</th>

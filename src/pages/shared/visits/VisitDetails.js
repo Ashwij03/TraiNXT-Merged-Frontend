@@ -42,7 +42,7 @@ export default function VisitDetails() {
   );
 
   return (
-    <div id="print-area">
+    <div id="print-area" className="visit-details-page tnxt-compact">
 
      
 
@@ -125,7 +125,7 @@ export default function VisitDetails() {
             + Upload Document
           </button>
 
-          <table>
+          <table className="ctms-standard-table">
 
             <thead>
               <tr>
@@ -167,7 +167,7 @@ export default function VisitDetails() {
             Audit Trail
           </h3>
 
-          <table>
+          <table className="ctms-standard-table">
 
             <thead>
 

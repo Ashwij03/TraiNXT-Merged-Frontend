@@ -40,9 +40,9 @@ function CROContracts({ onViewDetails }) {
   })();
 
   return (
-    <div className="table-section">
+    <div className="table-section tnxt-compact">
       <h2>CRO Contracts</h2>
-      <table className="cro-table">
+      <table className="cro-table ctms-standard-table">
         <thead>
           <tr>
             <th>CRO ID</th>

@@ -63,8 +63,10 @@ import {
   getCROOptions,
   getDefaultInstitution,
   getIndicationOptions,
+  getInstitutionForSiteNumber,
   getInstitutionOptions,
   getRecruitedCROOptions,
+  getSiteNumberForInstitution,
   getSiteNumberOptions,
   getSponsorOptions,
   getStudyOptions,
@@ -467,12 +469,30 @@ function EnterpriseNavbarBase({
     }
 
     if (key === "siteName") {
-      setSelectedSiteNumber("");
+      // Reflect the matching Site Number for the institution just picked
+      // (or clear it out if Site Name was reset to "All Institutions").
+      const matchedSiteNumber = value
+        ? getSiteNumberForInstitution(value, currentUser)
+        : "";
+
+      setSelectedSiteNumber(matchedSiteNumber);
+      setStoredSiteNumberFilter(matchedSiteNumber);
       setSelectedStudyCode("");
       setSelectedSubject("");
     }
 
     if (key === "siteNumber") {
+      // Reflect the matching Site Name for the number just picked (or
+      // clear it back to "All Institutions" if Site Number was reset to
+      // "All Site Numbers"), mirroring what the "siteName" branch above
+      // does in reverse so both filters always stay in sync.
+      const matchedInstitution = value
+        ? getInstitutionForSiteNumber(value, currentUser)
+        : "";
+
+      setSelectedInstitution(matchedInstitution);
+      setStoredInstitutionFilter(matchedInstitution);
+
       setSelectedStudyCode("");
       setSelectedSubject("");
     }
@@ -786,4 +806,3 @@ function EnterpriseNavbarBase({
 }
 
 export default EnterpriseNavbarBase;
-

@@ -71,7 +71,7 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
 
   return (
 
-    <div className="delegation-container">
+    <div className="delegation-container tnxt-compact">
 
       <h2 className="delegation-title">
         B. Electronic Delegation Log
@@ -90,7 +90,7 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
 
       {/* CARD */}
 
-      <table className="staff-table">
+      <table className="staff-table ctms-standard-table">
 
         <thead>
 
@@ -180,7 +180,7 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
 
                   </div>
 
-                  <table className="delegation-table">
+                  <table className="delegation-table ctms-standard-table">
 
                     <thead>
 
@@ -282,7 +282,7 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
 
             {/* TABLE */}
 
-            <table className="delegation-table">
+            <table className="delegation-table ctms-standard-table">
 
               <thead>
 

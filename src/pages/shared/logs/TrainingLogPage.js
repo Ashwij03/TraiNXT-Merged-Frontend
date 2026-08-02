@@ -35,7 +35,7 @@ function TrainingLogPage() {
 
   return (
     <DashboardLayout>
-      <div className="admin-page">
+      <div className="admin-page tnxt-compact">
         <div className="admin-page-title">
           <h1>Training Log</h1>
           <p>
@@ -61,6 +61,7 @@ function TrainingLogPage() {
 
         <div className="admin-table-section">
           <DataTable
+            className="ctms-standard-table"
             title="Training Registry"
             columns={[
               { key: "training", label: "Training" },

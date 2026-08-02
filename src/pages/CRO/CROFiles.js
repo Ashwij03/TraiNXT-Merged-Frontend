@@ -121,9 +121,9 @@ function CROFiles() {
 
         ) : (
 
-          <div className="cro-table-wrap">
+          <div className="cro-table-wrap tnxt-compact">
 
-            <table className="cro-data-table">
+            <table className="cro-data-table ctms-standard-table">
 
               <thead>
 

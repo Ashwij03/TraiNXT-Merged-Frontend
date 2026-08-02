@@ -86,7 +86,7 @@ function StudyActivity() {
     };
 
   return (
-    <div className="workspace-content">
+    <div className="workspace-content tnxt-compact">
 
       <div className="activity-header">
         <h2>Study Activity</h2>
@@ -108,7 +108,7 @@ function StudyActivity() {
 
         <div className="activity-card">
           <h3>Upcoming Activities</h3>
-          <table className="activity-table">
+          <table className="activity-table ctms-standard-table">
             <thead>
                 <tr>
                     <th>Activity</th>
@@ -133,7 +133,7 @@ function StudyActivity() {
 
         <div className="activity-card">
           <h3>Overdue Activities</h3>
-          <table className="activity-table">
+          <table className="activity-table ctms-standard-table">
             <thead>
                 <tr>
                     <th>Activity</th>

@@ -4,11 +4,11 @@ import AppLayout from "./AppLayout";
 const SiteQueries = () => {
   return (
     <AppLayout>
-      <div className="page-container">
+      <div className="page-container tnxt-compact">
 
         <h1>Site Queries</h1>
 
-        <table className="report-table">
+        <table className="report-table ctms-standard-table">
           <thead>
             <tr>
               <th>Query ID</th>

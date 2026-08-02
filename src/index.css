@@ -1,6 +1,7 @@
 @import "./styles/design-system.css";
 @import "./styles/ctms-global.css";
 @import "./styles/ctms-tables.css";
+@import "./styles/ctms-compact.css";
 
 * {
   margin: 0;

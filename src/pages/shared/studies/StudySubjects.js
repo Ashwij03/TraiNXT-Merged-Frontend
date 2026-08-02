@@ -667,7 +667,7 @@ function StudySubjects({
     );
 
     return (
-      <div className="subjects-module">
+      <div className="subjects-module tnxt-compact">
         <div className="subject-details-header">
           <button
             type="button"
@@ -712,7 +712,7 @@ function StudySubjects({
   }
 
   return (
-    <div className="subjects-module">
+    <div className="subjects-module tnxt-compact">
       {showBackButton && typeof setActiveTab === "function" && (
         <button
           type="button"
@@ -1233,4 +1233,3 @@ function StudySubjects({
 }
 
 export default StudySubjects;
-

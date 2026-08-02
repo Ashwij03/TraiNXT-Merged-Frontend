@@ -83,7 +83,7 @@ export default function CommentsPage({ embedded = false }) {
   };
 
   const content = (
-    <div style={{ padding: "20px" }}>
+    <div className="operations-comments-page tnxt-compact" style={{ padding: "20px" }}>
       <h2>Comments</h2>
 
       {canWriteComments(currentUser) && (

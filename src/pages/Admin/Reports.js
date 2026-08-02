@@ -116,7 +116,7 @@ function Reports() {
 
   return (
     <DashboardLayout>
-      <div className="admin-page">
+      <div className="admin-page tnxt-compact">
         <div className="admin-page-title">
           <h1>Reports</h1>
           <p>Study reports, scoped to your accessible studies</p>
@@ -204,6 +204,7 @@ function Reports() {
 
         <div className="admin-table-section">
           <DataTable
+            className="ctms-standard-table"
             title="Reports"
             columns={[
               { key: "id", label: "Report ID" },

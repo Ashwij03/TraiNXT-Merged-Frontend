@@ -25,7 +25,7 @@ function DelegationLogPage() {
 
   return (
     <DashboardLayout>
-      <div className="admin-page">
+      <div className="admin-page tnxt-compact">
         <div className="admin-page-title">
           <h1>Delegation Log</h1>
           <p>
@@ -102,6 +102,7 @@ function DelegationLogPage() {
             </div>
 
             <DataTable
+              className="ctms-standard-table"
               columns={[
                 { key: "code", label: "Duty" },
                 { key: "description", label: "Description" },

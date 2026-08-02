@@ -76,7 +76,7 @@ function SiteStaffDashboard() {
 
   return (
     <SiteStaffDashboardLayout>
-      <div className="admin-dashboard site-dashboard">
+      <div className="admin-dashboard site-dashboard tnxt-compact">
         <div className="dashboard-page-title">
           <h1>Site Staff Dashboard</h1>
           <p>
@@ -162,6 +162,7 @@ function SiteStaffDashboard() {
         </div>
 
         <DataTable
+          className="ctms-standard-table"
           title="Subject Activity"
           columns={[
             {

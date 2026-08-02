@@ -2,7 +2,7 @@ import "./ProgressNotes.css";
 
 export default function ProgressNotes() {
   return (
-    <div className="pn-box">
+    <div className="pn-box tnxt-compact">
 
       <h3>Progress Notes</h3>
 
@@ -28,7 +28,7 @@ export default function ProgressNotes() {
         </div>
       </div>
 
-      <table className="pn-table">
+      <table className="pn-table ctms-standard-table">
         <thead>
           <tr>
             <th>Status</th>

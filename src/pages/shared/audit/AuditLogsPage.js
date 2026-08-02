@@ -115,7 +115,7 @@ function AuditLogsPage() {
 
   return (
     <DashboardLayout>
-      <div className="admin-page audit-logs-page">
+      <div className="admin-page audit-logs-page tnxt-compact">
         <div className="admin-page-title">
           <h1>Audit Logs</h1>
           <p>
@@ -142,6 +142,7 @@ function AuditLogsPage() {
 
         <div className="admin-table-section">
           <DataTable
+            className="ctms-standard-table"
             title="Audit Trail"
             columns={[
               { key: "dateTime", label: "Date & Time", width: "170px" },

@@ -112,7 +112,19 @@
   white-space: nowrap;
   word-break: normal;
   overflow-wrap: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
   vertical-align: middle;
+}
+
+/* Row actions must never be truncated/hidden — visible actions is an
+   explicit BUG-4 requirement, so any cell hosting action buttons opts
+   out of the ellipsis truncation used for ordinary text columns. */
+.ctms-table td:has(.table-actions),
+.ctms-table td:has(button) {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
 }
 
 .ctms-table td {

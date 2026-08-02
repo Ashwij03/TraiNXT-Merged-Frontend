@@ -533,7 +533,7 @@ function PIStudySubjectProfile({ subject }) {
   
 
   return (
-    <div className="subject-profile-page">
+    <div className="subject-profile-page tnxt-compact">
 
       <div className="profile-header">
 
@@ -792,7 +792,7 @@ function PIStudySubjectProfile({ subject }) {
 
 	      </div>
 
-	      <table className="profile-table">
+	      <table className="profile-table ctms-standard-table">
 
 	        <thead>
 	          <tr>
@@ -906,7 +906,7 @@ function PIStudySubjectProfile({ subject }) {
 		    </button>
 
 		  </div>
-		    <table className="subjects-table">
+		    <table className="subjects-table ctms-standard-table">
 
 			<thead>
 			  <tr>
@@ -1024,7 +1024,7 @@ function PIStudySubjectProfile({ subject }) {
 
 	      </div>
 
-	      <table className="profile-table">
+	      <table className="profile-table ctms-standard-table">
 
 	        <thead>
 	          <tr>
@@ -1092,7 +1092,7 @@ function PIStudySubjectProfile({ subject }) {
 		  </button>
 
 		</div>
-	      <table className="subjects-table">
+	      <table className="subjects-table ctms-standard-table">
 		  
 	        <thead>
 	          <tr>
@@ -1198,7 +1198,7 @@ function PIStudySubjectProfile({ subject }) {
 
 	    <h3>Audit Trail</h3>
 
-	    <table className="subjects-table">
+	    <table className="subjects-table ctms-standard-table">
 
 	      <thead>
 	        <tr>
