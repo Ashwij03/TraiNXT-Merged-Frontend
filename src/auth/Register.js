@@ -49,14 +49,21 @@ function Register() {
   // checks user.role === "PI". Only the visible dropdown label is
   // updated to "Principal Investigator" so existing login/permission
   // logic is never broken.
+  // Task 7 — Registration Changes: "Admin" removed from the selectable
+  // role list. Admin is never created through self-registration; a
+  // default Admin account is seeded automatically by adminService
+  // (see src/config/defaultAdmin.js), and additional Admins can only be
+  // created by an existing Admin from User Management.
   const ROLE_OPTIONS = [
-    { value: "Admin", label: "Admin" },
     { value: "SiteStaff", label: "SiteStaff" },
     { value: "PI", label: "Principal Investigator" },
     { value: "CRO", label: "CRO" },
     { value: "Sponsor", label: "Sponsor" }
   ]; // newly added till here
 
+  // Kept (always false now that "Admin" isn't selectable) so the
+  // Organization Name requirement/validation logic below - which was
+  // already written to key off this flag - doesn't need to change.
   const isAdminRole = role === "Admin";
 
   const generateUsername = (fname, lname) => {
@@ -319,6 +326,19 @@ function Register() {
     ) {
 
       alert("Please fix errors");
+
+      return;
+    }
+
+    // Task 7 — Registration Changes: defensive guard. Admin is not in
+    // ROLE_OPTIONS so this can't be reached through the UI, but this
+    // stops self-registration as Admin outright even if "role" were
+    // ever set some other way.
+    if (role === "Admin") {
+
+      setRoleError(
+        "Admin accounts cannot be created through registration."
+      );
 
       return;
     }

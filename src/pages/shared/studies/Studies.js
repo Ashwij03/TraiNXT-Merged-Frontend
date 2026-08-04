@@ -12,6 +12,14 @@ import { canAddStudy } from "../../../utils/contentAccess";
 import { resolveSiteDisplay } from "../../../utils/siteDisplay";
 import { readStorage } from "../../../utils/storageHelpers";
 import {
+  HEADER_FILTERS_EVENT,
+  INSTITUTION_FILTER_EVENT,
+  getStoredIndicationFilter,
+  getStoredInstitutionFilter,
+  getStoredSiteNumberFilter,
+} from "../../../constants/headerFilters";
+import { getInstitutionForSiteNumber } from "../../../services/filterService";
+import {
   STUDY_STATUS_OPTIONS,
   STUDY_STATUS_DEFAULT,
   getStudyStatusClass,
@@ -197,11 +205,69 @@ function Studies() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [sponsorFilter, setSponsorFilter] = useState("");
-  const [indicationFilter, setIndicationFilter] = useState("");
+  // Task: Header Indication Link — the header's Indication dropdown now
+  // routes here (see EnterpriseNavbarBase's updateFilter), so this page's
+  // own Indication filter must open already scoped to whatever indication
+  // was picked in the header, and stay in sync with it afterwards (see the
+  // HEADER_FILTERS_EVENT listener below). The dropdown remains editable
+  // locally same as before; it's simply re-synced whenever the header
+  // filter changes.
+  const [indicationFilter, setIndicationFilter] = useState(() =>
+    getStoredIndicationFilter()
+  );
   const [countryFilter, setCountryFilter] = useState("");
   const [sortBy, setSortBy] = useState("studyId");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  // Task 10 — Studies Page Header Filters: the header's Site Name / Site
+  // Number dropdowns should scope this page's study list the same way
+  // they scope the Dashboards, live, with no refresh required. Read the
+  // current value on mount and stay in sync via the same events the
+  // header itself dispatches when either dropdown changes.
+  const [headerInstitutionFilter, setHeaderInstitutionFilter] = useState(() =>
+    getStoredInstitutionFilter()
+  );
+  const [headerSiteNumberFilter, setHeaderSiteNumberFilter] = useState(() =>
+    getStoredSiteNumberFilter()
+  );
+
+  useEffect(() => {
+    const handleInstitutionEvent = (event) => {
+      setHeaderInstitutionFilter(event?.detail || getStoredInstitutionFilter());
+    };
+
+    const handleHeaderFiltersEvent = () => {
+      setHeaderInstitutionFilter(getStoredInstitutionFilter());
+      setHeaderSiteNumberFilter(getStoredSiteNumberFilter());
+      // Task: Header Indication Link — keep this page's Indication filter
+      // in sync with the header's Indication dropdown too.
+      setIndicationFilter(getStoredIndicationFilter());
+    };
+
+    window.addEventListener(INSTITUTION_FILTER_EVENT, handleInstitutionEvent);
+    window.addEventListener(HEADER_FILTERS_EVENT, handleHeaderFiltersEvent);
+
+    return () => {
+      window.removeEventListener(
+        INSTITUTION_FILTER_EVENT,
+        handleInstitutionEvent
+      );
+      window.removeEventListener(
+        HEADER_FILTERS_EVENT,
+        handleHeaderFiltersEvent
+      );
+    };
+  }, []);
+
+  // Whichever of Site Name / Site Number is set (Site Number resolves to
+  // its paired Site Name), narrowed the same way the Dashboards already do.
+  const effectiveHeaderSite = useMemo(
+    () =>
+      headerInstitutionFilter ||
+      getInstitutionForSiteNumber(headerSiteNumberFilter, currentUser),
+    [headerInstitutionFilter, headerSiteNumberFilter, currentUser]
+  );
 
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem("studiesViewMode") || "grid";
@@ -266,12 +332,22 @@ function Studies() {
         !indicationFilter || study.indication === indicationFilter;
       const matchesCountry = !countryFilter || study.country === countryFilter;
 
+      // Task 10 — Studies Page Header Filters: narrow to studies at the
+      // site selected via the header's Site Name / Site Number dropdown.
+      const studySite = study.site || study.location || "";
+      const matchesHeaderSite =
+        !effectiveHeaderSite ||
+        studySite === effectiveHeaderSite ||
+        studySite.includes(effectiveHeaderSite) ||
+        effectiveHeaderSite.includes(studySite);
+
       return (
         matchesSearch &&
         matchesStatus &&
         matchesSponsor &&
         matchesIndication &&
-        matchesCountry
+        matchesCountry &&
+        matchesHeaderSite
       );
     });
 
@@ -327,6 +403,7 @@ function Studies() {
     sponsorFilter,
     indicationFilter,
     countryFilter,
+    effectiveHeaderSite,
     sortBy,
   ]);
 
@@ -343,6 +420,7 @@ function Studies() {
     sponsorFilter,
     indicationFilter,
     countryFilter,
+    effectiveHeaderSite,
     sortBy,
     viewMode,
     pageSize,

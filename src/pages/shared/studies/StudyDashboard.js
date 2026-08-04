@@ -2,7 +2,6 @@ import StudyActivity from "./StudyActivity";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
-import KPICard from "../../../components/dashboard/shared/KPICard";
 import SubjectAnalyticsSection from "../../../components/dashboard/shared/SubjectAnalyticsSection";
 import VisitCalendarSection from "../../../components/dashboard/shared/VisitCalendarSection";
 import StudySubjects from "./StudySubjects";
@@ -38,10 +37,8 @@ import RecentSubjectsWidget from "../../../components/dashboard/shared/RecentSub
 import PendingCommentsWidget from "../../../components/dashboard/shared/PendingCommentsWidget";
 import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
 import EISFWorkspace from "../EISF/EISFWorkspace";
+import { EISF_SIDEBAR_COLLAPSE_EVENT } from "../../../constants/headerFilters";
 import {
-  FiUsers,
-  FiClipboard,
-  FiMessageSquare,
   FiTrash2,
   FiArrowLeft,
   FiEdit2,
@@ -82,6 +79,17 @@ function StudyDashboard() {
   const [editForm, setEditForm] = useState({});
   const [studyRefreshKey, setStudyRefreshKey] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Task 14 — eISF Sidebar Auto Close: collapse whichever dashboard
+  // sidebar is currently mounted the moment the eISF tab becomes active,
+  // and only then. Every other tab is untouched, and the sidebar stays
+  // wherever the user leaves it after that (it isn't forced back open
+  // when navigating away from eISF).
+  useEffect(() => {
+    if (activeTab === "eISF") {
+      window.dispatchEvent(new Event(EISF_SIDEBAR_COLLAPSE_EVENT));
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     const tabFromUrl = searchParams.get("tab");
@@ -549,148 +557,162 @@ window.dispatchEvent(new Event("studies-updated"));
       ) : (
         <>
           <div className="study-dashboard-page tnxt-compact">
-            <div className="study-dashboard-topbar">
-              <button
-                type="button"
-                className="back-to-studies-btn"
-                onClick={handleBackToStudies}
-              >
-                <FiArrowLeft />
-                <span>Back to Studies</span>
-              </button>
-            </div>
-
             <div className="page-header">
-              <div>
-                <h1>{currentStudy?.name || "Study Dashboard"}</h1>
+              {/* Everything sits on one row: title, KPI buttons, and Back
+                  to Studies grouped on the left; Refresh / Edit / Delete
+                  grouped on the right. The row wraps as a whole on narrow
+                  screens instead of the actions floating separately. */}
+              <div className="page-header-title-row">
+                <div className="page-header-title-group">
+                  <h1>{currentStudy?.name || "Study Dashboard"}</h1>
 
-                <p>
-                  {currentUser?.role === "Admin"
-                    ? "All Sites Overview"
-                    : "Assigned Site Overview"}
-                </p>
+                  <div className="study-header-kpi-buttons">
+                    <button
+                      type="button"
+                      className="study-header-kpi-btn"
+                      onClick={() => handleTabChange("Subjects")}
+                    >
+                      <span className="study-header-kpi-btn-label">
+                        Total Subjects
+                      </span>
+                      <span className="study-header-kpi-btn-value">
+                        {studyKpis.subjects}
+                      </span>
+                    </button>
 
-                <div className="study-quick-details">
-                  <span className="study-quick-detail">
-                    <span className="study-quick-detail-label">Study ID</span>
-                    <span className="study-quick-detail-value">
-                      {currentStudy?.code || "-"}
-                    </span>
-                  </span>
-                  <span className="study-quick-detail">
-                    <span className="study-quick-detail-label">Indication</span>
-                    <span className="study-quick-detail-value">
-                      {currentStudy?.indication || "-"}
-                    </span>
-                  </span>
-                  <span className="study-quick-detail">
-                    <span className="study-quick-detail-label">Site No</span>
-                    <span className="study-quick-detail-value">
-                      {currentStudy?.siteNumber || currentStudy?.location || "-"}
-                    </span>
-                  </span>
-                  <span className="study-quick-detail">
-                    <span className="study-quick-detail-label">Site</span>
-                    <span className="study-quick-detail-value">
-                      {currentStudy?.site || currentStudy?.location || "-"}
-                    </span>
-                  </span>
-                  <span className="study-quick-detail">
-                    <span className="study-quick-detail-label">
-                      Principal Investigator
-                    </span>
-                    <span className="study-quick-detail-value">
-                      {currentStudy?.principalInvestigator || "-"}
-                    </span>
-                  </span>
-                  <span className="study-quick-detail">
-                    <span className="study-quick-detail-label">Sponsor</span>
-                    <span className="study-quick-detail-value">
-                      {currentStudy?.sponsor || "-"}
-                    </span>
-                  </span>
-                  <span className="study-quick-detail">
-                    <span className="study-quick-detail-label">CRO</span>
-                    <span className="study-quick-detail-value">
-                      {currentStudy?.cro || "-"}
-                    </span>
-                  </span>
+                    <button
+                      type="button"
+                      className="study-header-kpi-btn"
+                      onClick={() => handleTabChange("Comments")}
+                    >
+                      <span className="study-header-kpi-btn-label">
+                        Open Comments
+                      </span>
+                      <span className="study-header-kpi-btn-value">
+                        {studyKpis.comments}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="study-header-kpi-btn"
+                      onClick={() => handleTabChange("Visit Plan")}
+                    >
+                      <span className="study-header-kpi-btn-label">
+                        Site Visits
+                      </span>
+                      <span className="study-header-kpi-btn-value">
+                        {studyKpis.visits}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="back-to-studies-btn"
+                      onClick={handleBackToStudies}
+                    >
+                      <FiArrowLeft />
+                      <span>Back to Studies</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="page-header-actions">
+                  <button
+                    type="button"
+                    className="refresh-study-btn"
+                    onClick={handleRefreshStudy}
+                    disabled={isRefreshing}
+                    title="Refresh study overview"
+                  >
+                    <FiRefreshCw className={isRefreshing ? "spinning" : ""} />
+                    {isRefreshing ? "Refreshing..." : "Refresh"}
+                  </button>
+
+                  {canEditStudy && (
+                    <button
+                      type="button"
+                      className="btn-edit edit-study-btn"
+                      onClick={handleEditStudy}
+                      title="Edit study"
+                      aria-label="Edit study"
+                    >
+                      <FiEdit2 />
+                      Edit Study
+                    </button>
+                  )}
+
+                  {needsPermissionRequest && (
+                    <button
+                      type="button"
+                      className="request-permission-btn"
+                      onClick={handleRequestEditPermission}
+                    >
+                      Request Edit Permission
+                    </button>
+                  )}
+
+                  {canRemoveStudy && (
+                    <button
+                      type="button"
+                      className="delete-study-btn"
+                      onClick={() => setShowDeleteModal(true)}
+                      title="Delete study"
+                      aria-label="Delete study"
+                    >
+                      <FiTrash2 />
+                      Delete Study
+                    </button>
+                  )}
                 </div>
               </div>
 
-              <div className="page-header-actions">
-                <button
-                  type="button"
-                  className="refresh-study-btn"
-                  onClick={handleRefreshStudy}
-                  disabled={isRefreshing}
-                  title="Refresh study overview"
-                >
-                  <FiRefreshCw className={isRefreshing ? "spinning" : ""} />
-                  {isRefreshing ? "Refreshing..." : "Refresh"}
-                </button>
-
-                {canEditStudy && (
-                  <button
-                    type="button"
-                    className="btn-edit edit-study-btn"
-                    onClick={handleEditStudy}
-                    title="Edit study"
-                    aria-label="Edit study"
-                  >
-                    <FiEdit2 />
-                    Edit Study
-                  </button>
-                )}
-
-                {needsPermissionRequest && (
-                  <button
-                    type="button"
-                    className="request-permission-btn"
-                    onClick={handleRequestEditPermission}
-                  >
-                    Request Edit Permission
-                  </button>
-                )}
-
-                {canRemoveStudy && (
-                  <button
-                    type="button"
-                    className="delete-study-btn"
-                    onClick={() => setShowDeleteModal(true)}
-                    title="Delete study"
-                    aria-label="Delete study"
-                  >
-                    <FiTrash2 />
-                    Delete Study
-                  </button>
-                )}
+              <div className="study-quick-details">
+                <span className="study-quick-detail">
+                  <span className="study-quick-detail-label">Study ID</span>
+                  <span className="study-quick-detail-value">
+                    {currentStudy?.code || "-"}
+                  </span>
+                </span>
+                <span className="study-quick-detail">
+                  <span className="study-quick-detail-label">Indication</span>
+                  <span className="study-quick-detail-value">
+                    {currentStudy?.indication || "-"}
+                  </span>
+                </span>
+                <span className="study-quick-detail">
+                  <span className="study-quick-detail-label">Site No</span>
+                  <span className="study-quick-detail-value">
+                    {currentStudy?.siteNumber || currentStudy?.location || "-"}
+                  </span>
+                </span>
+                <span className="study-quick-detail">
+                  <span className="study-quick-detail-label">Site</span>
+                  <span className="study-quick-detail-value">
+                    {currentStudy?.site || currentStudy?.location || "-"}
+                  </span>
+                </span>
+                <span className="study-quick-detail">
+                  <span className="study-quick-detail-label">
+                    Principal Investigator
+                  </span>
+                  <span className="study-quick-detail-value">
+                    {currentStudy?.principalInvestigator || "-"}
+                  </span>
+                </span>
+                <span className="study-quick-detail">
+                  <span className="study-quick-detail-label">Sponsor</span>
+                  <span className="study-quick-detail-value">
+                    {currentStudy?.sponsor || "-"}
+                  </span>
+                </span>
+                <span className="study-quick-detail">
+                  <span className="study-quick-detail-label">CRO</span>
+                  <span className="study-quick-detail-value">
+                    {currentStudy?.cro || "-"}
+                  </span>
+                </span>
               </div>
-            </div>
-
-            {/* KPI cards intentionally stay visible for every study tab,
-                including Subjects and SubjectProfile. */}
-            <div className="studies-kpi-grid">
-              <KPICard
-                title="Total Subjects"
-                value={studyKpis.subjects}
-                subtitle="In This Study"
-                icon={<FiUsers />}
-              />
-
-              <KPICard
-                title="Open Comments"
-                value={studyKpis.comments}
-                subtitle="For This Study"
-                icon={<FiMessageSquare />}
-              />
-
-              <KPICard
-                title="Site Visits"
-                value={studyKpis.visits}
-                subtitle="For This Study"
-                icon={<FiClipboard />}
-              />
             </div>
 
             <StudyWorkspaceTabs
@@ -719,6 +741,8 @@ window.dispatchEvent(new Event("studies-updated"));
                   subjects={filteredRecentSubjects}
                   studies={currentStudy ? [currentStudy] : []}
                   studyCode={id}
+                  plannedSubjects={Number(currentStudy?.targetSubjects) || 0}
+                  currentSubjects={studyKpis.subjects}
                 />
 
                 {/* Recent Subjects + Pending Comments now share the same
@@ -738,16 +762,16 @@ window.dispatchEvent(new Event("studies-updated"));
                   />
                 </div>
 
+                <div className="study-dashboard-alerts">
+                  <AlertsPanel alerts={filteredAlerts} />
+                </div>
+
                 <StudyMilestoneTimeline
                   studyCode={id}
                   milestones={overview.milestones}
                   canEdit={canEditStudy}
                   onUpdated={() => setStudyRefreshKey((value) => value + 1)}
                 />
-
-                <div className="study-dashboard-alerts">
-                  <AlertsPanel alerts={filteredAlerts} />
-                </div>
 
                 <div className="study-dashboard-subjects-section">
                   <StudySubjects

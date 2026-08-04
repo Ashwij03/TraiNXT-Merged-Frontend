@@ -119,7 +119,7 @@ localStorage.removeItem("adminPreviewRole");
 	  if (user.role === "Admin") {
 
       navigate(
-        "/admin-dashboard",
+        "/studies",
         { replace: true }
       );
     
@@ -128,7 +128,7 @@ localStorage.removeItem("adminPreviewRole");
     ) {
     
       navigate(
-        "/site-staff-dashboard",
+        "/studies",
         { replace: true }
       );
     
@@ -137,7 +137,7 @@ localStorage.removeItem("adminPreviewRole");
     ) {
     
       navigate(
-        "/pi-dashboard",
+        "/studies",
         { replace: true }
       );
     
@@ -146,7 +146,7 @@ localStorage.removeItem("adminPreviewRole");
     ) {
     
       navigate(
-        "/cro-dashboard",
+        "/studies",
         { replace: true }
       );
     
@@ -155,7 +155,7 @@ localStorage.removeItem("adminPreviewRole");
     ) {
     
       navigate(
-        "/sponsor-dashboard",
+        "/studies",
         { replace: true }
       );
     

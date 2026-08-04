@@ -736,16 +736,6 @@ function PIDashboard({ embeddedInLayout = false }) {
           </div>
         </div>
 
-        <div className="pi-calendar-visits-section">
-          <VisitCalendarSection
-            studyCode={
-              selectedStudy && selectedStudy !== "All Studies"
-                ? selectedStudy
-                : ""
-            }
-          />
-        </div>
-
         <div className="pi-chart-sections">
           <div className="pi-chart-pair-section">
             <div className="pi-chart-pair-grid">
@@ -873,6 +863,16 @@ function PIDashboard({ embeddedInLayout = false }) {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="pi-calendar-visits-section">
+          <VisitCalendarSection
+            studyCode={
+              selectedStudy && selectedStudy !== "All Studies"
+                ? selectedStudy
+                : ""
+            }
+          />
         </div>
 
         <div className="alerts-actions-grid">
@@ -1151,4 +1151,4 @@ function PIDashboard({ embeddedInLayout = false }) {
   );
 }
 
-export default PIDashboard;
+export default PIDashboard; 
