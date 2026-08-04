@@ -1,8 +1,23 @@
 import "./DashboardCards.css";
 import {
+  FiFileText,
+  FiCheckCircle,
+  FiClock,
+  FiAlertTriangle,
+  FiPieChart,
+} from "react-icons/fi";
+import {
   buildDashboardCards,
   getDashboardSummary,
 } from "../utils/dashboardUtils";
+
+const CARD_ICONS = {
+  total: FiFileText,
+  approved: FiCheckCircle,
+  underReview: FiClock,
+  expired: FiAlertTriangle,
+  completion: FiPieChart,
+};
 
 export default function DashboardCards({
   documents = [],
@@ -18,7 +33,10 @@ export default function DashboardCards({
 
   return (
     <div className={`dashboard-cards ${variant === "reference" ? "dashboard-cards-reference" : ""}`}>
-      {dashboardCards.map((card) => (
+      {dashboardCards.map((card) => {
+        const CardIcon = CARD_ICONS[card.key] || FiFileText;
+
+        return (
         <div
           className="dashboard-card"
           key={card.key}
@@ -35,7 +53,7 @@ export default function DashboardCards({
           <div className="dashboard-card-body">
             {variant === "reference" && card.key !== "completion" && (
               <div className="dashboard-card-icon" style={{ "--card-color": card.color || "#2563eb" }}>
-                {card.icon || "□"}
+                <CardIcon aria-hidden="true" focusable="false" />
               </div>
             )}
 
@@ -83,7 +101,8 @@ export default function DashboardCards({
             )}
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

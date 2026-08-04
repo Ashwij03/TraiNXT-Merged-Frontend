@@ -75,10 +75,17 @@
     height: 54px;
     flex: 0 0 54px;
     border-radius: 50%;
-    background: color-mix(in srgb, var(--card-color) 16%, white);
+    background: color-mix(in srgb, var(--card-color) 12%, white);
     color: var(--card-color);
-    font-size: 25px;
-    font-weight: 800;
+    font-size: 22px;
+    line-height: 0;
+}
+
+.dashboard-cards-reference .dashboard-card-icon svg {
+    width: 1em;
+    height: 1em;
+    display: block;
+    stroke-width: 2;
 }
 
 .dashboard-cards-reference .dashboard-card-title {
