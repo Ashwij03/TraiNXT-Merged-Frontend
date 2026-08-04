@@ -124,13 +124,13 @@ function SiteStaffDashboard() {
           />
         </div>
 
-        <VisitCalendarSection />
-
         <SubjectAnalyticsSection
           subjects={analyticsSubjects}
           studies={portfolioStudies}
           compactKpis
         />
+
+        <VisitCalendarSection />
 
         <div className="dashboard-grid-2">
           <AlertsPanel title="Site Alerts" alerts={alerts} />

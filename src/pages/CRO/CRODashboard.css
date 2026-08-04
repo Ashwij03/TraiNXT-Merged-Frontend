@@ -11,6 +11,41 @@
     margin-bottom:32px;
 }
 
+/*
+  Task 11 — Dashboard KPI Card Position: the outer wrapper (.cro-header
+  also carries dashboard-header-row) didn't have any row layout of its
+  own, so the title block and the KPI grid inside it silently stacked
+  instead of sharing a row like every other dashboard. This makes them
+  sit side by side, wrapping to a stacked layout only when the viewport
+  is too narrow to fit both.
+*/
+.dashboard-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.dashboard-header-row .dashboard-header-kpis.kpi-grid {
+  flex: 2 1 480px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  max-width: 720px;
+  width: 100%;
+  margin: 0;
+}
+
+@media screen and (max-width: 991px) {
+  .dashboard-header-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dashboard-header-row .dashboard-header-kpis.kpi-grid {
+    max-width: 100%;
+  }
+}
+
 .dashboard-header{
     display:flex;
     flex-direction:column;

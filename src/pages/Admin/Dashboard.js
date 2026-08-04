@@ -1,6 +1,6 @@
 // UPDATED: Admin dashboard — Phase 8 subject-status analytics and full-height Upcoming Visits
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminDashboardLayout from "../../components/dashboard/admin/AdminDashboardLayout";
 
@@ -16,12 +16,14 @@ import {
 } from "../../services/adminService";
 import { useComments } from "../../comments/CommentsContext";
 import {
+  ALL_HEADER_FILTER_KEYS,
   HEADER_FILTERS_EVENT,
   INSTITUTION_FILTER_EVENT,
   getStoredIndicationFilter,
   getStoredInstitutionFilter,
   getStoredSiteNumberFilter,
-  getStoredStudyFilter
+  getStoredStudyFilter,
+  setStoredValue
 } from "../../constants/headerFilters";
 
 import "./Dashboard.css";
@@ -36,18 +38,30 @@ const ONGOING_STUDY_STATUSES = ["Startup", "Recruitment Phase", "Conduct Phase"]
 
 function AdminDashboard() {
   const { pendingCount: openCommentsCount } = useComments();
-  const [institutionFilter, setInstitutionFilter] = useState(
-    getStoredInstitutionFilter()
-  );
-  const [indicationFilter, setIndicationFilter] = useState(
-    getStoredIndicationFilter()
-  );
-  const [siteNumberFilter, setSiteNumberFilter] = useState(
-    getStoredSiteNumberFilter()
-  );
-  const [studyCodeFilter, setStudyCodeFilter] = useState(
-    getStoredStudyFilter()
-  );
+
+  // Task 18 (Dashboard Opens Filter-Free): the Dashboard must always render
+  // fully unfiltered the instant it mounts — it can't depend on winning a
+  // race against EnterpriseNavbarBase's own "clear leftover filters" effect
+  // (both mount around the same time, and whichever one's effects happen to
+  // run first used to decide whether this page's *first* render came out
+  // scoped down by a leftover Indication/Site/Study filter or not). Wiping
+  // storage here — synchronously, before any of the useState calls below
+  // would otherwise read it — guarantees this component's very first state
+  // is always empty regardless of what was left over from wherever the user
+  // came from. isFreshMountRef makes sure this only runs once per mount
+  // (not on every re-render), so a filter the user deliberately picks from
+  // the header afterward isn't wiped back out from under them.
+  const isFreshMountRef = useRef(true);
+
+  if (isFreshMountRef.current) {
+    isFreshMountRef.current = false;
+    ALL_HEADER_FILTER_KEYS.forEach((key) => setStoredValue(key, ""));
+  }
+
+  const [institutionFilter, setInstitutionFilter] = useState("");
+  const [indicationFilter, setIndicationFilter] = useState("");
+  const [siteNumberFilter, setSiteNumberFilter] = useState("");
+  const [studyCodeFilter, setStudyCodeFilter] = useState("");
 
   // Every header dropdown that scopes this page's data, bundled together so
   // a single object always reflects what's currently selected.
@@ -63,10 +77,10 @@ function AdminDashboard() {
 
   const [dashboardData, setDashboardData] = useState(() =>
     getAdminDashboardData({
-      institution: getStoredInstitutionFilter(),
-      indication: getStoredIndicationFilter(),
-      siteNumber: getStoredSiteNumberFilter(),
-      studyCode: getStoredStudyFilter()
+      institution: "",
+      indication: "",
+      siteNumber: "",
+      studyCode: ""
     })
   );
 
@@ -236,15 +250,15 @@ function AdminDashboard() {
           />
         </div>
 
-        <VisitCalendarSection
-          institutionFilter={institutionFilter}
-          studyCode={studyCodeFilter}
-        />
-
         <SubjectAnalyticsSection
           subjects={analyticsSubjects}
           studies={portfolioStudies}
           compactKpis
+        />
+
+        <VisitCalendarSection
+          institutionFilter={institutionFilter}
+          studyCode={studyCodeFilter}
         />
 
         <div className="dashboard-grid-2">

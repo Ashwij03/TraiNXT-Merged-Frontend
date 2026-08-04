@@ -201,17 +201,47 @@ export function getRecruitedCROOptions(user = getCurrentUser()) {
   return recruited.sort().map((value) => ({ value, label: value }));
 }
 
+// Task: Header Indication Site Scoping — once an Indication is selected in
+// the header, Site Name and Site Number should only list sites that
+// actually run a study under that indication (studies elsewhere in the
+// portfolio, at other sites, shouldn't clutter either dropdown). Computed
+// from Indication alone — never combined with whatever Site Name/Site
+// Number/Study/etc. happens to already be selected — so this narrowing
+// never reintroduces the Task 9 bug where Site Name and Site Number ended
+// up pruning each other's option list.
+function getIndicationScopedSiteNames(user, indication) {
+  if (!indication) {
+    return null;
+  }
+
+  return new Set(
+    getBaseStudies(user)
+      .filter((study) => study.indication === indication)
+      .map((study) => study.site)
+      .filter(Boolean)
+  );
+}
+
 export function getInstitutionOptions(user = getCurrentUser()) {
   const filters = getFilterState();
   const studies = filterStudies(getBaseStudies(user), filters, user);
   const studySites = [...new Set(studies.map((study) => study.site).filter(Boolean))];
   const accessibleSites = getAccessibleSites(user).map((site) => site.name);
 
+  // Task 9 (Header Site Filters Bug): this list must always show every
+  // Site Name the user has access to, regardless of whichever Site
+  // Number is currently selected. It used to collapse down to just the
+  // one matching institution once a Site Number was picked, which made
+  // every other Site Name disappear from the dropdown. The selected
+  // Site Number is still reflected via the dropdown's own selected
+  // value/highlight — the available option list itself is never pruned.
   let merged = [...new Set([...studySites, ...accessibleSites])];
 
-  if (filters.siteNumber) {
-    const matchedName = getInstitutionForSiteNumber(filters.siteNumber, user);
-    merged = matchedName ? merged.filter((name) => name === matchedName) : [];
+  // Task: Header Indication Site Scoping (see helper above).
+  const indicationSites = getIndicationScopedSiteNames(user, filters.indication);
+
+  if (indicationSites) {
+    merged = merged.filter((site) => indicationSites.has(site));
   }
 
   merged = merged.sort((a, b) =>
@@ -267,19 +297,31 @@ export function getSiteNumberDirectory(user = getCurrentUser()) {
 }
 
 export function getSiteNumberOptions(user = getCurrentUser()) {
-  const filters = getFilterState();
+  // Task 9 (Header Site Filters Bug): always list every Site Number the
+  // user has access to, regardless of whichever Site Name is currently
+  // selected. This used to filter the directory down to only the entry
+  // matching the selected institution, which hid every other Site Number
+  // from the dropdown as soon as a Site Name was picked.
+  //
+  // getSiteNumberDirectory() itself stays unfiltered (its numbering is
+  // derived alphabetically across every site, so it must never be
+  // regenerated from a narrowed subset or "SITE-002" could turn into
+  // "SITE-001" depending on which filters happen to be active). Only the
+  // *options list* built from it is narrowed here.
+  const directory = getSiteNumberDirectory(user);
 
-  const directory = getSiteNumberDirectory(user).filter(
-    (entry) =>
-      !filters.institution ||
-      entry.name === filters.institution ||
-      entry.name?.includes(filters.institution) ||
-      filters.institution?.includes(entry.name)
-  );
+  // Task: Header Indication Site Scoping (see getIndicationScopedSiteNames
+  // in getInstitutionOptions above) — once an Indication is selected, only
+  // list Site Numbers whose Site Name actually runs a study under it.
+  const filters = getFilterState();
+  const indicationSites = getIndicationScopedSiteNames(user, filters.indication);
+  const scopedDirectory = indicationSites
+    ? directory.filter((entry) => indicationSites.has(entry.name))
+    : directory;
 
   return [
     { value: "", label: "All Site Numbers" },
-    ...directory
+    ...scopedDirectory
       .map((entry) => ({
         value: entry.number,
         label: entry.number
@@ -296,14 +338,16 @@ export function getSiteNumberOptions(user = getCurrentUser()) {
 export function getStudyOptions(user = getCurrentUser()) {
   const filters = getFilterState();
 
-  // Study options are only meaningful once the list has been narrowed down
-  // by Indication or Institution (Site Name/Site Number) — otherwise every
-  // study across every site would show up at once. Require one of those
-  // filters first.
+  // Task: Study Filter Site-Only Gating — Study options now only ever
+  // populate once a specific Site Number or Site Name (Institution) is
+  // selected in the header. Indication/Sponsor/CRO alone are no longer
+  // enough to unlock this list on their own — they still narrow the
+  // eventual set of studies once a site is picked (see filterStudies
+  // below), same as before.
   const effectiveInstitution =
     filters.institution || getInstitutionForSiteNumber(filters.siteNumber, user);
 
-  if (!filters.indication && !effectiveInstitution) {
+  if (!effectiveInstitution) {
     return [];
   }
 
@@ -330,15 +374,14 @@ export function getStudyOptions(user = getCurrentUser()) {
 export function getSubjectOptions(user = getCurrentUser()) {
   const filters = getFilterState();
 
-  // Same rule as studies: don't surface subjects from every study across
-  // every site until the list has been narrowed by Indication or
-  // Institution (Site Name/Site Number) — a specific Study selection also
-  // narrows things further down below, but that itself requires reaching
-  // this point first.
+  // Task: Subject Filter Site+Study Gating — Subject options now only
+  // populate once *both* a Site Number/Site Name and a specific Study are
+  // selected in the header. Indication/Sponsor/CRO alone are not enough,
+  // and neither is a site on its own without a Study picked too.
   const effectiveInstitution =
     filters.institution || getInstitutionForSiteNumber(filters.siteNumber, user);
 
-  if (!filters.indication && !effectiveInstitution) {
+  if (!effectiveInstitution || !filters.studyCode) {
     return [];
   }
 
@@ -347,11 +390,11 @@ export function getSubjectOptions(user = getCurrentUser()) {
   const subjectsByStudy = readSubjectsByStudy();
 
   const subjects = Object.entries(subjectsByStudy).flatMap(([studyKey, list]) => {
-    if (filters.studyCode && String(studyKey) !== String(filters.studyCode)) {
+    if (String(studyKey) !== String(filters.studyCode)) {
       return [];
     }
 
-    if (!filters.studyCode && studyCodes.size && !studyCodes.has(String(studyKey))) {
+    if (studyCodes.size && !studyCodes.has(String(studyKey))) {
       return [];
     }
 

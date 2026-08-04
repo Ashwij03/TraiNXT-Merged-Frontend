@@ -24,7 +24,7 @@ import {
 } from "../../../services/roleService";
 import { notifySubjectCreated } from "../../../services/notificationService";
 import {
-  deriveSubjectLifecycleStatus,
+  SUBJECT_LIFECYCLE_STAGES,
   SUBJECT_TERMINAL_STATES,
 } from "../../../utils/subjectLifecycle";
 import { syncSubjectSchedules } from "../../../services/visitScheduleService";
@@ -51,10 +51,17 @@ const emptySubjectForm = {
   status: "",
   screeningDate: "",
   enrollmentDate: "",
-  currentVisit: "",
   pi: "",
   site: "",
 };
+
+// Item 21 (reverted): status is now a fully manual field. The dropdown
+// offers every lifecycle stage plus the terminal workflow states, and the
+// value chosen is saved as-is — there is no automatic/derived override.
+const SUBJECT_STATUS_OPTIONS = [
+  ...SUBJECT_LIFECYCLE_STAGES,
+  ...SUBJECT_TERMINAL_STATES,
+];
 
 function writeStorage(key, value, eventName) {
   localStorage.setItem(key, JSON.stringify(value));
@@ -419,16 +426,10 @@ function StudySubjects({
 
     let updatedSubjectsForStudy;
 
-    // Item 21: manual status control is limited to terminal workflow actions
-    // (Withdrawn / Dropout). Any other value is ignored and the authoritative
-    // status is derived from the subject's actual lifecycle fields (screening
-    // date, enrollment date, current visit, per-subject visit records). This
-    // prevents an arbitrary manual override from silently regressing an
-    // Ongoing subject back to Enrolled, marking Completed without real
-    // completion evidence, etc.
-    const requestedManualStatus = SUBJECT_TERMINAL_STATES.includes(newSubject.status)
-      ? newSubject.status
-      : "";
+    // Item 21 (reverted): status is now a plain manual field — whatever the
+    // user selects in the form is saved as-is, with no automatic/derived
+    // override of any kind.
+    const manualStatus = String(newSubject.status || "").trim();
 
     if (isEditing) {
       updatedSubjectsForStudy = subjectsData.map((subject) => {
@@ -447,14 +448,9 @@ function StudySubjects({
           updatedAt: now,
         };
 
-        const derived = deriveSubjectLifecycleStatus(
-          { ...merged, status: "" },
-          { studyId }
-        );
-
         return {
           ...merged,
-          status: requestedManualStatus || derived || merged.status || "",
+          status: manualStatus,
         };
       });
       
@@ -505,14 +501,9 @@ function StudySubjects({
         updatedAt: now,
       };
 
-      const derived = deriveSubjectLifecycleStatus(
-        { ...baseSubject, status: "" },
-        { studyId }
-      );
-
       const subjectToAdd = {
         ...baseSubject,
-        status: requestedManualStatus || derived || "",
+        status: manualStatus,
       };
 
       /*
@@ -619,7 +610,6 @@ function StudySubjects({
       status: subject.status || "",
       screeningDate: subject.screeningDate || "",
       enrollmentDate: subject.enrollmentDate || "",
-      currentVisit: subject.currentVisit || "",
       pi: getSubjectStudyDefaults(studyId).pi || subject.pi || "",
       site: getSubjectStudyDefaults(studyId).site || subject.site || "",
     });
@@ -1117,110 +1107,40 @@ function StudySubjects({
 
               <div className="form-group">
                 <label htmlFor="subject-pi">Principal Investigator</label>
-                {editingSubjectId ? (
-                  <input
-                    id="subject-pi"
-                    type="text"
-                    placeholder="Principal Investigator"
-                    value={newSubject.pi}
-                    onChange={(event) =>
-                      setNewSubject({
-                        ...newSubject,
-                        pi: event.target.value,
-                      })
-                    }
-                  />
-                ) : (
-                  <input
-                    id="subject-pi"
-                    type="text"
-                    placeholder="Principal Investigator"
-                    value={inheritedSubjectFields.pi || "—"}
-                    readOnly
-                    aria-readonly="true"
-                  />
-                )}
+                {/*
+                  Principal Investigator is always derived from the study
+                  (see getSubjectStudyDefaults) and is re-applied on save
+                  for both Add and Edit flows, so it must never be
+                  editable here — Add and Edit now render the same
+                  read-only field for consistency.
+                */}
+                <input
+                  id="subject-pi"
+                  type="text"
+                  placeholder="Principal Investigator"
+                  value={inheritedSubjectFields.pi || "—"}
+                  readOnly
+                  aria-readonly="true"
+                />
               </div>
 
               <div className="form-group">
                 <label htmlFor="subject-site">Site</label>
-                {editingSubjectId ? (
-                  (() => {
-                    const availableSites = (getStudies() || []).filter(
-                      (study) =>
-                        study &&
-                        (study.siteNumber || study.site || study.location)
-                    );
-
-                    if (availableSites.length > 0) {
-                      return (
-                        <select
-                          id="subject-site"
-                          value={newSubject.site}
-                          onChange={(event) =>
-                            setNewSubject({
-                              ...newSubject,
-                              site: event.target.value,
-                            })
-                          }
-                        >
-                          <option value="">Select Site</option>
-                          {availableSites.map((study) => {
-                            const number =
-                              study.siteNumber ||
-                              study.number ||
-                              study.siteNo ||
-                              "";
-                            const name =
-                              study.site ||
-                              study.siteName ||
-                              study.location ||
-                              "";
-                            const optionValue = number || name;
-                            const label =
-                              number && name
-                                ? `${number} — ${name}`
-                                : number || name;
-                            return (
-                              <option
-                                key={`${
-                                  study.id || study.code || optionValue
-                                }`}
-                                value={optionValue}
-                              >
-                                {label}
-                              </option>
-                            );
-                          })}
-                        </select>
-                      );
-                    }
-
-                    return (
-                      <input
-                        id="subject-site"
-                        type="text"
-                        placeholder="Site"
-                        value={newSubject.site}
-                        onChange={(event) =>
-                          setNewSubject({
-                            ...newSubject,
-                            site: event.target.value,
-                          })
-                        }
-                      />
-                    );
-                  })()
-                ) : (
-                  <input
-                    id="subject-site"
-                    type="text"
-                    placeholder="Site"
-                    value={inheritedSubjectFields.siteDisplay || "—"}
-                    readOnly
-                    aria-readonly="true"
-                  />
-                )}
+                {/*
+                  Site is always derived from the study (see
+                  getSubjectStudyDefaults) and is re-applied on save for
+                  both Add and Edit flows, so it must never be editable
+                  here — Add and Edit now render the same read-only field
+                  for consistency.
+                */}
+                <input
+                  id="subject-site"
+                  type="text"
+                  placeholder="Site"
+                  value={inheritedSubjectFields.siteDisplay || "—"}
+                  readOnly
+                  aria-readonly="true"
+                />
               </div>
 
               <div className="form-group">
@@ -1255,20 +1175,12 @@ function StudySubjects({
 
               <div className="form-group">
                 <label htmlFor="subject-status">Status</label>
-                {/* Item 21: normal lifecycle stages (Screened / Enrolled /
-                    Ongoing / Completed) are derived automatically from the
-                    subject's actual screening date, enrollment date, current
-                    visit, and visit records. The manual control here is
-                    limited to terminal workflow actions (Withdrawn / Dropout)
-                    plus "Auto (derived)", which clears any manual override so
-                    the canonical derivation applies. */}
+                {/* Status is a fully manual field. The user picks the
+                    subject's lifecycle stage or a terminal workflow state
+                    directly — nothing here is auto-derived or overridden. */}
                 <select
                   id="subject-status"
-                  value={
-                    SUBJECT_TERMINAL_STATES.includes(newSubject.status)
-                      ? newSubject.status
-                      : ""
-                  }
+                  value={newSubject.status}
                   onChange={(event) =>
                     setNewSubject({
                       ...newSubject,
@@ -1276,44 +1188,12 @@ function StudySubjects({
                     })
                   }
                 >
-                  <option value="">Auto (derived from lifecycle data)</option>
-                  <option value="Withdrawn">Withdrawn</option>
-                  <option value="Dropout">Dropout</option>
-                </select>
-                <small className="subject-status-derived-hint">
-                  Derived status:{" "}
-                  {deriveSubjectLifecycleStatus(
-                    {
-                      ...newSubject,
-                      id: newSubject.id,
-                      studyId,
-                      status: "",
-                    },
-                    { studyId }
-                  ) || "—"}
-                </small>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="subject-current-visit">Current Visit</label>
-                <select
-                  id="subject-current-visit"
-                  value={newSubject.currentVisit}
-                  onChange={(event) =>
-                    setNewSubject({
-                      ...newSubject,
-                      currentVisit: event.target.value,
-                    })
-                  }
-                >
-                  <option value="">Select</option>
-                  <option value="Screening">Screening</option>
-                  <option value="Enrollment">Enrollment</option>
-                  <option value="Visit 1">Visit 1</option>
-                  <option value="Visit 2">Visit 2</option>
-                  <option value="Visit 3">Visit 3</option>
-                  <option value="Follow-up">Follow-up</option>
-                  <option value="Completed">Completed</option>
+                  <option value="">Select status</option>
+                  {SUBJECT_STATUS_OPTIONS.map((statusOption) => (
+                    <option key={statusOption} value={statusOption}>
+                      {statusOption}
+                    </option>
+                  ))}
                 </select>
               </div>
 
