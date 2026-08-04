@@ -126,8 +126,10 @@ function Register() {
 
     setEmail(value);
 
+    // ✅ GENERAL EMAIL RULE — accepts any valid email address/domain
+    // (gmail.com, yahoo.com, outlook.com, company domains, etc.)
     const regex =
-      /^(?=.*\d)[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
     if (!value.trim()) {
 

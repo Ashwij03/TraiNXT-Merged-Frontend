@@ -17,8 +17,9 @@ function Login() {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  // 🔥 STRICT EMAIL RULE
-  const emailRegex = /^(?=.*\d)[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // ✅ GENERAL EMAIL RULE — accepts any valid email address/domain
+  // (gmail.com, yahoo.com, outlook.com, company domains, etc.)
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
   // ✅ EMAIL VALIDATION
   const validateUsername = (value) => {

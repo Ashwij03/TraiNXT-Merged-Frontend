@@ -42,3 +42,17 @@
 .trianxt-logo--auth[role="button"] {
   cursor: pointer;
 }
+
+/* Auth left-panel hero logo (white, large, on brand-color background) */
+.trianxt-logo--auth-hero {
+  color: #ffffff;
+  font-size: 46px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.trianxt-logo--auth-hero[role="button"] {
+  cursor: pointer;
+}
