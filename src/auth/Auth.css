@@ -3,85 +3,101 @@ body {
   font-family: var(--tnxt-font, "Inter", sans-serif);
 }
 
-/* PAGE — background image is always preserved here, fills the
-   entire browser viewport (no centering/padding "float card" look) */
+/* PAGE */
+/* Single continuous background image spans the ENTIRE page (left panel
+   + right panel together) so the healthcare artwork never appears to
+   "split" between the two halves. */
 .auth-page {
-  height: 100vh;
-  width: 100vw;
-  background: url("../assets/tria-bg.png") center/cover no-repeat;
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;
   position: relative;
-  overflow: hidden;
-  margin: 0;
-}
-
-/* OVERLAY */
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.15),
-    rgba(0, 150, 136, 0.12)
-  );
+  background: url("../assets/tria-bg.png");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
 }
 
 /* ===================================
-   SPLIT CONTAINER — fills the full screen,
-   two equal 50/50 halves, edge-to-edge
+   LEFT PANEL (enterprise intro panel)
 =================================== */
-.auth-container {
+/* No background-image of its own — it sits directly over .auth-page's
+   background and only adds a soft white/mint tint so the copy stays
+   readable while the artwork underneath keeps showing through.
+   Opacity lowered (was 0.78/0.68) to the requested ~0.25-0.35 range
+   so the healthcare background photo reads through much more clearly. */
+/* NOTE: no max-width here on purpose — a capped width was leaving the
+   right panel far wider than the card, which centered inside it and
+   created a big empty gap between the two halves. flex-basis alone
+   now decides the split, so the two sides sit flush together. */
+.auth-left-panel {
   position: relative;
-  z-index: 2;
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  overflow: hidden;
-}
-
-/* ---- LEFT: BRANDING (50%) ---- */
-.auth-left {
-  flex: 1 1 50%;
-  width: 50%;
-  height: 100vh;
-  position: relative;
+  flex: 1 1 42%;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 48px;
-  text-align: center;
-  overflow: hidden;
-
-  /* keep the same brand background image visible, tinted with the
-     brand gradient so the panel reads as "branding", not a blank box */
-  background:
-    linear-gradient(150deg, rgba(0, 77, 64, 0.92), rgba(0, 150, 136, 0.82)),
-    url("../assets/tria-bg.png") center/cover no-repeat;
+  box-sizing: border-box;
+  padding: 48px 40px 48px 64px;
+  background: linear-gradient(rgba(255, 255, 255, 0.34), rgba(224, 255, 246, 0.28));
 }
 
+/* Content is capped and auto-centered within the panel (rather than
+   stretching edge-to-edge) so the logo/heading/feature list read as a
+   centered block shifted slightly right, not pinned to the left edge. */
 .auth-left-content {
   position: relative;
   z-index: 2;
-  max-width: 360px;
+  width: 100%;
+  max-width: 440px;
+  height: 100%;
+  min-height: 560px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .auth-left-logo {
-  margin-bottom: 10px;
+  text-align: center;
+  margin-bottom: 18px;
 }
 
-.auth-tagline {
-  color: rgba(255, 255, 255, 0.92);
-  font-size: 17px;
-  font-weight: 500;
-  letter-spacing: 0.2px;
+.auth-left-logo .trianxt-logo {
+  text-align: center;
   margin: 0;
 }
 
+.auth-left-logo-sub {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f4c46;
+  letter-spacing: 0.3px;
+}
+
 .auth-left-divider {
+  display: block;
   width: 56px;
   height: 3px;
-  background: rgba(255, 255, 255, 0.55);
-  border-radius: 3px;
-  margin: 26px auto;
+  margin: 0 auto 28px;
+  border-radius: 2px;
+  background: #2e7d32;
+}
+
+.auth-left-headline {
+  margin: 0 0 16px;
+  color: #0b3d3a;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.auth-left-description {
+  max-width: 420px;
+  margin: 0 0 28px;
+  color: #3c5753;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .auth-left-features {
@@ -91,59 +107,158 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  text-align: left;
 }
 
 .auth-left-features li {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  color: rgba(255, 255, 255, 0.95);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.4;
+  align-items: flex-start;
+  gap: 14px;
 }
 
 .auth-feature-icon {
   flex: 0 0 auto;
-  width: 30px;
-  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.16);
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(11, 61, 58, 0.15);
+  font-size: 17px;
+  line-height: 1;
+}
+
+.auth-left-features h4 {
+  margin: 0 0 4px;
+  color: #0b3d3a;
   font-size: 14px;
+  font-weight: 700;
 }
 
-/* ---- RIGHT: FORM (50%) ---- */
-.auth-right {
-  flex: 1 1 50%;
-  width: 50%;
-  height: 100vh;
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0.15),
-      rgba(0, 150, 136, 0.12)
-    ),
-    url("../assets/tria-bg.png") center/cover no-repeat;
+.auth-left-features p {
+  margin: 0;
+  color: #4a625e;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* RIGHT PANEL — wraps the existing, unchanged auth-card */
+/* No background of its own (transparent) so the same continuous
+   .auth-page artwork carries all the way through behind the floating
+   card, matching the reference layout instead of a flat panel color.
+   Centered (not flex-start) so leftover space is balanced evenly on
+   both sides of the card instead of piling up on the right; the card
+   still overlaps the left panel slightly via its own negative margin.
+   overflow: visible lets that overlap actually render instead of
+   being clipped. */
+.auth-right-panel {
+  position: relative;
+  flex: 1 1 58%;
   display: flex;
-  align-items: flex-start;
   justify-content: center;
-  padding: 48px 36px;
-  overflow-y: auto;
+  align-items: center;
+  padding: 24px 48px;
+  box-sizing: border-box;
+  overflow: visible;
 }
 
-/* CARD — now just the form wrapper inside the right half */
+@media (max-width: 900px) {
+  .auth-page {
+    flex-direction: column;
+    background-attachment: scroll;
+  }
+
+  .auth-left-panel {
+    padding: 36px 24px;
+  }
+
+  .auth-left-content {
+    max-width: none;
+  }
+
+  .auth-right-panel {
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .auth-card {
+    margin-left: 0 !important;
+  }
+}
+
+/* OVERLAY */
+/* Very light wash over the right side only, purely to keep the
+   floating card readable against the background photo — the image
+   itself is untouched and still fully visible. Opacity lowered to the
+   requested ~0.25-0.35 range. */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.3),
+    rgba(255, 255, 255, 0.15)
+  );
+}
+
+/* CARD */
+/* Pulled left with a negative margin so it overlaps the left panel's
+   edge slightly instead of floating with a gap in between — later in
+   DOM order than .auth-left-panel, so the overlap paints on top with
+   no z-index juggling needed. This is the base width used by Login;
+   Register overrides it via .auth-card--wide below. Widened from
+   480px to 640px (within the requested 620-700px target) for better
+   visual balance against the left panel — padding/height untouched,
+   vertical centering still comes from .auth-right-panel. */
 .auth-card {
+  position: relative;
+  z-index: 2;
   width: 100%;
-  max-width: 620px;
-  margin: auto 0;
-  background: rgba(255, 255, 255, 0.97);
-  padding: 36px 40px;
-  border-radius: 20px;
-  box-shadow: 0 12px 40px rgba(0, 60, 50, 0.12);
+  max-width: 640px;
+  margin-left: -48px;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: var(--tnxt-radius-xl);
+  padding: 26px 32px 30px;
+  box-shadow: var(--tnxt-shadow-lg);
+  backdrop-filter: blur(6px);
+}
+
+/* Registration only: wider card so paired fields (see .form-row below)
+   fit two-per-row on one screen. Login's .auth-card is untouched.
+   Narrowed from 760px to the requested 700-760px compact target. */
+.auth-card--wide {
+  max-width: 740px;
+  margin-left: -64px;
+}
+
+/* Registration only: heading reads slightly smaller than Login's, per
+   the compact enterprise sizing requested for "Create Account". */
+.auth-card--wide .auth-title {
+  font-size: 21px;
+  margin-bottom: 14px;
+}
+
+/* Registration only: pairs two existing .input-group fields side by
+   side (First/Last Name, Username/Email, Password/Confirm Password).
+   Falls back to a single column on narrow viewports. */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 20px;
+}
+
+/* Registration only: tighter vertical rhythm (within the requested
+   16-20px field-spacing range) so the two-column form fits on one
+   screen with minimal scrolling. Login is unaffected. */
+.auth-form-compact .input-group {
+  margin-bottom: 16px;
+}
+
+@media (max-width: 700px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* LOGO — text-only (no warning icon) */
@@ -168,15 +283,15 @@ body {
 /* TITLE */
 .auth-title {
   text-align: center;
-  margin-bottom: 22px;
+  margin-bottom: 16px;
   color: #333;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 600;
 }
 
 /* INPUT GROUP */
 .input-group {
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .input-group label {
@@ -243,7 +358,7 @@ select:focus {
   justify-content: flex-start;
   align-items: flex-start;
   gap: 10px;
-  margin: 18px 0;
+  margin: 14px 0;
   padding: 14px;
   background: #f8fbff;
   border: 1px solid #dbeafe;
@@ -305,11 +420,73 @@ select:focus {
 }
 
 /* ===================================
+   OR DIVIDER (Login only, UI only)
+=================================== */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  color: #9aa0a6;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: #e0e0e0;
+}
+
+/* ===================================
+   GOOGLE SIGN-IN BUTTON (Login only, UI only)
+   Same width/radius/spacing rhythm as .auth-btn so it reads as part
+   of the same design system, with a white/bordered variant instead
+   of the solid green primary action.
+=================================== */
+.google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid #d8d8d8;
+  background: #ffffff;
+  color: #3c4043;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.google-btn:hover {
+  background: #f8f9fa;
+  border-color: #c6c6c6;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.google-btn:active {
+  background: #f1f3f4;
+}
+
+.google-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+/* ===================================
    LOGIN LINK
 =================================== */
 .login-section {
   text-align: center;
-  margin-top: 18px;
+  margin-top: 14px;
 }
 
 .login-section span {
@@ -335,11 +512,11 @@ select:focus {
    SECURITY CARD
 =================================== */
 .security-card {
-  margin-top: 22px;
+  margin-top: 18px;
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 16px;
+  padding: 14px 16px;
   background: linear-gradient(135deg, #f5fbf6, #eefbf3);
   border: 1px solid #d8efe0;
   border-radius: 14px;
@@ -428,51 +605,11 @@ select:focus {
 }
 
 /* ===================================
-   RESPONSIVE — split stacks vertically,
-   background image + branding stay visible
+   MOBILE
 =================================== */
-@media (max-width: 900px) {
-  .auth-page {
-    height: auto;
-    min-height: 100vh;
-    overflow-y: auto;
-  }
-
-  .auth-container {
-    flex-direction: column;
-    width: 100vw;
-    height: auto;
-    min-height: 100vh;
-  }
-
-  .auth-left,
-  .auth-right {
-    width: 100%;
-    height: auto;
-    flex: 1 1 auto;
-  }
-
-  .auth-left {
-    padding: 36px 24px;
-  }
-
-  .auth-left-features {
-    display: none;
-  }
-
-  .auth-left-divider {
-    margin: 18px auto;
-  }
-
-  .auth-right {
-    padding: 28px 22px 40px;
-    overflow-y: visible;
-  }
-
+@media (max-width: 768px) {
   .auth-card {
-    max-width: 100%;
-    margin: 0;
-    padding: 24px 20px;
+    padding: 22px;
   }
 
   .logo {
@@ -485,12 +622,9 @@ select:focus {
 }
 
 @media (max-width: 480px) {
-  .auth-left {
-    padding: 26px 18px;
-  }
-
-  .auth-right {
-    padding: 20px 16px 32px;
+  .auth-card {
+    padding: 18px;
+    border-radius: 15px;
   }
 
   .logo {

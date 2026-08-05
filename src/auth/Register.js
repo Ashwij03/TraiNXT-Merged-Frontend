@@ -126,10 +126,8 @@ function Register() {
 
     setEmail(value);
 
-    // ✅ GENERAL EMAIL RULE — accepts any valid email address/domain
-    // (gmail.com, yahoo.com, outlook.com, company domains, etc.)
     const regex =
-      /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+      /^(?=.*\d)[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!value.trim()) {
 
@@ -447,9 +445,11 @@ function Register() {
 
   return (
 
-    <AuthLayout title="Create Account">
+    <AuthLayout title="Create Account" wide>
 
-      <form onSubmit={handleSignup}>
+      <form onSubmit={handleSignup} className="auth-form-compact">
+
+        <div className="form-row">
 
         {/* FIRST NAME */}
         <div className="input-group">
@@ -506,6 +506,10 @@ function Register() {
           }
 
         </div>
+
+        </div>
+
+        <div className="form-row">
 
         {/* USERNAME */}
         <div className="input-group">
@@ -567,6 +571,10 @@ function Register() {
           }
 
         </div>
+
+        </div>
+
+        <div className="form-row">
 
         {/* PASSWORD */}
         <div className="input-group">
@@ -676,6 +684,10 @@ function Register() {
 
         </div>
 
+        </div>
+
+        <div className="form-row">
+
         {/* ORGANIZATION NAME */}
         {/* UPDATED: replaced the Organization Type dropdown with a
             free-text Organization Name input. Required for every role
@@ -754,6 +766,12 @@ function Register() {
             )
           }
 
+        </div>
+
+        </div>
+
+        {/* PRIVACY POLICY — full width, kept as its own row (structural
+            fix only: previously nested inside the Role field's div) */}
         <div className="policy-container">
 
           <input
@@ -788,16 +806,14 @@ function Register() {
             
         </div>
 
-          {
-            policyError && (
+        {
+          policyError && (
 
-              <p className="error">
-                {policyError}
-              </p>
-            )
-          }
-
-        </div>
+            <p className="error">
+              {policyError}
+            </p>
+          )
+        }
 
         {/* BUTTON */}
         <button
