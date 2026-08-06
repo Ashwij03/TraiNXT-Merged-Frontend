@@ -687,29 +687,23 @@ export function getReports() {
   return readJson(STORAGE_KEYS.reports, []);
 }
 
-// UPDATED: Compliance score is now derived entirely from real stored data —
-// no hardcoded baseline. Returns "—" when there is nothing yet to measure
-// (no comments and no regulatory docs recorded for any study), instead of a
-// fabricated percentage.
+// UPDATED: Compliance score is derived entirely from real stored data — no
+// hardcoded baseline. The Regulatory section (and its docs) has been
+// removed from the app, so this no longer factors in regulatory doc
+// status; it's based solely on open comments. Returns "—" when there are
+// no comments recorded yet, instead of a fabricated percentage.
 export function getComplianceScore() {
   initializeAdminData();
 
   const comments = getComments();
-  const regulatoryDocs = getRegulatoryDocs();
 
-  if (comments.length === 0 && regulatoryDocs.length === 0) {
+  if (comments.length === 0) {
     return "—";
   }
 
   const openComments = comments.filter(isOpenComment).length;
-  const nonValidRegulatoryDocs = regulatoryDocs.filter(
-    (doc) => doc.status && doc.status !== "Valid"
-  ).length;
 
-  const score = Math.max(
-    0,
-    Math.min(100, 100 - openComments - nonValidRegulatoryDocs)
-  );
+  const score = Math.max(0, Math.min(100, 100 - openComments));
 
   return `${score}%`;
 }
@@ -980,8 +974,8 @@ export function getPIDashboardData() {
     enrollmentCount: totalEnrolled,
     enrollmentTarget: totalTarget,
     activeSubjects: activeSubjects || totalEnrolled,
-    pendingTasks: comments.length + getRegulatoryDocs().filter((d) => d.status !== "Valid").length,
-    overdueDocuments: getRegulatoryDocs().filter((d) => d.status === "Expiring Soon").length,
+    pendingTasks: comments.length,
+    overdueDocuments: 0,
     visitCompletion:
       schedules.length > 0
         ? `${Math.round((completedVisitCount / schedules.length) * 100)}%`
@@ -1006,11 +1000,6 @@ export function getPIDashboardData() {
     })),
     schedules,
     alerts: [
-      {
-        type: "danger",
-        title: "Documents Requiring Action",
-        message: `${getRegulatoryDocs().filter((d) => d.status !== "Valid").length} regulatory items need review`
-      },
       {
         type: "warning",
         title: "Pending Tasks",

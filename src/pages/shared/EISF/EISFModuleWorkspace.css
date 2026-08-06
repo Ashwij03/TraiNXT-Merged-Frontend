@@ -22,7 +22,7 @@
 
 .eisf-module-title-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
   min-width: 0;
@@ -31,6 +31,13 @@
 .eisf-module-heading {
   flex: 0 1 auto;
   min-width: 210px;
+  display: flex;
+  align-items: center;
+  min-height: 84px;
+}
+
+.eisf-module-heading h2 {
+  line-height: 1;
 }
 
 .eisf-module-title-row .dashboard-cards {
@@ -150,6 +157,7 @@
 .eisf-module-documents-card h3 {
   margin: 0;
   color: #0f172a;
+  font-size: 22px;
 }
 
 .eisf-module-section-list {
@@ -271,14 +279,21 @@
   margin-bottom: 18px;
 }
 
+.eisf-documents-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .eisf-documents-header span {
   display: inline-block;
-  margin-top: 8px;
-  padding: 3px 8px;
+  margin-top: 0;
+  padding: 5px 11px;
   border-radius: 999px;
   background: #dcecff;
   color: #1f7ae0;
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 700;
 }
 
@@ -295,9 +310,9 @@
   border: 1px solid #d8e1ec;
   border-radius: 8px;
   background: #fff;
-  padding: 9px 14px;
+  padding: 11px 18px;
   color: #0f172a;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -317,12 +332,12 @@
 .eisf-documents-toolbar input,
 .eisf-documents-toolbar select {
   min-width: 0;
-  padding: 10px 12px;
+  padding: 12px 14px;
   border: 1px solid #d8e1ec;
   border-radius: 8px;
   background: #fff;
   color: #334155;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .eisf-module-select {
@@ -352,12 +367,12 @@
   justify-content: center;
   gap: 6px;
   margin: 0;
-  padding: 9px 14px;
+  padding: 11px 18px;
   border: 1px solid #d8e1ec;
   border-radius: 8px;
   background: #fff;
   color: #1f7ae0;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
   white-space: nowrap;
   text-decoration: none;
@@ -365,9 +380,9 @@
 }
 
 .eisf-documents-actions .more-action {
-  width: 40px;
+  width: 46px;
   padding-inline: 0;
-  font-size: 18px;
+  font-size: 21px;
   line-height: 1;
 }
 
@@ -382,7 +397,7 @@
   gap: 16px;
   padding: 15px 3px 0;
   color: #64748b;
-  font-size: 12px;
+  font-size: 15px;
 }
 
 .eisf-pagination {
@@ -403,6 +418,7 @@
   gap: 7px;
   color: #64748b;
   font-weight: 700;
+  font-size: 15px;
 }
 
 .eisf-pagination-controls select {
@@ -410,18 +426,20 @@
   border-radius: 8px;
   background: #fff;
   color: #334155;
-  padding: 8px 9px;
+  padding: 9px 10px;
   font-weight: 700;
+  font-size: 15px;
 }
 
 .eisf-pagination button {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border: 1px solid #d8e1ec;
   border-radius: 8px;
   background: #fff;
   color: #334155;
   font-weight: 700;
+  font-size: 15px;
 }
 
 .eisf-pagination button.active {

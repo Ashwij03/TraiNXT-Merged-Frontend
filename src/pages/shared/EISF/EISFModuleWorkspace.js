@@ -400,7 +400,6 @@ export default function EISFModuleWorkspace({
           <div className="eisf-module-title-row">
             <div className="eisf-module-heading">
               <h2>{moduleConfig.title}</h2>
-              <p>{moduleConfig.description}</p>
             </div>
 
             <DashboardCards documents={documents} cards={dashboardCards} variant="reference" />
@@ -444,7 +443,7 @@ export default function EISFModuleWorkspace({
           ) : (
             <>
           <div className="eisf-documents-header">
-            <div>
+            <div className="eisf-documents-title-row">
               <h3>{activeSection?.id} {activeSection?.title}</h3>
               <span>{totalLabel}</span>
             </div>

@@ -193,61 +193,63 @@ function AdminDashboard() {
   return (
     <AdminDashboardLayout>
       <div className="admin-dashboard">
-        <div className="dashboard-page-title">
-          <h1>Admin Dashboard</h1>
-          <p>
-            Clinical Trial System Overview
-            {institutionFilter ? ` — ${institutionFilter}` : ""}
-          </p>
-        </div>
+        <div className="dashboard-header-row">
+          <div className="dashboard-page-title">
+            <h1>Admin Dashboard</h1>
+            <p>
+              Clinical Trial System Overview
+              {institutionFilter ? ` — ${institutionFilter}` : ""}
+            </p>
+          </div>
 
-        <div className="dashboard-grid-6">
-          <KPICard
-            title="Users"
-            value={users.length}
-            subtitle="Registered Users"
-            icon="👤"
-            onClick={() => navigate("/user-management")}
-          />
+          <div className="dashboard-grid-6 dashboard-header-kpis">
+            <KPICard
+              title="Users"
+              value={users.length}
+              subtitle="Registered Users"
+              icon="👤"
+              onClick={() => navigate("/user-management")}
+            />
 
-          <KPICard
-            title="Pending"
-            value={pendingUsers.length + pendingAccessRequests.length}
-            subtitle="Access Requests"
-            icon="🛡️"
-            onClick={() => navigate("/access-permission")}
-          />
+            <KPICard
+              title="Pending"
+              value={pendingUsers.length + pendingAccessRequests.length}
+              subtitle="Access Requests"
+              icon="🛡️"
+              onClick={() => navigate("/access-permission")}
+            />
 
-          <KPICard
-            title="Studies"
-            value={ongoingStudiesCount}
-            subtitle="Ongoing Studies"
-            icon="📁"
-            onClick={() => navigate("/studies")}
-          />
+            <KPICard
+              title="Studies"
+              value={ongoingStudiesCount}
+              subtitle="Ongoing Studies"
+              icon="📁"
+              onClick={() => navigate("/studies")}
+            />
 
-          <KPICard
-            title="Sites"
-            value={sites.length}
-            subtitle="Operational Sites"
-            icon="🏥"
-            onClick={() => navigate("/sites")}
-          />
+            <KPICard
+              title="Sites"
+              value={sites.length}
+              subtitle="Operational Sites"
+              icon="🏥"
+              onClick={() => navigate("/sites")}
+            />
 
-          <KPICard
-            title="Comments"
-            value={openCommentsCount}
-            subtitle="Open Comments"
-            icon="💬"
-            onClick={() => navigate("/comments")}
-          />
+            <KPICard
+              title="Comments"
+              value={openCommentsCount}
+              subtitle="Open Comments"
+              icon="💬"
+              onClick={() => navigate("/comments")}
+            />
 
-          <KPICard
-            title="Compliance"
-            value={complianceScore}
-            subtitle="Overall Score"
-            icon="✅"
-          />
+            <KPICard
+              title="Compliance"
+              value={complianceScore}
+              subtitle="Overall Score"
+              icon="✅"
+            />
+          </div>
         </div>
 
         <SubjectAnalyticsSection
