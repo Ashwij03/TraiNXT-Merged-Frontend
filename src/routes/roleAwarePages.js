@@ -6,7 +6,6 @@ import DashboardLayout from "../components/dashboard/shared/DashboardLayout";
 import AdminComments from "../pages/Admin/Comments";
 import AdminSitePerformance from "../pages/Admin/SitePerformance";
 import AdminRecruitment from "../pages/Admin/Recruitment";
-import AdminRegulatory from "../pages/Admin/Regulatory";
 import AdminReports from "../pages/Admin/Reports";
 import AdminNotifications from "../pages/Admin/Notifications";
 import AdminSettings from "../pages/Admin/Settings";
@@ -40,6 +39,23 @@ import PISettings from "../pages/PI/PISettings";
 function pickComponent(roleMap, defaultComponent) {
   const role = getEffectiveRole();
   return roleMap[role] || defaultComponent;
+}
+
+// The Admin role no longer has a dedicated Regulatory page (it was an
+// orphaned page with no sidebar/nav link anywhere in the app). This is
+// the fallback shown to any role without its own Regulatory page if the
+// /regulatory route is ever reached directly.
+function RegulatoryUnavailable() {
+  return (
+    <DashboardLayout>
+      <div style={{ padding: "40px 24px" }}>
+        <h1 style={{ margin: "0 0 8px", fontSize: 22 }}>Regulatory</h1>
+        <p style={{ margin: 0, color: "#6b7280" }}>
+          This page isn't available for your role.
+        </p>
+      </div>
+    </DashboardLayout>
+  );
 }
 
 function withDashboardLayout(Component) {
@@ -92,7 +108,7 @@ export function RoleAwareRegulatory() {
       [ROLES.SPONSOR]: SponsorRegulatory,
       [ROLES.CRO]: CroRegulatory
     },
-    AdminRegulatory
+    RegulatoryUnavailable
   );
   return <Component />;
 }
