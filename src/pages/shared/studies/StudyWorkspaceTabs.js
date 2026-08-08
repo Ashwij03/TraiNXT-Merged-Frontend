@@ -4,10 +4,14 @@ import "./StudyWorkspaceTabs.css";
 import { STUDY_WORKSPACE_TABS } from "./StudyWorkspaceTabsConfig";
 // ===== END F1 CHANGES =====
 
-import { getEffectiveRole, ROLES, hasPermission, PERMISSIONS } from "../../../services/roleService";
+import {
+  getEffectiveRole,
+  ROLES,
+  hasPermission,
+  PERMISSIONS,
+} from "../../../services/roleService";
 
 function StudyWorkspaceTabs({ activeTab, setActiveTab }) {
-
   // ===== START G1 CHANGES =====
   const effectiveRole = getEffectiveRole();
 
@@ -33,15 +37,12 @@ function StudyWorkspaceTabs({ activeTab, setActiveTab }) {
   return (
     <div className="workspace-header">
       <div className="workspace-tabs">
-
         {/* ===== START F1 CHANGES ===== */}
         {visibleTabs.map((tab) => (
           <button
             key={tab.id}
             className={
-              activeTab === tab.label
-                ? "workspace-tab active"
-                : "workspace-tab"
+              activeTab === tab.label ? "workspace-tab active" : "workspace-tab"
             }
             onClick={() => setActiveTab(tab.label)}
             type="button"
@@ -50,7 +51,6 @@ function StudyWorkspaceTabs({ activeTab, setActiveTab }) {
           </button>
         ))}
         {/* ===== END F1 CHANGES ===== */}
-
       </div>
     </div>
   );

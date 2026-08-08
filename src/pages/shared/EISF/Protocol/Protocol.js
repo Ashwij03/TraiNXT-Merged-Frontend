@@ -2,7 +2,14 @@ import EISFModuleWorkspace from "../EISFModuleWorkspace";
 import EISF_ASSIGNED_MODULES from "../eisfAssignedModuleConfig";
 import "./Protocol.css";
 
-export default function Protocol({ activeSectionId, studyCode, moduleOptions, selectedModuleId, onModuleChange, onSectionChange }) {
+export default function Protocol({
+  activeSectionId,
+  studyCode,
+  moduleOptions,
+  selectedModuleId,
+  onModuleChange,
+  onSectionChange,
+}) {
   return (
     <EISFModuleWorkspace
       moduleConfig={EISF_ASSIGNED_MODULES.protocol}

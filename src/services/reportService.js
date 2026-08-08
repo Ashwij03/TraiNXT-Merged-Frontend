@@ -20,7 +20,10 @@ import {
   getAccessibleStudies,
 } from "./roleService";
 import { hasApprovedScope } from "./accessPermissionService";
-import { notifyReportCreated, notifyReportUpdated } from "./notificationService";
+import {
+  notifyReportCreated,
+  notifyReportUpdated,
+} from "./notificationService";
 
 const REPORTS_STORAGE_KEY = "trianxtReports";
 const REPORT_PERMISSION_MODULE = "Reports";

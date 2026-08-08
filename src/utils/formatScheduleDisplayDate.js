@@ -13,7 +13,7 @@ export function formatScheduleDisplayDate(dateValue) {
     ? new Date(
         Number(isoDateMatch[1]),
         Number(isoDateMatch[2]) - 1,
-        Number(isoDateMatch[3])
+        Number(isoDateMatch[3]),
       )
     : new Date(raw);
 
@@ -25,7 +25,10 @@ export function formatScheduleDisplayDate(dateValue) {
     });
   }
 
-  const withoutTime = raw.replace(/\s+\d{1,2}:\d{2}(?::\d{2})?\s*(AM|PM)?/i, "");
+  const withoutTime = raw.replace(
+    /\s+\d{1,2}:\d{2}(?::\d{2})?\s*(AM|PM)?/i,
+    "",
+  );
 
   return withoutTime || raw;
 }

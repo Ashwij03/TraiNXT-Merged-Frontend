@@ -19,7 +19,11 @@ export function canEditStudyContent(user = getCurrentUser()) {
 // reading it back — the user stayed permanently locked out even after
 // approval, with the Edit Permission action doing nothing. This checks
 // that approved scope so edit access actually unlocks once granted.
-export function hasApprovedEditAccess(user = getCurrentUser(), module, studyCode = "") {
+export function hasApprovedEditAccess(
+  user = getCurrentUser(),
+  module,
+  studyCode = "",
+) {
   if (!user?.email || !module) {
     return false;
   }
@@ -38,7 +42,7 @@ export function canAddStudy(user = getCurrentUser()) {
     ROLES.SITE_STAFF,
     ROLES.PI,
     ROLES.CRO,
-    ROLES.SPONSOR
+    ROLES.SPONSOR,
   ].includes(role);
 }
 
@@ -72,7 +76,7 @@ export function isViewOnlySubjectAccess(user = getCurrentUser()) {
 export {
   getSubjectStatusAnalytics,
   getAllSubjectsFromStorage,
-  SUBJECT_STATUS_ORDER
+  SUBJECT_STATUS_ORDER,
 } from "./subjectStatusAnalytics";
 
 export { getEnrollmentStatusAnalytics } from "./enrollmentStatusAnalytics";

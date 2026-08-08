@@ -20,11 +20,11 @@ function PISettings({ activeView = "security" }) {
   const [notifPrefs, setNotifPrefs] = useState(data.notificationPreferences);
   const [studyPrefs, setStudyPrefs] = useState(data.studyPreferences);
   const [profilePhoto, setProfilePhoto] = useState(
-    () => getUserProfile().profilePhoto || ""
+    () => getUserProfile().profilePhoto || "",
   );
   const location = useLocation();
 
-console.log("STATE =", location.state);
+  console.log("STATE =", location.state);
 
   useEffect(() => {
     const fresh = getSettingsData();
@@ -39,10 +39,10 @@ console.log("STATE =", location.state);
   }, [activeView]);
 
   useEffect(() => {
-  if (location.state?.openModal === "profile") {
-    setView("profile");
-  }
-}, [location]);
+    if (location.state?.openModal === "profile") {
+      setView("profile");
+    }
+  }, [location]);
 
   const persist = (updated) => {
     const saved = saveSettingsData(updated);
@@ -91,37 +91,81 @@ console.log("STATE =", location.state);
   const renderProfileView = () => (
     <div className="table-container tnxt-compact">
       <h2>PI Profile Information</h2>
-      <ProfilePhotoCard
-        photo={profilePhoto}
-        onPhotoChange={setProfilePhoto}
-      />
+      <ProfilePhotoCard photo={profilePhoto} onPhotoChange={setProfilePhoto} />
       <div className="pi-settings-form">
         <label>
           PI Name
-          <input type="text" value={profileForm.name} onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })} />
+          <input
+            type="text"
+            value={profileForm.name}
+            onChange={(e) =>
+              setProfileForm({ ...profileForm, name: e.target.value })
+            }
+          />
         </label>
         <label>
           Site Name
-          <input type="text" value={profileForm.siteName || profileForm.institute} onChange={(e) => setProfileForm({ ...profileForm, siteName: e.target.value, institute: e.target.value })} />
+          <input
+            type="text"
+            value={profileForm.siteName || profileForm.institute}
+            onChange={(e) =>
+              setProfileForm({
+                ...profileForm,
+                siteName: e.target.value,
+                institute: e.target.value,
+              })
+            }
+          />
         </label>
         <label>
           Email
-          <input type="email" value={profileForm.email} onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })} />
+          <input
+            type="email"
+            value={profileForm.email}
+            onChange={(e) =>
+              setProfileForm({ ...profileForm, email: e.target.value })
+            }
+          />
         </label>
         <label>
           Phone
-          <input type="text" value={profileForm.phone || ""} onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} />
+          <input
+            type="text"
+            value={profileForm.phone || ""}
+            onChange={(e) =>
+              setProfileForm({ ...profileForm, phone: e.target.value })
+            }
+          />
         </label>
         <label>
           Office Contact
-          <input type="text" value={profileForm.contactInfo?.office || ""} onChange={(e) => setProfileForm({ ...profileForm, contactInfo: { ...profileForm.contactInfo, office: e.target.value } })} />
+          <input
+            type="text"
+            value={profileForm.contactInfo?.office || ""}
+            onChange={(e) =>
+              setProfileForm({
+                ...profileForm,
+                contactInfo: {
+                  ...profileForm.contactInfo,
+                  office: e.target.value,
+                },
+              })
+            }
+          />
         </label>
         <label>
           Role
-          <input type="text" value={profileForm.role} readOnly className="pi-input-readonly" />
+          <input
+            type="text"
+            value={profileForm.role}
+            readOnly
+            className="pi-input-readonly"
+          />
         </label>
       </div>
-      <button type="button" className="export-btn" onClick={handleSaveProfile}>Save Profile</button>
+      <button type="button" className="export-btn" onClick={handleSaveProfile}>
+        Save Profile
+      </button>
 
       <h3 style={{ marginTop: 32 }}>Study Assignments</h3>
       <div className="pi-table-responsive">
@@ -140,7 +184,17 @@ console.log("STATE =", location.state);
                 <td>{s.study}</td>
                 <td>{s.target}</td>
                 <td>{s.enrolled}</td>
-                <td><span className={s.status === "On Track" ? "status-success" : "status-danger"}>{s.status}</span></td>
+                <td>
+                  <span
+                    className={
+                      s.status === "On Track"
+                        ? "status-success"
+                        : "status-danger"
+                    }
+                  >
+                    {s.status}
+                  </span>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -154,13 +208,41 @@ console.log("STATE =", location.state);
       <h2>Notification Preferences</h2>
       <div className="pi-security-settings-list">
         {[
-          { key: "emailNotifications", label: "Email Notifications", desc: "Receive alerts via email" },
-          { key: "smsNotifications", label: "SMS Notifications", desc: "Receive critical alerts via SMS" },
-          { key: "visitAlerts", label: "Visit Alerts", desc: "Upcoming visit reminders" },
-          { key: "regulatoryAlerts", label: "Regulatory Alerts", desc: "IRB deadlines and document expiry" },
-          { key: "safetyAlerts", label: "Safety Alerts", desc: "SAE and safety event notifications" },
-          { key: "recruitmentUpdates", label: "Recruitment Updates", desc: "Enrollment milestone alerts" },
-          { key: "studyUpdates", label: "Study Updates", desc: "Protocol amendments and study changes" },
+          {
+            key: "emailNotifications",
+            label: "Email Notifications",
+            desc: "Receive alerts via email",
+          },
+          {
+            key: "smsNotifications",
+            label: "SMS Notifications",
+            desc: "Receive critical alerts via SMS",
+          },
+          {
+            key: "visitAlerts",
+            label: "Visit Alerts",
+            desc: "Upcoming visit reminders",
+          },
+          {
+            key: "regulatoryAlerts",
+            label: "Regulatory Alerts",
+            desc: "IRB deadlines and document expiry",
+          },
+          {
+            key: "safetyAlerts",
+            label: "Safety Alerts",
+            desc: "SAE and safety event notifications",
+          },
+          {
+            key: "recruitmentUpdates",
+            label: "Recruitment Updates",
+            desc: "Enrollment milestone alerts",
+          },
+          {
+            key: "studyUpdates",
+            label: "Study Updates",
+            desc: "Protocol amendments and study changes",
+          },
         ].map((item) => (
           <div
             key={item.key}
@@ -174,7 +256,9 @@ console.log("STATE =", location.state);
               <strong>{item.label}</strong>
               <p>{item.desc}</p>
             </div>
-            <span className={`pi-toggle ${notifPrefs[item.key] ? "on" : "off"}`}>
+            <span
+              className={`pi-toggle ${notifPrefs[item.key] ? "on" : "off"}`}
+            >
               {notifPrefs[item.key] ? "ON" : "OFF"}
             </span>
           </div>
@@ -182,13 +266,23 @@ console.log("STATE =", location.state);
       </div>
       <label className="pi-settings-inline-label">
         Digest Frequency
-        <select value={notifPrefs.digestFrequency} onChange={(e) => setNotifPrefs({ ...notifPrefs, digestFrequency: e.target.value })}>
+        <select
+          value={notifPrefs.digestFrequency}
+          onChange={(e) =>
+            setNotifPrefs({ ...notifPrefs, digestFrequency: e.target.value })
+          }
+        >
           <option>Real-time</option>
           <option>Daily</option>
           <option>Weekly</option>
         </select>
       </label>
-      <button type="button" className="export-btn" style={{ marginTop: 16 }} onClick={handleSaveNotifications}>
+      <button
+        type="button"
+        className="export-btn"
+        style={{ marginTop: 16 }}
+        onClick={handleSaveNotifications}
+      >
         Save Notification Settings
       </button>
     </div>
@@ -200,15 +294,27 @@ console.log("STATE =", location.state);
       <div className="pi-settings-form">
         <label>
           Default Study View
-          <select value={studyPrefs.defaultStudyView} onChange={(e) => setStudyPrefs({ ...studyPrefs, defaultStudyView: e.target.value })}>
+          <select
+            value={studyPrefs.defaultStudyView}
+            onChange={(e) =>
+              setStudyPrefs({ ...studyPrefs, defaultStudyView: e.target.value })
+            }
+          >
             {collectAllStudies().map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s} value={s}>
+                {s}
+              </option>
             ))}
           </select>
         </label>
         <label>
           Dashboard Layout
-          <select value={studyPrefs.dashboardLayout} onChange={(e) => setStudyPrefs({ ...studyPrefs, dashboardLayout: e.target.value })}>
+          <select
+            value={studyPrefs.dashboardLayout}
+            onChange={(e) =>
+              setStudyPrefs({ ...studyPrefs, dashboardLayout: e.target.value })
+            }
+          >
             <option>Standard</option>
             <option>Compact</option>
             <option>Detailed</option>
@@ -216,7 +322,15 @@ console.log("STATE =", location.state);
         </label>
         <label>
           Default Report Format
-          <select value={studyPrefs.defaultReportFormat} onChange={(e) => setStudyPrefs({ ...studyPrefs, defaultReportFormat: e.target.value })}>
+          <select
+            value={studyPrefs.defaultReportFormat}
+            onChange={(e) =>
+              setStudyPrefs({
+                ...studyPrefs,
+                defaultReportFormat: e.target.value,
+              })
+            }
+          >
             <option>PDF</option>
             <option>XLSX</option>
             <option>CSV</option>
@@ -230,28 +344,72 @@ console.log("STATE =", location.state);
             onChange={(e) =>
               setStudyPrefs({
                 ...studyPrefs,
-                preferredStudies: Array.from(e.target.selectedOptions, (o) => o.value),
+                preferredStudies: Array.from(
+                  e.target.selectedOptions,
+                  (o) => o.value,
+                ),
               })
             }
             className="pi-multi-select"
           >
             {allStudies.map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s} value={s}>
+                {s}
+              </option>
             ))}
           </select>
         </label>
       </div>
       <div className="pi-security-settings-list">
-        <div className="pi-security-setting-row" onClick={() => setStudyPrefs({ ...studyPrefs, showKpiTrends: !studyPrefs.showKpiTrends })} role="button" tabIndex={0}>
-          <div><strong>Show KPI Trends</strong><p>Display trend indicators on dashboard KPIs</p></div>
-          <span className={`pi-toggle ${studyPrefs.showKpiTrends ? "on" : "off"}`}>{studyPrefs.showKpiTrends ? "ON" : "OFF"}</span>
+        <div
+          className="pi-security-setting-row"
+          onClick={() =>
+            setStudyPrefs({
+              ...studyPrefs,
+              showKpiTrends: !studyPrefs.showKpiTrends,
+            })
+          }
+          role="button"
+          tabIndex={0}
+        >
+          <div>
+            <strong>Show KPI Trends</strong>
+            <p>Display trend indicators on dashboard KPIs</p>
+          </div>
+          <span
+            className={`pi-toggle ${studyPrefs.showKpiTrends ? "on" : "off"}`}
+          >
+            {studyPrefs.showKpiTrends ? "ON" : "OFF"}
+          </span>
         </div>
-        <div className="pi-security-setting-row" onClick={() => setStudyPrefs({ ...studyPrefs, compactTables: !studyPrefs.compactTables })} role="button" tabIndex={0}>
-          <div><strong>Compact Tables</strong><p>Use condensed table layout across modules</p></div>
-          <span className={`pi-toggle ${studyPrefs.compactTables ? "on" : "off"}`}>{studyPrefs.compactTables ? "ON" : "OFF"}</span>
+        <div
+          className="pi-security-setting-row"
+          onClick={() =>
+            setStudyPrefs({
+              ...studyPrefs,
+              compactTables: !studyPrefs.compactTables,
+            })
+          }
+          role="button"
+          tabIndex={0}
+        >
+          <div>
+            <strong>Compact Tables</strong>
+            <p>Use condensed table layout across modules</p>
+          </div>
+          <span
+            className={`pi-toggle ${studyPrefs.compactTables ? "on" : "off"}`}
+          >
+            {studyPrefs.compactTables ? "ON" : "OFF"}
+          </span>
         </div>
       </div>
-      <button type="button" className="export-btn" style={{ marginTop: 16 }} onClick={handleSavePreferences}>
+      <button
+        type="button"
+        className="export-btn"
+        style={{ marginTop: 16 }}
+        onClick={handleSavePreferences}
+      >
         Save Study Preferences
       </button>
     </div>

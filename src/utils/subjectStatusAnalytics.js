@@ -5,12 +5,12 @@ export const SUBJECT_STATUS_ORDER = [
   "Ongoing",
   "Completed",
   "Withdrawn",
-  "Dropout"
+  "Dropout",
 ];
 
 export function getSubjectStatusAnalytics(subjects = []) {
   const counts = Object.fromEntries(
-    SUBJECT_STATUS_ORDER.map((status) => [status, 0])
+    SUBJECT_STATUS_ORDER.map((status) => [status, 0]),
   );
 
   subjects.forEach((subject) => {
@@ -23,7 +23,7 @@ export function getSubjectStatusAnalytics(subjects = []) {
 
   return SUBJECT_STATUS_ORDER.map((name) => ({
     name,
-    value: counts[name]
+    value: counts[name],
   }));
 }
 
@@ -35,8 +35,8 @@ export function getAllSubjectsFromStorage() {
     return Object.entries(subjectsByStudy).flatMap(([studyKey, subjects]) =>
       (Array.isArray(subjects) ? subjects : []).map((subject) => ({
         ...subject,
-        studyKey
-      }))
+        studyKey,
+      })),
     );
   } catch {
     return [];

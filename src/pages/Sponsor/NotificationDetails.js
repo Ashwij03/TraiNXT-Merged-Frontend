@@ -20,11 +20,7 @@ const NotificationDetails = () => {
   return (
     <AppLayout>
       <div className="page-container">
-        <button
-          type="button"
-          className="back-btn"
-          onClick={() => navigate(-1)}
-        >
+        <button type="button" className="back-btn" onClick={() => navigate(-1)}>
           ← Back
         </button>
 

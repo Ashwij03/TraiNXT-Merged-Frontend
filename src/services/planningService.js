@@ -63,7 +63,7 @@ export function savePlanningMilestone(studyCode, milestone) {
 
 export function deletePlanningMilestone(studyCode, milestoneId) {
   const next = getPlanningMilestones(studyCode).filter(
-    (item) => item.id !== milestoneId
+    (item) => item.id !== milestoneId,
   );
   return saveStudyList(PLANNING_MILESTONES_KEY, studyCode, next);
 }
@@ -167,7 +167,7 @@ export function saveRegulatoryChecklistItem(studyCode, item) {
 
 export function deleteRegulatoryChecklistItem(studyCode, itemId) {
   const next = getRegulatoryChecklist(studyCode).filter(
-    (item) => item.id !== itemId
+    (item) => item.id !== itemId,
   );
   return saveStudyList(REGULATORY_CHECKLIST_KEY, studyCode, next);
 }
@@ -187,15 +187,13 @@ export function saveProtocol(studyCode, protocol) {
   };
 
   const entry = {
-id: protocol?.id || `proto-${Date.now()}`,
-title: String(protocol?.title ?? "").trim() || "Protocol",
-protocolNumber: protocol?.protocolNumber || "",
-status: protocol?.status || "Draft",
-currentVersion: versionEntry.version,
-versions: protocol?.versions?.length
-? protocol.versions
-: [versionEntry],
-};
+    id: protocol?.id || `proto-${Date.now()}`,
+    title: String(protocol?.title ?? "").trim() || "Protocol",
+    protocolNumber: protocol?.protocolNumber || "",
+    status: protocol?.status || "Draft",
+    currentVersion: versionEntry.version,
+    versions: protocol?.versions?.length ? protocol.versions : [versionEntry],
+  };
 
   if (protocol?.newVersion) {
     entry.versions = [...entry.versions, versionEntry];

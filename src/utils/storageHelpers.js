@@ -5,7 +5,7 @@ export function readJson(key, fallback = null) {
 
   try {
     const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) ?? fallback : fallback;
+    return raw ? (JSON.parse(raw) ?? fallback) : fallback;
   } catch {
     return fallback;
   }

@@ -6,7 +6,7 @@
 }
 
 .cro-settings-tab {
-  border:1px solid #d8dee9;
+  border: 1px solid #d8dee9;
   background: #ffffff;
   color: #374151;
   padding: 10px 18px;
@@ -14,15 +14,17 @@
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
   font-family: inherit;
-    
 }
 
-.settings-tab:hover{
-    background:#f8fafc;
-    border-color:#cbd5e1;
-    color:#1f2937;
+.settings-tab:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #1f2937;
 }
 
 .cro-settings-tab--active {
@@ -63,18 +65,18 @@
     text-align: left;
   }
 }
-.cro-profile-form{
-    display:flex;
-    flex-direction:column;
-    gap:14px;
+.cro-profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.cro-profile-form label{
-    font-size:14px;
-    font-weight:600;
-    color:#475569;
+.cro-profile-form label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
 }
 
-.cro-profile-form .cro-input{
-    width:100%;
+.cro-profile-form .cro-input {
+  width: 100%;
 }

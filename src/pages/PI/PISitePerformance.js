@@ -49,7 +49,8 @@ function PISitePerformance({ selectedStudy: studyProp }) {
   const [editMetric, setEditMetric] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newMetric, setNewMetric] = useState({ ...EMPTY_METRIC });
-  const selectedStudy = studyProp || getNavbarData().selectedStudy || "All Studies";
+  const selectedStudy =
+    studyProp || getNavbarData().selectedStudy || "All Studies";
 
   const persist = (updated) => {
     const recalculated = recalculateSitePerformanceKpis(updated);
@@ -68,7 +69,9 @@ function PISitePerformance({ selectedStudy: studyProp }) {
       ? filteredMetrics
       : filteredMetrics.filter((m) => m.metric.includes(metricFilter));
 
-  const tableMetrics = showAllMetrics ? filteredMetrics : displayMetrics.slice(0, 6);
+  const tableMetrics = showAllMetrics
+    ? filteredMetrics
+    : displayMetrics.slice(0, 6);
 
   const chartData = useMemo(
     () =>
@@ -76,7 +79,7 @@ function PISitePerformance({ selectedStudy: studyProp }) {
         ...item,
         fullMark: 100,
       })),
-    [data.chartData]
+    [data.chartData],
   );
 
   const handleSaveMetric = () => {
@@ -84,7 +87,7 @@ function PISitePerformance({ selectedStudy: studyProp }) {
     const metrics = data.metrics.map((m) =>
       m.metric === selectedMetric.metric && m.study === selectedMetric.study
         ? { ...editMetric, value: Number(editMetric.value) || 0 }
-        : m
+        : m,
     );
     persist({ ...data, metrics });
     setSelectedMetric(null);
@@ -96,7 +99,7 @@ function PISitePerformance({ selectedStudy: studyProp }) {
     persist({
       ...data,
       metrics: data.metrics.filter(
-        (m) => !(m.metric === row.metric && m.study === row.study)
+        (m) => !(m.metric === row.metric && m.study === row.study),
       ),
     });
     setSelectedMetric(null);
@@ -120,14 +123,62 @@ function PISitePerformance({ selectedStudy: studyProp }) {
   };
 
   const kpiCards = [
-    { title: "Enrollment Performance", value: `${data.kpis.enrollmentPerformance}%`, icon: FaChartLine, color: "blue", filter: "Enrollment" },
-    { title: "Screening Success Rate", value: `${data.kpis.screeningSuccessRate}%`, icon: FaUserCheck, color: "green", filter: "Screening" },
-    { title: "Visit Completion Rate", value: `${data.kpis.visitCompletionRate}%`, icon: FaCalendarCheck, color: "purple", filter: "Visit" },
-    { title: "Protocol Compliance", value: `${data.kpis.protocolCompliance}%`, icon: FaClipboardCheck, color: "teal", filter: "Protocol" },
-    { title: "Query Resolution Rate", value: `${data.kpis.queryResolutionRate}%`, icon: FaTasks, color: "orange", filter: "Query" },
-    { title: "Patient Retention Rate", value: `${data.kpis.patientRetentionRate}%`, icon: FaUserFriends, color: "green", filter: "Retention" },
-    { title: "Data Entry Timeliness", value: `${data.kpis.dataEntryTimeliness}%`, icon: FaDatabase, color: "blue", filter: "Data" },
-    { title: "Study Progress", value: `${data.kpis.studyProgress}%`, icon: FaStar, color: "purple", filter: "Study" },
+    {
+      title: "Enrollment Performance",
+      value: `${data.kpis.enrollmentPerformance}%`,
+      icon: FaChartLine,
+      color: "blue",
+      filter: "Enrollment",
+    },
+    {
+      title: "Screening Success Rate",
+      value: `${data.kpis.screeningSuccessRate}%`,
+      icon: FaUserCheck,
+      color: "green",
+      filter: "Screening",
+    },
+    {
+      title: "Visit Completion Rate",
+      value: `${data.kpis.visitCompletionRate}%`,
+      icon: FaCalendarCheck,
+      color: "purple",
+      filter: "Visit",
+    },
+    {
+      title: "Protocol Compliance",
+      value: `${data.kpis.protocolCompliance}%`,
+      icon: FaClipboardCheck,
+      color: "teal",
+      filter: "Protocol",
+    },
+    {
+      title: "Query Resolution Rate",
+      value: `${data.kpis.queryResolutionRate}%`,
+      icon: FaTasks,
+      color: "orange",
+      filter: "Query",
+    },
+    {
+      title: "Patient Retention Rate",
+      value: `${data.kpis.patientRetentionRate}%`,
+      icon: FaUserFriends,
+      color: "green",
+      filter: "Retention",
+    },
+    {
+      title: "Data Entry Timeliness",
+      value: `${data.kpis.dataEntryTimeliness}%`,
+      icon: FaDatabase,
+      color: "blue",
+      filter: "Data",
+    },
+    {
+      title: "Study Progress",
+      value: `${data.kpis.studyProgress}%`,
+      icon: FaStar,
+      color: "purple",
+      filter: "Study",
+    },
   ];
 
   return (
@@ -156,7 +207,11 @@ function PISitePerformance({ selectedStudy: studyProp }) {
             <option value="Data">Data Entry</option>
             <option value="Study">Study Progress</option>
           </select>
-          <button type="button" className="add-study-btn" onClick={() => setShowAddModal(true)}>
+          <button
+            type="button"
+            className="add-study-btn"
+            onClick={() => setShowAddModal(true)}
+          >
             <FaPlus /> Add Metric
           </button>
           <button type="button" className="export-btn" onClick={handleRefresh}>
@@ -198,7 +253,12 @@ function PISitePerformance({ selectedStudy: studyProp }) {
               <PolarGrid />
               <PolarAngleAxis dataKey="name" fontSize={11} />
               <PolarRadiusAxis domain={[0, 100]} />
-              <Radar dataKey="value" stroke="#2563eb" fill="#2563eb" fillOpacity={0.35} />
+              <Radar
+                dataKey="value"
+                stroke="#2563eb"
+                fill="#2563eb"
+                fillOpacity={0.35}
+              />
               <Tooltip />
             </RadarChart>
           </ResponsiveContainer>
@@ -230,7 +290,10 @@ function PISitePerformance({ selectedStudy: studyProp }) {
             </thead>
             <tbody>
               {tableMetrics.map((row, i) => (
-                <tr key={`${row.metric}-${row.study}-${i}`} className="pi-table-clickable">
+                <tr
+                  key={`${row.metric}-${row.study}-${i}`}
+                  className="pi-table-clickable"
+                >
                   <td>{row.metric}</td>
                   <td>{row.study || "—"}</td>
                   <td>{row.target}</td>
@@ -271,7 +334,11 @@ function PISitePerformance({ selectedStudy: studyProp }) {
                     <button
                       type="button"
                       className="view-all-btn pi-btn-sm"
-                      style={{ marginLeft: 6, color: "#dc2626", borderColor: "#dc2626" }}
+                      style={{
+                        marginLeft: 6,
+                        color: "#dc2626",
+                        borderColor: "#dc2626",
+                      }}
                       onClick={() => handleDeleteMetric(row)}
                     >
                       Delete
@@ -292,45 +359,65 @@ function PISitePerformance({ selectedStudy: studyProp }) {
               type="text"
               placeholder="Metric Name"
               value={editMetric.metric}
-              onChange={(e) => setEditMetric({ ...editMetric, metric: e.target.value })}
+              onChange={(e) =>
+                setEditMetric({ ...editMetric, metric: e.target.value })
+              }
             />
             <input
               type="text"
               placeholder="Study"
               value={editMetric.study}
-              onChange={(e) => setEditMetric({ ...editMetric, study: e.target.value })}
+              onChange={(e) =>
+                setEditMetric({ ...editMetric, study: e.target.value })
+              }
             />
             <input
               type="text"
               placeholder="Target"
               value={editMetric.target}
-              onChange={(e) => setEditMetric({ ...editMetric, target: e.target.value })}
+              onChange={(e) =>
+                setEditMetric({ ...editMetric, target: e.target.value })
+              }
             />
             <input
               type="text"
               placeholder="Actual"
               value={editMetric.actual}
-              onChange={(e) => setEditMetric({ ...editMetric, actual: e.target.value })}
+              onChange={(e) =>
+                setEditMetric({ ...editMetric, actual: e.target.value })
+              }
             />
             <input
               type="number"
               placeholder="Value (%)"
               value={editMetric.value}
-              onChange={(e) => setEditMetric({ ...editMetric, value: e.target.value })}
+              onChange={(e) =>
+                setEditMetric({ ...editMetric, value: e.target.value })
+              }
             />
             <select
               value={editMetric.status}
-              onChange={(e) => setEditMetric({ ...editMetric, status: e.target.value })}
+              onChange={(e) =>
+                setEditMetric({ ...editMetric, status: e.target.value })
+              }
             >
               <option>On Track</option>
               <option>Good</option>
               <option>At Risk</option>
             </select>
             <div className="modal-buttons">
-              <button type="button" onClick={() => { setSelectedMetric(null); setEditMetric(null); }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedMetric(null);
+                  setEditMetric(null);
+                }}
+              >
                 Cancel
               </button>
-              <button type="button" onClick={handleSaveMetric}>Save</button>
+              <button type="button" onClick={handleSaveMetric}>
+                Save
+              </button>
             </div>
           </div>
         </div>
@@ -344,35 +431,49 @@ function PISitePerformance({ selectedStudy: studyProp }) {
               type="text"
               placeholder="Metric Name"
               value={newMetric.metric}
-              onChange={(e) => setNewMetric({ ...newMetric, metric: e.target.value })}
+              onChange={(e) =>
+                setNewMetric({ ...newMetric, metric: e.target.value })
+              }
             />
             <input
               type="text"
               placeholder="Study"
               value={newMetric.study}
-              onChange={(e) => setNewMetric({ ...newMetric, study: e.target.value })}
+              onChange={(e) =>
+                setNewMetric({ ...newMetric, study: e.target.value })
+              }
             />
             <input
               type="text"
               placeholder="Target"
               value={newMetric.target}
-              onChange={(e) => setNewMetric({ ...newMetric, target: e.target.value })}
+              onChange={(e) =>
+                setNewMetric({ ...newMetric, target: e.target.value })
+              }
             />
             <input
               type="text"
               placeholder="Actual"
               value={newMetric.actual}
-              onChange={(e) => setNewMetric({ ...newMetric, actual: e.target.value })}
+              onChange={(e) =>
+                setNewMetric({ ...newMetric, actual: e.target.value })
+              }
             />
             <input
               type="number"
               placeholder="Value (%)"
               value={newMetric.value}
-              onChange={(e) => setNewMetric({ ...newMetric, value: e.target.value })}
+              onChange={(e) =>
+                setNewMetric({ ...newMetric, value: e.target.value })
+              }
             />
             <div className="modal-buttons">
-              <button type="button" onClick={() => setShowAddModal(false)}>Cancel</button>
-              <button type="button" onClick={handleAddMetric}>Save</button>
+              <button type="button" onClick={() => setShowAddModal(false)}>
+                Cancel
+              </button>
+              <button type="button" onClick={handleAddMetric}>
+                Save
+              </button>
             </div>
           </div>
         </div>

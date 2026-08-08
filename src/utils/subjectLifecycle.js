@@ -12,7 +12,9 @@ export const SUBJECT_TERMINAL_STATES = ["Withdrawn", "Dropout"];
 const VISIT_PROGRESS_KEY = "subjectVisitProgress";
 
 function normalizeToken(value) {
-  return String(value ?? "").trim().toLowerCase();
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
 }
 
 function isNonEmptyDate(value) {
@@ -28,7 +30,11 @@ export function getTerminalSubjectState(subject) {
   const raw = normalizeToken(subject?.status);
   if (!raw) return null;
   if (raw.includes("withdraw")) return "Withdrawn";
-  if (raw.includes("drop") || raw.includes("discontin") || raw.includes("terminat")) {
+  if (
+    raw.includes("drop") ||
+    raw.includes("discontin") ||
+    raw.includes("terminat")
+  ) {
     return "Dropout";
   }
   return null;
@@ -50,16 +56,23 @@ export function hasSubjectCompletionEvidence(subject, visits = []) {
   return visits.some(
     (visit) =>
       normalizeToken(visit?.name) === "completed" &&
-      normalizeToken(visit?.status) === "completed"
+      normalizeToken(visit?.status) === "completed",
   );
 }
 
 // Ongoing evidence — actual study-visit participation past enrollment.
 // Uses subject-specific visit records; other subjects' visits cannot leak in.
-export function hasActiveParticipationEvidence(subject, visits = [], progress = null) {
+export function hasActiveParticipationEvidence(
+  subject,
+  visits = [],
+  progress = null,
+) {
   const currentVisit = normalizeToken(subject?.currentVisit);
 
-  if (currentVisit && !["", "screening", "enrollment", "completed"].includes(currentVisit)) {
+  if (
+    currentVisit &&
+    !["", "screening", "enrollment", "completed"].includes(currentVisit)
+  ) {
     return true;
   }
 
@@ -81,7 +94,12 @@ export function hasActiveParticipationEvidence(subject, visits = [], progress = 
 
   // Legacy fallback: an explicit stored "Ongoing" or "Active" status token.
   const raw = normalizeToken(subject?.status);
-  return raw === "ongoing" || raw === "active" || raw === "in progress" || raw === "in-progress";
+  return (
+    raw === "ongoing" ||
+    raw === "active" ||
+    raw === "in progress" ||
+    raw === "in-progress"
+  );
 }
 
 // Enrolled evidence — an actual enrollment date on the subject record. Legacy
@@ -138,7 +156,9 @@ export function deriveSubjectLifecycleStatus(subject, options = {}) {
   const studyId = subject.studyId || subject.studyKey || options.studyId;
 
   const visits =
-    options.visits !== undefined ? options.visits : loadSubjectVisits(subjectId);
+    options.visits !== undefined
+      ? options.visits
+      : loadSubjectVisits(subjectId);
   const progress =
     options.progress !== undefined
       ? options.progress

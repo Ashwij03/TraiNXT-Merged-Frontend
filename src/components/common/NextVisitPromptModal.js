@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import {
   getNextVisitStage,
   getVisitProgress,
-  saveNextVisitDetails
+  saveNextVisitDetails,
 } from "../../services/visitScheduleService";
 import "./NextVisitPromptModal.css";
 
@@ -11,19 +11,19 @@ function NextVisitPromptModal({
   subjectId,
   subject = {},
   onClose,
-  onSaved
+  onSaved,
 }) {
   const progress = getVisitProgress(studyId, subjectId);
   const suggestedVisit = useMemo(
     () => getNextVisitStage(progress.lastCompletedStage),
-    [progress.lastCompletedStage]
+    [progress.lastCompletedStage],
   );
 
   const [form, setForm] = useState({
     visitName: suggestedVisit || "",
     date: "",
     time: "09:00 AM",
-    status: "Scheduled"
+    status: "Scheduled",
   });
   const [error, setError] = useState("");
 
@@ -66,7 +66,7 @@ function NextVisitPromptModal({
               onChange={(event) =>
                 setForm((prev) => ({
                   ...prev,
-                  visitName: event.target.value
+                  visitName: event.target.value,
                 }))
               }
               required

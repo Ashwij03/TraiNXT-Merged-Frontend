@@ -22,7 +22,7 @@ export const STUDY_WORKSPACE_TABS = [
     id: "clinical-sites",
     label: "Clinical Sites",
   },
-// ===== END G1 CHANGES =====
+  // ===== END G1 CHANGES =====
   {
     id: "eisf",
     label: "eISF",
@@ -55,8 +55,8 @@ export const STUDY_WORKSPACE_TABS = [
   },
   {
     id: "activity",
-    label: "Activity"
-}
+    label: "Activity",
+  },
 ];
 
 // ===== END F1 CHANGES =====

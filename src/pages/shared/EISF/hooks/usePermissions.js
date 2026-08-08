@@ -13,9 +13,7 @@ export default function usePermissions(userPermissions = {}) {
     };
 
     const isReadOnly =
-      !permissions.upload &&
-      !permissions.edit &&
-      !permissions.delete;
+      !permissions.upload && !permissions.edit && !permissions.delete;
 
     const hasFullAccess =
       permissions.upload &&

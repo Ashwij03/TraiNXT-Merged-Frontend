@@ -17,7 +17,7 @@ const defaultSubscription = {
   // service defaults (e.g. defaultSettings in adminService.js) are mocked.
   storageLimitGb: 100,
   autoRenewal: true,
-  notes: ""
+  notes: "",
 };
 
 function getStoredSubscription() {
@@ -26,19 +26,14 @@ function getStoredSubscription() {
   }
 
   try {
-    return JSON.parse(
-      localStorage.getItem(SUBSCRIPTION_STORAGE_KEY)
-    );
+    return JSON.parse(localStorage.getItem(SUBSCRIPTION_STORAGE_KEY));
   } catch {
     return null;
   }
 }
 
 function saveStoredSubscription(subscription) {
-  localStorage.setItem(
-    SUBSCRIPTION_STORAGE_KEY,
-    JSON.stringify(subscription)
-  );
+  localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(subscription));
 }
 
 export function initializeSubscription() {
@@ -65,7 +60,7 @@ export function saveSubscription(updates) {
 
   const updatedSubscription = {
     ...current,
-    ...updates
+    ...updates,
   };
 
   saveStoredSubscription(updatedSubscription);

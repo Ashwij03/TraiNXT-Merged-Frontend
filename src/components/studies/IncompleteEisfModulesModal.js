@@ -20,11 +20,7 @@ function IncompleteEisfModulesModal({ modules, onClose }) {
   }, [onClose]);
 
   return (
-    <div
-      className="study-modal-overlay"
-      role="presentation"
-      onClick={onClose}
-    >
+    <div className="study-modal-overlay" role="presentation" onClick={onClose}>
       <div
         className="study-modal"
         role="dialog"
@@ -60,20 +56,14 @@ function IncompleteEisfModulesModal({ modules, onClose }) {
                   {entry.title}
                 </span>
                 {entry.id != null && (
-                  <span className="study-health-incomplete-id">
-                    {entry.id}
-                  </span>
+                  <span className="study-health-incomplete-id">{entry.id}</span>
                 )}
               </li>
             ))}
           </ul>
         )}
         <div className="study-modal-actions">
-          <button
-            type="button"
-            className="secondary-btn"
-            onClick={onClose}
-          >
+          <button type="button" className="secondary-btn" onClick={onClose}>
             Close
           </button>
         </div>

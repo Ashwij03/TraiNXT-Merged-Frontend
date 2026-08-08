@@ -112,8 +112,8 @@ function resolveStudySite(study, sites) {
   return (
     sites.find((site) =>
       [site.siteNumber, site.id, site.name].some(
-        (value) => normalizeValue(value) === normalizedReference
-      )
+        (value) => normalizeValue(value) === normalizedReference,
+      ),
     ) || null
   );
 }
@@ -199,7 +199,7 @@ function Studies() {
 
   const [studies, setStudies] = useState(() => loadStudies());
   const [subjectsByStudy, setSubjectsByStudy] = useState(() =>
-    readSubjectsByStudy()
+    readSubjectsByStudy(),
   );
   const [sites, setSites] = useState(() => readSiteRecords());
   const [searchTerm, setSearchTerm] = useState("");
@@ -213,7 +213,7 @@ function Studies() {
   // locally same as before; it's simply re-synced whenever the header
   // filter changes.
   const [indicationFilter, setIndicationFilter] = useState(() =>
-    getStoredIndicationFilter()
+    getStoredIndicationFilter(),
   );
   const [countryFilter, setCountryFilter] = useState("");
   const [sortBy, setSortBy] = useState("studyId");
@@ -226,10 +226,10 @@ function Studies() {
   // current value on mount and stay in sync via the same events the
   // header itself dispatches when either dropdown changes.
   const [headerInstitutionFilter, setHeaderInstitutionFilter] = useState(() =>
-    getStoredInstitutionFilter()
+    getStoredInstitutionFilter(),
   );
   const [headerSiteNumberFilter, setHeaderSiteNumberFilter] = useState(() =>
-    getStoredSiteNumberFilter()
+    getStoredSiteNumberFilter(),
   );
 
   useEffect(() => {
@@ -251,11 +251,11 @@ function Studies() {
     return () => {
       window.removeEventListener(
         INSTITUTION_FILTER_EVENT,
-        handleInstitutionEvent
+        handleInstitutionEvent,
       );
       window.removeEventListener(
         HEADER_FILTERS_EVENT,
-        handleHeaderFiltersEvent
+        handleHeaderFiltersEvent,
       );
     };
   }, []);
@@ -266,7 +266,7 @@ function Studies() {
     () =>
       headerInstitutionFilter ||
       getInstitutionForSiteNumber(headerSiteNumberFilter, currentUser),
-    [headerInstitutionFilter, headerSiteNumberFilter, currentUser]
+    [headerInstitutionFilter, headerSiteNumberFilter, currentUser],
   );
 
   const [viewMode, setViewMode] = useState(() => {
@@ -288,19 +288,27 @@ function Studies() {
   const statusOptions = useMemo(() => STUDY_STATUS_OPTIONS, []);
 
   const sponsorOptions = useMemo(
-    () => [...new Set(studies.map((study) => study.sponsor).filter(Boolean))].sort(),
-    [studies]
+    () =>
+      [
+        ...new Set(studies.map((study) => study.sponsor).filter(Boolean)),
+      ].sort(),
+    [studies],
   );
 
   const indicationOptions = useMemo(
     () =>
-      [...new Set(studies.map((study) => study.indication).filter(Boolean))].sort(),
-    [studies]
+      [
+        ...new Set(studies.map((study) => study.indication).filter(Boolean)),
+      ].sort(),
+    [studies],
   );
 
   const countryOptions = useMemo(
-    () => [...new Set(studies.map((study) => study.country).filter(Boolean))].sort(),
-    [studies]
+    () =>
+      [
+        ...new Set(studies.map((study) => study.country).filter(Boolean)),
+      ].sort(),
+    [studies],
   );
 
   const filteredStudies = useMemo(() => {
@@ -323,7 +331,9 @@ function Studies() {
       const matchesSearch =
         !search ||
         searchableValues.some((value) =>
-          String(value || "").toLowerCase().includes(search)
+          String(value || "")
+            .toLowerCase()
+            .includes(search),
         );
 
       const matchesStatus = !statusFilter || study.status === statusFilter;
@@ -369,19 +379,19 @@ function Studies() {
           String(a.name || "").localeCompare(String(b.name || ""), undefined, {
             numeric: true,
             sensitivity: "base",
-          })
+          }),
         );
 
       case "startDate":
         return result.sort(
           (a, b) =>
             new Date(a.startDate || 0).getTime() -
-            new Date(b.startDate || 0).getTime()
+            new Date(b.startDate || 0).getTime(),
         );
 
       case "sponsor":
         return result.sort((a, b) =>
-          String(a.sponsor || "").localeCompare(String(b.sponsor || ""))
+          String(a.sponsor || "").localeCompare(String(b.sponsor || "")),
         );
 
       default:
@@ -407,10 +417,7 @@ function Studies() {
     sortBy,
   ]);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredStudies.length / pageSize)
-  );
+  const totalPages = Math.max(1, Math.ceil(filteredStudies.length / pageSize));
 
   useEffect(() => {
     setCurrentPage(1);
@@ -460,21 +467,13 @@ function Studies() {
   const paginatedStudies = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
 
-    return filteredStudies.slice(
-      startIndex,
-      startIndex + pageSize
-    );
+    return filteredStudies.slice(startIndex, startIndex + pageSize);
   }, [filteredStudies, currentPage, pageSize]);
 
   const pageStart =
-    filteredStudies.length === 0
-      ? 0
-      : (currentPage - 1) * pageSize + 1;
+    filteredStudies.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
 
-  const pageEnd = Math.min(
-    currentPage * pageSize,
-    filteredStudies.length
-  );
+  const pageEnd = Math.min(currentPage * pageSize, filteredStudies.length);
 
   const pageNumbers = useMemo(() => {
     const maxVisiblePages = 5;
@@ -483,10 +482,7 @@ function Studies() {
       return Array.from({ length: totalPages }, (_, index) => index + 1);
     }
 
-    let startPage = Math.max(
-      1,
-      currentPage - Math.floor(maxVisiblePages / 2)
-    );
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
 
     let endPage = startPage + maxVisiblePages - 1;
 
@@ -497,7 +493,7 @@ function Studies() {
 
     return Array.from(
       { length: endPage - startPage + 1 },
-      (_, index) => startPage + index
+      (_, index) => startPage + index,
     );
   }, [currentPage, totalPages]);
 
@@ -806,7 +802,7 @@ function Studies() {
                 <div className="study-card-content">
                   <div
                     className={`study-status ${getStudyStatusClass(
-                      study.status || STUDY_STATUS_DEFAULT
+                      study.status || STUDY_STATUS_DEFAULT,
                     )}`}
                   >
                     {study.status || STUDY_STATUS_DEFAULT}
@@ -904,13 +900,16 @@ function Studies() {
 
                 <div className="study-list-field">
                   <label>Site</label>
-                  <span>{resolveSiteDisplay(study, { sources: sites }) || "-"}</span>
+                  <span>
+                    {resolveSiteDisplay(study, { sources: sites }) || "-"}
+                  </span>
                 </div>
 
                 <div className="study-list-field">
                   <label>Subjects</label>
                   <span>
-                    {getSubjectsForStudy(subjectsByStudy, study).length}/{study.targetSubjects || 0}
+                    {getSubjectsForStudy(subjectsByStudy, study).length}/
+                    {study.targetSubjects || 0}
                   </span>
                 </div>
 
@@ -922,7 +921,7 @@ function Studies() {
                 <div className="study-list-status">
                   <span
                     className={`study-status ${getStudyStatusClass(
-                      study.status || STUDY_STATUS_DEFAULT
+                      study.status || STUDY_STATUS_DEFAULT,
                     )}`}
                   >
                     {study.status || STUDY_STATUS_DEFAULT}
@@ -990,13 +989,14 @@ function Studies() {
                     <td>{getStudySiteNumber(study, sites) || "-"}</td>
                     <td>{getStudySiteName(study, sites) || "-"}</td>
                     <td>
-                      {getSubjectsForStudy(subjectsByStudy, study).length}/{study.targetSubjects || 0}
+                      {getSubjectsForStudy(subjectsByStudy, study).length}/
+                      {study.targetSubjects || 0}
                     </td>
 
                     <td>
                       <span
                         className={`study-status ${getStudyStatusClass(
-                          study.status || STUDY_STATUS_DEFAULT
+                          study.status || STUDY_STATUS_DEFAULT,
                         )}`}
                       >
                         {study.status || STUDY_STATUS_DEFAULT}

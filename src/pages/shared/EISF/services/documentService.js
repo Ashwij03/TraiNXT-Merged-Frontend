@@ -2,17 +2,22 @@ import { getEISFModuleDocuments } from "./eisfService";
 import DOCUMENT_STATUS from "../Constants/documentStatus";
 import { formatFileSize } from "../utils/fileUtils";
 import { getStorageItem, setStorageItem } from "../utils/storageUtils";
-import { filterDocuments as filterDocumentList, sortDocuments as sortDocumentList } from "../utils/searchUtils";
+import {
+  filterDocuments as filterDocumentList,
+  sortDocuments as sortDocumentList,
+} from "../utils/searchUtils";
 
 const DEFAULT_USER = "Current User";
 export const EISF_DOCUMENTS_EVENT = "trianxt-eisf-documents-updated";
 
 function formatDate(date = new Date()) {
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).replace(/ /g, "-");
+  return date
+    .toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    })
+    .replace(/ /g, "-");
 }
 
 function safeFileName(value = "Document") {
@@ -28,21 +33,38 @@ export function getModuleStorageKey(moduleConfig = {}, studyCode) {
   return `eisf:${studyCode || "default-study"}:${moduleConfig.id || "module"}:documents`;
 }
 
-export function normalizeDocument(document = {}, section = {}, moduleConfig = {}, index = 0) {
-  const documentName = getDocumentTitle(document) || section.title || moduleConfig.title;
-  const uploadedBy = document.uploadedBy || document.owner || document.createdBy || "Study Staff";
-  const category = document.category || document.documentType || section.title || moduleConfig.title;
+export function normalizeDocument(
+  document = {},
+  section = {},
+  moduleConfig = {},
+  index = 0,
+) {
+  const documentName =
+    getDocumentTitle(document) || section.title || moduleConfig.title;
+  const uploadedBy =
+    document.uploadedBy ||
+    document.owner ||
+    document.createdBy ||
+    "Study Staff";
+  const category =
+    document.category ||
+    document.documentType ||
+    section.title ||
+    moduleConfig.title;
   const modifiedDate = document.modifiedDate || formatDate();
   const status = document.status || DOCUMENT_STATUS.DRAFT;
 
   const normalized = {
     ...document,
-    id: document.id || `${moduleConfig.id || "module"}-${section.id || "section"}-${index + 1}`,
+    id:
+      document.id ||
+      `${moduleConfig.id || "module"}-${section.id || "section"}-${index + 1}`,
     moduleId: document.moduleId || moduleConfig.id,
     moduleTitle: document.moduleTitle || moduleConfig.title,
     section: document.section || document.sectionId || section.id,
     sectionId: document.sectionId || document.section || section.id,
-    folderId: document.folderId || document.section || document.sectionId || section.id,
+    folderId:
+      document.folderId || document.section || document.sectionId || section.id,
     folderTitle: document.folderTitle || section.title,
     documentName,
     name: document.name || documentName,
@@ -53,7 +75,9 @@ export function normalizeDocument(document = {}, section = {}, moduleConfig = {}
     status,
     uploadedBy,
     createdBy: document.createdBy || uploadedBy,
-    approvedBy: document.approvedBy || (status === DOCUMENT_STATUS.APPROVED ? "Principal Investigator" : "-"),
+    approvedBy:
+      document.approvedBy ||
+      (status === DOCUMENT_STATUS.APPROVED ? "Principal Investigator" : "-"),
     modifiedDate,
     expiryDate: document.expiryDate || "-",
     fileName: document.fileName || safeFileName(documentName),
@@ -62,9 +86,13 @@ export function normalizeDocument(document = {}, section = {}, moduleConfig = {}
 
   return {
     ...normalized,
-    history: document.history || document.versions || buildVersionHistory(normalized),
-    versions: document.versions || document.history || buildVersionHistory(normalized),
-    auditTrail: document.auditTrail || buildAuditTrail(normalized, "Created", "Mock document loaded."),
+    history:
+      document.history || document.versions || buildVersionHistory(normalized),
+    versions:
+      document.versions || document.history || buildVersionHistory(normalized),
+    auditTrail:
+      document.auditTrail ||
+      buildAuditTrail(normalized, "Created", "Mock document loaded."),
   };
 }
 
@@ -79,7 +107,11 @@ export function buildVersionHistory(document = {}) {
   ];
 }
 
-export function buildAuditTrail(document = {}, action = "Updated", remarks = "Document metadata changed.") {
+export function buildAuditTrail(
+  document = {},
+  action = "Updated",
+  remarks = "Document metadata changed.",
+) {
   return [
     {
       date: document.modifiedDate || formatDate(),
@@ -94,13 +126,9 @@ export function isDuplicateVersion(
   candidate = {},
   studyCode = "",
   moduleId = "",
-  sectionId = ""
+  sectionId = "",
 ) {
-  const name = (
-    candidate.documentName ||
-    candidate.name ||
-    ""
-  )
+  const name = (candidate.documentName || candidate.name || "")
     .trim()
     .toLowerCase();
 
@@ -115,42 +143,43 @@ export function isDuplicateVersion(
       (doc.studyCode || "") === studyCode &&
       (doc.moduleId || "") === moduleId &&
       (doc.section || doc.sectionId || "") === sectionId &&
-(
-        doc.documentName ||
-        doc.name ||
-        ""
-      )
-        .trim()
-        .toLowerCase() === name &&
+      (doc.documentName || doc.name || "").trim().toLowerCase() === name &&
       String(doc.version || "").trim() === version
     );
   });
 }
 
-export function getModuleMockDocuments(moduleConfig = {}, initialDocuments = null) {
-  const sections = Array.isArray(moduleConfig.sections) ? moduleConfig.sections : [];
+export function getModuleMockDocuments(
+  moduleConfig = {},
+  initialDocuments = null,
+) {
+  const sections = Array.isArray(moduleConfig.sections)
+    ? moduleConfig.sections
+    : [];
 
   if (Array.isArray(initialDocuments)) {
     return initialDocuments.map((document, index) => {
-      const section =
-        sections.find((item) => item.id === document.section || item.id === document.sectionId) ||
-        sections[0] ||
-        { id: "default", title: moduleConfig.title };
+      const section = sections.find(
+        (item) =>
+          item.id === document.section || item.id === document.sectionId,
+      ) ||
+        sections[0] || { id: "default", title: moduleConfig.title };
 
       return normalizeDocument(document, section, moduleConfig, index);
     });
   }
 
   const moduleDocuments = getEISFModuleDocuments().filter(
-    (document) => document.moduleId === moduleConfig.id
+    (document) => document.moduleId === moduleConfig.id,
   );
 
   if (moduleDocuments.length) {
     return moduleDocuments.map((document, index) => {
-      const section =
-        sections.find((item) => item.id === document.section || item.id === document.sectionId) ||
-        sections[0] ||
-        { id: "default", title: moduleConfig.title };
+      const section = sections.find(
+        (item) =>
+          item.id === document.section || item.id === document.sectionId,
+      ) ||
+        sections[0] || { id: "default", title: moduleConfig.title };
 
       return normalizeDocument(document, section, moduleConfig, index);
     });
@@ -158,30 +187,47 @@ export function getModuleMockDocuments(moduleConfig = {}, initialDocuments = nul
 
   return sections.flatMap((section) =>
     (section.documents || []).map((document, index) =>
-      normalizeDocument(document, section, moduleConfig, index)
-    )
+      normalizeDocument(document, section, moduleConfig, index),
+    ),
   );
 }
 
-export function readStoredModuleDocuments(moduleConfig, studyCode, fallbackDocuments = []) {
-  const stored = getStorageItem(getModuleStorageKey(moduleConfig, studyCode), null);
+export function readStoredModuleDocuments(
+  moduleConfig,
+  studyCode,
+  fallbackDocuments = [],
+) {
+  const stored = getStorageItem(
+    getModuleStorageKey(moduleConfig, studyCode),
+    null,
+  );
 
   if (!Array.isArray(stored)) {
     return fallbackDocuments;
   }
 
   return stored.map((document, index) => {
-    const section =
-      moduleConfig.sections?.find((item) => item.id === document.section || item.id === document.sectionId) ||
-      moduleConfig.sections?.[0] ||
-      { id: "default", title: moduleConfig.title };
+    const section = moduleConfig.sections?.find(
+      (item) => item.id === document.section || item.id === document.sectionId,
+    ) ||
+      moduleConfig.sections?.[0] || {
+        id: "default",
+        title: moduleConfig.title,
+      };
 
     return normalizeDocument(document, section, moduleConfig, index);
   });
 }
 
-export function persistModuleDocuments(moduleConfig, studyCode, documents = []) {
-  const saved = setStorageItem(getModuleStorageKey(moduleConfig, studyCode), documents);
+export function persistModuleDocuments(
+  moduleConfig,
+  studyCode,
+  documents = [],
+) {
+  const saved = setStorageItem(
+    getModuleStorageKey(moduleConfig, studyCode),
+    documents,
+  );
 
   if (saved && typeof window !== "undefined") {
     window.dispatchEvent(
@@ -191,20 +237,31 @@ export function persistModuleDocuments(moduleConfig, studyCode, documents = []) 
           moduleId: moduleConfig?.id,
           documentCount: Array.isArray(documents) ? documents.length : 0,
         },
-      })
+      }),
     );
   }
 
   return saved;
 }
 
-export function initializeModuleDocuments(moduleConfig, studyCode, initialDocuments = null) {
+export function initializeModuleDocuments(
+  moduleConfig,
+  studyCode,
+  initialDocuments = null,
+) {
   const seedDocuments = getModuleMockDocuments(moduleConfig, initialDocuments);
   return readStoredModuleDocuments(moduleConfig, studyCode, seedDocuments);
 }
 
-export function createUploadedDocument(formData = {}, section = {}, moduleConfig = {}, studyCode = "", user = DEFAULT_USER) {
-  const documentName = formData.documentName || formData.file?.name || "Uploaded Document";
+export function createUploadedDocument(
+  formData = {},
+  section = {},
+  moduleConfig = {},
+  studyCode = "",
+  user = DEFAULT_USER,
+) {
+  const documentName =
+    formData.documentName || formData.file?.name || "Uploaded Document";
   const category = formData.category || section.title || moduleConfig.title;
   const now = formatDate();
 
@@ -233,7 +290,7 @@ export function createUploadedDocument(formData = {}, section = {}, moduleConfig
       comments: formData.comments || "",
     },
     section,
-    moduleConfig
+    moduleConfig,
   );
 
   return {
@@ -251,7 +308,7 @@ export function createUploadedDocument(formData = {}, section = {}, moduleConfig
     auditTrail: buildAuditTrail(
       document,
       "Uploaded",
-      formData.comments || "Document uploaded."
+      formData.comments || "Document uploaded.",
     ),
   };
 }
@@ -259,7 +316,7 @@ export function createUploadedDocument(formData = {}, section = {}, moduleConfig
 export function updateDocumentRecord(
   originalDocument = {},
   updatedDocument = {},
-  user = DEFAULT_USER
+  user = DEFAULT_USER,
 ) {
   const modifiedDate = formatDate();
 
@@ -284,9 +341,7 @@ export function updateDocumentRecord(
     modifiedDate,
 
     uploadedBy:
-      updatedDocument.uploadedBy ||
-      originalDocument.uploadedBy ||
-      user,
+      updatedDocument.uploadedBy || originalDocument.uploadedBy || user,
   };
 
   const versionEntry = {
@@ -297,16 +352,14 @@ export function updateDocumentRecord(
   };
 
   const existingHistory =
-    originalDocument.history ||
-    originalDocument.versions ||
-    [];
+    originalDocument.history || originalDocument.versions || [];
 
   let history = [...existingHistory];
 
   const existingIndex = history.findIndex(
     (entry) =>
       String(entry.version || "").trim() ===
-      String(versionEntry.version || "").trim()
+      String(versionEntry.version || "").trim(),
   );
 
   if (existingIndex !== -1) {
@@ -342,17 +395,15 @@ export function updateDocumentRecord(
     ...document,
     history,
     versions: history,
-    auditTrail: [
-      auditEntry,
-      ...(originalDocument.auditTrail || []),
-    ],
+    auditTrail: [auditEntry, ...(originalDocument.auditTrail || [])],
   };
 }
 
 export function getFolderCounts(sections = [], documents = []) {
   return sections.reduce((counts, section) => {
     counts[section.id] = documents.filter(
-      (document) => document.section === section.id || document.sectionId === section.id
+      (document) =>
+        document.section === section.id || document.sectionId === section.id,
     ).length;
 
     return counts;
@@ -365,7 +416,10 @@ export function getFilterOptions(documents = [], field) {
     .sort((a, b) => a.toString().localeCompare(b.toString()));
 }
 
-export function filterDocuments(filters = {}, sourceDocuments = getEISFModuleDocuments()) {
+export function filterDocuments(
+  filters = {},
+  sourceDocuments = getEISFModuleDocuments(),
+) {
   const { sectionId, folderId, status, documentType, version } = filters;
 
   return filterDocumentList(sourceDocuments, {
@@ -375,13 +429,22 @@ export function filterDocuments(filters = {}, sourceDocuments = getEISFModuleDoc
     documentType,
     version,
   }).filter((document) => {
-    if (sectionId && document.sectionId !== sectionId && document.section !== sectionId) return false;
+    if (
+      sectionId &&
+      document.sectionId !== sectionId &&
+      document.section !== sectionId
+    )
+      return false;
     if (folderId && document.folderId !== folderId) return false;
     return true;
   });
 }
 
-export function sortDocuments(documents = [], field = "documentName", order = "asc") {
+export function sortDocuments(
+  documents = [],
+  field = "documentName",
+  order = "asc",
+) {
   return sortDocumentList(documents, field, order);
 }
 
@@ -403,7 +466,10 @@ export function paginateDocuments(documents = [], page = 1, pageSize = 10) {
   };
 }
 
-export function exportDocuments(documents = [], fileName = "eisf-documents.csv") {
+export function exportDocuments(
+  documents = [],
+  fileName = "eisf-documents.csv",
+) {
   const headers = [
     "Document Name",
     "Document Type",
@@ -429,7 +495,11 @@ export function exportDocuments(documents = [], fileName = "eisf-documents.csv")
   ]);
 
   const csv = [headers, ...rows]
-    .map((row) => row.map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`).join(","))
+    .map((row) =>
+      row
+        .map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`)
+        .join(","),
+    )
     .join("\n");
 
   triggerBrowserDownload(csv, fileName, "text/csv;charset=utf-8");
@@ -446,7 +516,11 @@ export function downloadDocument(document = {}) {
     "This is mock file content because the backend repository is not connected.",
   ].join("\n");
 
-  triggerBrowserDownload(content, document.fileName || safeFileName(getDocumentTitle(document)), "application/pdf");
+  triggerBrowserDownload(
+    content,
+    document.fileName || safeFileName(getDocumentTitle(document)),
+    "application/pdf",
+  );
   return content;
 }
 
@@ -480,7 +554,8 @@ export function getDocuments() {
  */
 export function getDocumentsBySection(sectionId) {
   return getEISFModuleDocuments().filter(
-    (document) => document.sectionId === sectionId || document.section === sectionId
+    (document) =>
+      document.sectionId === sectionId || document.section === sectionId,
   );
 }
 
@@ -489,7 +564,7 @@ export function getDocumentsBySection(sectionId) {
  */
 export function getDocumentsByFolder(folderId) {
   return getEISFModuleDocuments().filter(
-    (document) => document.folderId === folderId
+    (document) => document.folderId === folderId,
   );
 }
 
@@ -498,7 +573,7 @@ export function getDocumentsByFolder(folderId) {
  */
 export function getDocumentById(documentId) {
   return getEISFModuleDocuments().find(
-    (document) => document.id === documentId
+    (document) => document.id === documentId,
   );
 }
 
@@ -524,7 +599,7 @@ export function searchDocuments(searchText = "") {
       document.uploadedBy,
     ]
       .filter(Boolean)
-      .some((value) => value.toString().toLowerCase().includes(keyword))
+      .some((value) => value.toString().toLowerCase().includes(keyword)),
   );
 }
 
@@ -535,7 +610,7 @@ export function getDocumentsByStatus(status) {
   if (!status) return getEISFModuleDocuments();
 
   return getEISFModuleDocuments().filter(
-    (document) => document.status === status
+    (document) => document.status === status,
   );
 }
 
@@ -546,7 +621,7 @@ export function getDocumentsByType(type) {
   if (!type) return getEISFModuleDocuments();
 
   return getEISFModuleDocuments().filter(
-    (document) => document.documentType === type
+    (document) => document.documentType === type,
   );
 }
 
@@ -572,9 +647,13 @@ export function getDocumentStatistics() {
 
   return {
     total: documents.length,
-    approved: documents.filter((doc) => doc.status === DOCUMENT_STATUS.APPROVED).length,
-    pending: documents.filter((doc) => doc.status === DOCUMENT_STATUS.PENDING).length,
-    rejected: documents.filter((doc) => doc.status === DOCUMENT_STATUS.REJECTED).length,
-    expired: documents.filter((doc) => doc.status === DOCUMENT_STATUS.EXPIRED).length,
+    approved: documents.filter((doc) => doc.status === DOCUMENT_STATUS.APPROVED)
+      .length,
+    pending: documents.filter((doc) => doc.status === DOCUMENT_STATUS.PENDING)
+      .length,
+    rejected: documents.filter((doc) => doc.status === DOCUMENT_STATUS.REJECTED)
+      .length,
+    expired: documents.filter((doc) => doc.status === DOCUMENT_STATUS.EXPIRED)
+      .length,
   };
 }

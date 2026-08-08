@@ -132,7 +132,7 @@
   background: white;
   padding: 10px;
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   width: 200px;
   z-index: 999;
 }
@@ -159,7 +159,8 @@
   width: 16px;
   height: 16px;
   display: inline-block;
-  background: url("https://cdn-icons-png.flaticon.com/512/622/622669.png") no-repeat center;
+  background: url("https://cdn-icons-png.flaticon.com/512/622/622669.png")
+    no-repeat center;
   background-size: contain;
   opacity: 0.6;
 }

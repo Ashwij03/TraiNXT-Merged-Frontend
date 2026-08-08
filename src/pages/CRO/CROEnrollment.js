@@ -16,12 +16,12 @@ function CROEnrollment() {
     value
       ? resolveSiteDisplay(value, {
           sources: siteSources,
-          fallback: value
+          fallback: value,
         })
       : "—";
 
   const enrolledSubjects = subjects.filter((s) =>
-    ["Active", "Completed"].includes(s.status)
+    ["Active", "Completed"].includes(s.status),
   );
 
   return (

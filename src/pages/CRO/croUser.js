@@ -1,4 +1,4 @@
-import { CRO_STORAGE_KEYS, loadFromStorage }from "./croStorage";
+import { CRO_STORAGE_KEYS, loadFromStorage } from "./croStorage";
 
 const DEFAULT_SETTINGS = {
   organization: "Clinical Research Org",
@@ -48,10 +48,7 @@ export function getCROUserProfile() {
   const user = JSON.parse(localStorage.getItem("currentUser") || "{}");
   const settings = loadFromStorage(CRO_STORAGE_KEYS.settings, DEFAULT_SETTINGS);
 
-  const name =
-    user.name ||
-    localStorage.getItem("userFullName") ||
-    "CRO User";
+  const name = user.name || localStorage.getItem("userFullName") || "CRO User";
 
   const organization =
     settings.organization ||
@@ -63,7 +60,9 @@ export function getCROUserProfile() {
   const roleKey = user.role || "CRO";
   const role = ROLE_LABELS[roleKey] || roleKey;
   const lastLoginRaw =
-    localStorage.getItem("lastLogin") || user.lastLogin || new Date().toISOString();
+    localStorage.getItem("lastLogin") ||
+    user.lastLogin ||
+    new Date().toISOString();
 
   return {
     name,

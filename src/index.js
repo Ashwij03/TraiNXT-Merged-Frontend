@@ -18,9 +18,7 @@ initializeAdminData();
 initializeStudies();
 initializeUpcomingVisitReminderSynchronization();
 
-const root = ReactDOM.createRoot(
-  document.getElementById("root")
-);
+const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
   <React.StrictMode>
@@ -33,5 +31,5 @@ root.render(
         </CROProvider>
       </CommentsProvider>
     </BrowserRouter>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

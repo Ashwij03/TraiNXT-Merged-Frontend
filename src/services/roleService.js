@@ -7,7 +7,7 @@ import {
   getStoredAdminPreviewRole,
   getStoredPIPreviewRole,
   setStoredAdminPreviewRole,
-  setStoredPIPreviewRole
+  setStoredPIPreviewRole,
 } from "../constants/headerFilters";
 import { getStudies } from "./studyService";
 import { PROFILE_PHOTO_EVENT } from "../constants/profileEvents";
@@ -19,7 +19,7 @@ const ORG_TO_SITE = {
   "Fortis Healthcare": "Fortis Healthcare",
   "Manipal Hospitals": "City Hospital",
   "Max Healthcare": "City Hospital",
-  "Aster Hospitals": "Fortis Healthcare"
+  "Aster Hospitals": "Fortis Healthcare",
 };
 
 export function getCurrentUser() {
@@ -121,7 +121,7 @@ export function getEffectiveUser(user = getCurrentUser()) {
 
   return {
     ...user,
-    role: effectiveRole
+    role: effectiveRole,
   };
 }
 
@@ -187,8 +187,7 @@ export function getAccessibleSites(user = getCurrentUser()) {
   }
 
   return sites.filter(
-    (site) =>
-      site.id === assignedSite || matchesOrg(site.name, assignedSite)
+    (site) => site.id === assignedSite || matchesOrg(site.name, assignedSite),
   );
 }
 
@@ -325,13 +324,13 @@ export const ROLE_LABELS = {
   [ROLES.SITE_STAFF]: "Site Staff",
   [ROLES.PI]: "Principal Investigator",
   [ROLES.CRO]: "CRO",
-  [ROLES.SPONSOR]: "Sponsor"
+  [ROLES.SPONSOR]: "Sponsor",
 };
 
 export function getAllRoles() {
   return Object.values(ROLES).map((role) => ({
     value: role,
-    label: ROLE_LABELS[role] || role
+    label: ROLE_LABELS[role] || role,
   }));
 }
 
@@ -340,10 +339,14 @@ export const SWITCHABLE_ROLE_DASHBOARDS = [
   ROLES.SITE_STAFF,
   ROLES.PI,
   ROLES.CRO,
-  ROLES.SPONSOR
+  ROLES.SPONSOR,
 ];
 
-export function filterBySite(items, siteField = "site", user = getCurrentUser()) {
+export function filterBySite(
+  items,
+  siteField = "site",
+  user = getCurrentUser(),
+) {
   if (!Array.isArray(items)) {
     return [];
   }
@@ -454,28 +457,28 @@ export function canAccessRoute(path, user = getCurrentUser()) {
       ROLES.SITE_STAFF,
       ROLES.PI,
       ROLES.CRO,
-      ROLES.SPONSOR
+      ROLES.SPONSOR,
     ],
-   "/recruitment": [
-  ROLES.ADMIN,
-  ROLES.SITE_STAFF,
-  ROLES.PI,
-  ROLES.CRO,
-  ROLES.SPONSOR
-],
+    "/recruitment": [
+      ROLES.ADMIN,
+      ROLES.SITE_STAFF,
+      ROLES.PI,
+      ROLES.CRO,
+      ROLES.SPONSOR,
+    ],
     "/regulatory": [
       ROLES.ADMIN,
       ROLES.SITE_STAFF,
       ROLES.PI,
       ROLES.CRO,
-      ROLES.SPONSOR
+      ROLES.SPONSOR,
     ],
     "/reports": [
       ROLES.ADMIN,
       ROLES.SITE_STAFF,
       ROLES.PI,
       ROLES.CRO,
-      ROLES.SPONSOR
+      ROLES.SPONSOR,
     ],
     "/notifications": Object.values(ROLES),
     "/live-chat": [ROLES.SPONSOR, ROLES.ADMIN],
@@ -484,7 +487,7 @@ export function canAccessRoute(path, user = getCurrentUser()) {
     "/security": Object.values(ROLES),
     "/comments": Object.values(ROLES),
     "/studies": Object.values(ROLES),
-    "/audit-logs": [ROLES.ADMIN, ROLES.SITE_STAFF]
+    "/audit-logs": [ROLES.ADMIN, ROLES.SITE_STAFF],
   };
 
   const normalizedPath = path.split("?")[0].replace(/\/$/, "") || "/";
@@ -516,13 +519,14 @@ export function getUserProfile(user = getCurrentUser()) {
     return {};
   }
 
-  const nameParts = String(user.name || "").trim().split(/\s+/);
+  const nameParts = String(user.name || "")
+    .trim()
+    .split(/\s+/);
   const storedProfile = (() => {
     try {
       return (
-        JSON.parse(
-          localStorage.getItem(`profile_${user.id || user.email}`)
-        ) || {}
+        JSON.parse(localStorage.getItem(`profile_${user.id || user.email}`)) ||
+        {}
       );
     } catch {
       return {};
@@ -547,7 +551,7 @@ export function getUserProfile(user = getCurrentUser()) {
     preferredLanguage: storedProfile.preferredLanguage || "English",
     assignedSite: getAssignedSite(user) || "",
     role: user.role || "",
-    orgType: user.orgType || ""
+    orgType: user.orgType || "",
   };
 }
 
@@ -588,7 +592,7 @@ export function syncProfilePhoto(photo, user = getCurrentUser()) {
   } catch (error) {
     if (error?.name === "QuotaExceededError") {
       throw new Error(
-        "Profile photo could not be saved because browser storage is full. Please upload a smaller image."
+        "Profile photo could not be saved because browser storage is full. Please upload a smaller image.",
       );
     }
 
@@ -618,7 +622,7 @@ export function saveUserProfile(profile, user = getCurrentUser()) {
   } catch (error) {
     if (error?.name === "QuotaExceededError") {
       throw new Error(
-        "Profile details could not be saved because browser storage is full."
+        "Profile details could not be saved because browser storage is full.",
       );
     }
 
@@ -697,7 +701,7 @@ export function updateUserPassword(currentPassword, newPassword) {
 
   users[userIndex] = {
     ...users[userIndex],
-    password: newPassword
+    password: newPassword,
   };
   localStorage.setItem("users", JSON.stringify(users));
   updateCurrentUserProfile({ password: newPassword });
@@ -732,7 +736,7 @@ export function getUserSettings(user = getCurrentUser()) {
     preferredLanguage: "English",
     twoFactorEnabled: false,
     loginAlerts: true,
-    sessionTimeoutMinutes: isAdmin(user) ? 60 : 30
+    sessionTimeoutMinutes: isAdmin(user) ? 60 : 30,
   };
 }
 
@@ -756,21 +760,21 @@ export function getSidebarMenuItems(user = getCurrentUser()) {
     { key: "comments", roles: Object.values(ROLES) },
     { key: "site-performance", roles: Object.values(ROLES) },
     {
-  key: "recruitment",
-  roles: [
-    ROLES.ADMIN,
-    ROLES.SITE_STAFF,
-    ROLES.PI,
-    ROLES.CRO,
-    ROLES.SPONSOR
-  ]
-},
+      key: "recruitment",
+      roles: [
+        ROLES.ADMIN,
+        ROLES.SITE_STAFF,
+        ROLES.PI,
+        ROLES.CRO,
+        ROLES.SPONSOR,
+      ],
+    },
     { key: "regulatory", roles: Object.values(ROLES) },
     { key: "reports", roles: Object.values(ROLES) },
     { key: "user-management", roles: [ROLES.ADMIN, ROLES.SITE_STAFF] },
     { key: "permission-approval", roles: [ROLES.ADMIN, ROLES.SITE_STAFF] },
     { key: "notifications", roles: Object.values(ROLES) },
-    { key: "settings", roles: Object.values(ROLES) }
+    { key: "settings", roles: Object.values(ROLES) },
   ];
 
   return allItems.filter((item) => item.roles.includes(effectiveUser.role));

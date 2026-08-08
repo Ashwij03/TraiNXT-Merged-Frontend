@@ -69,10 +69,7 @@ export const hasStorageItem = (key) => {
 /**
  * Toggle boolean storage value.
  */
-export const toggleStorageItem = (
-  key,
-  defaultValue = false
-) => {
+export const toggleStorageItem = (key, defaultValue = false) => {
   const value = getStorageItem(key, defaultValue);
 
   setStorageItem(key, !value);
@@ -96,10 +93,7 @@ export const getAllStorageItems = () => {
 /**
  * Merge existing object with new values.
  */
-export const updateStorageItem = (
-  key,
-  newValue = {}
-) => {
+export const updateStorageItem = (key, newValue = {}) => {
   const currentValue = getStorageItem(key, {});
 
   const updatedValue = {
@@ -139,11 +133,9 @@ export const getSelectedDocument = () =>
 export const setSearchValue = (value) =>
   setStorageItem(STORAGE_KEYS.SEARCH, value);
 
-export const getSearchValue = () =>
-  getStorageItem(STORAGE_KEYS.SEARCH, "");
+export const getSearchValue = () => getStorageItem(STORAGE_KEYS.SEARCH, "");
 
-export const clearSearchValue = () =>
-  removeStorageItem(STORAGE_KEYS.SEARCH);
+export const clearSearchValue = () => removeStorageItem(STORAGE_KEYS.SEARCH);
 
 /* -------------------------------------------------------------------------- */
 /*                                   Filters                                  */
@@ -152,11 +144,9 @@ export const clearSearchValue = () =>
 export const setFilters = (filters) =>
   setStorageItem(STORAGE_KEYS.FILTERS, filters);
 
-export const getFilters = () =>
-  getStorageItem(STORAGE_KEYS.FILTERS, {});
+export const getFilters = () => getStorageItem(STORAGE_KEYS.FILTERS, {});
 
-export const clearFilters = () =>
-  removeStorageItem(STORAGE_KEYS.FILTERS);
+export const clearFilters = () => removeStorageItem(STORAGE_KEYS.FILTERS);
 
 /* -------------------------------------------------------------------------- */
 /*                                 View Mode                                  */
@@ -165,8 +155,7 @@ export const clearFilters = () =>
 export const setViewMode = (mode) =>
   setStorageItem(STORAGE_KEYS.VIEW_MODE, mode);
 
-export const getViewMode = () =>
-  getStorageItem(STORAGE_KEYS.VIEW_MODE, "grid");
+export const getViewMode = () => getStorageItem(STORAGE_KEYS.VIEW_MODE, "grid");
 
 /* -------------------------------------------------------------------------- */
 /*                                   Sorting                                  */
@@ -175,8 +164,6 @@ export const getViewMode = () =>
 export const setSortBy = (sortBy) =>
   setStorageItem(STORAGE_KEYS.SORT_BY, sortBy);
 
-export const getSortBy = () =>
-  getStorageItem(STORAGE_KEYS.SORT_BY, "name");
+export const getSortBy = () => getStorageItem(STORAGE_KEYS.SORT_BY, "name");
 
-export const clearSortBy = () =>
-  removeStorageItem(STORAGE_KEYS.SORT_BY);
+export const clearSortBy = () => removeStorageItem(STORAGE_KEYS.SORT_BY);

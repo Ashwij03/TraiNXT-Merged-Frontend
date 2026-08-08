@@ -6,7 +6,6 @@ function StudyFolderDashboard() {
       <h1>Study Folder</h1>
 
       <div className="cards-container">
-
         <div className="dashboard-card">
           <h3>Total Documents</h3>
           <h2>45</h2>
@@ -26,7 +25,6 @@ function StudyFolderDashboard() {
           <h3>Correspondence</h3>
           <h2>25</h2>
         </div>
-
       </div>
 
       <div className="table-container">
@@ -64,9 +62,8 @@ function StudyFolderDashboard() {
               <td>Completed</td>
             </tr>
           </tbody>
-        </table> 
+        </table>
       </div>
-
     </div>
   );
 }

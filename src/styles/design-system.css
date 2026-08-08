@@ -38,8 +38,8 @@
   --tnxt-sidebar-text-muted: #94a3b8;
 
   /* Typography */
-  --tnxt-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    sans-serif;
+  --tnxt-font:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --tnxt-font-size-xs: 11px;
   --tnxt-font-size-sm: 13px;
   --tnxt-font-size-base: 14px;

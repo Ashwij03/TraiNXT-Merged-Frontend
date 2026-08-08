@@ -25,12 +25,12 @@ import {
   AUDIT_UPDATED_EVENT,
   formatActorLabel,
   formatAuditTimestamp,
-  getVisibleAuditEvents
+  getVisibleAuditEvents,
 } from "../../../services/auditService";
 import {
   getAssignedSite,
   getCurrentUser,
-  isAdmin
+  isAdmin,
 } from "../../../services/roleService";
 import { getStudies } from "../../../services/studyService";
 import { resolveSiteDisplay } from "../../../utils/siteDisplay";
@@ -39,12 +39,13 @@ import "./AuditLogsPage.css";
 
 function buildDisplayRow(event, siteSources) {
   const studyLabel = event.studyId || event.studyCode || "—";
-  const siteLabel = event.siteNumber || event.siteName || event.site
-    ? resolveSiteDisplay(event.siteNumber || event.siteName || event.site, {
-        sources: siteSources,
-        fallback: event.site || "—"
-      })
-    : "—";
+  const siteLabel =
+    event.siteNumber || event.siteName || event.site
+      ? resolveSiteDisplay(event.siteNumber || event.siteName || event.site, {
+          sources: siteSources,
+          fallback: event.site || "—",
+        })
+      : "—";
 
   return {
     id: event.id,
@@ -58,7 +59,7 @@ function buildDisplayRow(event, siteSources) {
     entity: event.entityId || event.subjectId || event.documentId || "—",
     studyId: studyLabel,
     site: siteLabel,
-    details: event.description || "—"
+    details: event.description || "—",
   };
 }
 
@@ -97,20 +98,21 @@ function AuditLogsPage() {
   const sortedEvents = useMemo(
     () =>
       [...events].sort(
-        (a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0)
+        (a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0),
       ),
-    [events]
+    [events],
   );
 
   const tableData = useMemo(
     () => sortedEvents.map((event) => buildDisplayRow(event, siteSources)),
-    [sortedEvents, siteSources]
+    [sortedEvents, siteSources],
   );
 
   const todayCount = useMemo(() => {
     const today = new Date().toDateString();
     return sortedEvents.filter(
-      (event) => event.timestamp && new Date(event.timestamp).toDateString() === today
+      (event) =>
+        event.timestamp && new Date(event.timestamp).toDateString() === today,
     ).length;
   }, [sortedEvents]);
 
@@ -161,8 +163,8 @@ function AuditLogsPage() {
                   <span className="audit-details-cell" title={value}>
                     {value}
                   </span>
-                )
-              }
+                ),
+              },
             ]}
             data={tableData}
             searchable
@@ -176,14 +178,14 @@ function AuditLogsPage() {
               "entity",
               "studyId",
               "site",
-              "details"
+              "details",
             ]}
             filters={[
               { key: "role", label: "Role" },
               { key: "actionType", label: "Action" },
               { key: "module", label: "Module" },
               { key: "studyId", label: "Study" },
-              { key: "site", label: "Site" }
+              { key: "site", label: "Site" },
             ]}
             pagination
             initialPageSize={10}

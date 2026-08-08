@@ -21,7 +21,7 @@ function DataTable({
   // pagination state back to page 1 when it changes. Used by
   // SubjectComments so switching to a different subject always lands
   // on page 1 even if the row count happens to be identical.
-  resetPageKey
+  resetPageKey,
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterValues, setFilterValues] = useState({});
@@ -33,7 +33,7 @@ function DataTable({
       Array.isArray(searchFields) && searchFields.length > 0
         ? searchFields
         : columns.map((column) => column.key),
-    [columns, searchFields]
+    [columns, searchFields],
   );
 
   const filterOptions = useMemo(() => {
@@ -46,22 +46,24 @@ function DataTable({
         ...new Set(
           data
             .map((row) => row?.[filter.key])
-            .filter((value) => value !== null && value !== undefined && value !== "")
-            .map(String)
-        )
+            .filter(
+              (value) => value !== null && value !== undefined && value !== "",
+            )
+            .map(String),
+        ),
       ].sort((a, b) =>
         a.localeCompare(b, undefined, {
           numeric: true,
-          sensitivity: "base"
-        })
+          sensitivity: "base",
+        }),
       );
 
       return {
         ...filter,
         options: options.map((value) => ({
           value,
-          label: value
-        }))
+          label: value,
+        })),
       };
     });
   }, [data, filters]);
@@ -75,12 +77,14 @@ function DataTable({
         searchableFields.some((field) =>
           String(row?.[field] ?? "")
             .toLowerCase()
-            .includes(normalizedSearch)
+            .includes(normalizedSearch),
         );
 
       const matchesFilters = filterOptions.every((filter) => {
         const selectedValue = filterValues[filter.key];
-        return !selectedValue || String(row?.[filter.key] ?? "") === selectedValue;
+        return (
+          !selectedValue || String(row?.[filter.key] ?? "") === selectedValue
+        );
       });
 
       return matchesSearch && matchesFilters;
@@ -122,13 +126,9 @@ function DataTable({
   const showToolbar = searchable || filterOptions.length > 0;
 
   return (
-
     <div className={`ctms-table-card${className ? ` ${className}` : ""}`}>
-
       <div className="ctms-table-header">
-
         <h3>{title}</h3>
-
       </div>
 
       {showToolbar && (
@@ -155,12 +155,14 @@ function DataTable({
                     onChange={(event) =>
                       setFilterValues((currentValues) => ({
                         ...currentValues,
-                        [filter.key]: event.target.value
+                        [filter.key]: event.target.value,
                       }))
                     }
                     aria-label={`${filter.label} filter`}
                   >
-                    <option value="">{filter.allLabel || `All ${filter.label}`}</option>
+                    <option value="">
+                      {filter.allLabel || `All ${filter.label}`}
+                    </option>
 
                     {filter.options.map((option) => {
                       const optionValue =
@@ -183,99 +185,68 @@ function DataTable({
       )}
 
       <div className="ctms-table-wrapper">
-
-      <table
-  className="ctms-table"
-  style={{
-    tableLayout: "fixed",
-    width: "100%",
-  }}
->
-
+        <table
+          className="ctms-table"
+          style={{
+            tableLayout: "fixed",
+            width: "100%",
+          }}
+        >
           <thead>
-
             <tr>
-
               {columns.map((column) => (
-
                 <th
                   key={column.key}
                   style={column.width ? { width: column.width } : undefined}
                 >
                   {column.label}
                 </th>
-
               ))}
-
             </tr>
-
           </thead>
 
           <tbody>
-
             {visibleData.length > 0 ? (
-
               visibleData.map((row, index) => (
-
                 <tr key={row.id || row.subjectId || row.studyId || index}>
-
                   {columns.map((column) => (
-
-  <td
-  key={column.key}
-  style={
-    column.width
-      ? {
-          width: column.width,
-          maxWidth: column.width,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace:
-            column.key === "comment" ? "normal" : "nowrap",
-          wordBreak: "break-word",
-          verticalAlign: "top",
-        }
-      : {
-          whiteSpace: "normal",
-          wordBreak: "break-word",
-          verticalAlign: "top",
-        }
-  }
->
-  {typeof column.render === "function"
-    ? column.render(row[column.key], row)
-    : row[column.key]}
-</td>
-
+                    <td
+                      key={column.key}
+                      style={
+                        column.width
+                          ? {
+                              width: column.width,
+                              maxWidth: column.width,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace:
+                                column.key === "comment" ? "normal" : "nowrap",
+                              wordBreak: "break-word",
+                              verticalAlign: "top",
+                            }
+                          : {
+                              whiteSpace: "normal",
+                              wordBreak: "break-word",
+                              verticalAlign: "top",
+                            }
+                      }
+                    >
+                      {typeof column.render === "function"
+                        ? column.render(row[column.key], row)
+                        : row[column.key]}
+                    </td>
                   ))}
-
                 </tr>
-
               ))
-
             ) : (
-
               <tr>
-
-                <td
-                  colSpan={
-                    columns.length
-                  }
-                  className="empty-row"
-                >
-
+                <td colSpan={columns.length} className="empty-row">
                   <div className="empty-row-inner">{emptyMessage}</div>
-
                 </td>
-
               </tr>
-
             )}
-
           </tbody>
-
         </table>
-
       </div>
 
       {pagination && processedData.length > 0 && (
@@ -324,9 +295,7 @@ function DataTable({
           </div>
         </div>
       )}
-
     </div>
-
   );
 }
 

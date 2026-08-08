@@ -416,7 +416,9 @@
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .subject-modal-close:hover {
@@ -919,7 +921,10 @@
   color: #475569;
   cursor: pointer;
   font-size: 14px;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .subject-action-btn:hover {
@@ -1020,7 +1025,10 @@
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .subjects-pagination-btn:hover:not(:disabled) {

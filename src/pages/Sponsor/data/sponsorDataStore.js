@@ -17,11 +17,7 @@ import { getStudies } from "../../../services/studyService";
 // Item 8 (Stage 5A) statuses that represent an ongoing/active study:
 // Startup, Recruitment Phase, and Conduct Phase. Kept in sync with the
 // same list used on the Admin Dashboard (ONGOING_STUDY_STATUSES).
-const ACTIVE_STUDY_STATUSES = [
-  "Startup",
-  "Recruitment Phase",
-  "Conduct Phase",
-];
+const ACTIVE_STUDY_STATUSES = ["Startup", "Recruitment Phase", "Conduct Phase"];
 
 const STORAGE_PREFIX = "sponsor_data_";
 const SETTINGS_KEY = "sponsor_settings";
@@ -64,12 +60,11 @@ function resolveAdminSiteByStudySite(study = {}) {
   return (
     getAdminSiteRecords().find((site) =>
       [site.siteNumber, site.id, site.name].some(
-        (value) => normalizeValue(value) === normalizedReference
-      )
+        (value) => normalizeValue(value) === normalizedReference,
+      ),
     ) || null
   );
 }
-
 
 function mapStudyToPortfolio(study = {}) {
   const subjectsByStudy =
@@ -209,7 +204,10 @@ export function getSites(study) {
   if (study && study.code) {
     const allStudies = getStudies();
 
-    const normalize = (value) => String(value || "").trim().toLowerCase();
+    const normalize = (value) =>
+      String(value || "")
+        .trim()
+        .toLowerCase();
 
     const matchingStudies = allStudies.filter(
       (candidate) =>
@@ -384,39 +382,39 @@ export function saveReports(data) {
 // title so the Critical/High/Medium/Low badges and filters here reflect
 // something real instead of always being blank.
 const NOTIFICATION_SEVERITY_BY_TITLE = {
-  'Permission request submitted': 'High',
-  'Permission request rejected': 'High',
-  'Permission request approved': 'Medium',
-  'Document added': 'Medium',
-  'Report created': 'Medium',
-  'Report updated': 'Medium',
-  'Visit scheduled': 'Medium',
-  'Visit updated': 'Medium',
-  'Subject added': 'Low',
-  'Subject updated': 'Low',
-  'New comment': 'Low',
+  "Permission request submitted": "High",
+  "Permission request rejected": "High",
+  "Permission request approved": "Medium",
+  "Document added": "Medium",
+  "Report created": "Medium",
+  "Report updated": "Medium",
+  "Visit scheduled": "Medium",
+  "Visit updated": "Medium",
+  "Subject added": "Low",
+  "Subject updated": "Low",
+  "New comment": "Low",
 };
 
 function formatSponsorNotificationDate(isoString) {
   const parsed = new Date(isoString);
 
   if (Number.isNaN(parsed.getTime())) {
-    return '';
+    return "";
   }
 
-  return parsed.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
+  return parsed.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   });
 }
 
 export function getNotifications() {
   return getSafeArray(getAdminNotifications()).map((item = {}) => ({
-    id: item.id || '',
-    type: item.title || '',
-    message: item.message || item.title || '',
-    severity: NOTIFICATION_SEVERITY_BY_TITLE[item.title] || 'Medium',
+    id: item.id || "",
+    type: item.title || "",
+    message: item.message || item.title || "",
+    severity: NOTIFICATION_SEVERITY_BY_TITLE[item.title] || "Medium",
     date: formatSponsorNotificationDate(item.createdAt),
     read: Boolean(item.read),
   }));
@@ -432,7 +430,7 @@ export function saveNotifications(data) {
   const previouslyUnreadIds = new Set(
     getSafeArray(getAdminNotifications())
       .filter((item) => !item.read)
-      .map((item) => item.id)
+      .map((item) => item.id),
   );
 
   items.forEach((item) => {

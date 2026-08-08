@@ -7,12 +7,10 @@ function PIEISFDashboard() {
 
   return (
     <div className="pi-page-content tnxt-compact">
-
       <h1>eISF Dashboard</h1>
 
       {/* KPI Cards */}
       <div className="cards-container">
-
         <div className="dashboard-card">
           <h3>Total Documents</h3>
           <h2>125</h2>
@@ -32,7 +30,6 @@ function PIEISFDashboard() {
           <h3>Compliance %</h3>
           <h2>96%</h2>
         </div>
-
       </div>
 
       {/* Tabs */}
@@ -41,7 +38,7 @@ function PIEISFDashboard() {
           display: "flex",
           gap: "10px",
           marginTop: "20px",
-          marginBottom: "20px"
+          marginBottom: "20px",
         }}
       >
         <button
@@ -75,13 +72,9 @@ function PIEISFDashboard() {
 
       {/* Dynamic Content */}
 
-      {eisfTab === "delegation" && (
-        <DelegationLog />
-      )}
+      {eisfTab === "delegation" && <DelegationLog />}
 
-      {eisfTab === "training" && (
-        <TrainingLog />
-      )}
+      {eisfTab === "training" && <TrainingLog />}
 
       {eisfTab === "cvs" && (
         <div className="table-container">
@@ -175,10 +168,8 @@ function PIEISFDashboard() {
               <td>01-Jul-2026</td>
             </tr>
           </tbody>
-
         </table>
       </div>
-
     </div>
   );
 }

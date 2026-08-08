@@ -242,13 +242,21 @@ function DocumentCommentsPanel({
   const getModuleAndSourceView = (section) => {
     const mapping = {
       subjects: { module: "DocumentMgmt:Subjects", sourceView: "subjects" },
-      studyFolder: { module: "DocumentMgmt:StudyFolder", sourceView: "study-folder" },
-      regulatory: { module: "DocumentMgmt:Regulatory", sourceView: "regulatory" },
+      studyFolder: {
+        module: "DocumentMgmt:StudyFolder",
+        sourceView: "study-folder",
+      },
+      regulatory: {
+        module: "DocumentMgmt:Regulatory",
+        sourceView: "regulatory",
+      },
       eISF: { module: "DocumentMgmt:eISF", sourceView: "eisf" },
       others: { module: "DocumentMgmt:Others", sourceView: "others" },
       logs: { module: "DocumentMgmt:Logs", sourceView: "logs" },
     };
-    return mapping[section] || { module: "DocumentMgmt", sourceView: "documents" };
+    return (
+      mapping[section] || { module: "DocumentMgmt", sourceView: "documents" }
+    );
   };
 
   const { module, sourceView } = getModuleAndSourceView(sectionId);
@@ -843,7 +851,9 @@ function DocumentFolderManager({
     if (!file) return false;
     return (
       file.type === "application/pdf" ||
-      String(file.name || "").toLowerCase().endsWith(".pdf")
+      String(file.name || "")
+        .toLowerCase()
+        .endsWith(".pdf")
     );
   };
 
@@ -875,7 +885,7 @@ function DocumentFolderManager({
         documentType: "General",
         studyCode: studyCode || "",
         subjectId: subjectId || "",
-        fileUrl: ""
+        fileUrl: "",
       };
 
       try {
@@ -893,7 +903,7 @@ function DocumentFolderManager({
         notifyDocumentAdded({
           ...doc,
           addedByRole: roleLabel,
-          sectionLabel
+          sectionLabel,
         });
       });
     }
@@ -915,7 +925,7 @@ function DocumentFolderManager({
 
     if (pdfFiles.length < filesArray.length) {
       window.alert(
-        `${filesArray.length - pdfFiles.length} non-PDF file(s) were skipped.`
+        `${filesArray.length - pdfFiles.length} non-PDF file(s) were skipped.`,
       );
     }
 
@@ -955,8 +965,7 @@ function DocumentFolderManager({
       return Array.from(dataTransfer.files || []);
     }
 
-    const supportsEntries =
-      typeof itemList[0].webkitGetAsEntry === "function";
+    const supportsEntries = typeof itemList[0].webkitGetAsEntry === "function";
 
     if (!supportsEntries) {
       return Array.from(dataTransfer.files || []);
@@ -988,14 +997,14 @@ function DocumentFolderManager({
               try {
                 Object.defineProperty(file, "relativePath", {
                   value: pathPrefix + (entry.name || file.name),
-                  configurable: true
+                  configurable: true,
                 });
               } catch (err) {
                 /* some browsers seal File instances */
               }
               resolve([file]);
             },
-            () => resolve([])
+            () => resolve([]),
           );
         });
       }
@@ -1006,8 +1015,8 @@ function DocumentFolderManager({
           const entries = await readAllEntries(reader);
           const nested = await Promise.all(
             entries.map((child) =>
-              walkEntry(child, `${pathPrefix}${entry.name}/`)
-            )
+              walkEntry(child, `${pathPrefix}${entry.name}/`),
+            ),
           );
           return nested.flat();
         } catch (err) {
@@ -1027,7 +1036,7 @@ function DocumentFolderManager({
     }
 
     const filesPerEntry = await Promise.all(
-      topEntries.map((entry) => walkEntry(entry))
+      topEntries.map((entry) => walkEntry(entry)),
     );
     return filesPerEntry.flat();
   };
@@ -1612,12 +1621,10 @@ function DocumentFolderManager({
                 // browsers expose the entry API) whole folders. Fall
                 // back to the raw file list otherwise.
                 const collected = await collectFilesFromDataTransfer(
-                  event.dataTransfer
+                  event.dataTransfer,
                 );
                 handleFileSelect(
-                  collected.length
-                    ? collected
-                    : event.dataTransfer.files
+                  collected.length ? collected : event.dataTransfer.files,
                 );
               }}
             >
@@ -1658,10 +1665,10 @@ function DocumentFolderManager({
                 />
               ) : (
                 <p>
-                  Preview unavailable. This document's file data isn't kept
-                  in browser storage (only its metadata is), and it wasn't
-                  uploaded/replaced in this browser session, so there's
-                  nothing left to render.
+                  Preview unavailable. This document's file data isn't kept in
+                  browser storage (only its metadata is), and it wasn't
+                  uploaded/replaced in this browser session, so there's nothing
+                  left to render.
                 </p>
               );
             })()}

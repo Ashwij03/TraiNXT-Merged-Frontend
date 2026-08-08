@@ -66,7 +66,9 @@
   border: 1px solid #d1d5db;
   border-radius: var(--admin-radius);
   font-size: var(--admin-font-sm);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .admin-settings-form input:focus,

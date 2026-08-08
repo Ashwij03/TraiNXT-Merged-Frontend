@@ -115,37 +115,36 @@ function EnterpriseNavbarBase({
     useAdminNavbarNotifications();
 
   const [previewRole, setPreviewRoleState] = useState(
-    () => effectiveRole || ROLES.ADMIN
+    () => effectiveRole || ROLES.ADMIN,
   );
 
   const [profilePhoto, setProfilePhoto] = useState(
-    currentUser?.profilePhoto || ""
+    currentUser?.profilePhoto || "",
   );
 
   const [selectedIndication, setSelectedIndication] = useState(
-    getStoredIndicationFilter
+    getStoredIndicationFilter,
   );
 
   const [selectedSponsor, setSelectedSponsor] = useState(
-    getStoredSponsorFilter
+    getStoredSponsorFilter,
   );
 
   const [selectedCRO, setSelectedCRO] = useState(getStoredCROFilter);
 
   const [selectedInstitution, setSelectedInstitution] = useState(
-    () => getStoredInstitutionFilter() || getDefaultInstitution(currentUser)
+    () => getStoredInstitutionFilter() || getDefaultInstitution(currentUser),
   );
 
   const [selectedSiteNumber, setSelectedSiteNumber] = useState(
-    getStoredSiteNumberFilter
+    getStoredSiteNumberFilter,
   );
 
-  const [selectedStudyCode, setSelectedStudyCode] = useState(
-    getStoredStudyFilter
-  );
+  const [selectedStudyCode, setSelectedStudyCode] =
+    useState(getStoredStudyFilter);
 
   const [selectedSubject, setSelectedSubject] = useState(
-    getStoredSubjectFilter
+    getStoredSubjectFilter,
   );
 
   const indicationOptions = useMemo(() => {
@@ -363,20 +362,15 @@ function EnterpriseNavbarBase({
 
   useEffect(() => {
     const handlePreviewRoleChange = () => {
-      setPreviewRoleState(
-        getEffectiveRole(getCurrentUser()) || ROLES.ADMIN
-      );
+      setPreviewRoleState(getEffectiveRole(getCurrentUser()) || ROLES.ADMIN);
     };
 
-    window.addEventListener(
-      ADMIN_PREVIEW_ROLE_EVENT,
-      handlePreviewRoleChange
-    );
+    window.addEventListener(ADMIN_PREVIEW_ROLE_EVENT, handlePreviewRoleChange);
 
     return () => {
       window.removeEventListener(
         ADMIN_PREVIEW_ROLE_EVENT,
-        handlePreviewRoleChange
+        handlePreviewRoleChange,
       );
     };
   }, [userEmail]);
@@ -490,7 +484,7 @@ function EnterpriseNavbarBase({
     // see getSubjectOptions in filterService.js. Fall back to whatever study
     // is currently selected in the header if a match isn't found.
     const matchedOption = subjectOptions.find(
-      (option) => String(option.value) === String(subjectId)
+      (option) => String(option.value) === String(subjectId),
     );
 
     const studyCode = matchedOption?.studyKey || selectedStudyCode;
@@ -507,13 +501,13 @@ function EnterpriseNavbarBase({
     // on this subject.
     localStorage.setItem(
       SELECTED_SUBJECT_KEY,
-      JSON.stringify({ id: subjectId, studyId: studyCode })
+      JSON.stringify({ id: subjectId, studyId: studyCode }),
     );
 
     navigate(
       `/study-dashboard/${encodeURIComponent(
-        studyCode
-      )}?tab=Subjects&subject=${encodeURIComponent(subjectId)}`
+        studyCode,
+      )}?tab=Subjects&subject=${encodeURIComponent(subjectId)}`,
     );
   };
 
@@ -646,10 +640,7 @@ function EnterpriseNavbarBase({
             onChange={(value) =>
               updateFilter("sponsor", value, setSelectedSponsor)
             }
-            options={[
-              { value: "", label: "All Sponsors" },
-              ...sponsorOptions,
-            ]}
+            options={[{ value: "", label: "All Sponsors" }, ...sponsorOptions]}
             placeholder="All Sponsors"
             searchPlaceholder="Search Sponsor"
             className="header-dropdown"
@@ -668,13 +659,8 @@ function EnterpriseNavbarBase({
         return (
           <SearchableDropdown
             value={selectedCRO}
-            onChange={(value) =>
-              updateFilter("cro", value, setSelectedCRO)
-            }
-            options={[
-              { value: "", label: "All CROs" },
-              ...croOptions,
-            ]}
+            onChange={(value) => updateFilter("cro", value, setSelectedCRO)}
+            options={[{ value: "", label: "All CROs" }, ...croOptions]}
             placeholder="All CROs"
             searchPlaceholder="Search CRO"
             className="header-dropdown"
@@ -862,11 +848,7 @@ function EnterpriseNavbarBase({
           >
             <div className="profile-avatar">
               {profilePhoto ? (
-                <img
-                  src={profilePhoto}
-                  alt=""
-                  className="profile-avatar-img"
-                />
+                <img src={profilePhoto} alt="" className="profile-avatar-img" />
               ) : (
                 currentUser?.name?.charAt(0)?.toUpperCase()
               )}

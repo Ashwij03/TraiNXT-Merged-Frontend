@@ -2,7 +2,14 @@ import EISFModuleWorkspace from "../EISFModuleWorkspace";
 import EISF_ASSIGNED_MODULES from "../eisfAssignedModuleConfig";
 import "./ParticipatingSiteTeam.css";
 
-export default function ParticipatingSiteTeam({ activeSectionId, studyCode, moduleOptions, selectedModuleId, onModuleChange, onSectionChange }) {
+export default function ParticipatingSiteTeam({
+  activeSectionId,
+  studyCode,
+  moduleOptions,
+  selectedModuleId,
+  onModuleChange,
+  onSectionChange,
+}) {
   return (
     <EISFModuleWorkspace
       moduleConfig={EISF_ASSIGNED_MODULES.participatingSiteTeam}

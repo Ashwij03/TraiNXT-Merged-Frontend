@@ -15,11 +15,7 @@ function parseCalendarDateKey(dateKey) {
   return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
 }
 
-function CalendarWidget({
-  schedules = [],
-  selectedDate,
-  onDateSelect,
-}) {
+function CalendarWidget({ schedules = [], selectedDate, onDateSelect }) {
   const isControlled = typeof onDateSelect === "function";
 
   const todayDateKey = getCalendarDateKey(new Date());
@@ -125,7 +121,7 @@ function CalendarWidget({
     }
 
     return schedules.filter(
-      (schedule) => getCalendarDateKey(schedule.date) === date
+      (schedule) => getCalendarDateKey(schedule.date) === date,
     );
   };
 
@@ -223,8 +219,7 @@ function CalendarWidget({
           const today = new Date();
           today.setHours(0, 0, 0, 0);
 
-          const hasSchedule =
-            daySchedules.length > 0 && currentDate >= today;
+          const hasSchedule = daySchedules.length > 0 && currentDate >= today;
 
           const isSelected = activeDate === date;
           const isToday = todayDateKey === date;
@@ -292,7 +287,8 @@ function CalendarWidget({
                 </p>
 
                 <p>
-                  <b>Site:</b> {resolveSiteDisplay(schedule.site, {
+                  <b>Site:</b>{" "}
+                  {resolveSiteDisplay(schedule.site, {
                     sources: siteSources,
                     fallback: schedule.site || "—",
                   })}
@@ -301,9 +297,7 @@ function CalendarWidget({
             </div>
           ))
         ) : (
-          <div className="calendar-empty">
-            No schedules on this date
-          </div>
+          <div className="calendar-empty">No schedules on this date</div>
         )}
       </div>
     </div>

@@ -26,28 +26,28 @@
 .eisf-tabs button:hover {
   background: #f3f4f6;
 }
-.eisf-tabs{
-  display:flex;
-  gap:12px;
-  margin:25px 0;
+.eisf-tabs {
+  display: flex;
+  gap: 12px;
+  margin: 25px 0;
 }
 
-.eisf-tabs button{
-  padding:12px 20px;
-  border:none;
-  border-radius:10px;
-  background:#e2e8f0;
-  cursor:pointer;
-  font-weight:600;
-  font-size:14px;
-  transition:0.3s;
+.eisf-tabs button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  background: #e2e8f0;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: 0.3s;
 }
 
-.eisf-tabs button:hover{
-  transform:translateY(-2px);
+.eisf-tabs button:hover {
+  transform: translateY(-2px);
 }
 
-.active-tab{
-  background:#2563eb !important;
-  color:white !important;
+.active-tab {
+  background: #2563eb !important;
+  color: white !important;
 }

@@ -4,18 +4,23 @@ import {
   clearProfilePhoto,
   getCurrentUser,
   getUserProfile,
-  syncProfilePhoto
+  syncProfilePhoto,
 } from "../../../services/roleService";
 
 const MAX_DIMENSION = 512; // longest edge, in px
 const JPEG_QUALITY = 0.8;
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024; // 8MB original file safety cap
 
-function resizeImageFile(file, maxDimension = MAX_DIMENSION, quality = JPEG_QUALITY) {
+function resizeImageFile(
+  file,
+  maxDimension = MAX_DIMENSION,
+  quality = JPEG_QUALITY,
+) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
-    reader.onerror = () => reject(new Error("Could not read the selected file."));
+    reader.onerror = () =>
+      reject(new Error("Could not read the selected file."));
 
     reader.onload = () => {
       const img = new Image();
@@ -58,7 +63,7 @@ function ProfilePhotoCard({
   onPhotoChange,
   deferSync = false,
   showCard = true,
-  compact = false
+  compact = false,
 }) {
   const currentUser = getCurrentUser();
   const [message, setMessage] = useState("");
@@ -108,7 +113,7 @@ function ProfilePhotoCard({
       setIsError(true);
       setMessage(
         error?.message ||
-          "Could not save the photo. Please try a smaller image."
+          "Could not save the photo. Please try a smaller image.",
       );
     }
   };
@@ -147,11 +152,7 @@ function ProfilePhotoCard({
             Remove Photo
           </button>
         )}
-        {!compact && (
-          <p className="profile-photo-help">
-            
-          </p>
-        )}
+        {!compact && <p className="profile-photo-help"></p>}
         {message && (
           <p style={{ color: isError ? "#dc2626" : "#059669", margin: 0 }}>
             {message}

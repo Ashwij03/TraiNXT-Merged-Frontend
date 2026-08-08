@@ -10,10 +10,9 @@ import CommentModal from "../../../comments/CommentModal";
 import "./VisitDetails.css";
 
 export default function VisitDetails() {
-
   // Existing code
   const [activeVisit, setActiveVisit] = useState("visit2");
-  const [activeTab,setActiveTab] = useState("procedures");
+  const [activeTab, setActiveTab] = useState("procedures");
 
   // Friend code
   const { visitId } = useParams();
@@ -21,11 +20,7 @@ export default function VisitDetails() {
   const [showModal, setShowModal] = useState(false);
 
   const [documents] = useState(
-    JSON.parse(
-      localStorage.getItem(
-        `visit_${visitId}_documents`
-      )
-    ) || []
+    JSON.parse(localStorage.getItem(`visit_${visitId}_documents`)) || [],
   );
 
   // const [comments, setComments] = useState(
@@ -37,50 +32,29 @@ export default function VisitDetails() {
   // );
 
   // Filter comments for this visit
-  const visitComments = comments.filter(
-    (c) => c.visitId === visitId
-  );
+  const visitComments = comments.filter((c) => c.visitId === visitId);
 
   return (
     <div id="print-area" className="visit-details-page tnxt-compact">
-
-     
-
       {/* EXISTING HEADER */}
-      <VisitHeader
-        activeVisit={activeVisit}
-        onVisitChange={setActiveVisit}
-      />
+      <VisitHeader activeVisit={activeVisit} onVisitChange={setActiveVisit} />
 
       {/* EXISTING PROCEDURES */}
       <div className="visit-workspace-tabs">
-
         <button
-          className={
-            activeTab === "procedures"
-              ? "active"
-              : ""
-          }
-          onClick={() =>
-            setActiveTab("procedures")
-          }
+          className={activeTab === "procedures" ? "active" : ""}
+          onClick={() => setActiveTab("procedures")}
         >
           Procedures
         </button>
-        
+
         <button
-          className={
-            activeTab === "documents"
-              ? "active"
-              : ""
-          }
-          onClick={() =>
-            setActiveTab("documents")
-          }
+          className={activeTab === "documents" ? "active" : ""}
+          onClick={() => setActiveTab("documents")}
         >
           Documents
         </button>
-        
+
         {/* <button
           className={
             activeTab === "comments"
@@ -93,7 +67,7 @@ export default function VisitDetails() {
         >
           Comments
         </button> */}
-        
+
         {/* <button
           className={
             activeTab === "audit"
@@ -106,27 +80,19 @@ export default function VisitDetails() {
         >
           Audit Trail
         </button> */}
-        
       </div>
-        
+
       {activeTab === "procedures" && (
         <VisitProcedures activeVisit={activeVisit} />
       )}
 
       {activeTab === "documents" && (
-
         <div className="visit-tab-content">
-        
           <h3>Documents</h3>
 
-          <button
-            className="add-doc-btn"
-          >
-            + Upload Document
-          </button>
+          <button className="add-doc-btn">+ Upload Document</button>
 
           <table className="ctms-standard-table">
-
             <thead>
               <tr>
                 <th>Name</th>
@@ -136,27 +102,18 @@ export default function VisitDetails() {
             </thead>
 
             <tbody>
-
-              {documents.map(doc => (
-              
+              {documents.map((doc) => (
                 <tr key={doc.id}>
-                
                   <td>{doc.name}</td>
-              
+
                   <td>{doc.uploadedBy}</td>
-              
+
                   <td>{doc.uploadedAt}</td>
-              
                 </tr>
-
               ))}
-
             </tbody>
-            
           </table>
-            
         </div>
-
       )}
 
       {/* {activeTab === "audit" && (
@@ -225,21 +182,14 @@ export default function VisitDetails() {
 
       {/* Comments SECTION */}
       <div style={{ padding: "20px" }}>
-
         <div style={{ padding: "20px" }}>
-
           <h3>VISIT 1 : Screening</h3>
 
           {/* PROCEDURE HEADER */}
           <div className="procedure-bar">
+            <span className="check-icon">✔</span>
 
-            <span className="check-icon">
-              ✔
-            </span>
-
-            <span className="procedure-title">
-              Full Physical Exam
-            </span>
+            <span className="procedure-title">Full Physical Exam</span>
 
             <button
               className="procedure-plus"
@@ -247,38 +197,24 @@ export default function VisitDetails() {
             >
               +
             </button>
-
           </div>
 
           {/* INLINE COMMENTS */}
           {visitComments.map((c) => (
-            <div
-              key={c.id}
-              className="comment-inline"
-            >
-
+            <div key={c.id} className="comment-inline">
               <div className="avatar">
-
                 {c.id}
 
-                {c.resolved && (
-                  <span className="blue-tick">
-                    ✓
-                  </span>
-                )}
-
+                {c.resolved && <span className="blue-tick">✓</span>}
               </div>
 
               <div className="comment-body">
-
                 <b>{c.author}</b>
 
                 <div>{c.text}</div>
 
                 <small>{c.date}</small>
-
               </div>
-
             </div>
           ))}
 
@@ -289,7 +225,6 @@ export default function VisitDetails() {
               onClose={() => setShowModal(false)}
             />
           )}
-
         </div>
       </div>
     </div>

@@ -17,11 +17,7 @@ function getAuditTrail(document) {
   ];
 }
 
-export default function AuditTrailModal({
-  open,
-  document,
-  onClose
-}) {
+export default function AuditTrailModal({ open, document, onClose }) {
   if (!open || !document) return null;
 
   const auditTrail = getAuditTrail(document);
@@ -31,7 +27,9 @@ export default function AuditTrailModal({
       <div className="audit-modal">
         <div className="audit-header">
           <h3>Audit Trail</h3>
-          <button type="button" onClick={onClose}>✕</button>
+          <button type="button" onClick={onClose}>
+            ✕
+          </button>
         </div>
 
         <table className="audit-table ctms-standard-table">

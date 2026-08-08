@@ -7,12 +7,12 @@ import KPICard from "../../components/dashboard/shared/KPICard";
 import {
   getNotifications,
   markAllNotificationsRead,
-  markNotificationRead
+  markNotificationRead,
 } from "../../services/adminService";
 import {
   getAssignedSite,
   getCurrentUser,
-  isAdmin
+  isAdmin,
 } from "../../services/roleService";
 import { resolveSiteDisplay } from "../../utils/siteDisplay";
 import { getStudies } from "../../services/studyService";
@@ -22,7 +22,7 @@ const CATEGORY_LABELS = {
   comment: "Comment",
   visit: "Visit",
   access: "Access",
-  system: "System"
+  system: "System",
 };
 
 function Notifications() {
@@ -37,7 +37,7 @@ function Notifications() {
     value
       ? resolveSiteDisplay(value, {
           sources: siteSources,
-          fallback: value
+          fallback: value,
         })
       : "—";
 
@@ -155,7 +155,9 @@ function Notifications() {
                 <div>
                   <div className="notification-item-header">
                     <strong>{notification.title}</strong>
-                    <span className={`notification-category notification-category--${notification.category || "system"}`}>
+                    <span
+                      className={`notification-category notification-category--${notification.category || "system"}`}
+                    >
                       {CATEGORY_LABELS[notification.category] || "System"}
                     </span>
                   </div>

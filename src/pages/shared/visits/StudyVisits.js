@@ -40,7 +40,7 @@ function StudyVisits({ setActiveTab }) {
                   <td>
                     <span
                       className={`status-badge ${String(
-                        visit.status || "Scheduled"
+                        visit.status || "Scheduled",
                       ).toLowerCase()}`}
                     >
                       {visit.status || "Scheduled"}

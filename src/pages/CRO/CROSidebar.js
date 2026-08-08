@@ -101,11 +101,7 @@ function CROSidebar({ isOpen = false, collapsed = false, onClose }) {
             <TriaNXTLogo size="sidebar" />
           </div>
 
-          <button
-            type="button"
-            className="cro-sidebar-close"
-            onClick={onClose}
-          >
+          <button type="button" className="cro-sidebar-close" onClick={onClose}>
             <FaTimes />
           </button>
         </div>

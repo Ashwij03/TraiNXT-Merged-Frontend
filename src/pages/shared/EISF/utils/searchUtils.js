@@ -18,7 +18,7 @@ export const searchDocuments = (
     "section",
     "sectionId",
     "version",
-  ]
+  ],
 ) => {
   const query = keyword.trim().toLowerCase();
 
@@ -35,33 +35,26 @@ export const searchDocuments = (
       }
 
       return value.toString().toLowerCase().includes(query);
-    })
+    }),
   );
 };
 
 /**
  * Generic document filter.
  */
-export const filterDocuments = (
-  documents = [],
-  filters = {}
-) => {
+export const filterDocuments = (documents = [], filters = {}) => {
   if (!Object.keys(filters).length) {
     return documents;
   }
 
   return documents.filter((document) =>
     Object.entries(filters).every(([key, value]) => {
-      if (
-        value === undefined ||
-        value === null ||
-        value === ""
-      ) {
+      if (value === undefined || value === null || value === "") {
         return true;
       }
 
       return document[key] === value;
-    })
+    }),
   );
 };
 
@@ -71,7 +64,7 @@ export const filterDocuments = (
 export const sortDocuments = (
   documents = [],
   field = "documentName",
-  direction = "asc"
+  direction = "asc",
 ) => {
   return [...documents].sort((a, b) => {
     const valueA = a[field];
@@ -81,30 +74,26 @@ export const sortDocuments = (
     if (valueB == null) return -1;
 
     const shouldCompareAsDate =
-      field.toLowerCase().includes("date") &&
-      valueA !== "-" &&
-      valueB !== "-";
+      field.toLowerCase().includes("date") && valueA !== "-" && valueB !== "-";
     const dateA = shouldCompareAsDate ? new Date(valueA) : null;
     const dateB = shouldCompareAsDate ? new Date(valueB) : null;
 
-    if (dateA && dateB && !Number.isNaN(dateA.valueOf()) && !Number.isNaN(dateB.valueOf())) {
-      return direction === "asc"
-        ? dateA - dateB
-        : dateB - dateA;
+    if (
+      dateA &&
+      dateB &&
+      !Number.isNaN(dateA.valueOf()) &&
+      !Number.isNaN(dateB.valueOf())
+    ) {
+      return direction === "asc" ? dateA - dateB : dateB - dateA;
     }
 
-    if (
-      typeof valueA === "string" &&
-      typeof valueB === "string"
-    ) {
+    if (typeof valueA === "string" && typeof valueB === "string") {
       return direction === "asc"
         ? valueA.localeCompare(valueB)
         : valueB.localeCompare(valueA);
     }
 
-    return direction === "asc"
-      ? valueA - valueB
-      : valueB - valueA;
+    return direction === "asc" ? valueA - valueB : valueB - valueA;
   });
 };
 
@@ -119,21 +108,13 @@ export const processDocuments = (
     searchableFields,
     sortField = "documentName",
     sortDirection = "asc",
-  } = {}
+  } = {},
 ) => {
-  let result = searchDocuments(
-    documents,
-    keyword,
-    searchableFields
-  );
+  let result = searchDocuments(documents, keyword, searchableFields);
 
   result = filterDocuments(result, filters);
 
-  result = sortDocuments(
-    result,
-    sortField,
-    sortDirection
-  );
+  result = sortDocuments(result, sortField, sortDirection);
 
   return result;
 };
@@ -141,10 +122,7 @@ export const processDocuments = (
 /**
  * Returns unique values for a field.
  */
-export const getUniqueFieldValues = (
-  documents = [],
-  field
-) => {
+export const getUniqueFieldValues = (documents = [], field) => {
   return [...new Set(documents.map((doc) => doc[field]))]
     .filter(Boolean)
     .sort();
@@ -153,10 +131,7 @@ export const getUniqueFieldValues = (
 /**
  * Groups documents by any field.
  */
-export const groupDocumentsByField = (
-  documents = [],
-  field
-) => {
+export const groupDocumentsByField = (documents = [], field) => {
   return documents.reduce((groups, document) => {
     const key = document[field] || "Unknown";
 
@@ -176,11 +151,7 @@ export const groupDocumentsByField = (
 export const getSearchResultCount = (
   documents = [],
   keyword = "",
-  searchableFields
+  searchableFields,
 ) => {
-  return searchDocuments(
-    documents,
-    keyword,
-    searchableFields
-  ).length;
+  return searchDocuments(documents, keyword, searchableFields).length;
 };

@@ -6,10 +6,8 @@ export default function VisitProcedures() {
 
   return (
     <div className="visit-procedures-wrapper">
-
       {/* LEFT BLUE COLUMN */}
       <div className="procedures-left">
-
         <div
           className={`procedure-item ${activeProcedure === "inclusion" ? "active" : ""}`}
           onClick={() => setActiveProcedure("inclusion")}
@@ -58,17 +56,17 @@ export default function VisitProcedures() {
         >
           Ht/Wt/BMI (ins/lbs)
         </div>
-
       </div>
 
       {/* RIGHT SIDE CONTENT */}
       <div className="procedures-right">
-
         {activeProcedure === "inclusion" && (
           <>
             <div className="procedure-header">✓ Inclusion Criteria</div>
             <div className="procedure-body">
-              <p><b>1. INCLUSION CRITERIA</b> — Yes</p>
+              <p>
+                <b>1. INCLUSION CRITERIA</b> — Yes
+              </p>
               <p className="meta">Kristen Bosse, 30-Jul-2019 16:08</p>
             </div>
           </>
@@ -82,88 +80,82 @@ export default function VisitProcedures() {
             </div>
           </>
         )}
-       {activeProcedure === "demographics" && (
-  <div
-    style={{
-      background: "#fff",
-      border: "1px solid #ddd",
-    }}
-  >
-    {/* Instructions Row */}
-    <div
-      style={{
-        padding: "14px 18px",
-        borderBottom: "1px solid #ddd",
-        background: "#fafafa",
-        fontWeight: "600",
-      }}
-    >
-      Instructions
-    </div>
+        {activeProcedure === "demographics" && (
+          <div
+            style={{
+              background: "#fff",
+              border: "1px solid #ddd",
+            }}
+          >
+            {/* Instructions Row */}
+            <div
+              style={{
+                padding: "14px 18px",
+                borderBottom: "1px solid #ddd",
+                background: "#fafafa",
+                fontWeight: "600",
+              }}
+            >
+              Instructions
+            </div>
 
-    {/* DOB Row */}
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        padding: "18px",
-        borderBottom: "1px solid #eee",
-        alignItems: "center",
-      }}
-    >
-      <div style={{ fontSize: "17px" }}>
-        Date of Birth
-      </div>
+            {/* DOB Row */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                padding: "18px",
+                borderBottom: "1px solid #eee",
+                alignItems: "center",
+              }}
+            >
+              <div style={{ fontSize: "17px" }}>Date of Birth</div>
 
-      <div style={{ textAlign: "right" }}>
-        <div style={{ fontWeight: "600" }}>
-          15-JUN-1983
-        </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontWeight: "600" }}>15-JUN-1983</div>
 
-        <div
-          style={{
-            color: "#777",
-            fontSize: "13px",
-            marginTop: "4px",
-          }}
-        >
-          Raymond Nomizu, 08-FEB-2017 9:29 AM
-        </div>
+                <div
+                  style={{
+                    color: "#777",
+                    fontSize: "13px",
+                    marginTop: "4px",
+                  }}
+                >
+                  Raymond Nomizu, 08-FEB-2017 9:29 AM
+                </div>
 
-        <div
-          style={{
-            color: "#2a6db0",
-            fontSize: "13px",
-            marginTop: "4px",
-            cursor: "pointer",
-          }}
-        >
-          view audit trail (2)
-        </div>
-      </div>
+                <div
+                  style={{
+                    color: "#2a6db0",
+                    fontSize: "13px",
+                    marginTop: "4px",
+                    cursor: "pointer",
+                  }}
+                >
+                  view audit trail (2)
+                </div>
+              </div>
 
-      {/* Comment Circle */}
-      <div
-        style={{
-          width: "28px",
-          height: "28px",
-          borderRadius: "50%",
-          background: "#f1f1f1",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontWeight: "bold",
-          cursor: "pointer",
-          marginLeft: "15px",
-        }}
-      >
-        +
-      </div>
-    </div>
-  </div>
-)}
-
-
+              {/* Comment Circle */}
+              <div
+                style={{
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "50%",
+                  background: "#f1f1f1",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  marginLeft: "15px",
+                }}
+              >
+                +
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

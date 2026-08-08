@@ -35,7 +35,9 @@ function CRODetails({ cro }) {
         </div>
         <div>
           <label>Primary Contact</label>
-          <span>monitor@{String(cro.name).toLowerCase().replace(/\s+/g, "")}.com</span>
+          <span>
+            monitor@{String(cro.name).toLowerCase().replace(/\s+/g, "")}.com
+          </span>
         </div>
         <div>
           <label>Oversight Level</label>

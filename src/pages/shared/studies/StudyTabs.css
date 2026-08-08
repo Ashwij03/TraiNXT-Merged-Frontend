@@ -70,9 +70,15 @@
   color: #555;
 }
 
-.partial { color: #d4a000; }
-.fail { color: #999; }
-.completed { color: #2e7d32; }
+.partial {
+  color: #d4a000;
+}
+.fail {
+  color: #999;
+}
+.completed {
+  color: #2e7d32;
+}
 
 .timeline-header,
 .timeline-row {

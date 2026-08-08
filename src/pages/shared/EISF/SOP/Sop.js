@@ -2,7 +2,14 @@ import EISFModuleWorkspace from "../EISFModuleWorkspace";
 import EISF_ASSIGNED_MODULES from "../eisfAssignedModuleConfig";
 import "./Sop.css";
 
-export default function Sop({ activeSectionId, studyCode, moduleOptions, selectedModuleId, onModuleChange, onSectionChange }) {
+export default function Sop({
+  activeSectionId,
+  studyCode,
+  moduleOptions,
+  selectedModuleId,
+  onModuleChange,
+  onSectionChange,
+}) {
   return (
     <EISFModuleWorkspace
       moduleConfig={EISF_ASSIGNED_MODULES.sop}

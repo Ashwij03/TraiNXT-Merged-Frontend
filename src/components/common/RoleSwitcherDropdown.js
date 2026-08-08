@@ -10,12 +10,12 @@ import {
   ROLE_LABELS,
   setAdminPreviewRole,
   setPIPreviewRole,
-  SWITCHABLE_ROLE_DASHBOARDS
+  SWITCHABLE_ROLE_DASHBOARDS,
 } from "../../services/roleService";
 
 const PI_ROLE_OPTIONS = [
   { value: ROLES.PI, label: ROLE_LABELS[ROLES.PI] },
-  { value: ROLES.SITE_STAFF, label: ROLE_LABELS[ROLES.SITE_STAFF] }
+  { value: ROLES.SITE_STAFF, label: ROLE_LABELS[ROLES.SITE_STAFF] },
 ];
 
 function RoleSwitcherDropdown({ className = "" }) {
@@ -70,7 +70,8 @@ function RoleSwitcherDropdown({ className = "" }) {
   }
 
   if (currentUser?.role === ROLES.PI) {
-    const piViewRole = effectiveRole === ROLES.SITE_STAFF ? ROLES.SITE_STAFF : ROLES.PI;
+    const piViewRole =
+      effectiveRole === ROLES.SITE_STAFF ? ROLES.SITE_STAFF : ROLES.PI;
 
     return (
       <SearchableDropdown

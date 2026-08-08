@@ -8,7 +8,7 @@ import ROLES from "../constants/roles";
 import {
   notifyUpcomingVisitReminder,
   notifyVisitCreated,
-  notifyVisitUpdated
+  notifyVisitUpdated,
 } from "./notificationService";
 
 export const VISIT_STAGES = [
@@ -17,7 +17,7 @@ export const VISIT_STAGES = [
   "Visit 1",
   "Visit 2",
   "Visit 3",
-  "Completed"
+  "Completed",
 ];
 
 export const SCHEDULES_EVENT = "visitSchedulesChange";
@@ -41,14 +41,16 @@ function dispatchSchedulesChange() {
 }
 
 export function isCompletedVisitStatus(status) {
-  const normalized = String(status || "").trim().toLowerCase();
+  const normalized = String(status || "")
+    .trim()
+    .toLowerCase();
 
   return [
     "completed",
     "dropout",
     "withdrawn",
     "auto withdraw",
-    "auto-withdraw"
+    "auto-withdraw",
   ].includes(normalized);
 }
 
@@ -66,7 +68,9 @@ export const INACTIVE_VISIT_STATUSES = ["completed", "cancelled", "missed"];
 
 export function isInactiveVisitStatus(status) {
   return INACTIVE_VISIT_STATUSES.includes(
-    String(status || "").trim().toLowerCase()
+    String(status || "")
+      .trim()
+      .toLowerCase(),
   );
 }
 
@@ -78,7 +82,7 @@ export function toLocalDateKey(date) {
   return [
     date.getFullYear(),
     String(date.getMonth() + 1).padStart(2, "0"),
-    String(date.getDate()).padStart(2, "0")
+    String(date.getDate()).padStart(2, "0"),
   ].join("-");
 }
 
@@ -142,8 +146,8 @@ export function isUpcomingVisitSchedule(item, referenceDate = new Date()) {
   // and the upcoming-visits table so the two views can never disagree.
   return Boolean(
     item?.date &&
-      !isInactiveVisitSchedule(item) &&
-      !isPastCalendarDate(item.date, referenceDate)
+    !isInactiveVisitSchedule(item) &&
+    !isPastCalendarDate(item.date, referenceDate),
   );
 }
 
@@ -182,7 +186,7 @@ function resolveReminderRecipient(schedule) {
   return {
     studyCode,
     targetRoles: UPCOMING_VISIT_REMINDER_ROLES,
-    recipientKey: `${studyCode}:${UPCOMING_VISIT_REMINDER_ROLES.join("+")}`
+    recipientKey: `${studyCode}:${UPCOMING_VISIT_REMINDER_ROLES.join("+")}`,
   };
 }
 
@@ -194,18 +198,20 @@ export function synchronizeUpcomingVisitReminders(referenceDate = new Date()) {
       created: 0,
       skippedCompleted: 0,
       skippedInvalidDate: 0,
-      skippedRecipient: 0
+      skippedRecipient: 0,
     };
   }
 
-  const schedules = filterCalendarSchedules(readJson(SCHEDULES_STORAGE_KEY, []));
+  const schedules = filterCalendarSchedules(
+    readJson(SCHEDULES_STORAGE_KEY, []),
+  );
   const result = {
     scanned: schedules.length,
     eligible: 0,
     created: 0,
     skippedCompleted: 0,
     skippedInvalidDate: 0,
-    skippedRecipient: 0
+    skippedRecipient: 0,
   };
 
   schedules.forEach((schedule) => {
@@ -241,7 +247,7 @@ export function synchronizeUpcomingVisitReminders(referenceDate = new Date()) {
     const notification = notifyUpcomingVisitReminder({
       schedule,
       occurrenceDate: schedule.date,
-      ...recipient
+      ...recipient,
     });
 
     if (notification) {
@@ -270,7 +276,7 @@ function normalizeStudy(study) {
     indication: study.indication || "General",
     sponsor: study.sponsor || "TriaNXT Research",
     cro: study.cro || "TriaNXT CRO",
-    site: study.site || study.location || ""
+    site: study.site || study.location || "",
   };
 }
 
@@ -326,7 +332,7 @@ function createScheduleEntry({
   date,
   status = "Scheduled",
   time = "09:00 AM",
-  source = "subject"
+  source = "subject",
 }) {
   if (!date || !visit) {
     return null;
@@ -354,7 +360,7 @@ function createScheduleEntry({
       "—",
     time,
     studyKey,
-    source
+    source,
   };
 }
 
@@ -374,7 +380,7 @@ export function getVisitProgress(studyId, subjectId) {
     all[`${studyId}::${subjectId}`] || {
       completedStages: [],
       pendingNextVisitPrompt: false,
-      lastCompletedStage: ""
+      lastCompletedStage: "",
     }
   );
 }
@@ -383,7 +389,7 @@ export function saveVisitProgress(studyId, subjectId, progress) {
   const all = readJson(VISIT_PROGRESS_KEY, {});
   all[`${studyId}::${subjectId}`] = {
     ...getVisitProgress(studyId, subjectId),
-    ...progress
+    ...progress,
   };
   writeJson(VISIT_PROGRESS_KEY, all);
   dispatchSchedulesChange();
@@ -398,19 +404,21 @@ export function markVisitStageCompleted(studyId, subjectId, stageName) {
   saveVisitProgress(studyId, subjectId, {
     completedStages,
     lastCompletedStage: stageName,
-    pendingNextVisitPrompt: Boolean(getNextVisitStage(stageName))
+    pendingNextVisitPrompt: Boolean(getNextVisitStage(stageName)),
   });
 }
 
 export function clearNextVisitPrompt(studyId, subjectId) {
   saveVisitProgress(studyId, subjectId, {
-    pendingNextVisitPrompt: false
+    pendingNextVisitPrompt: false,
   });
 }
 
 export function shouldPromptNextVisit(studyId, subjectId) {
   const progress = getVisitProgress(studyId, subjectId);
-  return Boolean(progress.pendingNextVisitPrompt && progress.lastCompletedStage);
+  return Boolean(
+    progress.pendingNextVisitPrompt && progress.lastCompletedStage,
+  );
 }
 
 export function buildSchedulesFromSubjects() {
@@ -432,7 +440,7 @@ export function buildSchedulesFromSubjects() {
             .toLowerCase()
             .includes("screen")
             ? "Scheduled"
-            : "Completed"
+            : "Completed",
         });
 
         if (entry) {
@@ -447,7 +455,7 @@ export function buildSchedulesFromSubjects() {
           visit: "Enrollment",
           date: details.enrollmentDate || subject.enrollmentDate,
           status: "Completed",
-          source: "subject"
+          source: "subject",
         });
 
         if (entry) {
@@ -456,21 +464,21 @@ export function buildSchedulesFromSubjects() {
       }
 
       readSubjectVisits(subjectId).forEach((visit) => {
-  const entry = createScheduleEntry({
-    studyKey,
-    subject: { ...subject, ...details },
-    visit: visit.name,
-    // FIX: support all possible date fields
-    date:
-      visit.plannedDate ||
-      visit.actualDate ||
-      visit.date ||
-      visit.visitDate ||
-      "",
-    status: visit.status || "Scheduled",
-    time: visit.time || "09:00 AM",
-    source: "visit-record"
-  });
+        const entry = createScheduleEntry({
+          studyKey,
+          subject: { ...subject, ...details },
+          visit: visit.name,
+          // FIX: support all possible date fields
+          date:
+            visit.plannedDate ||
+            visit.actualDate ||
+            visit.date ||
+            visit.visitDate ||
+            "",
+          status: visit.status || "Scheduled",
+          time: visit.time || "09:00 AM",
+          source: "visit-record",
+        });
         if (entry) {
           generated.push(entry);
         }
@@ -496,7 +504,7 @@ export function syncSubjectSchedules(studyId, subjectId, subject = {}) {
       studyKey: studyId,
       subject: mergedSubject,
       visit: mergedSubject.currentVisit || "Screening",
-      date: mergedSubject.screeningDate
+      date: mergedSubject.screeningDate,
     });
 
     if (entry) {
@@ -511,7 +519,7 @@ export function syncSubjectSchedules(studyId, subjectId, subject = {}) {
       visit: "Enrollment",
       date: mergedSubject.enrollmentDate,
       status: "Completed",
-      source: "subject"
+      source: "subject",
     });
 
     if (entry) {
@@ -520,20 +528,20 @@ export function syncSubjectSchedules(studyId, subjectId, subject = {}) {
   }
 
   readSubjectVisits(subjectId).forEach((visit) => {
-  const entry = createScheduleEntry({
-    studyKey: studyId,
-    subject: mergedSubject,
-    visit: visit.name,
-    date: visit.plannedDate || visit.actualDate,
-    status: visit.status || "Scheduled",
-    time: visit.time || "09:00 AM",
-    source: "visit-record"
-  });
+    const entry = createScheduleEntry({
+      studyKey: studyId,
+      subject: mergedSubject,
+      visit: visit.name,
+      date: visit.plannedDate || visit.actualDate,
+      status: visit.status || "Scheduled",
+      time: visit.time || "09:00 AM",
+      source: "visit-record",
+    });
 
-  if (entry) {
-    generated.push(entry);
-  }
-});
+    if (entry) {
+      generated.push(entry);
+    }
+  });
   const existing = readJson(SCHEDULES_STORAGE_KEY, []);
   const subjectPrefix = `${studyId}::${subjectId}::`;
   const manualEntries = existing.filter(
@@ -543,7 +551,7 @@ export function syncSubjectSchedules(studyId, subjectId, subject = {}) {
         String(item.subjectId) === String(subjectId) &&
         String(item.study || item.studyKey) === String(studyId) &&
         item.source !== "manual"
-      )
+      ),
   );
 
   saveSchedules([...manualEntries, ...generated]);
@@ -556,7 +564,7 @@ export function addOrUpdateVisitSchedule({
   visitName,
   date,
   time = "09:00 AM",
-  status = "Scheduled"
+  status = "Scheduled",
 }) {
   const entry = createScheduleEntry({
     studyKey: studyId,
@@ -565,7 +573,7 @@ export function addOrUpdateVisitSchedule({
     date,
     time,
     status,
-    source: "manual"
+    source: "manual",
   });
 
   if (!entry) {
@@ -584,7 +592,9 @@ export function addOrUpdateVisitSchedule({
   // markers for the same rescheduled visit.
   const normalizedStudy = String(studyId || "").trim();
   const normalizedSubject = String(subjectId || "").trim();
-  const normalizedVisit = String(visitName || "").trim().toLowerCase();
+  const normalizedVisit = String(visitName || "")
+    .trim()
+    .toLowerCase();
 
   const matchesReschedule = (item) => {
     if (item.id === entry.id) {
@@ -596,7 +606,9 @@ export function addOrUpdateVisitSchedule({
     const sameSubject =
       String(item.subjectId || "").trim() === normalizedSubject;
     const sameVisit =
-      String(item.visit || "").trim().toLowerCase() === normalizedVisit;
+      String(item.visit || "")
+        .trim()
+        .toLowerCase() === normalizedVisit;
 
     return sameStudy && sameSubject && sameVisit;
   };
@@ -623,7 +635,12 @@ export function addOrUpdateVisitSchedule({
   return entry;
 }
 
-export function saveNextVisitDetails(studyId, subjectId, details, subject = {}) {
+export function saveNextVisitDetails(
+  studyId,
+  subjectId,
+  details,
+  subject = {},
+) {
   const nextStage =
     details.visitName ||
     getNextVisitStage(getVisitProgress(studyId, subjectId).lastCompletedStage);
@@ -639,11 +656,17 @@ export function saveNextVisitDetails(studyId, subjectId, details, subject = {}) 
   // "rescheduled", which caused buildSchedulesFromSubjects() to emit two
   // calendar entries (old date + new date) for the same logical visit.
   const visits = readSubjectVisits(subjectId);
-  const normalizedNextStage = String(nextStage || "").trim().toLowerCase();
+  const normalizedNextStage = String(nextStage || "")
+    .trim()
+    .toLowerCase();
   const existingVisitIndex = visits.findIndex(
-    (v) => String(v.name || "").trim().toLowerCase() === normalizedNextStage
+    (v) =>
+      String(v.name || "")
+        .trim()
+        .toLowerCase() === normalizedNextStage,
   );
-  const existingVisit = existingVisitIndex >= 0 ? visits[existingVisitIndex] : null;
+  const existingVisit =
+    existingVisitIndex >= 0 ? visits[existingVisitIndex] : null;
 
   const visitRecord = {
     id: existingVisit?.id || Date.now(),
@@ -651,7 +674,7 @@ export function saveNextVisitDetails(studyId, subjectId, details, subject = {}) 
     plannedDate: details.date,
     actualDate: existingVisit?.actualDate || "",
     status: details.status || "Scheduled",
-    time: details.time || "09:00 AM"
+    time: details.time || "09:00 AM",
   };
 
   const updatedVisits =
@@ -667,7 +690,7 @@ export function saveNextVisitDetails(studyId, subjectId, details, subject = {}) 
     visitName: nextStage,
     date: details.date,
     time: details.time,
-    status: details.status
+    status: details.status,
   });
 }
 
@@ -676,7 +699,7 @@ export function rebuildSchedulesFromSubjects() {
   const existing = readJson(SCHEDULES_STORAGE_KEY, []);
   const generatedIds = new Set(generated.map((item) => item.id));
   const legacyManual = existing.filter(
-    (item) => !item.id || !generatedIds.has(item.id)
+    (item) => !item.id || !generatedIds.has(item.id),
   );
 
   const merged = [...legacyManual];
@@ -750,7 +773,7 @@ function matchesHeaderFilters(schedule, filters, studyMap) {
 
 export function getMergedSchedules(user = getCurrentUser()) {
   const schedules = filterCalendarSchedules(
-    readJson(SCHEDULES_STORAGE_KEY, [])
+    readJson(SCHEDULES_STORAGE_KEY, []),
   );
 
   // TEMPORARY: return all schedules for debugging
@@ -773,11 +796,15 @@ export function getFilteredSchedules(user = getCurrentUser(), options = {}) {
   const studyMap = getStudyMap();
 
   return schedules.filter((schedule) =>
-    matchesHeaderFilters(schedule, filters, studyMap)
+    matchesHeaderFilters(schedule, filters, studyMap),
   );
 }
 
-export function getUpcomingVisitsForDate(schedules, date, referenceDate = new Date()) {
+export function getUpcomingVisitsForDate(
+  schedules,
+  date,
+  referenceDate = new Date(),
+) {
   const targetDate = getCalendarDateKey(date);
 
   if (!targetDate) {
@@ -792,7 +819,7 @@ export function getUpcomingVisitsForDate(schedules, date, referenceDate = new Da
         // completed) events. The active-view check is applied first,
         // then the "on this date" match.
         isUpcomingVisitSchedule(item, referenceDate) &&
-        getCalendarDateKey(item.date) === targetDate
+        getCalendarDateKey(item.date) === targetDate,
     )
     .sort(compareScheduleDates)
     .map((item) => ({
@@ -802,7 +829,7 @@ export function getUpcomingVisitsForDate(schedules, date, referenceDate = new Da
       date: item.date,
       status: item.status,
       study: item.study,
-      site: item.site
+      site: item.site,
     }));
 }
 
@@ -817,14 +844,14 @@ export function mapScheduleToTableRow(item) {
     date: item.date,
     status: item.status || "Scheduled",
     study: item.study || item.studyKey || "—",
-    site: item.site || "—"
+    site: item.site || "—",
   };
 }
 
 export function getUpcomingVisitsWindow(
   schedules,
   daysAhead = 7,
-  referenceDate = new Date()
+  referenceDate = new Date(),
 ) {
   const startKey = getCalendarDateKey(referenceDate);
 
@@ -843,17 +870,11 @@ export function getUpcomingVisitsWindow(
       // predicate so the Upcoming Visits list vocabulary matches the
       // calendar view. Past-date exclusion is enforced by the window
       // bounds below (startValue = today).
-      if (
-        !Number.isFinite(visitValue) ||
-        isInactiveVisitSchedule(item)
-      ) {
+      if (!Number.isFinite(visitValue) || isInactiveVisitSchedule(item)) {
         return false;
       }
 
-      return (
-        visitValue >= startValue &&
-        visitValue <= endValue
-      );
+      return visitValue >= startValue && visitValue <= endValue;
     })
     .sort(compareScheduleDates)
     .map(mapScheduleToTableRow);

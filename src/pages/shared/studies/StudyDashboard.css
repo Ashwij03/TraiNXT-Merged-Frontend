@@ -62,7 +62,10 @@
 
   cursor: pointer;
 
-  transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .study-dashboard-page .page-header .back-to-studies-btn:hover {
@@ -216,7 +219,10 @@
   letter-spacing: 0.01em;
 
   cursor: pointer;
-  transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .study-dashboard-page .page-header .study-header-kpi-btn:hover {
@@ -263,7 +269,6 @@
   margin-bottom: 24px;
 }
 
-
 .study-dashboard-subjects-section .study-subjects-container {
   background: #ffffff;
   border-radius: 12px;
@@ -294,7 +299,7 @@
 
   cursor: pointer;
 
-  transition: .25s;
+  transition: 0.25s;
 }
 
 .edit-study-btn:hover {
@@ -325,7 +330,7 @@
 
   cursor: pointer;
 
-  transition: .25s;
+  transition: 0.25s;
 }
 
 .delete-study-btn:hover {
@@ -668,12 +673,12 @@ RESPONSIVE
     flex-direction: column;
   }
 
-.edit-study-btn,
-.delete-study-btn,
-.request-permission-btn{
-    width:100%;
-    justify-content:center;
-}
+  .edit-study-btn,
+  .delete-study-btn,
+  .request-permission-btn {
+    width: 100%;
+    justify-content: center;
+  }
 
   .study-dashboard-page .page-header-title-row {
     flex-direction: column;
@@ -765,7 +770,9 @@ RESPONSIVE
 
 .study-widget-clickable {
   cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .study-widget-clickable:hover {

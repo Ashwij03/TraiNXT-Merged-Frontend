@@ -4,7 +4,8 @@ import ROLES from "../../constants/roles";
 import useLiveChatNavigation from "../../hooks/useLiveChatNavigation";
 
 function AdminLiveChat() {
-  const { returnFromLiveChat, backLabel } = useLiveChatNavigation("/admin-livechat");
+  const { returnFromLiveChat, backLabel } =
+    useLiveChatNavigation("/admin-livechat");
 
   return (
     <AdminDashboardLayout>

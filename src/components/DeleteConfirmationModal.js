@@ -6,7 +6,7 @@ export default function DeleteConfirmationModal({
   onConfirm,
   title = "Delete Item",
   message = "Are you sure you want to delete this item?",
-  itemType = "item"
+  itemType = "item",
 }) {
   const [confirmed, setConfirmed] = useState(false);
   const [reason, setReason] = useState("");
@@ -36,7 +36,7 @@ export default function DeleteConfirmationModal({
     if (validateForm()) {
       onConfirm({
         reason: reason.trim(),
-        deletedBy: deletedBy.trim()
+        deletedBy: deletedBy.trim(),
       });
     }
   };
@@ -65,9 +65,7 @@ export default function DeleteConfirmationModal({
             </label>
             <textarea
               id="reason"
-              className={`delete-textarea ${
-                errors.reason ? "error" : ""
-              }`}
+              className={`delete-textarea ${errors.reason ? "error" : ""}`}
               placeholder={`Please provide a detailed reason for deleting this ${itemType}...`}
               value={reason}
               onChange={(e) => {
@@ -90,9 +88,7 @@ export default function DeleteConfirmationModal({
             <input
               id="deletedBy"
               type="text"
-              className={`delete-input ${
-                errors.deletedBy ? "error" : ""
-              }`}
+              className={`delete-input ${errors.deletedBy ? "error" : ""}`}
               placeholder="Enter your full name"
               value={deletedBy}
               onChange={(e) => {
@@ -129,11 +125,7 @@ export default function DeleteConfirmationModal({
         </div>
 
         <div className="delete-modal-actions">
-          <button
-            type="button"
-            className="delete-cancel-btn"
-            onClick={onClose}
-          >
+          <button type="button" className="delete-cancel-btn" onClick={onClose}>
             Cancel
           </button>
           <button

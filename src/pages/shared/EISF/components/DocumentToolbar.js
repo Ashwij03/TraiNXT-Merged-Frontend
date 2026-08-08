@@ -1,15 +1,9 @@
 import "./DocumentToolbar.css";
 
-export default function DocumentToolbar({
-  search,
-  onSearch,
-  onUpload
-}) {
+export default function DocumentToolbar({ search, onSearch, onUpload }) {
   return (
     <div className="document-toolbar">
-
       <div className="toolbar-left">
-
         <input
           type="text"
           placeholder="Search documents..."
@@ -32,24 +26,15 @@ export default function DocumentToolbar({
           <option>CV</option>
           <option>Training</option>
         </select>
-
       </div>
 
       <div className="toolbar-right">
+        <button className="reset-btn">Reset</button>
 
-        <button className="reset-btn">
-          Reset
-        </button>
-
-        <button
-          className="upload-btn"
-          onClick={onUpload}
-        >
+        <button className="upload-btn" onClick={onUpload}>
           + Upload Document
         </button>
-
       </div>
-
     </div>
   );
 }

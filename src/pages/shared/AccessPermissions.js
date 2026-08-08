@@ -28,10 +28,7 @@ function StatusPill({ status }) {
     className += " active";
   } else if (normalized === "pending") {
     className += " pending";
-  } else if (
-    normalized === "revoked" ||
-    normalized === "rejected"
-  ) {
+  } else if (normalized === "revoked" || normalized === "rejected") {
     className += " revoked";
   } else {
     className += " inactive";
@@ -128,13 +125,9 @@ function AccessPermissions() {
     action: request.action || request.accessType || "—",
     module: request.module || "General",
     record:
-      request.recordName ||
-      request.recordId ||
-      request.studySubject ||
-      "—",
+      request.recordName || request.recordId || request.studySubject || "—",
     reason: request.reason || "—",
-    requestedOn:
-      request.requestedOn || request.timestamp?.slice(0, 10),
+    requestedOn: request.requestedOn || request.timestamp?.slice(0, 10),
     actions: (
       <>
         <button
@@ -163,17 +156,10 @@ function AccessPermissions() {
     action: request.action || request.accessType || "—",
     module: request.module || "General",
     record:
-      request.recordName ||
-      request.recordId ||
-      request.studySubject ||
-      "—",
-    requestedOn:
-      request.requestedOn || request.timestamp?.slice(0, 10),
+      request.recordName || request.recordId || request.studySubject || "—",
+    requestedOn: request.requestedOn || request.timestamp?.slice(0, 10),
     status: <StatusPill status={request.status || "Pending"} />,
-    resolvedOn:
-      request.resolvedOn?.slice?.(0, 10) ||
-      request.resolvedOn ||
-      "—",
+    resolvedOn: request.resolvedOn?.slice?.(0, 10) || request.resolvedOn || "—",
   }));
 
   const signupData = pendingSignupRequests.map((user) => ({
@@ -229,9 +215,7 @@ function AccessPermissions() {
             onClick={() => setActiveTab("pending")}
           >
             Pending Requests
-            <span className="access-tab-badge">
-              {pendingRequests.length}
-            </span>
+            <span className="access-tab-badge">{pendingRequests.length}</span>
           </button>
 
           <button
@@ -240,9 +224,7 @@ function AccessPermissions() {
             onClick={() => setActiveTab("history")}
           >
             Request History
-            <span className="access-tab-badge">
-              {requestHistory.length}
-            </span>
+            <span className="access-tab-badge">{requestHistory.length}</span>
           </button>
         </div>
 

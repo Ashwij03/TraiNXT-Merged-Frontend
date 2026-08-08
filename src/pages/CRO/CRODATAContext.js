@@ -13,7 +13,7 @@ import { getCurrentUser } from "../../services/roleService";
 import {
   getFilteredSchedules,
   getUpcomingVisitsWindow,
-  SCHEDULES_EVENT
+  SCHEDULES_EVENT,
 } from "../../services/visitScheduleService";
 import { useComments } from "../../comments/CommentsContext";
 
@@ -81,7 +81,7 @@ function getSharedVisits() {
       study: schedule.study || schedule.studyKey || "",
       studyCode: schedule.study || schedule.studyKey || "",
       date: schedule.date,
-      status: schedule.status || "Scheduled"
+      status: schedule.status || "Scheduled",
     }));
   } catch {
     return [];
@@ -210,7 +210,7 @@ export const CROProvider = ({ children }) => {
         study: newComment.study || newComment.studyCode || "",
         stage: "Monitoring",
       },
-      user
+      user,
     );
   }, []);
 

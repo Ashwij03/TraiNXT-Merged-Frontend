@@ -10,18 +10,24 @@ import "./AdminPage.css";
 
 function Recruitment() {
   const recruitment = getRecruitment();
-  const totalScreened = recruitment.reduce((sum, item) => sum + item.screened, 0);
-  const totalEnrolled = recruitment.reduce((sum, item) => sum + item.enrolled, 0);
+  const totalScreened = recruitment.reduce(
+    (sum, item) => sum + item.screened,
+    0,
+  );
+  const totalEnrolled = recruitment.reduce(
+    (sum, item) => sum + item.enrolled,
+    0,
+  );
   const avgConversion = recruitment.length
     ? Math.round(
         recruitment.reduce((sum, item) => sum + item.conversionRate, 0) /
-          recruitment.length
+          recruitment.length,
       )
     : 0;
 
   const chartData = recruitment.map((item) => ({
     name: item.source,
-    value: item.enrolled
+    value: item.enrolled,
   }));
 
   return (
@@ -66,7 +72,7 @@ function Recruitment() {
               { key: "site", label: "Site" },
               { key: "screened", label: "Screened" },
               { key: "enrolled", label: "Enrolled" },
-              { key: "conversionRate", label: "Conversion %" }
+              { key: "conversionRate", label: "Conversion %" },
             ]}
             data={recruitment}
             pagination

@@ -7,7 +7,7 @@ import {
   getAssignedSite,
   getCurrentUser,
   getStudiesForSite,
-  isAdmin
+  isAdmin,
 } from "./roleService";
 import {
   getStoredCROFilter,
@@ -15,14 +15,14 @@ import {
   getStoredInstitutionFilter,
   getStoredSiteNumberFilter,
   getStoredSponsorFilter,
-  getStoredStudyFilter
+  getStoredStudyFilter,
 } from "../constants/headerFilters";
 
 const DEFAULT_CROS = ["IQVIA", "PPD", "Syneos Health", "TriaNXT CRO"];
 const DEFAULT_SPONSORS = [
   "TriaNXT Research",
   "Abbott Laboratories",
-  "Intercept Pharmaceuticals"
+  "Intercept Pharmaceuticals",
 ];
 
 function readSubjectsByStudy() {
@@ -40,14 +40,14 @@ function normalizeStudy(study) {
     sponsor: study.sponsor || "TriaNXT Research",
     cro: study.cro || "TriaNXT CRO",
     site: study.site || study.location || "",
-    country: study.country || ""
+    country: study.country || "",
   };
 }
 
 function getBaseStudies(user = getCurrentUser()) {
-  const studies = (isAdmin(user) ? getStudies() : getAccessibleStudies(user)).map(
-    normalizeStudy
-  );
+  const studies = (
+    isAdmin(user) ? getStudies() : getAccessibleStudies(user)
+  ).map(normalizeStudy);
 
   return studies;
 }
@@ -56,9 +56,7 @@ function filterStudies(studies, filters, user = getCurrentUser()) {
   let result = studies;
 
   if (filters.indication) {
-    result = result.filter(
-      (study) => study.indication === filters.indication
-    );
+    result = result.filter((study) => study.indication === filters.indication);
   }
 
   if (filters.sponsor) {
@@ -74,7 +72,8 @@ function filterStudies(studies, filters, user = getCurrentUser()) {
   // a Site Number was picked, resolve it back to its institution name via
   // the shared directory before filtering.
   const effectiveInstitution =
-    filters.institution || getInstitutionForSiteNumber(filters.siteNumber, user);
+    filters.institution ||
+    getInstitutionForSiteNumber(filters.siteNumber, user);
 
   if (effectiveInstitution) {
     result = result.filter((study) => {
@@ -89,7 +88,7 @@ function filterStudies(studies, filters, user = getCurrentUser()) {
 
   if (filters.studyCode) {
     result = result.filter(
-      (study) => String(study.code) === String(filters.studyCode)
+      (study) => String(study.code) === String(filters.studyCode),
     );
   }
 
@@ -100,19 +99,25 @@ function filterStudies(studies, filters, user = getCurrentUser()) {
 // versa, using the same stable directory getSiteNumberOptions/
 // getInstitutionOptions are built from. This is what lets selecting either
 // field in the header filter show the correct value in the other.
-export function getInstitutionForSiteNumber(siteNumber, user = getCurrentUser()) {
+export function getInstitutionForSiteNumber(
+  siteNumber,
+  user = getCurrentUser(),
+) {
   if (!siteNumber) {
     return "";
   }
 
   const entry = getSiteNumberDirectory(user).find(
-    (candidate) => String(candidate.number) === String(siteNumber)
+    (candidate) => String(candidate.number) === String(siteNumber),
   );
 
   return entry ? entry.name : "";
 }
 
-export function getSiteNumberForInstitution(institution, user = getCurrentUser()) {
+export function getSiteNumberForInstitution(
+  institution,
+  user = getCurrentUser(),
+) {
   if (!institution) {
     return "";
   }
@@ -122,7 +127,8 @@ export function getSiteNumberForInstitution(institution, user = getCurrentUser()
     directory.find((candidate) => candidate.name === institution) ||
     directory.find(
       (candidate) =>
-        candidate.name.includes(institution) || institution.includes(candidate.name)
+        candidate.name.includes(institution) ||
+        institution.includes(candidate.name),
     );
 
   return entry ? entry.number : "";
@@ -135,13 +141,13 @@ export function getFilterState() {
     cro: getStoredCROFilter(),
     institution: getStoredInstitutionFilter(),
     siteNumber: getStoredSiteNumberFilter(),
-    studyCode: getStoredStudyFilter()
+    studyCode: getStoredStudyFilter(),
   };
 }
 
 export function getIndicationOptions(user = getCurrentUser()) {
   const indications = [
-    ...new Set(getBaseStudies(user).map((study) => study.indication))
+    ...new Set(getBaseStudies(user).map((study) => study.indication)),
   ];
 
   return indications.sort().map((value) => ({ value, label: value }));
@@ -151,8 +157,10 @@ export function getSponsorOptions(user = getCurrentUser()) {
   const filters = getFilterState();
   const fromStudies = [
     ...new Set(
-      filterStudies(getBaseStudies(user), filters).map((study) => study.sponsor)
-    )
+      filterStudies(getBaseStudies(user), filters).map(
+        (study) => study.sponsor,
+      ),
+    ),
   ];
   const merged = [...new Set([...fromStudies, ...DEFAULT_SPONSORS])];
 
@@ -163,8 +171,8 @@ export function getCROOptions(user = getCurrentUser()) {
   const filters = getFilterState();
   const fromStudies = [
     ...new Set(
-      filterStudies(getBaseStudies(user), filters).map((study) => study.cro)
-    )
+      filterStudies(getBaseStudies(user), filters).map((study) => study.cro),
+    ),
   ];
   const merged = [...new Set([...fromStudies, ...DEFAULT_CROS])];
 
@@ -181,14 +189,16 @@ export function getRecruitedCROOptions(user = getCurrentUser()) {
           (study) =>
             study.sponsor === sponsorName &&
             study.cro &&
-            study.cro !== "TriaNXT CRO"
+            study.cro !== "TriaNXT CRO",
         )
-        .map((study) => study.cro)
-    )
+        .map((study) => study.cro),
+    ),
   ];
 
   try {
-    const stored = JSON.parse(localStorage.getItem("sponsorRecruitedCROs") || "[]");
+    const stored = JSON.parse(
+      localStorage.getItem("sponsorRecruitedCROs") || "[]",
+    );
     stored.forEach((cro) => {
       if (cro && !recruited.includes(cro)) {
         recruited.push(cro);
@@ -218,14 +228,16 @@ function getIndicationScopedSiteNames(user, indication) {
     getBaseStudies(user)
       .filter((study) => study.indication === indication)
       .map((study) => study.site)
-      .filter(Boolean)
+      .filter(Boolean),
   );
 }
 
 export function getInstitutionOptions(user = getCurrentUser()) {
   const filters = getFilterState();
   const studies = filterStudies(getBaseStudies(user), filters, user);
-  const studySites = [...new Set(studies.map((study) => study.site).filter(Boolean))];
+  const studySites = [
+    ...new Set(studies.map((study) => study.site).filter(Boolean)),
+  ];
   const accessibleSites = getAccessibleSites(user).map((site) => site.name);
 
   // Task 9 (Header Site Filters Bug): this list must always show every
@@ -238,19 +250,22 @@ export function getInstitutionOptions(user = getCurrentUser()) {
   let merged = [...new Set([...studySites, ...accessibleSites])];
 
   // Task: Header Indication Site Scoping (see helper above).
-  const indicationSites = getIndicationScopedSiteNames(user, filters.indication);
+  const indicationSites = getIndicationScopedSiteNames(
+    user,
+    filters.indication,
+  );
 
   if (indicationSites) {
     merged = merged.filter((site) => indicationSites.has(site));
   }
 
   merged = merged.sort((a, b) =>
-    a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })
+    a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }),
   );
 
   return [
     { value: "", label: "All Institutions" },
-    ...merged.map((value) => ({ value, label: value }))
+    ...merged.map((value) => ({ value, label: value })),
   ];
 }
 
@@ -272,17 +287,17 @@ export function getSiteNumberDirectory(user = getCurrentUser()) {
     .filter(Boolean);
 
   const siteNames = [
-    ...new Set([...studySiteNames, ...accessibleSiteNames])
+    ...new Set([...studySiteNames, ...accessibleSiteNames]),
   ].sort((a, b) =>
-    a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })
+    a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }),
   );
 
   return siteNames.map((name, index) => {
     const matchedStudy = studies.find(
-      (study) => study.site === name && (study.siteNumber || study.siteNo)
+      (study) => study.site === name && (study.siteNumber || study.siteNo),
     );
     const matchedAccessibleSite = accessibleSites.find(
-      (site) => site.name === name && (site.siteNumber || site.id)
+      (site) => site.name === name && (site.siteNumber || site.id),
     );
 
     const number =
@@ -314,7 +329,10 @@ export function getSiteNumberOptions(user = getCurrentUser()) {
   // in getInstitutionOptions above) — once an Indication is selected, only
   // list Site Numbers whose Site Name actually runs a study under it.
   const filters = getFilterState();
-  const indicationSites = getIndicationScopedSiteNames(user, filters.indication);
+  const indicationSites = getIndicationScopedSiteNames(
+    user,
+    filters.indication,
+  );
   const scopedDirectory = indicationSites
     ? directory.filter((entry) => indicationSites.has(entry.name))
     : directory;
@@ -324,14 +342,14 @@ export function getSiteNumberOptions(user = getCurrentUser()) {
     ...scopedDirectory
       .map((entry) => ({
         value: entry.number,
-        label: entry.number
+        label: entry.number,
       }))
       .sort((a, b) =>
         String(a.value).localeCompare(String(b.value), undefined, {
           numeric: true,
-          sensitivity: "base"
-        })
-      )
+          sensitivity: "base",
+        }),
+      ),
   ];
 }
 
@@ -345,7 +363,8 @@ export function getStudyOptions(user = getCurrentUser()) {
   // eventual set of studies once a site is picked (see filterStudies
   // below), same as before.
   const effectiveInstitution =
-    filters.institution || getInstitutionForSiteNumber(filters.siteNumber, user);
+    filters.institution ||
+    getInstitutionForSiteNumber(filters.siteNumber, user);
 
   if (!effectiveInstitution) {
     return [];
@@ -362,12 +381,12 @@ export function getStudyOptions(user = getCurrentUser()) {
     .sort((a, b) =>
       String(a.code).localeCompare(String(b.code), undefined, {
         numeric: true,
-        sensitivity: "base"
-      })
+        sensitivity: "base",
+      }),
     )
     .map((study) => ({
       value: study.code,
-      label: study.code
+      label: study.code,
     }));
 }
 
@@ -379,7 +398,8 @@ export function getSubjectOptions(user = getCurrentUser()) {
   // selected in the header. Indication/Sponsor/CRO alone are not enough,
   // and neither is a site on its own without a Study picked too.
   const effectiveInstitution =
-    filters.institution || getInstitutionForSiteNumber(filters.siteNumber, user);
+    filters.institution ||
+    getInstitutionForSiteNumber(filters.siteNumber, user);
 
   if (!effectiveInstitution || !filters.studyCode) {
     return [];
@@ -389,27 +409,29 @@ export function getSubjectOptions(user = getCurrentUser()) {
   const studyCodes = new Set(studies.map((study) => String(study.code)));
   const subjectsByStudy = readSubjectsByStudy();
 
-  const subjects = Object.entries(subjectsByStudy).flatMap(([studyKey, list]) => {
-    if (String(studyKey) !== String(filters.studyCode)) {
-      return [];
-    }
+  const subjects = Object.entries(subjectsByStudy).flatMap(
+    ([studyKey, list]) => {
+      if (String(studyKey) !== String(filters.studyCode)) {
+        return [];
+      }
 
-    if (studyCodes.size && !studyCodes.has(String(studyKey))) {
-      return [];
-    }
+      if (studyCodes.size && !studyCodes.has(String(studyKey))) {
+        return [];
+      }
 
-    return (Array.isArray(list) ? list : []).map((subject) => ({
-      value: String(subject.subjectId || subject.id),
-      label: String(subject.subjectId || subject.id),
-      studyKey
-    }));
-  });
+      return (Array.isArray(list) ? list : []).map((subject) => ({
+        value: String(subject.subjectId || subject.id),
+        label: String(subject.subjectId || subject.id),
+        studyKey,
+      }));
+    },
+  );
 
   return subjects.sort((a, b) =>
     String(a.label).localeCompare(String(b.label), undefined, {
       numeric: true,
-      sensitivity: "base"
-    })
+      sensitivity: "base",
+    }),
   );
 }
 
@@ -418,9 +440,5 @@ export function getDefaultInstitution(user = getCurrentUser()) {
 }
 
 export function getFilteredStudies(user = getCurrentUser()) {
-    return filterStudies(
-        getBaseStudies(user),
-        getFilterState(),
-        user
-    );
+  return filterStudies(getBaseStudies(user), getFilterState(), user);
 }

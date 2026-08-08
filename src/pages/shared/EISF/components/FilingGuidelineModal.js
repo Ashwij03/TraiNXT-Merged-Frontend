@@ -32,7 +32,9 @@ export default function FilingGuidelineModal({
       >
         <div className="filing-guideline-header">
           <div>
-            <span>{moduleConfig?.id} {moduleConfig?.title}</span>
+            <span>
+              {moduleConfig?.id} {moduleConfig?.title}
+            </span>
             <h3 id="filing-guideline-title">Filing Guidelines</h3>
           </div>
 
@@ -47,7 +49,9 @@ export default function FilingGuidelineModal({
         </div>
 
         <div className="filing-guideline-body">
-          <h4>{section.id} {section.title}</h4>
+          <h4>
+            {section.id} {section.title}
+          </h4>
           <p>{section.description}</p>
 
           <ul>

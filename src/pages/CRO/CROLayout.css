@@ -1,4 +1,3 @@
-
 /* CRO layout shell */
 .cro-layout {
   display: flex;
@@ -181,7 +180,9 @@
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
+  transition:
+    background 0.2s,
+    transform 0.2s;
 }
 
 .cro-btn-primary:hover,
@@ -257,55 +258,55 @@
 }
 /* ===== CRO PAGE LAYOUT FIX ===== */
 
-.cro-page-content{
-    padding:18px 20px !important;
-    display:block !important;
+.cro-page-content {
+  padding: 18px 20px !important;
+  display: block !important;
 }
 
-.cro-page-content > h1{
-    margin:0 0 14px !important;
+.cro-page-content > h1 {
+  margin: 0 0 14px !important;
 }
 
-.cro-page-content > .cro-stats-grid{
-    margin:0 0 14px !important;
+.cro-page-content > .cro-stats-grid {
+  margin: 0 0 14px !important;
 }
 
-.cro-page-content > .cro-panel{
-    margin:0 !important;
+.cro-page-content > .cro-panel {
+  margin: 0 !important;
 }
 /* ===== CRO Subject Page Spacing ===== */
 
-.cro-page-content{
-    display: flex;
-    flex-direction: column;
-    gap: 12px !important;
-    padding: 16px 18px !important;
+.cro-page-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px !important;
+  padding: 16px 18px !important;
 }
 
 /* Subject Management heading */
-.cro-page-content > h1{
-    margin: 0 0 4px 0 !important;
-    font-size: clamp(28px, 2vw, 36px);
-    line-height: 1.2;
+.cro-page-content > h1 {
+  margin: 0 0 4px 0 !important;
+  font-size: clamp(28px, 2vw, 36px);
+  line-height: 1.2;
 }
 
 /* KPI cards */
-.cro-stats-grid{
-    margin: 0 !important;
-    gap: 14px;
+.cro-stats-grid {
+  margin: 0 !important;
+  gap: 14px;
 }
 
 /* Table panel */
-.cro-panel{
-    margin: 0 !important;
+.cro-panel {
+  margin: 0 !important;
 }
 
 /* Subjects List title */
-.cro-section-title{
-    margin: 0 0 8px !important;
+.cro-section-title {
+  margin: 0 0 8px !important;
 }
 
 /* Search/filter row */
-.cro-panel-header{
-    margin: 0 0 10px !important;
+.cro-panel-header {
+  margin: 0 0 10px !important;
 }

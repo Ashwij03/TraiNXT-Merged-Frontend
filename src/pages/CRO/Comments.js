@@ -96,7 +96,12 @@ export default function CommentsPage() {
             style={{ marginBottom: "16px", padding: "8px", width: "100%" }}
           />
 
-          <table className="ctms-standard-table" border="1" cellPadding="10" width="100%">
+          <table
+            className="ctms-standard-table"
+            border="1"
+            cellPadding="10"
+            width="100%"
+          >
             <thead>
               <tr>
                 <th>ID</th>
@@ -125,7 +130,9 @@ export default function CommentsPage() {
                     <td>{comment.comment}</td>
                     <td>{comment.createdBy}</td>
                     <td>
-                      {comment.status === "resolved" ? "✅ Resolved" : "❗ Unresolved"}
+                      {comment.status === "resolved"
+                        ? "✅ Resolved"
+                        : "❗ Unresolved"}
                     </td>
                   </tr>
                 ))

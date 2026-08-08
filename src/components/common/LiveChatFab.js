@@ -16,7 +16,7 @@ function LiveChatFab({ liveChatPath }) {
   const { openLiveChat } = useLiveChatNavigation(liveChatPath);
 
   const isLiveChatRoute = LIVE_CHAT_ROUTE_SUFFIXES.some((suffix) =>
-    location.pathname.endsWith(suffix)
+    location.pathname.endsWith(suffix),
   );
 
   if (!liveChatPath || isLiveChatRoute) {

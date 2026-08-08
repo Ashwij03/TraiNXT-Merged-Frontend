@@ -18,7 +18,6 @@ export default function Visit1Baseline() {
   });
 
   return (
-    
     <div
       style={{
         display: "flex",
@@ -86,10 +85,7 @@ export default function Visit1Baseline() {
           <span>Adverse Events</span>
         </div>
 
-        <div
-          style={menuStyle("bmi")}
-          onClick={() => setActiveProcedure("bmi")}
-        >
+        <div style={menuStyle("bmi")} onClick={() => setActiveProcedure("bmi")}>
           <span></span>
           <span>Ht/Wt/BMI (ins/lbs)</span>
         </div>
@@ -115,16 +111,16 @@ export default function Visit1Baseline() {
           {activeProcedure === "demographics"
             ? "Demographics"
             : activeProcedure === "exclusion"
-            ? "Exclusion Criteria"
-            : activeProcedure === "medical"
-            ? "Medical History"
-            : activeProcedure === "surgical"
-            ? "Surgical History"
-            : activeProcedure === "adverse"
-            ? "Adverse Events"
-            : activeProcedure === "bmi"
-            ? "Ht/Wt/BMI (ins/lbs)"
-            : "Inclusion Criteria"}
+              ? "Exclusion Criteria"
+              : activeProcedure === "medical"
+                ? "Medical History"
+                : activeProcedure === "surgical"
+                  ? "Surgical History"
+                  : activeProcedure === "adverse"
+                    ? "Adverse Events"
+                    : activeProcedure === "bmi"
+                      ? "Ht/Wt/BMI (ins/lbs)"
+                      : "Inclusion Criteria"}
         </div>
 
         {/* BODY */}
@@ -144,7 +140,6 @@ export default function Visit1Baseline() {
                   1. INCLUSION CRITERIA
                 </strong>{" "}
                 — Yes
-
                 <div
                   style={{
                     fontSize: "14px",
@@ -313,9 +308,7 @@ export default function Visit1Baseline() {
           )}
 
           {/* ADVERSE */}
-          {activeProcedure === "adverse" && (
-            <p>Adverse event details here.</p>
-          )}
+          {activeProcedure === "adverse" && <p>Adverse event details here.</p>}
 
           {/* BMI */}
           {activeProcedure === "bmi" && (

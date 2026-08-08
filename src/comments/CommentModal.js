@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useComments } from "./CommentsContext";
 import { getCurrentUser, getEffectiveRole } from "../services/roleService";
-import { canWriteComments, canResolveComments } from "../services/commentService";
+import {
+  canWriteComments,
+  canResolveComments,
+} from "../services/commentService";
 import "./CommentModal.css";
 
 export default function CommentModal({

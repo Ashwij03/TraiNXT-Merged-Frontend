@@ -50,7 +50,10 @@ function UpcomingVisits() {
       <div className="admin-page upcoming-visits-page">
         <div className="admin-page-title">
           <h1>Upcoming Visits</h1>
-          <p>Full schedule of upcoming subject visits across your accessible studies and sites</p>
+          <p>
+            Full schedule of upcoming subject visits across your accessible
+            studies and sites
+          </p>
         </div>
 
         <div className="admin-kpi-grid">

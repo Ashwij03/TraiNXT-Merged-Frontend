@@ -11,14 +11,14 @@ function AccessRequestForm() {
   const [form, setForm] = useState({
     studySubject: "",
     accessType: "Edit Access",
-    notes: ""
+    notes: "",
   });
 
   const accessTypes = [
     "Edit Access",
     "Restricted Content Access",
     "Document Edit Access",
-    "Study Owner Access"
+    "Study Owner Access",
   ];
 
   const handleChange = (event) => {

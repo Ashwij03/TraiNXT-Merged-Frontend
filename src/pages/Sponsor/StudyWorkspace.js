@@ -6,7 +6,6 @@ import "./SponsorShared.css";
 import StudyFinancials from "./Financials/StudyFinancials";
 import { getPortfolioStudies, getRisks } from "./data/sponsorDataStore";
 
-
 function StudyWorkspace() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -19,7 +18,9 @@ function StudyWorkspace() {
       const studies = getPortfolioStudies();
       const match = studies.find((s) => s.studyId === id);
       setStudy(match || null);
-      setOpenRisks(getRisks().filter((r) => r.study === id && r.status === "Open").length);
+      setOpenRisks(
+        getRisks().filter((r) => r.study === id && r.status === "Open").length,
+      );
     };
     refresh();
     window.addEventListener("sponsor-data-updated", refresh);
@@ -34,7 +35,11 @@ function StudyWorkspace() {
             <h1>Study Not Found</h1>
             <p>Could not load study {id}.</p>
           </div>
-          <button type="button" className="sponsor-btn-primary" onClick={() => navigate("/studies")}>
+          <button
+            type="button"
+            className="sponsor-btn-primary"
+            onClick={() => navigate("/studies")}
+          >
             Back to Studies
           </button>
         </div>
@@ -51,7 +56,9 @@ function StudyWorkspace() {
       <div className="page-container">
         <div className="workspace-header">
           <h1>{study.studyName}</h1>
-          <p>Study ID: {study.studyId} · {study.phase} · {study.status}</p>
+          <p>
+            Study ID: {study.studyId} · {study.phase} · {study.status}
+          </p>
         </div>
 
         <div className="study-kpi-container">
@@ -73,79 +80,79 @@ function StudyWorkspace() {
           </div>
         </div>
 
-   <div className="workspace-tabs">
-  <button
-    type="button"
-    className={activeTab === "overview" ? "active-tab" : ""}
-    onClick={() => setActiveTab("overview")}
-  >
-    Overview
-  </button>
+        <div className="workspace-tabs">
+          <button
+            type="button"
+            className={activeTab === "overview" ? "active-tab" : ""}
+            onClick={() => setActiveTab("overview")}
+          >
+            Overview
+          </button>
 
-  <button
-    type="button"
-    className={activeTab === "details" ? "active-tab" : ""}
-    onClick={() => setActiveTab("details")}
-  >
-    Details
-  </button>
+          <button
+            type="button"
+            className={activeTab === "details" ? "active-tab" : ""}
+            onClick={() => setActiveTab("details")}
+          >
+            Details
+          </button>
 
-  <button
-    type="button"
-    className={activeTab === "planning" ? "active-tab" : ""}
-    onClick={() => setActiveTab("planning")}
-  >
-    Planning
-  </button>
+          <button
+            type="button"
+            className={activeTab === "planning" ? "active-tab" : ""}
+            onClick={() => setActiveTab("planning")}
+          >
+            Planning
+          </button>
 
-  <button
-    type="button"
-    className={activeTab === "visitplan" ? "active-tab" : ""}
-    onClick={() => setActiveTab("visitplan")}
-  >
-    Visit Plan
-  </button>
+          <button
+            type="button"
+            className={activeTab === "visitplan" ? "active-tab" : ""}
+            onClick={() => setActiveTab("visitplan")}
+          >
+            Visit Plan
+          </button>
 
-  <button
-    type="button"
-    className={activeTab === "financials" ? "active-tab" : ""}
-    onClick={() => setActiveTab("financials")}
-  >
-    Financials
-  </button>
+          <button
+            type="button"
+            className={activeTab === "financials" ? "active-tab" : ""}
+            onClick={() => setActiveTab("financials")}
+          >
+            Financials
+          </button>
 
-  <button
-    type="button"
-    className={activeTab === "sites" ? "active-tab" : ""}
-    onClick={() => setActiveTab("sites")}
-  >
-    Clinical Sites
-  </button>
+          <button
+            type="button"
+            className={activeTab === "sites" ? "active-tab" : ""}
+            onClick={() => setActiveTab("sites")}
+          >
+            Clinical Sites
+          </button>
 
-  <button
-    type="button"
-    className={activeTab === "monitoring" ? "active-tab" : ""}
-    onClick={() => setActiveTab("monitoring")}
-  >
-    Monitoring
-  </button>
+          <button
+            type="button"
+            className={activeTab === "monitoring" ? "active-tab" : ""}
+            onClick={() => setActiveTab("monitoring")}
+          >
+            Monitoring
+          </button>
 
-  <button
-    type="button"
-    className={activeTab === "files" ? "active-tab" : ""}
-    onClick={() => setActiveTab("files")}
-  >
-    Files
-  </button>
+          <button
+            type="button"
+            className={activeTab === "files" ? "active-tab" : ""}
+            onClick={() => setActiveTab("files")}
+          >
+            Files
+          </button>
 
-  <button
-    type="button"
-    className={activeTab === "activity" ? "active-tab" : ""}
-    onClick={() => setActiveTab("activity")}
-  >
-    Activity
-  </button>
-</div>
+          <button
+            type="button"
+            className={activeTab === "activity" ? "active-tab" : ""}
+            onClick={() => setActiveTab("activity")}
+          >
+            Activity
+          </button>
+        </div>
 
         {activeTab === "overview" && (
           <div className="workspace-content workspace-card">
@@ -172,24 +179,38 @@ function StudyWorkspace() {
 
         {activeTab === "details" && (
           <div className="workspace-content workspace-card">
-            <p><strong>Study ID:</strong> {study.studyId}</p>
-            <p><strong>Phase:</strong> {study.phase}</p>
-            <p><strong>Status:</strong> {study.status}</p>
-            <p><strong>CRO:</strong> {study.cro}</p>
-            <p><strong>Sites:</strong> {study.sites}</p>
-            <p><strong>Therapeutic Area:</strong> {study.therapeuticArea}</p>
+            <p>
+              <strong>Study ID:</strong> {study.studyId}
+            </p>
+            <p>
+              <strong>Phase:</strong> {study.phase}
+            </p>
+            <p>
+              <strong>Status:</strong> {study.status}
+            </p>
+            <p>
+              <strong>CRO:</strong> {study.cro}
+            </p>
+            <p>
+              <strong>Sites:</strong> {study.sites}
+            </p>
+            <p>
+              <strong>Therapeutic Area:</strong> {study.therapeuticArea}
+            </p>
           </div>
         )}
 
         {activeTab === "enrollment" && (
           <div className="workspace-content workspace-card">
-            <p><strong>Enrolled:</strong> {study.enrolled} / {study.target}</p>
-            <p><strong>Progress:</strong> {enrollmentRate}%</p>
+            <p>
+              <strong>Enrolled:</strong> {study.enrolled} / {study.target}
+            </p>
+            <p>
+              <strong>Progress:</strong> {enrollmentRate}%
+            </p>
           </div>
         )}
-        {activeTab === "financials" && (
-  <StudyFinancials study={study} />
-)}
+        {activeTab === "financials" && <StudyFinancials study={study} />}
       </div>
     </AppLayout>
   );

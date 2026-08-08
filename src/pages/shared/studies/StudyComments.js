@@ -34,9 +34,7 @@ function StudyComments() {
   // authorized → study filter → search/filter → table
   const comments = useMemo(() => {
     let result = liveComments
-      .filter((comment) =>
-        canViewComment(comment, currentUser, study?.status),
-      )
+      .filter((comment) => canViewComment(comment, currentUser, study?.status))
       .filter(
         (comment) => !studyCode || String(comment.study) === String(studyCode),
       );
@@ -67,39 +65,39 @@ function StudyComments() {
     }
 
     return result.map((comment) => ({
-        id: `C-${String(comment.id).slice(-6)}`,
-        studyId: comment.study || studyCode || "—",
-        subjectDocument: comment.documentDeleted
-          ? `${comment.subjectId} / ${comment.document || "Deleted document"}`
-          : comment.document
-            ? `${comment.subjectId} / ${comment.document}`
-            : comment.subjectId,
-        comment: (
-          <div
-            style={{
-              whiteSpace: "normal",
-              wordBreak: "break-word",
-              maxWidth: "250px",
-            }}
-          >
-            {comment.description || "—"}
-          </div>
+      id: `C-${String(comment.id).slice(-6)}`,
+      studyId: comment.study || studyCode || "—",
+      subjectDocument: comment.documentDeleted
+        ? `${comment.subjectId} / ${comment.document || "Deleted document"}`
+        : comment.document
+          ? `${comment.subjectId} / ${comment.document}`
+          : comment.subjectId,
+      comment: (
+        <div
+          style={{
+            whiteSpace: "normal",
+            wordBreak: "break-word",
+            maxWidth: "250px",
+          }}
+        >
+          {comment.description || "—"}
+        </div>
+      ),
+      by: comment.createdBy || "—",
+      date: comment.createdAt || "—",
+      status: comment.status,
+      action:
+        comment.status === "Open" && canResolveComments(currentUser) ? (
+          <button type="button" onClick={() => resolveComment(comment.id)}>
+            Resolve
+          </button>
+        ) : comment.status === "Resolved" && canResolveComments(currentUser) ? (
+          <button type="button" onClick={() => reopenComment(comment.id)}>
+            Reopen
+          </button>
+        ) : (
+          "—"
         ),
-        by: comment.createdBy || "—",
-        date: comment.createdAt || "—",
-        status: comment.status,
-        action:
-          comment.status === "Open" && canResolveComments(currentUser) ? (
-            <button type="button" onClick={() => resolveComment(comment.id)}>
-              Resolve
-            </button>
-          ) : comment.status === "Resolved" && canResolveComments(currentUser) ? (
-            <button type="button" onClick={() => reopenComment(comment.id)}>
-              Reopen
-            </button>
-          ) : (
-            "—"
-          ),
     }));
   }, [
     liveComments,

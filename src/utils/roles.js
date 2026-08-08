@@ -3,7 +3,7 @@ export const ROLES = {
   SITE_STAFF: "SiteStaff",
   PI: "PI",
   CRO: "CRO",
-  SPONSOR: "Sponsor"
+  SPONSOR: "Sponsor",
 };
 
 export const SUPER_ADMIN = "Admin";

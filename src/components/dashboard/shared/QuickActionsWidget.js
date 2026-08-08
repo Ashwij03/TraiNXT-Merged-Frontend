@@ -12,19 +12,11 @@ import {
 } from "react-icons/fi";
 import "./dashboard.css";
 
-function QuickActionsWidget({
-  study,
-  studyCode,
-  onAddSubject,
-}) {
+function QuickActionsWidget({ study, studyCode, onAddSubject }) {
   const navigate = useNavigate();
 
   const resolvedStudyCode =
-    studyCode ||
-    study?.code ||
-    study?.id ||
-    study?.studyId ||
-    "";
+    studyCode || study?.code || study?.id || study?.studyId || "";
 
   const goToTab = (tab) => {
     if (!resolvedStudyCode) {

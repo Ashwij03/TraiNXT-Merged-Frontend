@@ -13,7 +13,7 @@ import {
   ResponsiveContainer,
   Tooltip,
   XAxis,
-  YAxis
+  YAxis,
 } from "recharts";
 import EnterpriseModal from "./EnterpriseModal";
 import { downloadCsvReport } from "../../utils/exportReport";
@@ -28,7 +28,7 @@ import {
   getPendingReviewReport,
   getReportFilterOptions,
   getReportSubscriptions,
-  saveReportSubscription
+  saveReportSubscription,
 } from "./data/sponsorDocumentReportService";
 import "./ReportDetails.css";
 
@@ -39,7 +39,7 @@ const COMPLIANCE_REPORTS = new Set([
   "Pending Review Report",
   "Document Completion Report",
   "Document Status Summary",
-  "Compliance Analytics Chart"
+  "Compliance Analytics Chart",
 ]);
 
 const CHART_COLORS = ["#2563eb", "#16a34a", "#d97706", "#dc2626", "#7c3aed"];
@@ -55,12 +55,12 @@ const ReportDetails = () => {
     study: "All",
     site: "All",
     folder: "All",
-    status: "All"
+    status: "All",
   });
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   const [subscriptionForm, setSubscriptionForm] = useState(() => {
     const existing = getReportSubscriptions().find(
-      (item) => item.reportType === reportType
+      (item) => item.reportType === reportType,
     );
 
     return (
@@ -73,7 +73,7 @@ const ReportDetails = () => {
         status: "All",
         frequency: "Weekly",
         recipients: "sponsor@trianxt.com",
-        enabled: true
+        enabled: true,
       }
     );
   });
@@ -108,12 +108,12 @@ const ReportDetails = () => {
 
   const statusSummary = useMemo(
     () => (isComplianceReport ? getDocumentStatusSummary(filters) : []),
-    [filters, isComplianceReport]
+    [filters, isComplianceReport],
   );
 
   const complianceAnalytics = useMemo(
     () => (isComplianceReport ? getComplianceAnalytics(filters) : []),
-    [filters, isComplianceReport]
+    [filters, isComplianceReport],
   );
 
   let reportData = [];
@@ -121,20 +121,22 @@ const ReportDetails = () => {
   if (reportType === "Study Reports") {
     reportData = [
       { name: "COVID-19", status: "On Track", value: "2200" },
-      { name: "Diabetes", status: "Delayed", value: "900" }
+      { name: "Diabetes", status: "Delayed", value: "900" },
     ];
   } else if (reportType === "Enrollment Reports") {
     reportData = [
       { name: "Apollo Site", status: "83%", value: "250" },
-      { name: "AIG Site", status: "60%", value: "180" }
+      { name: "AIG Site", status: "60%", value: "180" },
     ];
   } else if (reportType === "Compliance Reports") {
     reportData = [
       { name: "eTMF", status: "Completed", value: "98%" },
-      { name: "Regulatory", status: "Pending", value: "90%" }
+      { name: "Regulatory", status: "Pending", value: "90%" },
     ];
   } else if (reportType === "Executive Reports") {
-    reportData = [{ name: "Portfolio", status: "24 Studies", value: "18 Active" }];
+    reportData = [
+      { name: "Portfolio", status: "24 Studies", value: "18 Active" },
+    ];
   } else if (reportType === "Operational Reports") {
     reportData = [{ name: "Sites", status: "156", value: "142 Active" }];
   } else if (!isComplianceReport) {
@@ -149,7 +151,7 @@ const ReportDetails = () => {
       ["Folder", filters.folder],
       ["Status", filters.status],
       [],
-      ["Document", "Study", "Site", "Folder", "Status", "Owner", "Expiry"]
+      ["Document", "Study", "Site", "Folder", "Status", "Owner", "Expiry"],
     ];
 
     complianceRows.forEach((row) => {
@@ -160,7 +162,7 @@ const ReportDetails = () => {
         row.folder,
         row.status,
         row.owner || "—",
-        row.expiryDate || "—"
+        row.expiryDate || "—",
       ]);
     });
 
@@ -174,7 +176,7 @@ const ReportDetails = () => {
       study: filters.study,
       site: filters.site,
       folder: filters.folder,
-      status: filters.status
+      status: filters.status,
     });
     window.dispatchEvent(new CustomEvent(DOCUMENT_REPORTS_EVENT));
     setShowSubscriptionModal(false);
@@ -365,7 +367,11 @@ Diabetes,900,Delayed
                 <tbody>
                   {complianceRows.length === 0 && (
                     <tr>
-                      <td colSpan={reportType === "Document Completion Report" ? 7 : 6}>
+                      <td
+                        colSpan={
+                          reportType === "Document Completion Report" ? 7 : 6
+                        }
+                      >
                         No records match the selected filters.
                       </td>
                     </tr>
@@ -471,7 +477,7 @@ Diabetes,900,Delayed
               onChange={(event) =>
                 setSubscriptionForm({
                   ...subscriptionForm,
-                  frequency: event.target.value
+                  frequency: event.target.value,
                 })
               }
             >
@@ -487,7 +493,7 @@ Diabetes,900,Delayed
               onChange={(event) =>
                 setSubscriptionForm({
                   ...subscriptionForm,
-                  recipients: event.target.value
+                  recipients: event.target.value,
                 })
               }
               placeholder="email@example.com"
@@ -500,7 +506,7 @@ Diabetes,900,Delayed
               onChange={(event) =>
                 setSubscriptionForm({
                   ...subscriptionForm,
-                  enabled: event.target.checked
+                  enabled: event.target.checked,
                 })
               }
             />

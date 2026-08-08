@@ -17,12 +17,12 @@ function CROScreening() {
     value
       ? resolveSiteDisplay(value, {
           sources: siteSources,
-          fallback: value
+          fallback: value,
         })
       : "—";
 
   const screeningSubjects = subjects.filter(
-    (s) => s.status === "Screening" || s.visit === "Screening"
+    (s) => s.status === "Screening" || s.visit === "Screening",
   );
 
   return (
@@ -152,7 +152,14 @@ function CROModal({
   );
 }
 
-export function CROAlertModal({ isOpen, open, title, message, onClose, confirmLabel = "OK" }) {
+export function CROAlertModal({
+  isOpen,
+  open,
+  title,
+  message,
+  onClose,
+  confirmLabel = "OK",
+}) {
   return (
     <CROModal
       open={open ?? isOpen}
@@ -161,7 +168,6 @@ export function CROAlertModal({ isOpen, open, title, message, onClose, confirmLa
       confirmLabel={confirmLabel}
       onClose={onClose}
     />
-
   );
 }
 

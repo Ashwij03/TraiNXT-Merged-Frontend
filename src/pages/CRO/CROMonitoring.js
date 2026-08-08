@@ -22,7 +22,7 @@ function CROMonitoring() {
     value
       ? resolveSiteDisplay(value, {
           sources: siteSources,
-          fallback: value
+          fallback: value,
         })
       : "—";
 
@@ -39,23 +39,23 @@ function CROMonitoring() {
       {
         key: "site",
         label: "Site",
-        render: (value) => displaySite(value)
+        render: (value) => displaySite(value),
       },
       { key: "cra", label: "CRA" },
       { key: "visitType", label: "Visit Type" },
       {
         key: "date",
         label: "Date",
-        render: (value) => formatScheduleDisplayDate(value)
+        render: (value) => formatScheduleDisplayDate(value),
       },
       {
         key: "status",
         label: "Status",
-        render: (value) => <StatusBadge status={value} />
-      }
+        render: (value) => <StatusBadge status={value} />,
+      },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [siteSources]
+    [siteSources],
   );
 
   return (

@@ -5,7 +5,6 @@ const SiteQueries = () => {
   return (
     <AppLayout>
       <div className="page-container tnxt-compact">
-
         <h1>Site Queries</h1>
 
         <table className="report-table ctms-standard-table">
@@ -34,7 +33,6 @@ const SiteQueries = () => {
             </tr>
           </tbody>
         </table>
-
       </div>
     </AppLayout>
   );

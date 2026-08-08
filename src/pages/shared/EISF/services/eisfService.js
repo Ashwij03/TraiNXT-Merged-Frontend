@@ -27,7 +27,7 @@ export function getEISFModuleDocuments() {
  */
 export function getDocumentsByModule(moduleId) {
   return eisfModuleDocuments.filter(
-    (document) => document.moduleId === moduleId
+    (document) => document.moduleId === moduleId,
   );
 }
 
@@ -35,9 +35,7 @@ export function getDocumentsByModule(moduleId) {
  * Returns document by id.
  */
 export function getDocumentById(documentId) {
-  return getAllDocuments().find(
-    (document) => document.id === documentId
-  );
+  return getAllDocuments().find((document) => document.id === documentId);
 }
 
 /**
@@ -45,7 +43,8 @@ export function getDocumentById(documentId) {
  */
 export function getDocumentsBySection(sectionId) {
   return getAllDocuments().filter(
-    (document) => document.sectionId === sectionId || document.section === sectionId
+    (document) =>
+      document.sectionId === sectionId || document.section === sectionId,
   );
 }
 
@@ -53,18 +52,14 @@ export function getDocumentsBySection(sectionId) {
  * Returns documents by folder.
  */
 export function getDocumentsByFolder(folderId) {
-  return getAllDocuments().filter(
-    (document) => document.folderId === folderId
-  );
+  return getAllDocuments().filter((document) => document.folderId === folderId);
 }
 
 /**
  * Returns documents by status.
  */
 export function getDocumentsByStatus(status) {
-  return getAllDocuments().filter(
-    (document) => document.status === status
-  );
+  return getAllDocuments().filter((document) => document.status === status);
 }
 
 /**
@@ -72,7 +67,7 @@ export function getDocumentsByStatus(status) {
  */
 export function getDocumentsByType(documentType) {
   return getAllDocuments().filter(
-    (document) => document.documentType === documentType
+    (document) => document.documentType === documentType,
   );
 }
 
@@ -97,7 +92,7 @@ export function searchDocuments(searchText = "") {
       document.uploadedBy,
     ]
       .filter(Boolean)
-      .some((value) => value.toLowerCase().includes(keyword))
+      .some((value) => value.toLowerCase().includes(keyword)),
   );
 }
 
@@ -112,15 +107,15 @@ export function getDocumentCount() {
  * Generic reusable filter.
  */
 export function filterDocuments(filters = {}) {
-  const {
-    sectionId,
-    folderId,
-    status,
-    documentType,
-  } = filters;
+  const { sectionId, folderId, status, documentType } = filters;
 
   return getAllDocuments().filter((document) => {
-    if (sectionId && document.sectionId !== sectionId && document.section !== sectionId) return false;
+    if (
+      sectionId &&
+      document.sectionId !== sectionId &&
+      document.section !== sectionId
+    )
+      return false;
     if (folderId && document.folderId !== folderId) return false;
     if (status && document.status !== status) return false;
     if (documentType && document.documentType !== documentType) return false;

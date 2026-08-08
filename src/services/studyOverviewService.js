@@ -55,8 +55,7 @@ function toPlanningMilestone(overviewEntry) {
   if (!overviewEntry || typeof overviewEntry !== "object") return overviewEntry;
   const merged = { ...overviewEntry };
   // Keep both aliases in sync so downstream planning-shape consumers still work.
-  const target =
-    overviewEntry.targetDate ?? overviewEntry.dueDate ?? "";
+  const target = overviewEntry.targetDate ?? overviewEntry.dueDate ?? "";
   merged.dueDate = target;
   merged.targetDate = target;
   return merged;
@@ -160,7 +159,9 @@ export function getStudyMilestones(studyCode) {
 export function saveStudyMilestones(studyCode, milestones) {
   const list = Array.isArray(milestones) ? milestones : [];
   // Persist each entry through the Planning service so both pages stay in sync.
-  list.forEach((entry) => savePlanningMilestone(studyCode, toPlanningMilestone(entry)));
+  list.forEach((entry) =>
+    savePlanningMilestone(studyCode, toPlanningMilestone(entry)),
+  );
   dispatchStudyOverviewUpdated();
   return getStudyMilestones(studyCode);
 }
@@ -181,10 +182,14 @@ export function addStudyMilestone(studyCode, milestone) {
 
 export function updateStudyMilestone(studyCode, milestoneId, updates) {
   const existing = getPlanningMilestones(studyCode).find(
-    (item) => item.id === milestoneId
+    (item) => item.id === milestoneId,
   );
   if (!existing) return getStudyMilestones(studyCode);
-  const merged = toPlanningMilestone({ ...toOverviewMilestone(existing), ...updates, id: milestoneId });
+  const merged = toPlanningMilestone({
+    ...toOverviewMilestone(existing),
+    ...updates,
+    id: milestoneId,
+  });
   savePlanningMilestone(studyCode, merged);
   dispatchStudyOverviewUpdated();
   return getStudyMilestones(studyCode);
@@ -214,7 +219,11 @@ function siteMatchesStudy(name, studySite) {
 
 function normalizeSiteMatchTokens(...values) {
   return values
-    .map((value) => String(value || "").trim().toLowerCase())
+    .map((value) =>
+      String(value || "")
+        .trim()
+        .toLowerCase(),
+    )
     .filter(Boolean);
 }
 
@@ -224,13 +233,16 @@ function subjectBelongsToSite(subject, siteTokens) {
     subject?.site,
     subject?.siteName,
     subject?.siteNumber,
-    subject?.location
+    subject?.location,
   );
   if (!candidates.length) return false;
   return candidates.some((candidate) =>
     siteTokens.some(
-      (token) => token === candidate || token.includes(candidate) || candidate.includes(token)
-    )
+      (token) =>
+        token === candidate ||
+        token.includes(candidate) ||
+        candidate.includes(token),
+    ),
   );
 }
 
@@ -239,13 +251,16 @@ function scheduleBelongsToSite(schedule, siteTokens) {
   const candidates = normalizeSiteMatchTokens(
     schedule?.site,
     schedule?.siteName,
-    schedule?.siteNumber
+    schedule?.siteNumber,
   );
   if (!candidates.length) return false;
   return candidates.some((candidate) =>
     siteTokens.some(
-      (token) => token === candidate || token.includes(candidate) || candidate.includes(token)
-    )
+      (token) =>
+        token === candidate ||
+        token.includes(candidate) ||
+        candidate.includes(token),
+    ),
   );
 }
 
@@ -254,7 +269,7 @@ function scheduleBelongsToStudy(schedule, studyCode) {
   const tokens = normalizeSiteMatchTokens(
     schedule?.study,
     schedule?.studyKey,
-    schedule?.studyCode
+    schedule?.studyCode,
   );
   if (!tokens.length) return false;
   const code = String(studyCode).toLowerCase();
@@ -275,7 +290,7 @@ function computeEnrollmentMetricsForSite({
   fallbackEnrollmentTarget,
 }) {
   const subjectsForSite = studySubjects.filter((subject) =>
-    subjectBelongsToSite(subject, siteTokens)
+    subjectBelongsToSite(subject, siteTokens),
   );
 
   const screenedSubjects = subjectsForSite.filter((subject) => {
@@ -287,8 +302,9 @@ function computeEnrollmentMetricsForSite({
       status.includes("ongoing") ||
       status.includes("complete") ||
       status.includes("withdraw") ||
-      status.includes("discontinue")
-    ) || Boolean(subject?.screeningDate);
+      status.includes("discontinue") ||
+      Boolean(subject?.screeningDate)
+    );
   });
 
   const enrolledSubjects = subjectsForSite.filter((subject) => {
@@ -311,13 +327,12 @@ function computeEnrollmentMetricsForSite({
   });
 
   const enrolledCount =
-    enrolledSubjects.length ||
-    (Number(fallbackSubjectsEnrolled) || 0);
+    enrolledSubjects.length || Number(fallbackSubjectsEnrolled) || 0;
 
   const enrollmentTarget = Number(fallbackEnrollmentTarget) || 0;
 
   const schedulesForSite = studySchedules.filter((schedule) =>
-    scheduleBelongsToSite(schedule, siteTokens)
+    scheduleBelongsToSite(schedule, siteTokens),
   );
 
   const completedVisits = schedulesForSite.filter((schedule) => {
@@ -364,14 +379,14 @@ function buildDynamicSitePerformance(study, user, studyCode) {
   let studySchedules = [];
   try {
     studySchedules = getFilteredSchedules(user).filter((schedule) =>
-      scheduleBelongsToStudy(schedule, code)
+      scheduleBelongsToStudy(schedule, code),
     );
   } catch {
     studySchedules = [];
   }
 
   const relevantSites = sites.filter((site) =>
-    siteMatchesStudy(site.name || site.siteName, studySite)
+    siteMatchesStudy(site.name || site.siteName, studySite),
   );
 
   if (relevantSites.length) {
@@ -383,7 +398,7 @@ function buildDynamicSitePerformance(study, user, studyCode) {
         siteName,
         siteNumber,
         site.id,
-        site.siteId
+        site.siteId,
       );
       const metrics = computeEnrollmentMetricsForSite({
         siteTokens,
@@ -449,7 +464,10 @@ function buildDynamicSitePerformance(study, user, studyCode) {
   return [];
 }
 
-export function getStudyScopedSitePerformance(studyCode, user = getCurrentUser()) {
+export function getStudyScopedSitePerformance(
+  studyCode,
+  user = getCurrentUser(),
+) {
   const study = getStudyByCode(studyCode);
   const code = String(studyCode || study?.code || "");
   const studySite = String(study?.site || study?.location || "").trim();
@@ -457,10 +475,7 @@ export function getStudyScopedSitePerformance(studyCode, user = getCurrentUser()
 
   const scoped = studySite
     ? records.filter((item) =>
-        siteMatchesStudy(
-          item.siteName || item.site || item.name,
-          studySite
-        )
+        siteMatchesStudy(item.siteName || item.site || item.name, studySite),
       )
     : records;
 
@@ -480,15 +495,14 @@ export function getStudyScopedSitePerformance(studyCode, user = getCurrentUser()
     let studySchedules = [];
     try {
       studySchedules = getFilteredSchedules(user).filter((schedule) =>
-        scheduleBelongsToStudy(schedule, code)
+        scheduleBelongsToStudy(schedule, code),
       );
     } catch {
       studySchedules = [];
     }
 
     return scoped.map((record) => {
-      const siteName =
-        record.siteName || record.site || record.name || "";
+      const siteName = record.siteName || record.site || record.name || "";
       const siteNumber =
         record.siteNumber ||
         record.number ||
@@ -499,7 +513,7 @@ export function getStudyScopedSitePerformance(studyCode, user = getCurrentUser()
       const siteTokens = normalizeSiteMatchTokens(
         siteName,
         siteNumber,
-        record.siteId
+        record.siteId,
       );
       const metrics = computeEnrollmentMetricsForSite({
         siteTokens,
@@ -525,11 +539,11 @@ export function getStudyScopedSitePerformance(studyCode, user = getCurrentUser()
         screeningRate:
           metrics.screeningRate != null
             ? metrics.screeningRate
-            : record.screeningRate ?? null,
+            : (record.screeningRate ?? null),
         visitCompliance:
           metrics.visitCompliance != null
             ? metrics.visitCompliance
-            : record.visitCompliance ?? null,
+            : (record.visitCompliance ?? null),
       };
     });
   }
@@ -545,16 +559,14 @@ export function getSiteActivationCounts(studyCode, user = getCurrentUser()) {
   const studySite = String(study?.site || study?.location || "").trim();
   const sites = getSites(user);
   const counts = Object.fromEntries(
-    SITE_ACTIVATION_BUCKETS.map((label) => [label, 0])
+    SITE_ACTIVATION_BUCKETS.map((label) => [label, 0]),
   );
 
   const relevant = sites.filter((site) => {
     const name = String(site.name || site.siteName || "");
     if (!studySite) return true;
     return (
-      name === studySite ||
-      name.includes(studySite) ||
-      studySite.includes(name)
+      name === studySite || name.includes(studySite) || studySite.includes(name)
     );
   });
 
@@ -588,11 +600,13 @@ export function getGCPCertificationSummary(studyCode, user = getCurrentUser()) {
     if (!training.includes("gcp")) return false;
     if (!studySite) return true;
     const site = String(log.site || "");
-    return site === studySite || site.includes(studySite) || studySite.includes(site);
+    return (
+      site === studySite || site.includes(studySite) || studySite.includes(site)
+    );
   });
 
   const counts = Object.fromEntries(
-    GCP_CERT_BUCKETS.map((label) => [label, 0])
+    GCP_CERT_BUCKETS.map((label) => [label, 0]),
   );
 
   if (!logs.length) {
@@ -622,11 +636,9 @@ export function getStudyHealthSummary(studyCode /* legacy signature */) {
 
   const score = Number(docs?.percent) || 0;
   const completedModules = Number(
-    docs?.completedModules ?? docs?.uploaded ?? 0
+    docs?.completedModules ?? docs?.uploaded ?? 0,
   );
-  const totalModules = Number(
-    docs?.totalModules ?? docs?.expected ?? 22
-  );
+  const totalModules = Number(docs?.totalModules ?? docs?.expected ?? 22);
 
   let status = "In Progress";
   if (score >= 100) status = "Complete";

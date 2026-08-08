@@ -4,13 +4,13 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  ResponsiveContainer
+  ResponsiveContainer,
 } from "recharts";
 
 const data = [
   { study: "101", value: 80 },
   { study: "102", value: 65 },
-  { study: "103", value: 92 }
+  { study: "103", value: 92 },
 ];
 
 function EnrollmentChart() {

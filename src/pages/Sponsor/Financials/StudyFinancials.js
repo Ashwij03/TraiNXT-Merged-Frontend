@@ -81,12 +81,7 @@ const getStatusClassName = (status) => {
 };
 
 const formatCurrency = (value, currency = "USD") => {
-  const symbol =
-    currency === "INR"
-      ? "₹"
-      : currency === "EUR"
-      ? "€"
-      : "$";
+  const symbol = currency === "INR" ? "₹" : currency === "EUR" ? "€" : "$";
 
   return `${symbol}${safeNumber(value).toLocaleString("en-US")}`;
 };
@@ -129,16 +124,13 @@ const BUDGET_CATEGORY_OPTIONS = [
 // studyService.js's deriveStudySiteRelationship).
 function getStudySiteFinancialDisplay(study, sites) {
   const siteReference = {
-    siteName:
-      (study && (study.siteName || study.site || study.location)) || "",
+    siteName: (study && (study.siteName || study.site || study.location)) || "",
     siteNumber: (study && (study.siteNumber || study.siteNo)) || "",
   };
 
   const matchedSite = resolveSiteRecord(siteReference, sites);
 
-  return (
-    formatSiteOption(matchedSite || siteReference) || MISSING_SITE_DISPLAY
-  );
+  return formatSiteOption(matchedSite || siteReference) || MISSING_SITE_DISPLAY;
 }
 
 function StudyFinancials({ study } = {}) {
@@ -169,14 +161,14 @@ function StudyFinancials({ study } = {}) {
   );
   const [invoiceList, setInvoiceList] = useState(initialFinancials.invoices);
   const [subjectCostForm, setSubjectCostForm] = useState(
-  INITIAL_SUBJECT_COST_FORM
-);
+    INITIAL_SUBJECT_COST_FORM,
+  );
 
-const [subjectCosts, setSubjectCosts] = useState(
-  initialFinancials.subjectCosts,
-);
-const [showSubjectCostModal, setShowSubjectCostModal] = useState(false);
-const [editSubjectCostId, setEditSubjectCostId] = useState(null);
+  const [subjectCosts, setSubjectCosts] = useState(
+    initialFinancials.subjectCosts,
+  );
+  const [showSubjectCostModal, setShowSubjectCostModal] = useState(false);
+  const [editSubjectCostId, setEditSubjectCostId] = useState(null);
 
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -184,13 +176,11 @@ const [editSubjectCostId, setEditSubjectCostId] = useState(null);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showBudgetPreview, setShowBudgetPreview] = useState(false);
-const [selectedBudget, setSelectedBudget] = useState(null);
+  const [selectedBudget, setSelectedBudget] = useState(null);
 
   const [budgetForm, setBudgetForm] = useState(INITIAL_BUDGET_FORM);
   const [paymentForm, setPaymentForm] = useState(INITIAL_PAYMENT_FORM);
-  const [receivableForm, setReceivableForm] = useState(
-    INITIAL_RECEIVABLE_FORM,
-  );
+  const [receivableForm, setReceivableForm] = useState(INITIAL_RECEIVABLE_FORM);
   const [invoiceForm, setInvoiceForm] = useState(INITIAL_INVOICE_FORM);
 
   const [editBudgetId, setEditBudgetId] = useState(null);
@@ -227,7 +217,7 @@ const [selectedBudget, setSelectedBudget] = useState(null);
     Persist per-study financial records to localStorage whenever any
     section changes.
   */
- // Load financial data whenever the selected study changes.
+  // Load financial data whenever the selected study changes.
   useEffect(() => {
     saveStudyFinancials(studyKey, {
       budgets,
@@ -255,15 +245,11 @@ const [selectedBudget, setSelectedBudget] = useState(null);
     const refreshFromStore = () => {
       const next = getStudyFinancials(studyKey);
       setBudgets((prev) => (prev === next.budgets ? prev : next.budgets));
-      setPaymentList((prev) =>
-        prev === next.payments ? prev : next.payments,
-      );
+      setPaymentList((prev) => (prev === next.payments ? prev : next.payments));
       setReceivableList((prev) =>
         prev === next.receivables ? prev : next.receivables,
       );
-      setInvoiceList((prev) =>
-        prev === next.invoices ? prev : next.invoices,
-      );
+      setInvoiceList((prev) => (prev === next.invoices ? prev : next.invoices));
       setSubjectCosts((prev) =>
         prev === next.subjectCosts ? prev : next.subjectCosts,
       );
@@ -368,38 +354,34 @@ const [selectedBudget, setSelectedBudget] = useState(null);
     firstIndex + rowsPerPage,
   );
 
-// Item 19 — Total Budget = sum of budget records (dynamic).
-const totalBudget = useMemo(
-  () =>
-    budgets.reduce((sum, item) => sum + safeNumber(item.totalCost), 0),
-  [budgets]
-);
+  // Item 19 — Total Budget = sum of budget records (dynamic).
+  const totalBudget = useMemo(
+    () => budgets.reduce((sum, item) => sum + safeNumber(item.totalCost), 0),
+    [budgets],
+  );
 
   // Item 19 — Total Spend = sum of expense (payment) records (dynamic).
   const totalPayments = useMemo(
-    () =>
-      paymentList.reduce((sum, item) => sum + safeNumber(item.amount), 0),
+    () => paymentList.reduce((sum, item) => sum + safeNumber(item.amount), 0),
     [paymentList],
   );
   const totalSpend = totalPayments;
 
   // Item 19 — subject-cost aggregate with NaN-safe multiplication.
   const grandTotal = useMemo(
-  () =>
-    subjectCosts.reduce(
-      (sum, item) => sum + safeNumber(item.cost) * safeNumber(item.quantity),
-      0
-    ),
-  [subjectCosts]
-);
+    () =>
+      subjectCosts.reduce(
+        (sum, item) => sum + safeNumber(item.cost) * safeNumber(item.quantity),
+        0,
+      ),
+    [subjectCosts],
+  );
 
   // Item 19 — Remaining Budget = Total Budget - Total Spend.
   const remainingBudget = totalBudget - totalSpend;
   const netBudgetCost = totalBudget - totalSpend - grandTotal;
   const utilizedPercentage =
-    totalBudget > 0
-      ? Math.min((totalSpend / totalBudget) * 100, 100)
-      : 0;
+    totalBudget > 0 ? Math.min((totalSpend / totalBudget) * 100, 100) : 0;
 
   // Item 19 — dynamic per-category breakdown for the summary chart.
   const budgetByCategory = useMemo(() => {
@@ -444,9 +426,9 @@ const totalBudget = useMemo(
     setShowBudgetModal(true);
   };
   const handleBudgetPreview = (budget) => {
-  setSelectedBudget(budget);
-  setShowBudgetPreview(true);
-};
+    setSelectedBudget(budget);
+    setShowBudgetPreview(true);
+  };
 
   const openNewPaymentModal = () => {
     setPaymentForm(INITIAL_PAYMENT_FORM);
@@ -467,100 +449,89 @@ const totalBudget = useMemo(
   };
 
   const handleEditBudget = (budget) => {
-  setBudgetForm({
-    name: budget.name || "",
-    category: budget.category || "",
-    costPerUnit: budget.costPerUnit || "",
-    units: budget.units || "",
-    unitType: budget.unitType || "Subjects",
-    totalCost: budget.totalCost || "",
-    version: budget.version || "V1",
-    currency: budget.currency || "USD",
-    startDate: budget.startDate || "",
-    endDate: budget.endDate || "",
-    status: budget.status || "Active",
-    description: budget.description || "",
-  });
+    setBudgetForm({
+      name: budget.name || "",
+      category: budget.category || "",
+      costPerUnit: budget.costPerUnit || "",
+      units: budget.units || "",
+      unitType: budget.unitType || "Subjects",
+      totalCost: budget.totalCost || "",
+      version: budget.version || "V1",
+      currency: budget.currency || "USD",
+      startDate: budget.startDate || "",
+      endDate: budget.endDate || "",
+      status: budget.status || "Active",
+      description: budget.description || "",
+    });
 
-  setEditBudgetId(budget.id);
-  setShowBudgetModal(true);
-};
-const updateBudgetField = (name, value) => {
-
-  const updatedForm = {
-    ...budgetForm,
-    [name]: value,
+    setEditBudgetId(budget.id);
+    setShowBudgetModal(true);
   };
+  const updateBudgetField = (name, value) => {
+    const updatedForm = {
+      ...budgetForm,
+      [name]: value,
+    };
 
-  const cost = Number(
-    name === "costPerUnit"
-      ? value
-      : updatedForm.costPerUnit
-  );
+    const cost = Number(
+      name === "costPerUnit" ? value : updatedForm.costPerUnit,
+    );
 
-  const units = Number(
-    name === "units"
-      ? value
-      : updatedForm.units
-  );
+    const units = Number(name === "units" ? value : updatedForm.units);
 
-  updatedForm.totalCost = cost * units;
+    updatedForm.totalCost = cost * units;
 
-  setBudgetForm(updatedForm);
-};
-const resetSubjectCostModal = () => {
-  setSubjectCostForm(INITIAL_SUBJECT_COST_FORM);
-  setShowSubjectCostModal(false);
-};
+    setBudgetForm(updatedForm);
+  };
+  const resetSubjectCostModal = () => {
+    setSubjectCostForm(INITIAL_SUBJECT_COST_FORM);
+    setShowSubjectCostModal(false);
+  };
   const handleSaveBudget = () => {
-  if (
-  !budgetForm.name.trim() ||
-  !budgetForm.category.trim() ||
-  !budgetForm.costPerUnit ||
-  !budgetForm.units ||
-  !budgetForm.startDate ||
-  !budgetForm.endDate
-) {
-  alert("Please fill all required budget fields.");
-  return;
-}
+    if (
+      !budgetForm.name.trim() ||
+      !budgetForm.category.trim() ||
+      !budgetForm.costPerUnit ||
+      !budgetForm.units ||
+      !budgetForm.startDate ||
+      !budgetForm.endDate
+    ) {
+      alert("Please fill all required budget fields.");
+      return;
+    }
 
-if (
-  Number(budgetForm.endDate.replace(/-/g, "")) <
-  Number(budgetForm.startDate.replace(/-/g, ""))
-) {
-  alert("End Date should be after Start Date");
-  return;
-}
-let version = budgetForm.version;
+    if (
+      Number(budgetForm.endDate.replace(/-/g, "")) <
+      Number(budgetForm.startDate.replace(/-/g, ""))
+    ) {
+      alert("End Date should be after Start Date");
+      return;
+    }
+    let version = budgetForm.version;
 
-if (editBudgetId !== null) {
-  const currentVersion = Number(
-    budgetForm.version.replace("V", "")
-  );
-  
+    if (editBudgetId !== null) {
+      const currentVersion = Number(budgetForm.version.replace("V", ""));
 
-  version = `V${currentVersion + 1}`;
-}
-   const preparedBudget = {
-  ...budgetForm,
+      version = `V${currentVersion + 1}`;
+    }
+    const preparedBudget = {
+      ...budgetForm,
 
-  studyName:
-    (study && (study.studyName || study.name || study.code)) || "",
+      studyName: (study && (study.studyName || study.name || study.code)) || "",
 
-  name: budgetForm.name.trim(),
-  category: budgetForm.category.trim(),
-  costPerUnit: Number(budgetForm.costPerUnit),
-  units: Number(budgetForm.units),
-  unitType: budgetForm.unitType,
-  totalCost: Number(budgetForm.totalCost),
-  version,
-  currency: budgetForm.currency,
-  startDate: budgetForm.startDate,
-  endDate: budgetForm.endDate,
-  status: budgetForm.status,
-  description: budgetForm.description.trim(),
-};
+      name: budgetForm.name.trim(),
+      category: budgetForm.category.trim(),
+      costPerUnit: Number(budgetForm.costPerUnit),
+      units: Number(budgetForm.units),
+      unitType: budgetForm.unitType,
+      totalCost: Number(budgetForm.totalCost),
+      version,
+      currency: budgetForm.currency,
+      startDate: budgetForm.startDate,
+      endDate: budgetForm.endDate,
+      status: budgetForm.status,
+      description: budgetForm.description.trim(),
+    };
 
     if (editBudgetId !== null) {
       setBudgets((currentBudgets) =>
@@ -606,9 +577,9 @@ if (editBudgetId !== null) {
       return;
     }
     if (Number(paymentForm.amount) <= 0) {
-  alert("Amount should be greater than zero");
-  return;
-}
+      alert("Amount should be greater than zero");
+      return;
+    }
 
     const preparedPayment = {
       milestone: paymentForm.milestone.trim(),
@@ -705,57 +676,55 @@ if (editBudgetId !== null) {
   };
 
   const handleSaveSubjectCost = () => {
-  if (
-    !subjectCostForm.subjectId ||
-    !subjectCostForm.visit ||
-    !subjectCostForm.procedure ||
-    !subjectCostForm.cost ||
-    !subjectCostForm.quantity
-  ) {
-    alert("Please fill all required fields.");
-    return;
-  }
+    if (
+      !subjectCostForm.subjectId ||
+      !subjectCostForm.visit ||
+      !subjectCostForm.procedure ||
+      !subjectCostForm.cost ||
+      !subjectCostForm.quantity
+    ) {
+      alert("Please fill all required fields.");
+      return;
+    }
 
-  const newCost = {
-  id: editSubjectCostId ?? Date.now(),
-  subject: subjectCostForm.subjectId,
-  visit: subjectCostForm.visit,
-  procedure: subjectCostForm.procedure,
-  cost: Number(subjectCostForm.cost),
-  quantity: Number(subjectCostForm.quantity),
-  status: subjectCostForm.status,
-};
+    const newCost = {
+      id: editSubjectCostId ?? Date.now(),
+      subject: subjectCostForm.subjectId,
+      visit: subjectCostForm.visit,
+      procedure: subjectCostForm.procedure,
+      cost: Number(subjectCostForm.cost),
+      quantity: Number(subjectCostForm.quantity),
+      status: subjectCostForm.status,
+    };
 
-if (editSubjectCostId !== null) {
-  setSubjectCosts((prev) =>
-    prev.map((item) =>
-      item.id === editSubjectCostId ? newCost : item
-    )
-  );
-} else {
-  setSubjectCosts((prev) => [...prev, newCost]);
-}
+    if (editSubjectCostId !== null) {
+      setSubjectCosts((prev) =>
+        prev.map((item) => (item.id === editSubjectCostId ? newCost : item)),
+      );
+    } else {
+      setSubjectCosts((prev) => [...prev, newCost]);
+    }
 
-setEditSubjectCostId(null);
-resetSubjectCostModal();
-};
-const handleEditSubjectCost = (item) => {
-  setEditSubjectCostId(item.id);
+    setEditSubjectCostId(null);
+    resetSubjectCostModal();
+  };
+  const handleEditSubjectCost = (item) => {
+    setEditSubjectCostId(item.id);
 
-  setSubjectCostForm({
-    subjectId: item.subject,
-    visit: item.visit,
-    procedure: item.procedure,
-    cost: item.cost,
-    quantity: item.quantity,
-    status: item.status,
-  });
+    setSubjectCostForm({
+      subjectId: item.subject,
+      visit: item.visit,
+      procedure: item.procedure,
+      cost: item.cost,
+      quantity: item.quantity,
+      status: item.status,
+    });
 
-  setShowSubjectCostModal(true);
-};
-const handleDeleteSubjectCost = (id) => {
-  openDeleteModal("subjectCost", id);
-};
+    setShowSubjectCostModal(true);
+  };
+  const handleDeleteSubjectCost = (id) => {
+    openDeleteModal("subjectCost", id);
+  };
 
   const handleSaveInvoice = () => {
     if (
@@ -768,8 +737,6 @@ const handleDeleteSubjectCost = (id) => {
       alert("Please fill all required invoice fields.");
       return;
     }
-
-   
 
     const preparedInvoice = {
       invoiceNo: invoiceForm.invoiceNo.trim(),
@@ -845,10 +812,10 @@ const handleDeleteSubjectCost = (id) => {
       );
     }
     if (deleteType === "subjectCost") {
-  setSubjectCosts((current) =>
-    current.filter((item) => item.id !== deleteId)
-  );
-}
+      setSubjectCosts((current) =>
+        current.filter((item) => item.id !== deleteId),
+      );
+    }
 
     closeDeleteModal();
   };
@@ -887,31 +854,31 @@ const handleDeleteSubjectCost = (id) => {
     const rows = [
       ["Study Budgets"],
       [
-  "Budget Name",
-  "Category",
-  "Cost Per Unit",
-  "Units",
-  "Unit Type",
-  "Total Cost",
-  "Version",
-  "Currency",
-  "Status",
-  "Start Date",
-  "End Date",
-],
-     ...filteredBudgets.map((budget) => [
-  budget.name,
-  budget.category,
-  budget.costPerUnit,
-  budget.units,
-  budget.unitType,
-  budget.totalCost,
-  budget.version,
-  budget.currency,
-  budget.status,
-  budget.startDate,
-  budget.endDate,
-]),
+        "Budget Name",
+        "Category",
+        "Cost Per Unit",
+        "Units",
+        "Unit Type",
+        "Total Cost",
+        "Version",
+        "Currency",
+        "Status",
+        "Start Date",
+        "End Date",
+      ],
+      ...filteredBudgets.map((budget) => [
+        budget.name,
+        budget.category,
+        budget.costPerUnit,
+        budget.units,
+        budget.unitType,
+        budget.totalCost,
+        budget.version,
+        budget.currency,
+        budget.status,
+        budget.startDate,
+        budget.endDate,
+      ]),
       [],
       ["Payments"],
       ["Milestone", "Amount", "Paid On", "Status", "Notes"],
@@ -924,9 +891,7 @@ const handleDeleteSubjectCost = (id) => {
       ]),
     ];
 
-    const csv = rows
-      .map((row) => row.map(escapeCsvValue).join(","))
-      .join("\n");
+    const csv = rows.map((row) => row.map(escapeCsvValue).join(",")).join("\n");
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = window.URL.createObjectURL(blob);
@@ -974,18 +939,11 @@ const handleDeleteSubjectCost = (id) => {
           </select>
         </div>
       </div>
- <h3 className="financial-section-title">
-  Budget Overview
-</h3> 
+      <h3 className="financial-section-title">Budget Overview</h3>
       <div className="financial-cards">
         <div className="financial-card">
           <h4>Total Budget</h4>
-          <h2>
-{formatCurrency(
-   totalBudget,
-   budgets[0]?.currency
-)}
-</h2>
+          <h2>{formatCurrency(totalBudget, budgets[0]?.currency)}</h2>
         </div>
 
         <div className="financial-card">
@@ -1014,51 +972,50 @@ const handleDeleteSubjectCost = (id) => {
         </div>
       </div>
 
-     <div className="budget-info-card">
-  <h3>Budget Information</h3>
+      <div className="budget-info-card">
+        <h3>Budget Information</h3>
 
-  <div className="budget-info-grid">
-    <div>
-      <span>Study</span>
-      <strong>
-        {(study && (study.studyName || study.name)) || "—"}
-      </strong>
-    </div>
+        <div className="budget-info-grid">
+          <div>
+            <span>Study</span>
+            <strong>{(study && (study.studyName || study.name)) || "—"}</strong>
+          </div>
 
-    <div>
-      <span>Protocol</span>
-      <strong>
-        {(study && (study.protocol || study.studyId || study.code)) || "—"}
-      </strong>
-    </div>
+          <div>
+            <span>Protocol</span>
+            <strong>
+              {(study && (study.protocol || study.studyId || study.code)) ||
+                "—"}
+            </strong>
+          </div>
 
-    <div>
-      <span>Sponsor</span>
-      <strong>{(study && study.sponsor) || "—"}</strong>
-    </div>
+          <div>
+            <span>Sponsor</span>
+            <strong>{(study && study.sponsor) || "—"}</strong>
+          </div>
 
-    <div>
-      <span>Principal Investigator</span>
-      <strong>
-        {(study && (study.principalInvestigator || study.pi)) || "—"}
-      </strong>
-    </div>
+          <div>
+            <span>Principal Investigator</span>
+            <strong>
+              {(study && (study.principalInvestigator || study.pi)) || "—"}
+            </strong>
+          </div>
 
-    <div>
-      <span>Site</span>
-      <strong>{getStudySiteFinancialDisplay(study, siteRecords)}</strong>
-    </div>
+          <div>
+            <span>Site</span>
+            <strong>{getStudySiteFinancialDisplay(study, siteRecords)}</strong>
+          </div>
 
-    <div>
-      <span>Currency</span>
-      <strong>
-        {(budgets[0] && budgets[0].currency) ||
-          (study && study.currency) ||
-          "USD"}
-      </strong>
-    </div>
-  </div>
-</div>
+          <div>
+            <span>Currency</span>
+            <strong>
+              {(budgets[0] && budgets[0].currency) ||
+                (study && study.currency) ||
+                "USD"}
+            </strong>
+          </div>
+        </div>
+      </div>
 
       <div className="financial-actions">
         <button type="button" onClick={openNewBudgetModal}>
@@ -1078,14 +1035,14 @@ const handleDeleteSubjectCost = (id) => {
         </button>
 
         <button
-  type="button"
-  onClick={() => {
-    setSubjectCostForm(INITIAL_SUBJECT_COST_FORM);
-    setShowSubjectCostModal(true);
-  }}
->
-  + New Subject Cost
-</button>
+          type="button"
+          onClick={() => {
+            setSubjectCostForm(INITIAL_SUBJECT_COST_FORM);
+            setShowSubjectCostModal(true);
+          }}
+        >
+          + New Subject Cost
+        </button>
 
         <button
           type="button"
@@ -1098,497 +1055,455 @@ const handleDeleteSubjectCost = (id) => {
           Export CSV
         </button>
       </div>
-     <div className="financial-tabs">
+      <div className="financial-tabs">
+        <button onClick={() => setActiveTab("budget")}>Budget Info</button>
 
-<button
-onClick={()=>setActiveTab("budget")}
->
-Budget Info
-</button>
+        <button onClick={() => setActiveTab("grants")}>
+          Investigator Grants
+        </button>
 
-<button
-onClick={()=>setActiveTab("grants")}
->
-Investigator Grants
-</button>
+        <button onClick={() => setActiveTab("site")}>Site Management</button>
 
-<button
-onClick={()=>setActiveTab("site")}
->
-Site Management
-</button>
-
-<button
-onClick={()=>setActiveTab("subjects")}
->
-Subject Costs
-</button>
-
-
-</div>
+        <button onClick={() => setActiveTab("subjects")}>Subject Costs</button>
+      </div>
 
       {showAllData && (
-  <section className="financial-summary">
+        <section className="financial-summary">
+          <h2>Financial Summary</h2>
 
-    <h2>Financial Summary</h2>
+          <div className="financial-summary-grid">
+            <div className="summary-box">
+              <span>Total Budget</span>
+              <h3>{formatCurrency(totalBudget)}</h3>
+            </div>
 
-    <div className="financial-summary-grid">
+            <div className="summary-box">
+              <span>Total Spend</span>
+              <h3>{formatCurrency(totalSpend)}</h3>
+            </div>
 
-      <div className="summary-box">
-        <span>Total Budget</span>
-        <h3>{formatCurrency(totalBudget)}</h3>
-      </div>
+            <div className="summary-box">
+              <span>Remaining Budget</span>
+              <h3>{formatCurrency(remainingBudget)}</h3>
+            </div>
 
-      <div className="summary-box">
-        <span>Total Spend</span>
-        <h3>{formatCurrency(totalSpend)}</h3>
-      </div>
+            <div className="summary-box">
+              <span>Subject Cost</span>
+              <h3>{formatCurrency(grandTotal)}</h3>
+            </div>
 
-      <div className="summary-box">
-        <span>Remaining Budget</span>
-        <h3>{formatCurrency(remainingBudget)}</h3>
-      </div>
+            <div className="summary-box">
+              <span>Net Budget</span>
+              <h3>{formatCurrency(netBudgetCost)}</h3>
+            </div>
 
-      <div className="summary-box">
-        <span>Subject Cost</span>
-        <h3>{formatCurrency(grandTotal)}</h3>
-      </div>
+            <div className="summary-box">
+              <span>Total Budgets</span>
+              <h3>{budgets.length}</h3>
+            </div>
 
-      <div className="summary-box">
-        <span>Net Budget</span>
-        <h3>{formatCurrency(netBudgetCost)}</h3>
-      </div>
+            <div className="summary-box">
+              <span>Total Payments</span>
+              <h3>{paymentList.length}</h3>
+            </div>
 
-      <div className="summary-box">
-        <span>Total Budgets</span>
-        <h3>{budgets.length}</h3>
-      </div>
+            <div className="summary-box">
+              <span>Budget Utilized</span>
+              <h3>{utilizedPercentage.toFixed(1)}%</h3>
+            </div>
+          </div>
 
-      <div className="summary-box">
-        <span>Total Payments</span>
-        <h3>{paymentList.length}</h3>
-      </div>
-
-      <div className="summary-box">
-        <span>Budget Utilized</span>
-        <h3>{utilizedPercentage.toFixed(1)}%</h3>
-      </div>
-
-    </div>
-
-    {/* Item 19 — Dynamic charts driven entirely by the current
+          {/* Item 19 — Dynamic charts driven entirely by the current
         budgets / payments state. Values are NaN-safe and update
         automatically when any financial record changes. */}
-    <div className="financial-charts">
-      <div className="financial-chart-card">
-        <h3>Budget vs Spend</h3>
-        {totalBudget === 0 && totalSpend === 0 ? (
-          <p className="financial-chart-empty">
-            No budget or spend data yet.
-          </p>
-        ) : (
-          <div className="financial-chart-bars">
-            {(() => {
-              const scaleMax = Math.max(totalBudget, totalSpend, 1);
-              const budgetPct = (totalBudget / scaleMax) * 100;
-              const spendPct = (totalSpend / scaleMax) * 100;
-              const remainPct =
-                remainingBudget > 0
-                  ? (remainingBudget / scaleMax) * 100
-                  : 0;
-              return (
-                <>
-                  <div className="financial-chart-row">
-                    <span className="financial-chart-label">Budget</span>
-                    <div className="financial-chart-track">
-                      <div
-                        className="financial-chart-fill budget"
-                        style={{ width: `${budgetPct}%` }}
-                      />
-                    </div>
-                    <span className="financial-chart-value">
-                      {formatCurrency(totalBudget)}
-                    </span>
-                  </div>
-                  <div className="financial-chart-row">
-                    <span className="financial-chart-label">Spend</span>
-                    <div className="financial-chart-track">
-                      <div
-                        className="financial-chart-fill spend"
-                        style={{ width: `${spendPct}%` }}
-                      />
-                    </div>
-                    <span className="financial-chart-value">
-                      {formatCurrency(totalSpend)}
-                    </span>
-                  </div>
-                  <div className="financial-chart-row">
-                    <span className="financial-chart-label">Remaining</span>
-                    <div className="financial-chart-track">
-                      <div
-                        className="financial-chart-fill remaining"
-                        style={{ width: `${remainPct}%` }}
-                      />
-                    </div>
-                    <span className="financial-chart-value">
-                      {formatCurrency(remainingBudget)}
-                    </span>
-                  </div>
-                </>
-              );
-            })()}
-          </div>
-        )}
-      </div>
-
-      <div className="financial-chart-card">
-        <h3>Budget by Category</h3>
-        {budgetByCategory.length === 0 ? (
-          <p className="financial-chart-empty">
-            No budget categories yet.
-          </p>
-        ) : (
-          <div className="financial-chart-bars">
-            {(() => {
-              const scaleMax =
-                budgetByCategory.reduce(
-                  (m, row) => Math.max(m, row.amount),
-                  0,
-                ) || 1;
-              return budgetByCategory.map((row) => (
-                <div
-                  key={row.category}
-                  className="financial-chart-row"
-                >
-                  <span className="financial-chart-label">
-                    {row.category}
-                  </span>
-                  <div className="financial-chart-track">
-                    <div
-                      className="financial-chart-fill category"
-                      style={{
-                        width: `${(row.amount / scaleMax) * 100}%`,
-                      }}
-                    />
-                  </div>
-                  <span className="financial-chart-value">
-                    {formatCurrency(row.amount)}
-                  </span>
+          <div className="financial-charts">
+            <div className="financial-chart-card">
+              <h3>Budget vs Spend</h3>
+              {totalBudget === 0 && totalSpend === 0 ? (
+                <p className="financial-chart-empty">
+                  No budget or spend data yet.
+                </p>
+              ) : (
+                <div className="financial-chart-bars">
+                  {(() => {
+                    const scaleMax = Math.max(totalBudget, totalSpend, 1);
+                    const budgetPct = (totalBudget / scaleMax) * 100;
+                    const spendPct = (totalSpend / scaleMax) * 100;
+                    const remainPct =
+                      remainingBudget > 0
+                        ? (remainingBudget / scaleMax) * 100
+                        : 0;
+                    return (
+                      <>
+                        <div className="financial-chart-row">
+                          <span className="financial-chart-label">Budget</span>
+                          <div className="financial-chart-track">
+                            <div
+                              className="financial-chart-fill budget"
+                              style={{ width: `${budgetPct}%` }}
+                            />
+                          </div>
+                          <span className="financial-chart-value">
+                            {formatCurrency(totalBudget)}
+                          </span>
+                        </div>
+                        <div className="financial-chart-row">
+                          <span className="financial-chart-label">Spend</span>
+                          <div className="financial-chart-track">
+                            <div
+                              className="financial-chart-fill spend"
+                              style={{ width: `${spendPct}%` }}
+                            />
+                          </div>
+                          <span className="financial-chart-value">
+                            {formatCurrency(totalSpend)}
+                          </span>
+                        </div>
+                        <div className="financial-chart-row">
+                          <span className="financial-chart-label">
+                            Remaining
+                          </span>
+                          <div className="financial-chart-track">
+                            <div
+                              className="financial-chart-fill remaining"
+                              style={{ width: `${remainPct}%` }}
+                            />
+                          </div>
+                          <span className="financial-chart-value">
+                            {formatCurrency(remainingBudget)}
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
-              ));
-            })()}
+              )}
+            </div>
+
+            <div className="financial-chart-card">
+              <h3>Budget by Category</h3>
+              {budgetByCategory.length === 0 ? (
+                <p className="financial-chart-empty">
+                  No budget categories yet.
+                </p>
+              ) : (
+                <div className="financial-chart-bars">
+                  {(() => {
+                    const scaleMax =
+                      budgetByCategory.reduce(
+                        (m, row) => Math.max(m, row.amount),
+                        0,
+                      ) || 1;
+                    return budgetByCategory.map((row) => (
+                      <div key={row.category} className="financial-chart-row">
+                        <span className="financial-chart-label">
+                          {row.category}
+                        </span>
+                        <div className="financial-chart-track">
+                          <div
+                            className="financial-chart-fill category"
+                            style={{
+                              width: `${(row.amount / scaleMax) * 100}%`,
+                            }}
+                          />
+                        </div>
+                        <span className="financial-chart-value">
+                          {formatCurrency(row.amount)}
+                        </span>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              )}
+            </div>
           </div>
-        )}
-      </div>
-    </div>
+        </section>
+      )}
 
-  </section>
-)}
-      
       {activeTab === "budget" && (
-  <>
-      <section className="budget-list">
-        <h3>Study Budgets</h3>
-      </section>
+        <>
+          <section className="budget-list">
+            <h3>Study Budgets</h3>
+          </section>
 
-      <div className="budget-table">
-        <table className="ctms-standard-table">
-          <thead>
-  <tr>
-    <th onClick={() => handleSort("name")}>
-      Budget Name{getSortIndicator("name")}
-    </th>
+          <div className="budget-table">
+            <table className="ctms-standard-table">
+              <thead>
+                <tr>
+                  <th onClick={() => handleSort("name")}>
+                    Budget Name{getSortIndicator("name")}
+                  </th>
 
-    <th onClick={() => handleSort("category")}>
-      Category{getSortIndicator("category")}
-    </th>
+                  <th onClick={() => handleSort("category")}>
+                    Category{getSortIndicator("category")}
+                  </th>
 
-    <th onClick={() => handleSort("totalCost")}>
-      Total Cost{getSortIndicator("totalCost")}
-    </th>
+                  <th onClick={() => handleSort("totalCost")}>
+                    Total Cost{getSortIndicator("totalCost")}
+                  </th>
 
-    <th onClick={() => handleSort("costPerUnit")}>
-  Cost / Unit{getSortIndicator("costPerUnit")}
-</th>
+                  <th onClick={() => handleSort("costPerUnit")}>
+                    Cost / Unit{getSortIndicator("costPerUnit")}
+                  </th>
 
-<th onClick={() => handleSort("units")}>
-   Units{getSortIndicator("units")}
-</th>
+                  <th onClick={() => handleSort("units")}>
+                    Units{getSortIndicator("units")}
+                  </th>
 
-<th onClick={() => handleSort("unitType")}>
-  Unit{getSortIndicator("unitType")}
-</th>
+                  <th onClick={() => handleSort("unitType")}>
+                    Unit{getSortIndicator("unitType")}
+                  </th>
 
-    <th onClick={() => handleSort("status")}>
-      Status{getSortIndicator("status")}
-    </th>
+                  <th onClick={() => handleSort("status")}>
+                    Status{getSortIndicator("status")}
+                  </th>
 
-    <th onClick={() => handleSort("startDate")}>
-      Start Date{getSortIndicator("startDate")}
-    </th>
+                  <th onClick={() => handleSort("startDate")}>
+                    Start Date{getSortIndicator("startDate")}
+                  </th>
 
-    <th onClick={() => handleSort("endDate")}>
-      End Date{getSortIndicator("endDate")}
-    </th>
+                  <th onClick={() => handleSort("endDate")}>
+                    End Date{getSortIndicator("endDate")}
+                  </th>
 
-    <th>Actions</th>
+                  <th>Actions</th>
 
-    <th>Version</th>
-  </tr>
-</thead>
-
-          <tbody>
-            {currentBudgets.length === 0 ? (
-              <tr>
-                <td colSpan="11">No budgets found for this study.</td>
-              </tr>
-            ) : (
-              currentBudgets.map((budget) => (
-                <tr key={budget.id}>
-                  <td>{budget.name}</td>
-
-<td>{budget.category}</td>
-
-<td>
-  {formatCurrency(
-    budget.totalCost,
-    budget.currency
-  )}
-</td>
-
-<td>
-  {formatCurrency(
-    budget.costPerUnit,
-    budget.currency
-  )}
-</td>
-
-<td>{budget.units}</td>
-
-<td>{budget.unitType}</td>
-                  <td>
-                    <span
-                      className={`financial-status ${getStatusClassName(
-                        budget.status,
-                      )}`}
-                    >
-                      {budget.status}
-                    </span>
-                  </td>
-                  <td>{budget.startDate}</td>
-<td>{budget.endDate}</td>
-
-<td>
-  <button
-    type="button"
-    className="financial-action-btn"
-    onClick={() => handleEditBudget(budget)}
-  >
-    Edit
-  </button>
-
-  <button
-    type="button"
-    className="financial-action-btn"
-    onClick={() => handleBudgetPreview(budget)}
-  >
-    Preview
-  </button>
-
-  <button
-  type="button"
-  className="financial-delete-btn"
-  onClick={() => openDeleteModal("budget", budget.id)}
->
-  Delete
-</button>
-</td>
-
-
-
-<td>{budget.version}</td>
+                  <th>Version</th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-      
+              </thead>
 
-      <div className="financial-pagination">
-        <label className="financial-page-size">
-          Rows
-          <select
-            value={rowsPerPage}
-            onChange={(event) => {
-              setRowsPerPage(Number(event.target.value));
-              setCurrentPage(1);
-            }}
-            aria-label="Rows per page"
-          >
-            {FINANCIALS_PAGE_SIZE_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
+              <tbody>
+                {currentBudgets.length === 0 ? (
+                  <tr>
+                    <td colSpan="11">No budgets found for this study.</td>
+                  </tr>
+                ) : (
+                  currentBudgets.map((budget) => (
+                    <tr key={budget.id}>
+                      <td>{budget.name}</td>
 
-        <button
-          type="button"
-          disabled={safeCurrentPage === 1}
-          onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
-        >
-          Previous
-        </button>
+                      <td>{budget.category}</td>
 
-        <span>
-          Page {safeCurrentPage} of {totalPages}
-        </span>
+                      <td>
+                        {formatCurrency(budget.totalCost, budget.currency)}
+                      </td>
 
-        <button
-          type="button"
-          disabled={safeCurrentPage === totalPages}
-          onClick={() =>
-            setCurrentPage((page) => Math.min(page + 1, totalPages))
-          }
-        >
-          Next
-        </button>
-      </div>
-      </>
+                      <td>
+                        {formatCurrency(budget.costPerUnit, budget.currency)}
+                      </td>
+
+                      <td>{budget.units}</td>
+
+                      <td>{budget.unitType}</td>
+                      <td>
+                        <span
+                          className={`financial-status ${getStatusClassName(
+                            budget.status,
+                          )}`}
+                        >
+                          {budget.status}
+                        </span>
+                      </td>
+                      <td>{budget.startDate}</td>
+                      <td>{budget.endDate}</td>
+
+                      <td>
+                        <button
+                          type="button"
+                          className="financial-action-btn"
+                          onClick={() => handleEditBudget(budget)}
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          type="button"
+                          className="financial-action-btn"
+                          onClick={() => handleBudgetPreview(budget)}
+                        >
+                          Preview
+                        </button>
+
+                        <button
+                          type="button"
+                          className="financial-delete-btn"
+                          onClick={() => openDeleteModal("budget", budget.id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+
+                      <td>{budget.version}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="financial-pagination">
+            <label className="financial-page-size">
+              Rows
+              <select
+                value={rowsPerPage}
+                onChange={(event) => {
+                  setRowsPerPage(Number(event.target.value));
+                  setCurrentPage(1);
+                }}
+                aria-label="Rows per page"
+              >
+                {FINANCIALS_PAGE_SIZE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <button
+              type="button"
+              disabled={safeCurrentPage === 1}
+              onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
+            >
+              Previous
+            </button>
+
+            <span>
+              Page {safeCurrentPage} of {totalPages}
+            </span>
+
+            <button
+              type="button"
+              disabled={safeCurrentPage === totalPages}
+              onClick={() =>
+                setCurrentPage((page) => Math.min(page + 1, totalPages))
+              }
+            >
+              Next
+            </button>
+          </div>
+        </>
       )}
-      {activeTab==="grants" && (
-<section className="payment-table">
+      {activeTab === "grants" && (
+        <section className="payment-table">
+          <h3>Investigator Grants</h3>
 
-<h3>Investigator Grants</h3>
+          <table className="ctms-standard-table">
+            <thead>
+              <tr>
+                <th>Investigator</th>
+                <th>Grant Type</th>
+                <th>Amount</th>
+                <th>Status</th>
+              </tr>
+            </thead>
 
-<table className="ctms-standard-table">
-
-<thead>
-<tr>
-<th>Investigator</th>
-<th>Grant Type</th>
-<th>Amount</th>
-<th>Status</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td colSpan="4">No investigator grants recorded for this study.</td>
-</tr>
-</tbody>
-
-</table>
-
-
-
-</section>
-)}
-        {activeTab==="site" && (
-<section className="payment-table">
-
-  <h3>Site Management</h3>
-
-  <table className="ctms-standard-table">
-    <thead>
-      <tr>
-        <th>Site</th>
-        <th>Budget</th>
-        <th>Spent</th>
-        <th>Remaining</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      {totalBudget === 0 && totalPayments === 0 ? (
-        <tr>
-          <td colSpan="5">No site management records for this study.</td>
-        </tr>
-      ) : (
-        <tr>
-          <td>{getStudySiteFinancialDisplay(study, siteRecords)}</td>
-          <td>
-            {formatCurrency(totalBudget, budgets[0]?.currency)}
-          </td>
-          <td>
-            {formatCurrency(totalPayments, budgets[0]?.currency)}
-          </td>
-          <td>
-            {formatCurrency(remainingBudget, budgets[0]?.currency)}
-          </td>
-          <td>{remainingBudget >= 0 ? "Healthy" : "Exceeded"}</td>
-        </tr>
+            <tbody>
+              <tr>
+                <td colSpan="4">
+                  No investigator grants recorded for this study.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
       )}
-    </tbody>
-  </table>
+      {activeTab === "site" && (
+        <section className="payment-table">
+          <h3>Site Management</h3>
 
-</section>
-)}
-{activeTab === "subjects" && (
-  <section className="payment-table">
+          <table className="ctms-standard-table">
+            <thead>
+              <tr>
+                <th>Site</th>
+                <th>Budget</th>
+                <th>Spent</th>
+                <th>Remaining</th>
+                <th>Status</th>
+              </tr>
+            </thead>
 
-    <h3>Subject Costs</h3>
+            <tbody>
+              {totalBudget === 0 && totalPayments === 0 ? (
+                <tr>
+                  <td colSpan="5">
+                    No site management records for this study.
+                  </td>
+                </tr>
+              ) : (
+                <tr>
+                  <td>{getStudySiteFinancialDisplay(study, siteRecords)}</td>
+                  <td>{formatCurrency(totalBudget, budgets[0]?.currency)}</td>
+                  <td>{formatCurrency(totalPayments, budgets[0]?.currency)}</td>
+                  <td>
+                    {formatCurrency(remainingBudget, budgets[0]?.currency)}
+                  </td>
+                  <td>{remainingBudget >= 0 ? "Healthy" : "Exceeded"}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </section>
+      )}
+      {activeTab === "subjects" && (
+        <section className="payment-table">
+          <h3>Subject Costs</h3>
 
-    <table className="ctms-standard-table">
-      <thead>
-        <tr>
-          <th>Subject</th>
-          <th>Visit</th>
-          <th>Procedure</th>
-          <th>Cost</th>
-          <th>Quantity</th>
-          <th>Total Cost</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
+          <table className="ctms-standard-table">
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Visit</th>
+                <th>Procedure</th>
+                <th>Cost</th>
+                <th>Quantity</th>
+                <th>Total Cost</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
 
-      <tbody>
-        {subjectCosts.length === 0 ? (
-          <tr>
-            <td colSpan="8">No subject costs recorded for this study.</td>
-          </tr>
-        ) : (
-          subjectCosts.map((item) => (
-            <tr key={item.id}>
-              <td>{item.subject}</td>
-              <td>{item.visit}</td>
-              <td>{item.procedure}</td>
+            <tbody>
+              {subjectCosts.length === 0 ? (
+                <tr>
+                  <td colSpan="8">No subject costs recorded for this study.</td>
+                </tr>
+              ) : (
+                subjectCosts.map((item) => (
+                  <tr key={item.id}>
+                    <td>{item.subject}</td>
+                    <td>{item.visit}</td>
+                    <td>{item.procedure}</td>
 
-              <td>{formatCurrency(item.cost)}</td>
+                    <td>{formatCurrency(item.cost)}</td>
 
-              <td>{item.quantity}</td>
+                    <td>{item.quantity}</td>
 
-              <td>
-                {formatCurrency(item.cost * item.quantity)}
-              </td>
+                    <td>{formatCurrency(item.cost * item.quantity)}</td>
 
-              <td>{item.status}</td>
-              <td>
-                <button
-                  className="financial-action-btn"
-                  onClick={() => handleEditSubjectCost(item)}
-                >
-                  Edit
-                </button>
+                    <td>{item.status}</td>
+                    <td>
+                      <button
+                        className="financial-action-btn"
+                        onClick={() => handleEditSubjectCost(item)}
+                      >
+                        Edit
+                      </button>
 
-                <button
-                  className="financial-delete-btn"
-                  onClick={() => handleDeleteSubjectCost(item.id)}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))
-        )}
-      </tbody>
-    </table>
-  </section>
-)}
+                      <button
+                        className="financial-delete-btn"
+                        onClick={() => handleDeleteSubjectCost(item.id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </section>
+      )}
 
       <section className="payment-table">
         <h3>Study Payments</h3>
@@ -1613,10 +1528,9 @@ Subject Costs
               filteredPaymentList.map((payment) => (
                 <tr key={payment.id}>
                   <td>{payment.milestone}</td>
-                  <td>{formatCurrency(
-  payment.amount,
-  budgets[0]?.currency
-)}</td>
+                  <td>
+                    {formatCurrency(payment.amount, budgets[0]?.currency)}
+                  </td>
                   <td>{payment.paidOn}</td>
                   <td>
                     <span
@@ -1674,10 +1588,9 @@ Subject Costs
               filteredReceivableList.map((receivable) => (
                 <tr key={receivable.id}>
                   <td>{receivable.payer}</td>
-                  <td>{formatCurrency(
-  receivable.amount,
-  budgets[0]?.currency
-)}</td>
+                  <td>
+                    {formatCurrency(receivable.amount, budgets[0]?.currency)}
+                  </td>
                   <td>{receivable.dueDate}</td>
                   <td>
                     <span
@@ -1742,10 +1655,9 @@ Subject Costs
                 <tr key={invoice.id}>
                   <td>{invoice.invoiceNo}</td>
                   <td>{invoice.payer}</td>
-                  <td>{formatCurrency(
-  invoice.amount,
-  budgets[0]?.currency
-)}</td>
+                  <td>
+                    {formatCurrency(invoice.amount, budgets[0]?.currency)}
+                  </td>
                   <td>{invoice.issueDate}</td>
                   <td>{invoice.dueDate}</td>
                   <td>
@@ -1787,9 +1699,7 @@ Subject Costs
         <div className="financial-modal-overlay">
           <div className="financial-modal" role="dialog" aria-modal="true">
             <h2>
-              {editBudgetId !== null
-                ? "Edit Study Budget"
-                : "New Study Budget"}
+              {editBudgetId !== null ? "Edit Study Budget" : "New Study Budget"}
             </h2>
 
             <div className="financial-form">
@@ -1835,149 +1745,116 @@ Subject Costs
                   )}
               </select>
 
-             <label className="financial-form-label">Cost Per Unit</label>
+              <label className="financial-form-label">Cost Per Unit</label>
 
-<input
-  type="number"
-  min="0"
-  value={budgetForm.costPerUnit}
-  onChange={(event) =>
-    setBudgetForm((currentForm) => ({
-      ...currentForm,
-      costPerUnit: event.target.value,
-      totalCost:
-        Number(event.target.value || 0) *
-        Number(currentForm.units || 0),
-    }))
-  }
-/>
+              <input
+                type="number"
+                min="0"
+                value={budgetForm.costPerUnit}
+                onChange={(event) =>
+                  setBudgetForm((currentForm) => ({
+                    ...currentForm,
+                    costPerUnit: event.target.value,
+                    totalCost:
+                      Number(event.target.value || 0) *
+                      Number(currentForm.units || 0),
+                  }))
+                }
+              />
 
-<label className="financial-form-label">Units</label>
+              <label className="financial-form-label">Units</label>
 
-<input
-  type="number"
-  min="1"
-  value={budgetForm.units}
-  onChange={(event) =>
-    setBudgetForm((currentForm) => ({
-      ...currentForm,
-      units: event.target.value,
-      totalCost:
-        Number(currentForm.costPerUnit || 0) *
-        Number(event.target.value || 0),
-    }))
-  }
-/>
+              <input
+                type="number"
+                min="1"
+                value={budgetForm.units}
+                onChange={(event) =>
+                  setBudgetForm((currentForm) => ({
+                    ...currentForm,
+                    units: event.target.value,
+                    totalCost:
+                      Number(currentForm.costPerUnit || 0) *
+                      Number(event.target.value || 0),
+                  }))
+                }
+              />
 
-<label className="financial-form-label">Unit Type</label>
+              <label className="financial-form-label">Unit Type</label>
 
-<select
-  value={budgetForm.unitType}
-  onChange={(event) =>
-    setBudgetForm((currentForm) => ({
-      ...currentForm,
-      unitType: event.target.value,
-    }))
-  }
->
-  <option value="Subjects">Subjects</option>
-  <option value="Visits">Visits</option>
-  <option value="Sites">Sites</option>
-  <option value="Months">Months</option>
-</select>
+              <select
+                value={budgetForm.unitType}
+                onChange={(event) =>
+                  setBudgetForm((currentForm) => ({
+                    ...currentForm,
+                    unitType: event.target.value,
+                  }))
+                }
+              >
+                <option value="Subjects">Subjects</option>
+                <option value="Visits">Visits</option>
+                <option value="Sites">Sites</option>
+                <option value="Months">Months</option>
+              </select>
 
-<label className="financial-form-label">
-Total Cost
-</label>
+              <label className="financial-form-label">Total Cost</label>
 
-<input
-   type="number"
-   value={budgetForm.totalCost}
-   readOnly
-/>
-<label className="financial-form-label">
-Currency
-</label>
+              <input type="number" value={budgetForm.totalCost} readOnly />
+              <label className="financial-form-label">Currency</label>
 
-<select
-   value={budgetForm.currency}
-   onChange={(event)=>
-      updateBudgetField(
-         "currency",
-         event.target.value
-      )
-   }
->
+              <select
+                value={budgetForm.currency}
+                onChange={(event) =>
+                  updateBudgetField("currency", event.target.value)
+                }
+              >
+                <option>USD</option>
 
-<option>USD</option>
+                <option>INR</option>
 
-<option>INR</option>
+                <option>EUR</option>
+              </select>
 
-<option>EUR</option>
+              <label className="financial-form-label">Version</label>
 
-</select>
-
-<label className="financial-form-label">
-Version
-</label>
-
-<input
-   type="text"
-   value={budgetForm.version}
-   readOnly
-/>
+              <input type="text" value={budgetForm.version} readOnly />
               <label className="financial-form-label">Start Date</label>
-             <input
-   type="date"
-   value={budgetForm.startDate}
-   onChange={(event)=>
-      updateBudgetField(
-         "startDate",
-         event.target.value
-      )
-   }
-/>
+              <input
+                type="date"
+                value={budgetForm.startDate}
+                onChange={(event) =>
+                  updateBudgetField("startDate", event.target.value)
+                }
+              />
 
               <label className="financial-form-label">End Date</label>
               <input
-   type="date"
-   value={budgetForm.endDate}
-   onChange={(event)=>
-      updateBudgetField(
-         "endDate",
-         event.target.value
-      )
-   }
-/>
+                type="date"
+                value={budgetForm.endDate}
+                onChange={(event) =>
+                  updateBudgetField("endDate", event.target.value)
+                }
+              />
 
               <label className="financial-form-label">Budget Status</label>
               <select
-   value={budgetForm.status}
-   onChange={(event)=>
-      updateBudgetField(
-         "status",
-         event.target.value
-      )
-   }
->
+                value={budgetForm.status}
+                onChange={(event) =>
+                  updateBudgetField("status", event.target.value)
+                }
+              >
                 <option value="Active">Active</option>
                 <option value="Draft">Draft</option>
                 <option value="Closed">Closed</option>
               </select>
 
-              <label className="financial-form-label">
-                Budget Description
-              </label>
+              <label className="financial-form-label">Budget Description</label>
               <textarea
-   rows="4"
-   value={budgetForm.description}
-   onChange={(event)=>
-      updateBudgetField(
-         "description",
-         event.target.value
-      )
-   }
-/>
+                rows="4"
+                value={budgetForm.description}
+                onChange={(event) =>
+                  updateBudgetField("description", event.target.value)
+                }
+              />
             </div>
 
             <div className="financial-modal-actions">
@@ -1996,9 +1873,7 @@ Version
       {showPaymentModal && (
         <div className="financial-modal-overlay">
           <div className="financial-modal" role="dialog" aria-modal="true">
-            <h2>
-              {editPaymentId !== null ? "Edit Payment" : "New Payment"}
-            </h2>
+            <h2>{editPaymentId !== null ? "Edit Payment" : "New Payment"}</h2>
 
             <div className="financial-form">
               <label className="financial-form-label">Milestone</label>
@@ -2083,9 +1958,7 @@ Version
         <div className="financial-modal-overlay">
           <div className="financial-modal" role="dialog" aria-modal="true">
             <h2>
-              {editReceivableId !== null
-                ? "Edit Receivable"
-                : "New Receivable"}
+              {editReceivableId !== null ? "Edit Receivable" : "New Receivable"}
             </h2>
 
             <div className="financial-form">
@@ -2126,9 +1999,7 @@ Version
                 }
               />
 
-              <label className="financial-form-label">
-                Receivable Status
-              </label>
+              <label className="financial-form-label">Receivable Status</label>
               <select
                 value={receivableForm.status}
                 onChange={(event) =>
@@ -2256,119 +2127,104 @@ Version
       )}
 
       {showSubjectCostModal && (
-  <div className="financial-modal-overlay">
-    <div className="financial-modal">
+        <div className="financial-modal-overlay">
+          <div className="financial-modal">
+            <h2>New Subject Cost</h2>
 
-      <h2>New Subject Cost</h2>
+            <div className="financial-form">
+              <label>Subject ID</label>
+              <input
+                type="text"
+                value={subjectCostForm.subjectId}
+                onChange={(e) =>
+                  setSubjectCostForm({
+                    ...subjectCostForm,
+                    subjectId: e.target.value,
+                  })
+                }
+              />
 
-      <div className="financial-form">
+              <label>Visit</label>
+              <input
+                type="text"
+                value={subjectCostForm.visit}
+                onChange={(e) =>
+                  setSubjectCostForm({
+                    ...subjectCostForm,
+                    visit: e.target.value,
+                  })
+                }
+              />
 
-        <label>Subject ID</label>
-        <input
-          type="text"
-          value={subjectCostForm.subjectId}
-          onChange={(e)=>
-            setSubjectCostForm({
-              ...subjectCostForm,
-              subjectId:e.target.value
-            })
-          }
-        />
+              <label>Procedure</label>
+              <input
+                type="text"
+                value={subjectCostForm.procedure}
+                onChange={(e) =>
+                  setSubjectCostForm({
+                    ...subjectCostForm,
+                    procedure: e.target.value,
+                  })
+                }
+              />
 
-        <label>Visit</label>
-        <input
-          type="text"
-          value={subjectCostForm.visit}
-          onChange={(e)=>
-            setSubjectCostForm({
-              ...subjectCostForm,
-              visit:e.target.value
-            })
-          }
-        />
+              <label>Cost</label>
+              <input
+                type="number"
+                value={subjectCostForm.cost}
+                onChange={(e) =>
+                  setSubjectCostForm({
+                    ...subjectCostForm,
+                    cost: e.target.value,
+                  })
+                }
+              />
 
-        <label>Procedure</label>
-        <input
-          type="text"
-          value={subjectCostForm.procedure}
-          onChange={(e)=>
-            setSubjectCostForm({
-              ...subjectCostForm,
-              procedure:e.target.value
-            })
-          }
-        />
+              <label>Quantity</label>
+              <input
+                type="number"
+                value={subjectCostForm.quantity}
+                onChange={(e) =>
+                  setSubjectCostForm({
+                    ...subjectCostForm,
+                    quantity: e.target.value,
+                  })
+                }
+              />
 
-        <label>Cost</label>
-        <input
-          type="number"
-          value={subjectCostForm.cost}
-          onChange={(e)=>
-            setSubjectCostForm({
-              ...subjectCostForm,
-              cost:e.target.value
-            })
-          }
-        />
+              <label>Total</label>
 
-        <label>Quantity</label>
-        <input
-          type="number"
-          value={subjectCostForm.quantity}
-          onChange={(e)=>
-            setSubjectCostForm({
-              ...subjectCostForm,
-              quantity:e.target.value
-            })
-          }
-        />
+              <input
+                readOnly
+                value={
+                  Number(subjectCostForm.cost || 0) *
+                  Number(subjectCostForm.quantity || 0)
+                }
+              />
 
-        <label>Total</label>
+              <label>Status</label>
+              <select
+                value={subjectCostForm.status}
+                onChange={(e) =>
+                  setSubjectCostForm({
+                    ...subjectCostForm,
+                    status: e.target.value,
+                  })
+                }
+              >
+                <option>Pending</option>
+                <option>Completed</option>
+              </select>
+            </div>
 
-<input
-  readOnly
-  value={
-    Number(subjectCostForm.cost || 0) *
-    Number(subjectCostForm.quantity || 0)
-  }
-/>
+            <div className="financial-modal-actions">
+              <button onClick={resetSubjectCostModal}>Cancel</button>
 
-        <label>Status</label>
-        <select
-          value={subjectCostForm.status}
-          onChange={(e)=>
-            setSubjectCostForm({
-              ...subjectCostForm,
-              status:e.target.value
-            })
-          }
-        >
-          <option>Pending</option>
-          <option>Completed</option>
-        </select>
-
-      </div>
-
-      <div className="financial-modal-actions">
-
-        <button
-          onClick={resetSubjectCostModal}
-        >
-          Cancel
-        </button>
-
-       <button
-  onClick={handleSaveSubjectCost}
->
-  Save
-</button>
-
-      </div>
-
-    </div>
-  </div>
-)}
-
+              <button onClick={handleSaveSubjectCost}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showDeleteModal && (
         <div className="financial-modal-overlay">
@@ -2406,45 +2262,65 @@ Version
           </div>
         </div>
       )}
-      
+
       {showBudgetPreview && selectedBudget && (
-  <div className="financial-modal-overlay">
-    <div className="financial-modal">
-      <h2>Budget Preview</h2>
+        <div className="financial-modal-overlay">
+          <div className="financial-modal">
+            <h2>Budget Preview</h2>
 
-      <p><b>Budget Name:</b> {selectedBudget.name}</p>
-      <p><b>Version:</b> {selectedBudget.version}</p>
-      <p><b>Status:</b> {selectedBudget.status}</p>
-      <p><b>Study Name:</b> {selectedBudget.studyName}</p>
-      <p><b>Category:</b> {selectedBudget.category}</p>
+            <p>
+              <b>Budget Name:</b> {selectedBudget.name}
+            </p>
+            <p>
+              <b>Version:</b> {selectedBudget.version}
+            </p>
+            <p>
+              <b>Status:</b> {selectedBudget.status}
+            </p>
+            <p>
+              <b>Study Name:</b> {selectedBudget.studyName}
+            </p>
+            <p>
+              <b>Category:</b> {selectedBudget.category}
+            </p>
 
-<p><b>Cost Per Unit:</b> {formatCurrency(selectedBudget.costPerUnit)}</p>
+            <p>
+              <b>Cost Per Unit:</b> {formatCurrency(selectedBudget.costPerUnit)}
+            </p>
 
-<p><b>Units:</b> {selectedBudget.units}</p>
+            <p>
+              <b>Units:</b> {selectedBudget.units}
+            </p>
 
-<p><b>Total Cost:</b> {formatCurrency(selectedBudget.totalCost)}</p>
+            <p>
+              <b>Total Cost:</b> {formatCurrency(selectedBudget.totalCost)}
+            </p>
 
-<p><b>Currency:</b> {selectedBudget.currency}</p>
+            <p>
+              <b>Currency:</b> {selectedBudget.currency}
+            </p>
 
-<p><b>Start Date:</b> {selectedBudget.startDate}</p>
+            <p>
+              <b>Start Date:</b> {selectedBudget.startDate}
+            </p>
 
-<p><b>End Date:</b> {selectedBudget.endDate}</p>
+            <p>
+              <b>End Date:</b> {selectedBudget.endDate}
+            </p>
 
-<p><b>Description:</b> {selectedBudget.description}</p>
+            <p>
+              <b>Description:</b> {selectedBudget.description}
+            </p>
 
-      <div className="financial-modal-actions">
-        <button
-          type="button"
-          onClick={() => setShowBudgetPreview(false)}
-        >
-          Close
-        </button>
-      </div>
+            <div className="financial-modal-actions">
+              <button type="button" onClick={() => setShowBudgetPreview(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  </div>
-)}
-    </div>
-    
   );
 }
 

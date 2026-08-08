@@ -5,7 +5,7 @@ import "./dashboard.css";
 function UpcomingVisitsWidget({
   visits = [],
   emptyMessage = "No upcoming visits scheduled",
-  pageSize = 3
+  pageSize = 3,
 }) {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -42,7 +42,10 @@ function UpcomingVisitsWidget({
       <h3>Upcoming Visits</h3>
 
       {visibleVisits.map((visit, index) => (
-        <div key={`${visit.subject || visit.subjectId}-${index}`} className="visit-item">
+        <div
+          key={`${visit.subject || visit.subjectId}-${index}`}
+          className="visit-item"
+        >
           <strong>{visit.subject || visit.subjectId || "—"}</strong>
           <div>{visit.visit || "—"}</div>
           <small>{formatScheduleDisplayDate(visit.date)}</small>

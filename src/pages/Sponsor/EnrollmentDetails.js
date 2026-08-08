@@ -5,7 +5,6 @@ import { resolveSiteDisplay } from "../../utils/siteDisplay";
 import { getStudies } from "../../services/studyService";
 
 function EnrollmentDetails() {
-
   const { id } = useParams();
 
   const siteSources = useMemo(() => getStudies(), []);
@@ -13,12 +12,11 @@ function EnrollmentDetails() {
     value
       ? resolveSiteDisplay(value, {
           sources: siteSources,
-          fallback: value
+          fallback: value,
         })
       : "—";
 
   const studies = {
-
     "TRIA-001": {
       studyName: "Diabetes Study",
       site: "Hyderabad",
@@ -28,7 +26,7 @@ function EnrollmentDetails() {
       enrolled: 120,
       screened: 180,
       eligible: 140,
-      status: "On Track"
+      status: "On Track",
     },
 
     "TRIA-002": {
@@ -40,9 +38,8 @@ function EnrollmentDetails() {
       enrolled: 95,
       screened: 150,
       eligible: 110,
-      status: "On Track"
-    }
-
+      status: "On Track",
+    },
   };
 
   const study = studies[id];
@@ -53,9 +50,7 @@ function EnrollmentDetails() {
 
   return (
     <AppLayout>
-
       <div style={{ padding: "20px" }}>
-
         <h1>Enrollment Details</h1>
 
         <h2>{study.studyName}</h2>
@@ -64,38 +59,53 @@ function EnrollmentDetails() {
 
         <h3>Study Information</h3>
 
-        <p><strong>Study ID:</strong> {id}</p>
-        <p><strong>Site:</strong> {displaySite(study.site)}</p>
-        <p><strong>PI:</strong> {study.pi}</p>
-        <p><strong>CRO:</strong> {study.cro}</p>
+        <p>
+          <strong>Study ID:</strong> {id}
+        </p>
+        <p>
+          <strong>Site:</strong> {displaySite(study.site)}
+        </p>
+        <p>
+          <strong>PI:</strong> {study.pi}
+        </p>
+        <p>
+          <strong>CRO:</strong> {study.cro}
+        </p>
 
         <hr />
 
         <h3>Enrollment Metrics</h3>
 
-        <p><strong>Target:</strong> {study.target}</p>
-        <p><strong>Enrolled:</strong> {study.enrolled}</p>
         <p>
-          <strong>Remaining:</strong>{" "}
-          {study.target - study.enrolled}
+          <strong>Target:</strong> {study.target}
+        </p>
+        <p>
+          <strong>Enrolled:</strong> {study.enrolled}
+        </p>
+        <p>
+          <strong>Remaining:</strong> {study.target - study.enrolled}
         </p>
 
         <hr />
 
         <h3>Recruitment Overview</h3>
 
-        <p><strong>Screened:</strong> {study.screened}</p>
-        <p><strong>Eligible:</strong> {study.eligible}</p>
-        <p><strong>Enrolled:</strong> {study.enrolled}</p>
+        <p>
+          <strong>Screened:</strong> {study.screened}
+        </p>
+        <p>
+          <strong>Eligible:</strong> {study.eligible}
+        </p>
+        <p>
+          <strong>Enrolled:</strong> {study.enrolled}
+        </p>
 
         <hr />
 
         <h3>Status</h3>
 
         <p>{study.status}</p>
-
       </div>
-
     </AppLayout>
   );
 }

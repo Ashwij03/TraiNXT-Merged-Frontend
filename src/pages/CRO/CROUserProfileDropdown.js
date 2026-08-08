@@ -91,7 +91,7 @@ function CROUserProfileDropdown() {
         navigate(item.path);
       }
     },
-    [closeDropdown, handleLogout, navigate]
+    [closeDropdown, handleLogout, navigate],
   );
 
   useEffect(() => {
@@ -224,95 +224,100 @@ function CROUserProfileDropdown() {
               aria-hidden="true"
             />
             <div
-            ref={menuRef}
-            className="cro-user-dropdown-panel"
-            role="menu"
-            aria-label="User account menu"
-            onKeyDown={handleMenuKeyDown}
-          >
-            <div className="cro-user-dropdown-profile">
-              {profile.profileImage ? (
-                <img
-                  src={profile.profileImage}
-                  alt=""
-                  className="cro-user-dropdown-profile-avatar cro-user-dropdown-avatar--image"
-                />
-              ) : (
-                <div className="cro-user-dropdown-profile-avatar">
-                  {profile.initials}
-                </div>
-              )}
+              ref={menuRef}
+              className="cro-user-dropdown-panel"
+              role="menu"
+              aria-label="User account menu"
+              onKeyDown={handleMenuKeyDown}
+            >
+              <div className="cro-user-dropdown-profile">
+                {profile.profileImage ? (
+                  <img
+                    src={profile.profileImage}
+                    alt=""
+                    className="cro-user-dropdown-profile-avatar cro-user-dropdown-avatar--image"
+                  />
+                ) : (
+                  <div className="cro-user-dropdown-profile-avatar">
+                    {profile.initials}
+                  </div>
+                )}
 
-              <div className="cro-user-dropdown-profile-info">
-                <div className="cro-user-dropdown-profile-name">
-                  {profile.name}
+                <div className="cro-user-dropdown-profile-info">
+                  <div className="cro-user-dropdown-profile-name">
+                    {profile.name}
+                  </div>
+                  <div className="cro-user-dropdown-profile-role">
+                    {profile.role}
+                  </div>
+                  <div className="cro-user-dropdown-status">🟢 Online</div>
                 </div>
-                <div className="cro-user-dropdown-profile-role">
-                  {profile.role}
+              </div>
+
+              <div className="cro-user-dropdown-meta">
+                <div className="cro-user-dropdown-meta-row">
+                  <span className="cro-user-dropdown-meta-label">Name</span>
+                  <span className="cro-user-dropdown-meta-value">
+                    {profile.name}
+                  </span>
                 </div>
-                <div className="cro-user-dropdown-status">
-                  🟢 Online
+                <div className="cro-user-dropdown-meta-row">
+                  <span className="cro-user-dropdown-meta-label">Role</span>
+                  <span className="cro-user-dropdown-meta-value">
+                    {profile.role}
+                  </span>
                 </div>
+                <div className="cro-user-dropdown-meta-row">
+                  <span className="cro-user-dropdown-meta-label">
+                    Organization
+                  </span>
+                  <span className="cro-user-dropdown-meta-value">
+                    {profile.organization}
+                  </span>
+                </div>
+                <div className="cro-user-dropdown-meta-row">
+                  <span className="cro-user-dropdown-meta-label">Email</span>
+                  <span className="cro-user-dropdown-meta-value">
+                    {profile.email}
+                  </span>
+                </div>
+                <div className="cro-user-dropdown-meta-row">
+                  <span className="cro-user-dropdown-meta-label">
+                    Last Login
+                  </span>
+                  <span className="cro-user-dropdown-meta-value">
+                    {profile.lastLogin}
+                  </span>
+                </div>
+              </div>
+
+              <div className="cro-user-dropdown-divider" role="separator" />
+
+              <div className="cro-user-dropdown-actions">
+                {MENU_ITEMS.map((item, index) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      role="menuitem"
+                      className={`cro-user-dropdown-action${
+                        item.danger ? " cro-user-dropdown-action--danger" : ""
+                      }${focusedIndex === index ? " cro-user-dropdown-action--focused" : ""}`}
+                      onClick={() => handleMenuAction(item)}
+                      onMouseEnter={() => setFocusedIndex(index)}
+                      tabIndex={focusedIndex === index ? 0 : -1}
+                    >
+                      <Icon
+                        className="cro-user-dropdown-action-icon"
+                        aria-hidden="true"
+                      />
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-
-            <div className="cro-user-dropdown-meta">
-              <div className="cro-user-dropdown-meta-row">
-                <span className="cro-user-dropdown-meta-label">Name</span>
-                <span className="cro-user-dropdown-meta-value">
-                  {profile.name}
-                </span>
-              </div>
-              <div className="cro-user-dropdown-meta-row">
-                <span className="cro-user-dropdown-meta-label">Role</span>
-                <span className="cro-user-dropdown-meta-value">
-                  {profile.role}
-                </span>
-              </div>
-              <div className="cro-user-dropdown-meta-row">
-                <span className="cro-user-dropdown-meta-label">Organization</span>
-                <span className="cro-user-dropdown-meta-value">
-                  {profile.organization}
-                </span>
-              </div>
-              <div className="cro-user-dropdown-meta-row">
-                <span className="cro-user-dropdown-meta-label">Email</span>
-                <span className="cro-user-dropdown-meta-value">
-                  {profile.email}
-                </span>
-              </div>
-              <div className="cro-user-dropdown-meta-row">
-                <span className="cro-user-dropdown-meta-label">Last Login</span>
-                <span className="cro-user-dropdown-meta-value">
-                  {profile.lastLogin}
-                </span>
-              </div>
-            </div>
-
-            <div className="cro-user-dropdown-divider" role="separator" />
-
-            <div className="cro-user-dropdown-actions">
-              {MENU_ITEMS.map((item, index) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    role="menuitem"
-                    className={`cro-user-dropdown-action${
-                      item.danger ? " cro-user-dropdown-action--danger" : ""
-                    }${focusedIndex === index ? " cro-user-dropdown-action--focused" : ""}`}
-                    onClick={() => handleMenuAction(item)}
-                    onMouseEnter={() => setFocusedIndex(index)}
-                    tabIndex={focusedIndex === index ? 0 : -1}
-                  >
-                    <Icon className="cro-user-dropdown-action-icon" aria-hidden="true" />
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
           </>
         )}
       </div>

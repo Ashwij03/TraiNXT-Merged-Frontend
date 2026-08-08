@@ -5,7 +5,7 @@ import { getEISFModuleDocuments } from "./eisfService";
  */
 export function getDocumentVersions(documentId) {
   const document = getEISFModuleDocuments().find(
-    (item) => item.id === documentId
+    (item) => item.id === documentId,
   );
 
   return document?.versions || [];
@@ -20,7 +20,7 @@ export function getCurrentVersion(documentId) {
   if (!versions.length) return null;
 
   return versions.reduce((latest, current) =>
-    Number(current.version) > Number(latest.version) ? current : latest
+    Number(current.version) > Number(latest.version) ? current : latest,
   );
 }
 
@@ -31,9 +31,7 @@ export function getVersion(versionId) {
   const documents = getEISFModuleDocuments();
 
   for (const document of documents) {
-    const version = document.versions?.find(
-      (item) => item.id === versionId
-    );
+    const version = document.versions?.find((item) => item.id === versionId);
 
     if (version) {
       return version;
@@ -48,7 +46,7 @@ export function getVersion(versionId) {
  */
 export function getApprovedVersions(documentId) {
   return getDocumentVersions(documentId).filter(
-    (version) => version.status === "Approved"
+    (version) => version.status === "Approved",
   );
 }
 
@@ -57,7 +55,7 @@ export function getApprovedVersions(documentId) {
  */
 export function getSupersededVersions(documentId) {
   return getDocumentVersions(documentId).filter(
-    (version) => version.status === "Superseded"
+    (version) => version.status === "Superseded",
   );
 }
 
@@ -67,7 +65,7 @@ export function getSupersededVersions(documentId) {
  */
 export function getVersionHistory(documentId) {
   return [...getDocumentVersions(documentId)].sort(
-    (a, b) => Number(b.version) - Number(a.version)
+    (a, b) => Number(b.version) - Number(a.version),
   );
 }
 
@@ -80,7 +78,7 @@ export function getLatestApprovedVersion(documentId) {
   if (!approvedVersions.length) return null;
 
   return approvedVersions.reduce((latest, current) =>
-    Number(current.version) > Number(latest.version) ? current : latest
+    Number(current.version) > Number(latest.version) ? current : latest,
   );
 }
 
@@ -98,7 +96,7 @@ export function isCurrentVersion(documentId, versionId) {
  */
 export function getVersionByNumber(documentId, versionNumber) {
   return getDocumentVersions(documentId).find(
-    (version) => String(version.version) === String(versionNumber)
+    (version) => String(version.version) === String(versionNumber),
   );
 }
 
@@ -110,11 +108,11 @@ export function getVersionStatistics(documentId) {
 
   return {
     total: versions.length,
-    approved: versions.filter(v => v.status === "Approved").length,
-    pending: versions.filter(v => v.status === "Pending").length,
-    superseded: versions.filter(v => v.status === "Superseded").length,
-    rejected: versions.filter(v => v.status === "Rejected").length,
-    current: getCurrentVersion(documentId)
+    approved: versions.filter((v) => v.status === "Approved").length,
+    pending: versions.filter((v) => v.status === "Pending").length,
+    superseded: versions.filter((v) => v.status === "Superseded").length,
+    rejected: versions.filter((v) => v.status === "Rejected").length,
+    current: getCurrentVersion(documentId),
   };
 }
 

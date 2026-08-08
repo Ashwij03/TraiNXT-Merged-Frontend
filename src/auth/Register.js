@@ -4,7 +4,6 @@ import AuthLayout from "./AuthLayout";
 import "./Auth.css";
 
 function Register() {
-
   const navigate = useNavigate();
 
   const [firstName, setFirstName] = useState("");
@@ -58,7 +57,7 @@ function Register() {
     { value: "SiteStaff", label: "SiteStaff" },
     { value: "PI", label: "Principal Investigator" },
     { value: "CRO", label: "CRO" },
-    { value: "Sponsor", label: "Sponsor" }
+    { value: "Sponsor", label: "Sponsor" },
   ]; // newly added till here
 
   // Kept (always false now that "Admin" isn't selectable) so the
@@ -67,23 +66,14 @@ function Register() {
   const isAdminRole = role === "Admin";
 
   const generateUsername = (fname, lname) => {
-
     if (fname && lname) {
-
-      setUsername(
-        fname.charAt(0).toLowerCase() +
-        lname.toLowerCase() +
-        "01"
-      );
+      setUsername(fname.charAt(0).toLowerCase() + lname.toLowerCase() + "01");
     }
   };
 
-  const capitalize = (value) =>
-    value.charAt(0).toUpperCase() +
-    value.slice(1);
+  const capitalize = (value) => value.charAt(0).toUpperCase() + value.slice(1);
 
   const validateFirstName = (rawValue) => {
-
     const val = capitalize(rawValue);
 
     setFirstName(val);
@@ -91,11 +81,8 @@ function Register() {
     generateUsername(val, lastName);
 
     if (!val.trim()) {
-
       setFirstNameError("First name is required");
-
     } else {
-
       setFirstNameError("");
     }
 
@@ -103,7 +90,6 @@ function Register() {
   };
 
   const validateLastName = (rawValue) => {
-
     const val = capitalize(rawValue);
 
     setLastName(val);
@@ -111,11 +97,8 @@ function Register() {
     generateUsername(firstName, val);
 
     if (!val.trim()) {
-
       setLastNameError("Last name is required");
-
     } else {
-
       setLastNameError("");
     }
 
@@ -123,80 +106,46 @@ function Register() {
   };
 
   const validateEmail = (value) => {
-
     setEmail(value);
 
-    const regex =
-      /^(?=.*\d)[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const regex = /^(?=.*\d)[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!value.trim()) {
-
       setEmailError("Email is required");
-
     } else if (!regex.test(value)) {
-
-      setEmailError(
-        "Enter a valid email address"
-      );
-
+      setEmailError("Enter a valid email address");
     } else {
-
       setEmailError("");
     }
   };
 
   const validatePassword = (pwd) => {
-
     setPassword(pwd);
 
-    const regex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
 
     if (!pwd.trim()) {
-
       setPasswordError("Password is required");
-
     } else if (!regex.test(pwd)) {
-
-      setPasswordError(
-        "Min 8 chars, upper, lower, number & special char"
-      );
-
+      setPasswordError("Min 8 chars, upper, lower, number & special char");
     } else {
-
       setPasswordError("");
     }
 
-    if (
-      confirmPassword &&
-      pwd !== confirmPassword
-    ) {
-
-      setConfirmError(
-        "Passwords do not match"
-      );
-
+    if (confirmPassword && pwd !== confirmPassword) {
+      setConfirmError("Passwords do not match");
     } else if (confirmPassword) {
-
       setConfirmError("");
     }
   };
 
   const validateConfirmPassword = (value) => {
-
     setConfirmPassword(value);
 
     if (!value.trim()) {
-
       setConfirmError("Please confirm your password");
-
     } else {
-
-      setConfirmError(
-        value !== password
-          ? "Passwords do not match"
-          : ""
-      );
+      setConfirmError(value !== password ? "Passwords do not match" : "");
     }
   };
 
@@ -204,21 +153,16 @@ function Register() {
   // selected role is Admin. Reruns automatically whenever Role changes
   // so the field becomes/stops being mandatory without a page refresh.
   const validateOrganizationName = (value, currentRole) => {
-
     setOrganizationName(value);
 
     if (currentRole === "Admin") {
-
       setOrganizationNameError("");
       return;
     }
 
     if (!value.trim()) {
-
       setOrganizationNameError("Organization name is required");
-
     } else {
-
       setOrganizationNameError("");
     }
   };
@@ -226,34 +170,24 @@ function Register() {
   // UPDATED: Role change now dynamically toggles whether Organization
   // Name is required, with no page refresh.
   const handleRoleChange = (value) => {
-
     setRole(value);
 
     if (!value) {
-
       setRoleError("Role is required");
-
     } else {
-
       setRoleError("");
     }
 
     if (value === "Admin") {
-
       setOrganizationNameError("");
-
     } else if (!organizationName.trim()) {
-
       setOrganizationNameError("Organization name is required");
-
     } else {
-
       setOrganizationNameError("");
     }
   };
 
   const handleSignup = (e) => {
-
     console.log("Signup clicked");
 
     e.preventDefault();
@@ -264,21 +198,15 @@ function Register() {
     const trimmedUsername = username.trim();
     const trimmedOrganizationName = organizationName.trim();
 
-    const nextFirstNameError = trimmedFirstName
-      ? ""
-      : "First name is required";
+    const nextFirstNameError = trimmedFirstName ? "" : "First name is required";
 
-    const nextLastNameError = trimmedLastName
-      ? ""
-      : "Last name is required";
+    const nextLastNameError = trimmedLastName ? "" : "Last name is required";
 
     const nextUsernameError = trimmedUsername
       ? ""
       : "Username is required. Please enter your first and last name.";
 
-    const nextEmailError = !email.trim()
-      ? "Email is required"
-      : emailError;
+    const nextEmailError = !email.trim() ? "Email is required" : emailError;
 
     const nextPasswordError = !password.trim()
       ? "Password is required"
@@ -288,16 +216,14 @@ function Register() {
       ? "Please confirm your password"
       : confirmError;
 
-    const nextRoleError = role
-      ? ""
-      : "Role is required";
+    const nextRoleError = role ? "" : "Role is required";
 
     const nextOrganizationNameError =
       role === "Admin"
         ? ""
-        : (trimmedOrganizationName
+        : trimmedOrganizationName
           ? ""
-          : "Organization name is required");
+          : "Organization name is required";
 
     const nextPolicyError = acceptedPolicy
       ? ""
@@ -324,7 +250,6 @@ function Register() {
       nextOrganizationNameError ||
       nextPolicyError
     ) {
-
       alert("Please fix errors");
 
       return;
@@ -335,10 +260,7 @@ function Register() {
     // stops self-registration as Admin outright even if "role" were
     // ever set some other way.
     if (role === "Admin") {
-
-      setRoleError(
-        "Admin accounts cannot be created through registration."
-      );
+      setRoleError("Admin accounts cannot be created through registration.");
 
       return;
     }
@@ -346,28 +268,17 @@ function Register() {
     let users = [];
 
     try {
+      const storedUsers = localStorage.getItem("users");
 
-      const storedUsers =
-        localStorage.getItem("users");
-
-      users = storedUsers
-        ? JSON.parse(storedUsers)
-        : [];
-
+      users = storedUsers ? JSON.parse(storedUsers) : [];
     } catch (error) {
-
       users = [];
     }
 
-    const exists = users.some(
-      (u) => u.email === email
-    );
+    const exists = users.some((u) => u.email === email);
 
     if (exists) {
-
-      setEmailError(
-        "You are already registered. Please login."
-      );
+      setEmailError("You are already registered. Please login.");
 
       return;
     }
@@ -376,11 +287,9 @@ function Register() {
     // of leading/trailing whitespace only). Admin accounts are allowed
     // to register with no organization at all.
     const savedOrganizationName =
-      role === "Admin"
-        ? ""
-        : trimmedOrganizationName;
+      role === "Admin" ? "" : trimmedOrganizationName;
 
- // newly added Create new user object
+    // newly added Create new user object
 
     users.push({
       id: Date.now(),
@@ -407,385 +316,224 @@ function Register() {
       // UPDATED: persist assigned site for site-scoped RBAC
       assignedSite: savedOrganizationName,
 
-      approvalStatus:
-        role === "Admin"
-          ? "Approved"
-          : "Pending",
-      
-      accountStatus:
-        role === "Admin"
-          ? "Active"
-          : "Inactive",
+      approvalStatus: role === "Admin" ? "Approved" : "Pending",
 
-      permissions:
-        role === "Admin"
-          ? ["*"]
-          : [],
+      accountStatus: role === "Admin" ? "Active" : "Inactive",
+
+      permissions: role === "Admin" ? ["*"] : [],
 
       requestedPermissions: [],
 
-        permissionRequestDate:
-          null,
-            
-        lastPermissionUpdate:
-          null
-    });  // newly added till here
+      permissionRequestDate: null,
 
-    localStorage.setItem(
-      "users",
-      JSON.stringify(users)
-    );
+      lastPermissionUpdate: null,
+    }); // newly added till here
+
+    localStorage.setItem("users", JSON.stringify(users));
 
     alert("Registration successful!");
 
     navigate("/login", {
-      replace: true
+      replace: true,
     });
   };
 
   return (
-
     <AuthLayout title="Create Account" wide>
-
       <form onSubmit={handleSignup} className="auth-form-compact">
-
         <div className="form-row">
-
-        {/* FIRST NAME */}
-        <div className="input-group">
-
-          <label>
-            First Name
-            <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
-          </label>
-
-          <input
-            value={firstName}
-            placeholder="Enter your first name"
-            onChange={(e) =>
-              validateFirstName(e.target.value)
-            }
-            required
-          />
-
-          {
-            firstNameError && (
-
-              <p className="error">
-                {firstNameError}
-              </p>
-            )
-          }
-
-        </div>
-
-        {/* LAST NAME */}
-        <div className="input-group">
-
-          <label>
-            Last Name
-            <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
-          </label>
-
-          <input
-            value={lastName}
-            placeholder="Enter your last name"
-            onChange={(e) =>
-              validateLastName(e.target.value)
-            }
-            required
-          />
-
-          {
-            lastNameError && (
-
-              <p className="error">
-                {lastNameError}
-              </p>
-            )
-          }
-
-        </div>
-
-        </div>
-
-        <div className="form-row">
-
-        {/* USERNAME */}
-        <div className="input-group">
-
-          <label>
-            Username
-            <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
-          </label>
-
-          <input
-            value={username}
-            placeholder="Enter your username"
-            readOnly
-          />
-
-          {
-            usernameError && (
-
-              <p className="error">
-                {usernameError}
-              </p>
-            )
-          }
-
-        </div>
-
-        {/* EMAIL */}
-        <div className="input-group">
-
-          <label>
-            Email
-            <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
-          </label>
-
-          <input
-            value={email}
-            placeholder="Enter your email"
-            onChange={(e) =>
-              validateEmail(
-                e.target.value
-              )
-            }
-            onPaste={(e) =>
-              e.preventDefault()
-            }
-            onCopy={(e) =>
-              e.preventDefault()
-            }
-            required
-          />
-
-          {
-            emailError && (
-
-              <p className="error">
-                {emailError}
-              </p>
-            )
-          }
-
-        </div>
-
-        </div>
-
-        <div className="form-row">
-
-        {/* PASSWORD */}
-        <div className="input-group">
-
-          <label>
-            Password
-            <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
-          </label>
-
-          <div className="password-box">
+          {/* FIRST NAME */}
+          <div className="input-group">
+            <label>
+              First Name
+              <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
+            </label>
 
             <input
-              type={
-                showPassword
-                  ? "text"
-                  : "password"
-              }
-              value={password}
-              placeholder="Enter your password"
-              onChange={(e) =>
-                validatePassword(
-                  e.target.value
-                )
-              }
+              value={firstName}
+              placeholder="Enter your first name"
+              onChange={(e) => validateFirstName(e.target.value)}
               required
             />
 
-            <span
-              className="toggle-text"
-              onClick={() =>
-                setShowPassword(
-                  !showPassword
-                )
-              }
-            >
-              {
-                showPassword
-                  ? "Hide"
-                  : "Show"
-              }
-            </span>
-
+            {firstNameError && <p className="error">{firstNameError}</p>}
           </div>
 
-          {
-            passwordError && (
-
-              <p className="error">
-                {passwordError}
-              </p>
-            )
-          }
-
-        </div>
-
-        {/* CONFIRM PASSWORD */}
-        <div className="input-group">
-
-          <label>
-            Confirm Password
-            <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
-          </label>
-
-          <div className="password-box">
+          {/* LAST NAME */}
+          <div className="input-group">
+            <label>
+              Last Name
+              <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
+            </label>
 
             <input
-              type={
-                showConfirmPassword
-                  ? "text"
-                  : "password"
-              }
-              value={confirmPassword}
-              placeholder="Confirm your password"
-              onChange={(e) =>
-                validateConfirmPassword(
-                  e.target.value
-                )
-              }
+              value={lastName}
+              placeholder="Enter your last name"
+              onChange={(e) => validateLastName(e.target.value)}
               required
             />
 
-            <span
-              className="toggle-text"
-              onClick={() =>
-                setShowConfirmPassword(
-                  !showConfirmPassword
-                )
-              }
-            >
-              {
-                showConfirmPassword
-                  ? "Hide"
-                  : "Show"
-              }
-            </span>
-
+            {lastNameError && <p className="error">{lastNameError}</p>}
           </div>
-
-          {
-            confirmError && (
-
-              <p className="error">
-                {confirmError}
-              </p>
-            )
-          }
-
-        </div>
-
         </div>
 
         <div className="form-row">
+          {/* USERNAME */}
+          <div className="input-group">
+            <label>
+              Username
+              <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
+            </label>
 
-        {/* ORGANIZATION NAME */}
-        {/* UPDATED: replaced the Organization Type dropdown with a
+            <input
+              value={username}
+              placeholder="Enter your username"
+              readOnly
+            />
+
+            {usernameError && <p className="error">{usernameError}</p>}
+          </div>
+
+          {/* EMAIL */}
+          <div className="input-group">
+            <label>
+              Email
+              <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
+            </label>
+
+            <input
+              value={email}
+              placeholder="Enter your email"
+              onChange={(e) => validateEmail(e.target.value)}
+              onPaste={(e) => e.preventDefault()}
+              onCopy={(e) => e.preventDefault()}
+              required
+            />
+
+            {emailError && <p className="error">{emailError}</p>}
+          </div>
+        </div>
+
+        <div className="form-row">
+          {/* PASSWORD */}
+          <div className="input-group">
+            <label>
+              Password
+              <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
+            </label>
+
+            <div className="password-box">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                placeholder="Enter your password"
+                onChange={(e) => validatePassword(e.target.value)}
+                required
+              />
+
+              <span
+                className="toggle-text"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </span>
+            </div>
+
+            {passwordError && <p className="error">{passwordError}</p>}
+          </div>
+
+          {/* CONFIRM PASSWORD */}
+          <div className="input-group">
+            <label>
+              Confirm Password
+              <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
+            </label>
+
+            <div className="password-box">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+                placeholder="Confirm your password"
+                onChange={(e) => validateConfirmPassword(e.target.value)}
+                required
+              />
+
+              <span
+                className="toggle-text"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? "Hide" : "Show"}
+              </span>
+            </div>
+
+            {confirmError && <p className="error">{confirmError}</p>}
+          </div>
+        </div>
+
+        <div className="form-row">
+          {/* ORGANIZATION NAME */}
+          {/* UPDATED: replaced the Organization Type dropdown with a
             free-text Organization Name input. Required for every role
             except Admin. */}
-        <div className="input-group">
-
-          <label>
-            Organization Name
-            {
-              !isAdminRole && (
+          <div className="input-group">
+            <label>
+              Organization Name
+              {!isAdminRole && (
                 <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
-              )
-            }
-          </label>
+              )}
+            </label>
 
-          <input
-            value={organizationName}
-            placeholder="Enter organization name"
-            onChange={(e) =>
-              validateOrganizationName(e.target.value, role)
-            }
-            required={!isAdminRole}
-          />
+            <input
+              value={organizationName}
+              placeholder="Enter organization name"
+              onChange={(e) => validateOrganizationName(e.target.value, role)}
+              required={!isAdminRole}
+            />
 
-          {
-            organizationNameError && (
+            {organizationNameError && (
+              <p className="error">{organizationNameError}</p>
+            )}
+          </div>
 
-              <p className="error">
-                {organizationNameError}
-              </p>
-            )
-          }
+          {/* ROLE */}
+          <div className="input-group">
+            <label>
+              Role
+              <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
+            </label>
 
-        </div>
+            <select
+              value={role}
+              onChange={(e) => handleRoleChange(e.target.value)}
+              required
+            >
+              <option value="">Select role</option>
 
-        {/* ROLE */}
-        <div className="input-group">
-
-          <label>
-            Role
-            <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
-          </label>
-
-          <select
-            value={role}
-            onChange={(e) =>
-              handleRoleChange(e.target.value)
-            }
-            required
-          >
-
-            <option value="">
-              Select role
-            </option>
-
-            {
-              ROLE_OPTIONS.map((option) => (
-
-                <option
-                  key={option.value}
-                  value={option.value}
-                >
+              {ROLE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
-              ))
-            }
+              ))}
+            </select>
 
-          </select>
-
-          {
-            roleError && (
-
-              <p className="error">
-                {roleError}
-              </p>
-            )
-          }
-
-        </div>
-
+            {roleError && <p className="error">{roleError}</p>}
+          </div>
         </div>
 
         {/* PRIVACY POLICY — full width, kept as its own row (structural
             fix only: previously nested inside the Role field's div) */}
         <div className="policy-container">
-
           <input
             type="checkbox"
             id="policy"
             checked={acceptedPolicy}
             onChange={() => {
-
               setAcceptedPolicy(!acceptedPolicy);
 
               setPolicyError(
                 !acceptedPolicy
                   ? ""
-                  : "Please accept the Privacy Policy to continue"
+                  : "Please accept the Privacy Policy to continue",
               );
             }}
           />
@@ -803,37 +551,23 @@ function Register() {
             </span>
             <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
           </label>
-            
         </div>
 
-        {
-          policyError && (
-
-            <p className="error">
-              {policyError}
-            </p>
-          )
-        }
+        {policyError && <p className="error">{policyError}</p>}
 
         {/* BUTTON */}
         <button
           type="submit"
           className="auth-btn"
           disabled={
-            emailError ||
-            passwordError ||
-            confirmError ||
-            !acceptedPolicy
+            emailError || passwordError || confirmError || !acceptedPolicy
           }
         >
           SIGN UP
         </button>
 
         <div className="login-section">
-
-          <span>
-            Already have an account?
-          </span>
+          <span>Already have an account?</span>
 
           <button
             type="button"
@@ -842,88 +576,56 @@ function Register() {
           >
             Login
           </button>
-
         </div>
 
         <div className="security-card">
-
-          <div className="security-icon">
-            🔒
-          </div>
+          <div className="security-icon">🔒</div>
 
           <div>
-
-            <h4>
-              Secure Registration
-            </h4>
+            <h4>Secure Registration</h4>
 
             <p>
-              Your information is encrypted
-              and protected using
-              industry-standard security
-              practices.
+              Your information is encrypted and protected using
+              industry-standard security practices.
             </p>
-
           </div>
-
         </div>
-
       </form>
 
       {showPolicy && (
-
         <div className="policy-modal">
-        
           <div className="policy-content">
-            
-            <h2>
-              TriaNXT Privacy Policy
-            </h2>
-            
+            <h2>TriaNXT Privacy Policy</h2>
+
             <p>
-              TriaNXT collects user
-              information such as
-              name, email address,
-              organization and role
-              for authentication and
-              platform access.
+              TriaNXT collects user information such as name, email address,
+              organization and role for authentication and platform access.
             </p>
-            
+
             <p>
-              We never sell or share
-              personal information
-              with unauthorized
+              We never sell or share personal information with unauthorized
               third parties.
             </p>
-            
+
             <p>
-              Access to study data,
-              dashboards and reports
-              is controlled through
+              Access to study data, dashboards and reports is controlled through
               role-based permissions.
             </p>
-            
+
             <p>
-              All information is stored
-              securely using modern
-              encryption standards.
+              All information is stored securely using modern encryption
+              standards.
             </p>
-            
+
             <button
               className="close-policy"
-              onClick={() =>
-                setShowPolicy(false)
-              }
+              onClick={() => setShowPolicy(false)}
             >
               Close
             </button>
-            
           </div>
-            
         </div>
-      
       )}
-
     </AuthLayout>
   );
 }

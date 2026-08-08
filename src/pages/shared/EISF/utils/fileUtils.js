@@ -14,9 +14,7 @@ export const formatFileSize = (bytes = 0) => {
  * Returns file extension
  */
 export const getFileExtension = (fileName = "") => {
-  return fileName.includes(".")
-    ? fileName.split(".").pop().toLowerCase()
-    : "";
+  return fileName.includes(".") ? fileName.split(".").pop().toLowerCase() : "";
 };
 
 /**
@@ -62,24 +60,16 @@ export const getFileType = (fileName = "") => {
  * Checks preview support
  */
 export const isPreviewSupported = (fileName = "") => {
-  return [
-    "pdf",
-    "png",
-    "jpg",
-    "jpeg",
-    "gif",
-    "svg",
-    "txt",
-  ].includes(getFileExtension(fileName));
+  return ["pdf", "png", "jpg", "jpeg", "gif", "svg", "txt"].includes(
+    getFileExtension(fileName),
+  );
 };
 
 /**
  * Checks image file
  */
 export const isImageFile = (fileName = "") =>
-  ["png", "jpg", "jpeg", "gif", "svg"].includes(
-    getFileExtension(fileName)
-  );
+  ["png", "jpg", "jpeg", "gif", "svg"].includes(getFileExtension(fileName));
 
 /**
  * Checks PDF file
@@ -108,11 +98,7 @@ export const isArchiveFile = (fileName = "") =>
 /**
  * Generates download filename
  */
-export const buildDownloadFileName = (
-  fileName,
-  version = "",
-  date = ""
-) => {
+export const buildDownloadFileName = (fileName, version = "", date = "") => {
   const name = getFileName(fileName);
   const extension = getFileExtension(fileName);
 
@@ -127,27 +113,19 @@ export const buildDownloadFileName = (
 /**
  * Validate upload size
  */
-export const isValidFileSize = (
-  file,
-  maxSize = 50 * 1024 * 1024
-) => {
+export const isValidFileSize = (file, maxSize = 50 * 1024 * 1024) => {
   return !!file && file.size <= maxSize;
 };
 
 /**
  * Validate upload type
  */
-export const isValidFileType = (
-  file,
-  allowedTypes = []
-) => {
+export const isValidFileType = (file, allowedTypes = []) => {
   if (!file) return false;
 
   if (!allowedTypes.length) return true;
 
-  return allowedTypes.includes(
-    getFileExtension(file.name)
-  );
+  return allowedTypes.includes(getFileExtension(file.name));
 };
 
 /**
@@ -164,15 +142,11 @@ export const getFileDetails = (file = {}) => ({
 /**
  * Checks if filename exists
  */
-export const hasFileName = (file = {}) =>
-  Boolean(file?.name);
+export const hasFileName = (file = {}) => Boolean(file?.name);
 
 /**
  * Compares two files
  */
 export const isSameFile = (fileA = {}, fileB = {}) => {
-  return (
-    fileA.name === fileB.name &&
-    fileA.size === fileB.size
-  );
+  return fileA.name === fileB.name && fileA.size === fileB.size;
 };

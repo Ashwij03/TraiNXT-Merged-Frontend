@@ -10,16 +10,14 @@ import { getStudies } from "../../services/studyService";
 
 function CROSubjectManagement() {
   const location = useLocation();
-  const {
-    subjects,
-  } = useCROData();
+  const { subjects } = useCROData();
 
   const siteSources = useMemo(() => getStudies(), []);
   const displaySite = (value) =>
     value
       ? resolveSiteDisplay(value, {
           sources: siteSources,
-          fallback: value
+          fallback: value,
         })
       : "—";
 
@@ -29,7 +27,10 @@ function CROSubjectManagement() {
   const [selectedSubject, setSelectedSubject] = useState(null);
 
   React.useEffect(() => {
-    if (location.state?.selectedData && location.state?.selectedType === "Subject") {
+    if (
+      location.state?.selectedData &&
+      location.state?.selectedType === "Subject"
+    ) {
       setSelectedSubject(location.state.selectedData);
       setShowDetailModal(true);
     } else if (location.state?.subjectId) {
@@ -51,8 +52,12 @@ function CROSubjectManagement() {
   });
 
   const activeCount = subjects.filter((s) => s.status === "Active").length;
-  const completedCount = subjects.filter((s) => s.status === "Completed").length;
-  const withdrawnCount = subjects.filter((s) => s.status === "Withdrawn").length;
+  const completedCount = subjects.filter(
+    (s) => s.status === "Completed",
+  ).length;
+  const withdrawnCount = subjects.filter(
+    (s) => s.status === "Withdrawn",
+  ).length;
 
   const openDetail = (subject) => {
     setSelectedSubject(subject);
@@ -84,39 +89,37 @@ function CROSubjectManagement() {
       </div>
 
       <div className="cro-panel">
+        <h2 className="cro-section-title">Subjects List</h2>
 
-  <h2 className="cro-section-title">Subjects List</h2>
+        <div className="cro-panel-header">
+          <div className="cro-panel-filters">
+            <input
+              type="text"
+              placeholder="Search Subject ID..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="cro-input"
+            />
 
-  <div className="cro-panel-header">
-
-    <div className="cro-panel-filters">
-
-      <input
-        type="text"
-        placeholder="Search Subject ID..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="cro-input"
-      />
-
-      <select
-        value={statusFilter}
-        onChange={(e) => setStatusFilter(e.target.value)}
-        className="cro-input"
-      >
-        <option value="All">All</option>
-        <option value="Active">Active</option>
-        <option value="Completed">Completed</option>
-        <option value="Withdrawn">Withdrawn</option>
-        <option value="Screening">Screening</option>
-      </select>
-
-    </div>
-
-  </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="cro-input"
+            >
+              <option value="All">All</option>
+              <option value="Active">Active</option>
+              <option value="Completed">Completed</option>
+              <option value="Withdrawn">Withdrawn</option>
+              <option value="Screening">Screening</option>
+            </select>
+          </div>
+        </div>
 
         {filteredSubjects.length === 0 ? (
-          <EmptyState title="No Subjects Found" message="No subjects available yet." />
+          <EmptyState
+            title="No Subjects Found"
+            message="No subjects available yet."
+          />
         ) : (
           <div className="table-scroll-wrap tnxt-compact">
             <table className="cro-table ctms-standard-table">
@@ -137,7 +140,9 @@ function CROSubjectManagement() {
                     <td>{item.id}</td>
                     <td>{item.study}</td>
                     <td>{displaySite(item.site)}</td>
-                    <td><StatusBadge status={item.status} /></td>
+                    <td>
+                      <StatusBadge status={item.status} />
+                    </td>
                     <td>{item.enrollment}</td>
                     <td>{item.visit}</td>
                     <td>
@@ -160,20 +165,41 @@ function CROSubjectManagement() {
       <CROModal
         isOpen={showDetailModal}
         onClose={() => setShowDetailModal(false)}
-        title={selectedSubject ? `Subject ${selectedSubject.id}` : "Subject Details"}
+        title={
+          selectedSubject ? `Subject ${selectedSubject.id}` : "Subject Details"
+        }
         size="large"
         footer={
-          <button type="button" className="cro-btn cro-btn-secondary" onClick={() => setShowDetailModal(false)}>Close</button>
+          <button
+            type="button"
+            className="cro-btn cro-btn-secondary"
+            onClick={() => setShowDetailModal(false)}
+          >
+            Close
+          </button>
         }
       >
         {selectedSubject && (
           <div className="subject-detail">
-            <p><strong>Subject ID:</strong> {selectedSubject.id}</p>
-            <p><strong>Study:</strong> {selectedSubject.study}</p>
-            <p><strong>Site:</strong> {displaySite(selectedSubject.site)}</p>
-            <p><strong>Status:</strong> <StatusBadge status={selectedSubject.status} /></p>
-            <p><strong>Enrollment:</strong> {selectedSubject.enrollment}</p>
-            <p><strong>Current Visit:</strong> {selectedSubject.visit}</p>
+            <p>
+              <strong>Subject ID:</strong> {selectedSubject.id}
+            </p>
+            <p>
+              <strong>Study:</strong> {selectedSubject.study}
+            </p>
+            <p>
+              <strong>Site:</strong> {displaySite(selectedSubject.site)}
+            </p>
+            <p>
+              <strong>Status:</strong>{" "}
+              <StatusBadge status={selectedSubject.status} />
+            </p>
+            <p>
+              <strong>Enrollment:</strong> {selectedSubject.enrollment}
+            </p>
+            <p>
+              <strong>Current Visit:</strong> {selectedSubject.visit}
+            </p>
           </div>
         )}
       </CROModal>

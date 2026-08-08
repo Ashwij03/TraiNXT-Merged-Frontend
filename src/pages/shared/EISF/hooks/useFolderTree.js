@@ -18,7 +18,7 @@ export default function useFolderTree(initialFolder = null) {
     setExpandedFolders((previous) =>
       previous.includes(folderId)
         ? previous.filter((id) => id !== folderId)
-        : [...previous, folderId]
+        : [...previous, folderId],
     );
   }, []);
 
@@ -26,16 +26,12 @@ export default function useFolderTree(initialFolder = null) {
     if (!folderId) return;
 
     setExpandedFolders((previous) =>
-      previous.includes(folderId)
-        ? previous
-        : [...previous, folderId]
+      previous.includes(folderId) ? previous : [...previous, folderId],
     );
   }, []);
 
   const collapseFolder = useCallback((folderId) => {
-    setExpandedFolders((previous) =>
-      previous.filter((id) => id !== folderId)
-    );
+    setExpandedFolders((previous) => previous.filter((id) => id !== folderId));
   }, []);
 
   const expandAll = useCallback((folderIds = []) => {
@@ -48,7 +44,7 @@ export default function useFolderTree(initialFolder = null) {
 
   const isExpanded = useCallback(
     (folderId) => expandedFolders.includes(folderId),
-    [expandedFolders]
+    [expandedFolders],
   );
 
   return {

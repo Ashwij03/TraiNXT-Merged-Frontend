@@ -7,8 +7,7 @@ export default function ExpiredDocumentsWidget({
   title = "Expired Documents",
   maxItems = 5,
 }) {
-  const expired =
-    expiredDocuments || getExpiredDocuments(documents);
+  const expired = expiredDocuments || getExpiredDocuments(documents);
 
   return (
     <div className="expired-documents-widget">
@@ -17,32 +16,21 @@ export default function ExpiredDocumentsWidget({
       </div>
 
       <div className="widget-body">
-        <div className="expired-count">
-          {expired.length}
-        </div>
+        <div className="expired-count">{expired.length}</div>
 
         {expired.length === 0 ? (
-          <div className="empty-message">
-            No expired documents.
-          </div>
+          <div className="empty-message">No expired documents.</div>
         ) : (
           <ul className="expired-list">
-            {expired
-              .slice(0, maxItems)
-              .map((document) => (
-                <li
-                  key={document.id || document.name}
-                  className="expired-item"
-                >
-                  <div className="document-name">
-                    {document.name || "Unnamed Document"}
-                  </div>
+            {expired.slice(0, maxItems).map((document) => (
+              <li key={document.id || document.name} className="expired-item">
+                <div className="document-name">
+                  {document.name || "Unnamed Document"}
+                </div>
 
-                  <div className="expiry-date">
-                    {document.expiryDate || "-"}
-                  </div>
-                </li>
-              ))}
+                <div className="expiry-date">{document.expiryDate || "-"}</div>
+              </li>
+            ))}
 
             {expired.length > maxItems && (
               <li className="more-items">

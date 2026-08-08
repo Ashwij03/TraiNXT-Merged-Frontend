@@ -14,10 +14,10 @@
   --settings-accent-soft: #eff6ff;
   --settings-radius-sm: clamp(6px, 0.5vw, 8px);
   --settings-radius-md: clamp(8px, 0.7vw, 12px);
-  --settings-shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04),
-    0 1px 3px rgba(16, 24, 40, 0.06);
-  --settings-shadow-hover: 0 4px 8px rgba(16, 24, 40, 0.06),
-    0 2px 4px rgba(16, 24, 40, 0.05);
+  --settings-shadow-card:
+    0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --settings-shadow-hover:
+    0 4px 8px rgba(16, 24, 40, 0.06), 0 2px 4px rgba(16, 24, 40, 0.05);
   --settings-gap-sm: clamp(8px, 1vw, 12px);
   --settings-gap-md: clamp(12px, 1.5vw, 20px);
   --settings-gap-lg: clamp(20px, 2.5vw, 32px);
@@ -88,7 +88,9 @@
   box-shadow: var(--settings-shadow-card);
   cursor: pointer;
   text-align: left;
-  transition: box-shadow 0.15s ease, border-color 0.15s ease,
+  transition:
+    box-shadow 0.15s ease,
+    border-color 0.15s ease,
     transform 0.1s ease;
   width: 100%;
 }
@@ -104,7 +106,8 @@
 
 .settings-nav-card.is-active {
   border-color: var(--settings-accent);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12),
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.12),
     var(--settings-shadow-hover);
 }
 
@@ -353,7 +356,9 @@
   font-weight: 400;
   color: var(--settings-text-primary);
   background: #ffffff;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .unified-settings-page input[type="text"]:focus,
@@ -543,7 +548,9 @@
   border-radius: var(--settings-radius-sm);
   background: var(--settings-bg-subtle);
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
 .pi-security-setting-row:hover {

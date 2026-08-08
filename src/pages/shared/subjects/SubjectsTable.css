@@ -23,13 +23,27 @@
   color: #fff;
 }
 
-.scheduled { background: #9ca3af; }
-.partial   { background: #eab308; }
-.fail      { background: #dc2626; }
-.completed { background: #65a30d; }
-.paused    { background: #6b7280; }
-.progress  { background: #2563eb; }
-.cancelled { background: #7c2d12; }
+.scheduled {
+  background: #9ca3af;
+}
+.partial {
+  background: #eab308;
+}
+.fail {
+  background: #dc2626;
+}
+.completed {
+  background: #65a30d;
+}
+.paused {
+  background: #6b7280;
+}
+.progress {
+  background: #2563eb;
+}
+.cancelled {
+  background: #7c2d12;
+}
 
 /* ============================= */
 /* TABLE + SCROLL */
@@ -103,8 +117,12 @@
   font-size: 12px;
 }
 
-.fail-text { color: #dc2626; }
-.progress-text { color: #2563eb; }
+.fail-text {
+  color: #dc2626;
+}
+.progress-text {
+  color: #2563eb;
+}
 
 /* ============================= */
 /* BODY CELLS */
@@ -121,22 +139,42 @@
   font-size: 14px;
 }
 
-.cell.completed { color: #4d7c0f; }
-.cell.partial   { color: #ca8a04; }
-.cell.fail      { color: #dc2626; }
-.cell.empty     { color: transparent; }
+.cell.completed {
+  color: #4d7c0f;
+}
+.cell.partial {
+  color: #ca8a04;
+}
+.cell.fail {
+  color: #dc2626;
+}
+.cell.empty {
+  color: transparent;
+}
 
 /* ============================= */
 /* COLUMN COLORS (COLGROUP) */
 /* ============================= */
 
-col.col-subject   { background-color: #fafafa; }
-col.col-status    { background-color: #fafafa; }
+col.col-subject {
+  background-color: #fafafa;
+}
+col.col-status {
+  background-color: #fafafa;
+}
 
-col.col-prescreen { background-color: #ebe7f6; } /* purple */
-col.col-screening { background-color: #f6f3c4; } /* yellow */
-col.col-day       { background-color: #f7e7d9; } /* orange */
-col.col-month     { background-color: #e9eff9; } /* blue */
+col.col-prescreen {
+  background-color: #ebe7f6;
+} /* purple */
+col.col-screening {
+  background-color: #f6f3c4;
+} /* yellow */
+col.col-day {
+  background-color: #f7e7d9;
+} /* orange */
+col.col-month {
+  background-color: #e9eff9;
+} /* blue */
 
 /* ============================= */
 /* VISIT TOOLTIP */

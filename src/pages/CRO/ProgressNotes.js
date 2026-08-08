@@ -3,7 +3,6 @@ import "./ProgressNotes.css";
 export default function ProgressNotes() {
   return (
     <div className="pn-box tnxt-compact">
-
       <h3>Progress Notes</h3>
 
       <div className="pn-top">
@@ -19,8 +18,11 @@ export default function ProgressNotes() {
 
       <div className="pn-filter">
         <div>
-          Show 
-          <select><option>5</option></select> entries
+          Show
+          <select>
+            <option>5</option>
+          </select>{" "}
+          entries
         </div>
 
         <div>
@@ -40,7 +42,8 @@ export default function ProgressNotes() {
         <tbody>
           <tr>
             <td>
-              ⚡<br />E-SIGNED
+              ⚡<br />
+              E-SIGNED
             </td>
 
             <td>
@@ -63,7 +66,6 @@ export default function ProgressNotes() {
       <div className="pagination">
         Previous <span className="active">1</span> Next
       </div>
-
     </div>
   );
 }

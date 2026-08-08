@@ -8,9 +8,9 @@ export function FolderProvider({ children }) {
   const value = useMemo(
     () => ({
       revision,
-      notifyFolderChange: () => setRevision((current) => current + 1)
+      notifyFolderChange: () => setRevision((current) => current + 1),
     }),
-    [revision]
+    [revision],
   );
 
   return (

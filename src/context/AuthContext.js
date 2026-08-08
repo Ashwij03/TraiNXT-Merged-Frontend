@@ -2,27 +2,20 @@ import { createContext, useContext, useState } from "react";
 
 import rolePermissions from "../utils/rolePermissions";
 
-const AuthContext =
-  createContext(null);
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-
   const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem("currentUser")) || null
+    JSON.parse(localStorage.getItem("currentUser")) || null,
   );
 
   const login = (userData) => {
-
-    localStorage.setItem(
-      "currentUser",
-      JSON.stringify(userData)
-    );
+    localStorage.setItem("currentUser", JSON.stringify(userData));
 
     setUser(userData);
   };
 
   const logout = () => {
-
     localStorage.removeItem("currentUser");
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("adminPreviewRole");
@@ -33,9 +26,7 @@ export const AuthProvider = ({ children }) => {
   const role = user?.role || null;
 
   const permissions =
-    role && rolePermissions[role]
-      ? rolePermissions[role]
-      : [];
+    role && rolePermissions[role] ? rolePermissions[role] : [];
 
   const hasPermission = (permission) => {
     return permissions.includes(permission);
@@ -57,5 +48,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () =>
-  useContext(AuthContext);
+export const useAuth = () => useContext(AuthContext);

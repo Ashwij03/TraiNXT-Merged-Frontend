@@ -33,7 +33,8 @@ function PIRegulatory({ selectedStudy: studyProp }) {
   const [editDoc, setEditDoc] = useState(null);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [editSubmission, setEditSubmission] = useState(null);
-  const selectedStudy = studyProp || getNavbarData().selectedStudy || "All Studies";
+  const selectedStudy =
+    studyProp || getNavbarData().selectedStudy || "All Studies";
 
   const persist = (updated) => {
     const saved = saveRegulatoryData(updated);
@@ -49,9 +50,7 @@ function PIRegulatory({ selectedStudy: studyProp }) {
 
   const saveDocument = () => {
     if (!editDoc) return;
-    const docs = data.documents.map((d) =>
-      d.id === editDoc.id ? editDoc : d
-    );
+    const docs = data.documents.map((d) => (d.id === editDoc.id ? editDoc : d));
     persist({ ...data, documents: docs });
     setSelectedDoc(null);
     setEditDoc(null);
@@ -60,7 +59,7 @@ function PIRegulatory({ selectedStudy: studyProp }) {
   const saveSubmission = () => {
     if (!editSubmission) return;
     const submissions = (data.submissions || []).map((s) =>
-      s.id === editSubmission.id ? editSubmission : s
+      s.id === editSubmission.id ? editSubmission : s,
     );
     persist({ ...data, submissions });
     setSelectedSubmission(null);
@@ -78,12 +77,48 @@ function PIRegulatory({ selectedStudy: studyProp }) {
   };
 
   const kpiCards = [
-    { title: "IRB Approvals", value: data.kpis.irbApprovals, icon: FaGavel, color: "blue", filter: "IRB" },
-    { title: "Expiring Documents", value: filteredDocs.filter((d) => d.status === "Expiring Soon").length, icon: FaExclamationCircle, color: "orange", filter: "Expiring Soon" },
-    { title: "Compliance Reviews", value: data.kpis.complianceReviews, icon: FaClipboardCheck, color: "purple", filter: "Pending" },
-    { title: "Regulatory Submissions", value: (data.submissions || []).length, icon: FaUpload, color: "teal", filter: "All" },
-    { title: "Audit Readiness", value: `${data.kpis.auditReadiness}%`, icon: FaCheckCircle, color: "green", filter: "All" },
-    { title: "Training Compliance", value: `${data.kpis.trainingCompliance}%`, icon: FaFileAlt, color: "blue", filter: "Training" },
+    {
+      title: "IRB Approvals",
+      value: data.kpis.irbApprovals,
+      icon: FaGavel,
+      color: "blue",
+      filter: "IRB",
+    },
+    {
+      title: "Expiring Documents",
+      value: filteredDocs.filter((d) => d.status === "Expiring Soon").length,
+      icon: FaExclamationCircle,
+      color: "orange",
+      filter: "Expiring Soon",
+    },
+    {
+      title: "Compliance Reviews",
+      value: data.kpis.complianceReviews,
+      icon: FaClipboardCheck,
+      color: "purple",
+      filter: "Pending",
+    },
+    {
+      title: "Regulatory Submissions",
+      value: (data.submissions || []).length,
+      icon: FaUpload,
+      color: "teal",
+      filter: "All",
+    },
+    {
+      title: "Audit Readiness",
+      value: `${data.kpis.auditReadiness}%`,
+      icon: FaCheckCircle,
+      color: "green",
+      filter: "All",
+    },
+    {
+      title: "Training Compliance",
+      value: `${data.kpis.trainingCompliance}%`,
+      icon: FaFileAlt,
+      color: "blue",
+      filter: "Training",
+    },
   ];
 
   return (
@@ -97,7 +132,11 @@ function PIRegulatory({ selectedStudy: studyProp }) {
           </p>
         </div>
         <div className="dashboard-actions">
-          <select className="pi-filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <select
+            className="pi-filter-select"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
             <option value="All">All Statuses</option>
             <option value="Active">Active</option>
             <option value="Expiring Soon">Expiring Soon</option>
@@ -116,7 +155,16 @@ function PIRegulatory({ selectedStudy: studyProp }) {
             icon={kpi.icon}
             color={kpi.color}
             clickable
-            onClick={() => kpi.filter !== "All" && setStatusFilter(kpi.filter === "IRB" ? "Active" : kpi.filter === "Training" ? "Active" : kpi.filter)}
+            onClick={() =>
+              kpi.filter !== "All" &&
+              setStatusFilter(
+                kpi.filter === "IRB"
+                  ? "Active"
+                  : kpi.filter === "Training"
+                    ? "Active"
+                    : kpi.filter,
+              )
+            }
           />
         ))}
       </div>
@@ -124,7 +172,13 @@ function PIRegulatory({ selectedStudy: studyProp }) {
       <div className="table-container">
         <div className="section-header">
           <h2>Regulatory Documents</h2>
-          <button type="button" className="view-all-btn" onClick={() => setStatusFilter("All")}>View All</button>
+          <button
+            type="button"
+            className="view-all-btn"
+            onClick={() => setStatusFilter("All")}
+          >
+            View All
+          </button>
         </div>
         <div className="pi-table-responsive">
           <table className="pi-table ctms-standard-table">
@@ -146,7 +200,15 @@ function PIRegulatory({ selectedStudy: studyProp }) {
                   <td>{doc.category || "—"}</td>
                   <td>{doc.study || "—"}</td>
                   <td>
-                    <span className={doc.status === "Active" || doc.status === "Approved" ? "status-success" : doc.status === "Expiring Soon" ? "status-warning" : "status-danger"}>
+                    <span
+                      className={
+                        doc.status === "Active" || doc.status === "Approved"
+                          ? "status-success"
+                          : doc.status === "Expiring Soon"
+                            ? "status-warning"
+                            : "status-danger"
+                      }
+                    >
                       {doc.status}
                     </span>
                   </td>
@@ -156,7 +218,10 @@ function PIRegulatory({ selectedStudy: studyProp }) {
                     <button
                       type="button"
                       className="view-all-btn pi-btn-icon"
-                      onClick={() => { setSelectedDoc(doc); setEditDoc({ ...doc }); }}
+                      onClick={() => {
+                        setSelectedDoc(doc);
+                        setEditDoc({ ...doc });
+                      }}
                     >
                       <FaEye /> View
                     </button>
@@ -164,7 +229,10 @@ function PIRegulatory({ selectedStudy: studyProp }) {
                       type="button"
                       className="export-btn pi-btn-sm pi-btn-icon"
                       style={{ marginLeft: 6 }}
-                      onClick={() => { setSelectedDoc(doc); setEditDoc({ ...doc }); }}
+                      onClick={() => {
+                        setSelectedDoc(doc);
+                        setEditDoc({ ...doc });
+                      }}
                     >
                       <FaEdit /> Edit
                     </button>
@@ -192,25 +260,53 @@ function PIRegulatory({ selectedStudy: studyProp }) {
               </tr>
             </thead>
             <tbody>
-              {filterByStudy(data.submissions || [], selectedStudy).map((sub) => (
-                <tr key={sub.id} className="pi-table-clickable">
-                  <td>{sub.title}</td>
-                  <td>{sub.study}</td>
-                  <td><span className="status-success">{sub.status}</span></td>
-                  <td>{sub.date}</td>
-                  <td>
-                    <button type="button" className="view-all-btn pi-btn-icon" onClick={() => { setSelectedSubmission(sub); setEditSubmission({ ...sub }); }}>
-                      <FaEye /> View
-                    </button>
-                    <button type="button" className="export-btn pi-btn-sm pi-btn-icon" style={{ marginLeft: 6 }} onClick={() => { setSelectedSubmission(sub); setEditSubmission({ ...sub }); }}>
-                      <FaEdit /> Edit
-                    </button>
-                    <button type="button" className="view-all-btn pi-btn-sm pi-btn-icon" style={{ marginLeft: 6, color: "#dc2626", borderColor: "#dc2626" }} onClick={() => deleteSubmission(sub.id)}>
-                      <FaTrash /> Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {filterByStudy(data.submissions || [], selectedStudy).map(
+                (sub) => (
+                  <tr key={sub.id} className="pi-table-clickable">
+                    <td>{sub.title}</td>
+                    <td>{sub.study}</td>
+                    <td>
+                      <span className="status-success">{sub.status}</span>
+                    </td>
+                    <td>{sub.date}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className="view-all-btn pi-btn-icon"
+                        onClick={() => {
+                          setSelectedSubmission(sub);
+                          setEditSubmission({ ...sub });
+                        }}
+                      >
+                        <FaEye /> View
+                      </button>
+                      <button
+                        type="button"
+                        className="export-btn pi-btn-sm pi-btn-icon"
+                        style={{ marginLeft: 6 }}
+                        onClick={() => {
+                          setSelectedSubmission(sub);
+                          setEditSubmission({ ...sub });
+                        }}
+                      >
+                        <FaEdit /> Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="view-all-btn pi-btn-sm pi-btn-icon"
+                        style={{
+                          marginLeft: 6,
+                          color: "#dc2626",
+                          borderColor: "#dc2626",
+                        }}
+                        onClick={() => deleteSubmission(sub.id)}
+                      >
+                        <FaTrash /> Delete
+                      </button>
+                    </td>
+                  </tr>
+                ),
+              )}
             </tbody>
           </table>
         </div>
@@ -220,19 +316,66 @@ function PIRegulatory({ selectedStudy: studyProp }) {
         <div className="study-modal-overlay">
           <div className="study-modal">
             <h3>Regulatory Document</h3>
-            <input type="text" value={editDoc.document} onChange={(e) => setEditDoc({ ...editDoc, document: e.target.value })} />
-            <input type="text" value={editDoc.category || ""} onChange={(e) => setEditDoc({ ...editDoc, category: e.target.value })} />
-            <input type="text" value={editDoc.study || ""} onChange={(e) => setEditDoc({ ...editDoc, study: e.target.value })} />
-            <select value={editDoc.status} onChange={(e) => setEditDoc({ ...editDoc, status: e.target.value })}>
+            <input
+              type="text"
+              value={editDoc.document}
+              onChange={(e) =>
+                setEditDoc({ ...editDoc, document: e.target.value })
+              }
+            />
+            <input
+              type="text"
+              value={editDoc.category || ""}
+              onChange={(e) =>
+                setEditDoc({ ...editDoc, category: e.target.value })
+              }
+            />
+            <input
+              type="text"
+              value={editDoc.study || ""}
+              onChange={(e) =>
+                setEditDoc({ ...editDoc, study: e.target.value })
+              }
+            />
+            <select
+              value={editDoc.status}
+              onChange={(e) =>
+                setEditDoc({ ...editDoc, status: e.target.value })
+              }
+            >
               {Object.keys(STATUS_CYCLE).map((s) => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s} value={s}>
+                  {s}
+                </option>
               ))}
             </select>
-            <input type="text" value={editDoc.expiry || ""} onChange={(e) => setEditDoc({ ...editDoc, expiry: e.target.value })} />
-            <input type="text" value={editDoc.owner || ""} onChange={(e) => setEditDoc({ ...editDoc, owner: e.target.value })} />
+            <input
+              type="text"
+              value={editDoc.expiry || ""}
+              onChange={(e) =>
+                setEditDoc({ ...editDoc, expiry: e.target.value })
+              }
+            />
+            <input
+              type="text"
+              value={editDoc.owner || ""}
+              onChange={(e) =>
+                setEditDoc({ ...editDoc, owner: e.target.value })
+              }
+            />
             <div className="modal-buttons">
-              <button type="button" onClick={() => { setSelectedDoc(null); setEditDoc(null); }}>Cancel</button>
-              <button type="button" onClick={saveDocument}><FaSave /> Save</button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedDoc(null);
+                  setEditDoc(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button type="button" onClick={saveDocument}>
+                <FaSave /> Save
+              </button>
             </div>
           </div>
         </div>
@@ -242,18 +385,51 @@ function PIRegulatory({ selectedStudy: studyProp }) {
         <div className="study-modal-overlay">
           <div className="study-modal">
             <h3>Regulatory Submission</h3>
-            <input type="text" value={editSubmission.title} onChange={(e) => setEditSubmission({ ...editSubmission, title: e.target.value })} />
-            <input type="text" value={editSubmission.study} onChange={(e) => setEditSubmission({ ...editSubmission, study: e.target.value })} />
-            <select value={editSubmission.status} onChange={(e) => setEditSubmission({ ...editSubmission, status: e.target.value })}>
+            <input
+              type="text"
+              value={editSubmission.title}
+              onChange={(e) =>
+                setEditSubmission({ ...editSubmission, title: e.target.value })
+              }
+            />
+            <input
+              type="text"
+              value={editSubmission.study}
+              onChange={(e) =>
+                setEditSubmission({ ...editSubmission, study: e.target.value })
+              }
+            />
+            <select
+              value={editSubmission.status}
+              onChange={(e) =>
+                setEditSubmission({ ...editSubmission, status: e.target.value })
+              }
+            >
               <option>Submitted</option>
               <option>Under Review</option>
               <option>Approved</option>
               <option>Rejected</option>
             </select>
-            <input type="text" value={editSubmission.date} onChange={(e) => setEditSubmission({ ...editSubmission, date: e.target.value })} />
+            <input
+              type="text"
+              value={editSubmission.date}
+              onChange={(e) =>
+                setEditSubmission({ ...editSubmission, date: e.target.value })
+              }
+            />
             <div className="modal-buttons">
-              <button type="button" onClick={() => { setSelectedSubmission(null); setEditSubmission(null); }}>Cancel</button>
-              <button type="button" onClick={saveSubmission}><FaSave /> Save</button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedSubmission(null);
+                  setEditSubmission(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button type="button" onClick={saveSubmission}>
+                <FaSave /> Save
+              </button>
             </div>
           </div>
         </div>

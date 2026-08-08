@@ -12,7 +12,7 @@ import QuickActions from "../../components/dashboard/shared/QuickActions";
 import VisitCalendarSection from "../../components/dashboard/shared/VisitCalendarSection";
 import {
   getAdminDashboardData,
-  getSubjectsForAnalytics
+  getSubjectsForAnalytics,
 } from "../../services/adminService";
 import { useComments } from "../../comments/CommentsContext";
 import {
@@ -23,7 +23,7 @@ import {
   getStoredInstitutionFilter,
   getStoredSiteNumberFilter,
   getStoredStudyFilter,
-  setStoredValue
+  setStoredValue,
 } from "../../constants/headerFilters";
 
 import "./Dashboard.css";
@@ -34,7 +34,11 @@ import "../shared/AccessPermissions.css";
 // or Conduct Phase (the statuses set on the study details form's
 // Study Status dropdown). Defined at module scope so it's a stable
 // reference for the useMemo dependency array below.
-const ONGOING_STUDY_STATUSES = ["Startup", "Recruitment Phase", "Conduct Phase"];
+const ONGOING_STUDY_STATUSES = [
+  "Startup",
+  "Recruitment Phase",
+  "Conduct Phase",
+];
 
 function AdminDashboard() {
   const { pendingCount: openCommentsCount } = useComments();
@@ -70,9 +74,9 @@ function AdminDashboard() {
       institution: institutionFilter,
       indication: indicationFilter,
       siteNumber: siteNumberFilter,
-      studyCode: studyCodeFilter
+      studyCode: studyCodeFilter,
     }),
-    [institutionFilter, indicationFilter, siteNumberFilter, studyCodeFilter]
+    [institutionFilter, indicationFilter, siteNumberFilter, studyCodeFilter],
   );
 
   const [dashboardData, setDashboardData] = useState(() =>
@@ -80,8 +84,8 @@ function AdminDashboard() {
       institution: "",
       indication: "",
       siteNumber: "",
-      studyCode: ""
-    })
+      studyCode: "",
+    }),
   );
 
   // The Institution dropdown gets its own dedicated event (kept for
@@ -97,10 +101,7 @@ function AdminDashboard() {
     window.addEventListener(INSTITUTION_FILTER_EVENT, handleFilterChange);
 
     return () => {
-      window.removeEventListener(
-        INSTITUTION_FILTER_EVENT,
-        handleFilterChange
-      );
+      window.removeEventListener(INSTITUTION_FILTER_EVENT, handleFilterChange);
     };
   }, []);
 
@@ -116,7 +117,7 @@ function AdminDashboard() {
     return () => {
       window.removeEventListener(
         HEADER_FILTERS_EVENT,
-        handleHeaderFiltersChange
+        handleHeaderFiltersChange,
       );
     };
   }, []);
@@ -145,7 +146,7 @@ function AdminDashboard() {
     sites,
     pendingUsers,
     pendingAccessRequests,
-    complianceScore
+    complianceScore,
   } = dashboardData;
 
   // Sites touched by whichever studies match the current Indication/Study
@@ -173,7 +174,7 @@ function AdminDashboard() {
           (siteName) =>
             subject.site === siteName ||
             subject.site?.includes(siteName) ||
-            siteName.includes(subject.site || "")
+            siteName.includes(subject.site || ""),
         );
 
       return matchesInstitution && matchesIndicationSites;
@@ -184,10 +185,9 @@ function AdminDashboard() {
 
   const ongoingStudiesCount = useMemo(
     () =>
-      studies.filter((study) =>
-        ONGOING_STUDY_STATUSES.includes(study.status)
-      ).length,
-    [studies]
+      studies.filter((study) => ONGOING_STUDY_STATUSES.includes(study.status))
+        .length,
+    [studies],
   );
 
   return (
@@ -270,18 +270,18 @@ function AdminDashboard() {
               {
                 type: "warning",
                 title: "Pending Approvals",
-                message: `${pendingUsers.length + pendingAccessRequests.length} users awaiting approval`
+                message: `${pendingUsers.length + pendingAccessRequests.length} users awaiting approval`,
               },
               {
                 type: "danger",
                 title: "Open Comments",
-                message: `${openCommentsCount} unresolved comments`
+                message: `${openCommentsCount} unresolved comments`,
               },
               {
                 type: "info",
                 title: "Study Update",
-                message: `${studies.length} studies in portfolio`
-              }
+                message: `${studies.length} studies in portfolio`,
+              },
             ]}
           />
 
@@ -290,23 +290,23 @@ function AdminDashboard() {
               {
                 icon: "👤",
                 label: "User Management",
-                path: "/user-management"
+                path: "/user-management",
               },
               {
                 icon: "🛡️",
                 label: "Access Permission",
-                path: "/access-permission"
+                path: "/access-permission",
               },
               {
                 icon: "📁",
                 label: "Studies",
-                path: "/studies"
+                path: "/studies",
               },
               {
                 icon: "📈",
                 label: "Reports",
-                path: "/reports"
-              }
+                path: "/reports",
+              },
             ]}
           />
         </div>

@@ -18,7 +18,7 @@ function getHistory(document) {
 
   source.forEach((item) => {
     const exists = unique.some(
-      (entry) => String(entry.version) === String(item.version)
+      (entry) => String(entry.version) === String(item.version),
     );
 
     if (!exists) {
@@ -38,11 +38,7 @@ function getHistory(document) {
   });
 }
 
-export default function VersionHistoryModal({
-  open,
-  document,
-  onClose
-}) {
+export default function VersionHistoryModal({ open, document, onClose }) {
   if (!open || !document) return null;
 
   const history = getHistory(document);
@@ -52,7 +48,9 @@ export default function VersionHistoryModal({
       <div className="history-modal">
         <div className="history-header">
           <h3>Version History</h3>
-          <button type="button" onClick={onClose}>✕</button>
+          <button type="button" onClick={onClose}>
+            ✕
+          </button>
         </div>
         <div className="history-table-wrapper">
           <table className="history-table ctms-standard-table">

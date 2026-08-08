@@ -78,7 +78,7 @@ export function canApproveDocument(user = {}) {
  */
 export function getAccessibleDocuments(user = {}) {
   return getEISFModuleDocuments().filter((document) =>
-    canViewDocument(document, user)
+    canViewDocument(document, user),
   );
 }
 

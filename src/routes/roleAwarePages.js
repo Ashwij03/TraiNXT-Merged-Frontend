@@ -84,9 +84,9 @@ export function RoleAwareSitePerformance() {
     {
       [ROLES.SPONSOR]: SponsorSitePerformance,
       [ROLES.CRO]: CroSitePerformance,
-      [ROLES.PI]: PISitePerformanceWithLayout
+      [ROLES.PI]: PISitePerformanceWithLayout,
     },
-    AdminSitePerformance
+    AdminSitePerformance,
   );
   return <Component />;
 }
@@ -95,9 +95,9 @@ export function RoleAwareRecruitment() {
   const Component = pickComponent(
     {
       [ROLES.SPONSOR]: SponsorRecruitment,
-      [ROLES.CRO]: CroRecruitment
+      [ROLES.CRO]: CroRecruitment,
     },
-    AdminRecruitment
+    AdminRecruitment,
   );
   return <Component />;
 }
@@ -106,9 +106,9 @@ export function RoleAwareRegulatory() {
   const Component = pickComponent(
     {
       [ROLES.SPONSOR]: SponsorRegulatory,
-      [ROLES.CRO]: CroRegulatory
+      [ROLES.CRO]: CroRegulatory,
     },
-    RegulatoryUnavailable
+    RegulatoryUnavailable,
   );
   return <Component />;
 }
@@ -117,9 +117,9 @@ export function RoleAwareReports() {
   const Component = pickComponent(
     {
       [ROLES.SPONSOR]: SponsorReports,
-      [ROLES.CRO]: CroReports
+      [ROLES.CRO]: CroReports,
     },
-    AdminReports
+    AdminReports,
   );
   return <Component />;
 }
@@ -128,9 +128,9 @@ export function RoleAwareNotifications() {
   const Component = pickComponent(
     {
       [ROLES.SPONSOR]: SponsorNotifications,
-      [ROLES.CRO]: CroNotifications
+      [ROLES.CRO]: CroNotifications,
     },
-    AdminNotifications
+    AdminNotifications,
   );
   return <Component />;
 }
@@ -142,7 +142,7 @@ export function RoleAwareSettings() {
       [ROLES.CRO]: CroSettings,
       [ROLES.PI]: PISettingsWithLayout,
     },
-    AdminSettings
+    AdminSettings,
   );
   return <Component />;
 }
@@ -150,9 +150,9 @@ export function RoleAwareSettings() {
 export function RoleAwareProgressNotes() {
   const Component = pickComponent(
     {
-      [ROLES.SPONSOR]: SponsorProgressNotes
+      [ROLES.SPONSOR]: SponsorProgressNotes,
     },
-    SharedProgressNotes
+    SharedProgressNotes,
   );
   return <Component />;
 }
@@ -165,9 +165,9 @@ export function RoleAwareEnrollment() {
   const Component = pickComponent(
     {
       [ROLES.SPONSOR]: SponsorEnrollment,
-      [ROLES.CRO]: CroEnrollment
+      [ROLES.CRO]: CroEnrollment,
     },
-    SponsorEnrollment
+    SponsorEnrollment,
   );
   return <Component />;
 }
@@ -176,9 +176,9 @@ export function RoleAwareQueries() {
   const Component = pickComponent(
     {
       [ROLES.SPONSOR]: SponsorQueries,
-      [ROLES.CRO]: CroQueries
+      [ROLES.CRO]: CroQueries,
     },
-    AdminComments
+    AdminComments,
   );
   return <Component />;
 }
@@ -186,7 +186,7 @@ export function RoleAwareQueries() {
 export function RoleAwareSubjects() {
   const Component = pickComponent(
     {
-      [ROLES.SPONSOR]: SponsorSubjects
+      [ROLES.SPONSOR]: SponsorSubjects,
     },
     // SharedSubjects
   );

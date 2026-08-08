@@ -3,13 +3,12 @@ import { resolveSiteDisplay } from "../../utils/siteDisplay";
 import { getStudies } from "../../services/studyService";
 
 function Recruitment() {
-
   const siteSources = useMemo(() => getStudies(), []);
   const displaySite = (value) =>
     value
       ? resolveSiteDisplay(value, {
           sources: siteSources,
-          fallback: value
+          fallback: value,
         })
       : "—";
 
@@ -19,27 +18,29 @@ function Recruitment() {
       target: 50,
       enrolled: 40,
       percentage: "80%",
-      status: "On Track"
+      status: "On Track",
     },
     {
       site: "Yashoda Hospital",
       target: 50,
       enrolled: 32,
       percentage: "64%",
-      status: "Needs Attention"
+      status: "Needs Attention",
     },
     {
       site: "AIG Hospital",
       target: 40,
       enrolled: 28,
       percentage: "70%",
-      status: "On Track"
-    }
+      status: "On Track",
+    },
   ];
 
   return (
-    <div style={{ padding: "30px" }} className="recruitment-tracking-page tnxt-compact">
-
+    <div
+      style={{ padding: "30px" }}
+      className="recruitment-tracking-page tnxt-compact"
+    >
       <h1>Recruitment Tracking</h1>
 
       <table className="ctms-standard-table">
@@ -64,9 +65,7 @@ function Recruitment() {
             </tr>
           ))}
         </tbody>
-
       </table>
-
     </div>
   );
 }

@@ -83,7 +83,9 @@ export default function RoleCommentsView({ embedded = false }) {
   }, [sourceComments]);
 
   useEffect(() => {
-    const defaultStudy = availableStudies.find((study) => study !== "All Studies");
+    const defaultStudy = availableStudies.find(
+      (study) => study !== "All Studies",
+    );
 
     if (selectedStudy === "All Studies" && defaultStudy) {
       setSelectedStudy(defaultStudy);
@@ -107,7 +109,7 @@ export default function RoleCommentsView({ embedded = false }) {
       if (comment.comment?.toLowerCase().includes(q)) {
         matches.add(
           comment.comment.slice(0, 48) +
-            (comment.comment.length > 48 ? "…" : "")
+            (comment.comment.length > 48 ? "…" : ""),
         );
       }
     });
@@ -127,7 +129,8 @@ export default function RoleCommentsView({ embedded = false }) {
         selectedStudy === "All Studies" || comment.study === selectedStudy;
       const subjectMatch =
         selectedSubject === "All" || comment.subjectId === selectedSubject;
-      const visitMatch = selectedVisit === "All" || comment.visit === selectedVisit;
+      const visitMatch =
+        selectedVisit === "All" || comment.visit === selectedVisit;
       const typeMatch = selectedType === "All" || comment.type === selectedType;
       const searchMatch =
         !q ||
@@ -200,13 +203,13 @@ export default function RoleCommentsView({ embedded = false }) {
 
   const totalComments = sourceComments.length;
   const openComments = sourceComments.filter(
-    (comment) => comment.status === "unresolved"
+    (comment) => comment.status === "unresolved",
   ).length;
   const resolvedComments = sourceComments.filter(
-    (comment) => comment.status === "resolved"
+    (comment) => comment.status === "resolved",
   ).length;
   const pendingReviewComments = sourceComments.filter(
-    (comment) => comment.status === "pending-review"
+    (comment) => comment.status === "pending-review",
   ).length;
 
   const sortIndicator = (field) =>
@@ -271,9 +274,7 @@ export default function RoleCommentsView({ embedded = false }) {
                 <li key={suggestion}>
                   <button
                     type="button"
-                    onClick={() =>
-                      setSearchQuery(suggestion.replace("…", ""))
-                    }
+                    onClick={() => setSearchQuery(suggestion.replace("…", ""))}
                   >
                     {suggestion}
                   </button>
@@ -312,7 +313,10 @@ export default function RoleCommentsView({ embedded = false }) {
       )}
 
       <div className="comments-filters">
-        <select value={filter} onChange={(event) => setFilter(event.target.value)}>
+        <select
+          value={filter}
+          onChange={(event) => setFilter(event.target.value)}
+        >
           <option value="all">All Statuses</option>
           <option value="unresolved">Open</option>
           <option value="resolved">Resolved</option>
@@ -328,7 +332,7 @@ export default function RoleCommentsView({ embedded = false }) {
               <option key={subject} value={subject}>
                 {subject}
               </option>
-            )
+            ),
           )}
         </select>
         <select
@@ -341,7 +345,7 @@ export default function RoleCommentsView({ embedded = false }) {
               <option key={type} value={type}>
                 {type}
               </option>
-            )
+            ),
           )}
         </select>
         <select
@@ -354,7 +358,7 @@ export default function RoleCommentsView({ embedded = false }) {
               <option key={visit} value={visit}>
                 {visit}
               </option>
-            )
+            ),
           )}
         </select>
       </div>
@@ -372,7 +376,10 @@ export default function RoleCommentsView({ embedded = false }) {
               >
                 Subject ID{sortIndicator("subjectId")}
               </th>
-              <th onClick={() => handleSort("visit")} className="pi-sortable-th">
+              <th
+                onClick={() => handleSort("visit")}
+                className="pi-sortable-th"
+              >
                 Visit{sortIndicator("visit")}
               </th>
               <th onClick={() => handleSort("type")} className="pi-sortable-th">
@@ -417,8 +424,8 @@ export default function RoleCommentsView({ embedded = false }) {
                         comment.status === "resolved"
                           ? "resolved"
                           : comment.status === "pending-review"
-                          ? "pending"
-                          : "open"
+                            ? "pending"
+                            : "open"
                       }`}
                     >
                       {toDisplayStatus(comment.status)}

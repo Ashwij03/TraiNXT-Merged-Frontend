@@ -32,30 +32,30 @@ export function saveVisitPlan(studyCode, plan) {
   const list = Array.isArray(all[code]) ? all[code] : [];
 
   const entry = {
-  id: plan?.id || `vp-${Date.now()}`,
+    id: plan?.id || `vp-${Date.now()}`,
 
-  name: String(plan?.name ?? "").trim() || "Visit Plan",
+    name: String(plan?.name ?? "").trim() || "Visit Plan",
 
-  description: plan?.description || "",
+    description: plan?.description || "",
 
-  clinicalStudy: plan?.clinicalStudy || "",
+    clinicalStudy: plan?.clinicalStudy || "",
 
-  studyArm: plan?.studyArm || "",
+    studyArm: plan?.studyArm || "",
 
-  version: plan?.version || "1.0",
+    version: plan?.version || "1.0",
 
-  studyVisitGroup: plan?.studyVisitGroup || "",
+    studyVisitGroup: plan?.studyVisitGroup || "",
 
-  status: plan?.status || "Draft",
+    status: plan?.status || "Draft",
 
-  createdAt: plan?.createdAt || new Date().toISOString(),
+    createdAt: plan?.createdAt || new Date().toISOString(),
 
-  updatedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
 
-  screeningWindow: plan?.screeningWindow || "",
+    screeningWindow: plan?.screeningWindow || "",
 
-  enrollmentWindow: plan?.enrollmentWindow || "",
-};
+    enrollmentWindow: plan?.enrollmentWindow || "",
+  };
 
   const index = list.findIndex((item) => item.id === entry.id);
   const next =
@@ -73,17 +73,19 @@ export function deleteVisitPlan(studyCode, planId) {
   const code = String(studyCode || "");
   const all = readJson(VISIT_PLANS_KEY, {});
   all[code] = (Array.isArray(all[code]) ? all[code] : []).filter(
-    (item) => item.id !== planId
+    (item) => item.id !== planId,
   );
   writeJson(VISIT_PLANS_KEY, all);
 
-  [VISIT_PLAN_VISITS_KEY, VISIT_PLAN_PROCEDURES_KEY, VISIT_PLAN_TASKS_KEY].forEach(
-    (key) => {
-      const nested = readJson(key, {});
-      delete nested[planId];
-      writeJson(key, nested);
-    }
-  );
+  [
+    VISIT_PLAN_VISITS_KEY,
+    VISIT_PLAN_PROCEDURES_KEY,
+    VISIT_PLAN_TASKS_KEY,
+  ].forEach((key) => {
+    const nested = readJson(key, {});
+    delete nested[planId];
+    writeJson(key, nested);
+  });
 
   dispatchVisitPlansUpdated();
 }
@@ -107,39 +109,29 @@ export function getVisitPlanVisits(planId) {
 
 export function saveVisitPlanVisit(planId, visit) {
   const list = getVisitPlanVisits(planId);
-const entry = {
-  id: visit?.id || `vv-${Date.now()}`,
+  const entry = {
+    id: visit?.id || `vv-${Date.now()}`,
 
-  visitTemplateId:
-    visit?.visitTemplateId || `VT-${Date.now()}`,
+    visitTemplateId: visit?.visitTemplateId || `VT-${Date.now()}`,
 
-  sequence:
-    visit?.sequence || 1,
+    sequence: visit?.sequence || 1,
 
-  visitName:
-    String(visit?.visitName ?? "").trim() || "Visit",
+    visitName: String(visit?.visitName ?? "").trim() || "Visit",
 
-  visitType:
-    visit?.visitType || "Scheduled",
+    visitType: visit?.visitType || "Scheduled",
 
-  windowStart:
-    visit?.windowStart || "",
+    windowStart: visit?.windowStart || "",
 
-  windowStartUnit:
-    visit?.windowStartUnit || "Days",
+    windowStartUnit: visit?.windowStartUnit || "Days",
 
-  windowEnd:
-    visit?.windowEnd || "",
+    windowEnd: visit?.windowEnd || "",
 
-  windowEndUnit:
-    visit?.windowEndUnit || "Days",
+    windowEndUnit: visit?.windowEndUnit || "Days",
 
-  dayOffset:
-    visit?.dayOffset ?? "",
+    dayOffset: visit?.dayOffset ?? "",
 
-  required:
-    Boolean(visit?.required ?? true),
-};
+    required: Boolean(visit?.required ?? true),
+  };
 
   const index = list.findIndex((item) => item.id === entry.id);
   const next =
@@ -161,40 +153,23 @@ export function getVisitPlanProcedures(planId) {
 
 export function saveVisitPlanProcedure(planId, procedure) {
   const list = getVisitPlanProcedures(planId);
- const entry = {
+  const entry = {
+    id: procedure?.id || `vproc-${Date.now()}`,
 
-id:
-procedure?.id ||
-`vproc-${Date.now()}`,
+    visitId: procedure?.visitId || "",
 
-visitId:
-procedure?.visitId || "",
+    procedureCode: procedure?.procedureCode || `PROC-${Date.now()}`,
 
-procedureCode:
-procedure?.procedureCode ||
-`PROC-${Date.now()}`,
+    procedureName: String(procedure?.procedureName ?? "").trim() || "Procedure",
 
-procedureName:
-String(
-procedure?.procedureName ?? ""
-).trim() || "Procedure",
+    taskOrder: procedure?.taskOrder || 1,
 
-taskOrder:
-procedure?.taskOrder || 1,
+    sequence: procedure?.sequence || 1,
 
-sequence:
-procedure?.sequence || 1,
+    category: procedure?.category || "Assessment",
 
-category:
-procedure?.category ||
-"Assessment",
-
-required:
-Boolean(
-procedure?.required ?? true
-)
-
-};
+    required: Boolean(procedure?.required ?? true),
+  };
 
   const index = list.findIndex((item) => item.id === entry.id);
   const next =
@@ -207,7 +182,7 @@ procedure?.required ?? true
 
 export function deleteVisitPlanProcedure(planId, procedureId) {
   const next = getVisitPlanProcedures(planId).filter(
-    (item) => item.id !== procedureId
+    (item) => item.id !== procedureId,
   );
   return savePlanList(VISIT_PLAN_PROCEDURES_KEY, planId, next);
 }
@@ -247,7 +222,9 @@ export function getVisitScheduleMatrix(studyCode, planId) {
   let subjects = [];
   try {
     const byStudy = readJson("subjectsByStudy", {});
-    subjects = Array.isArray(byStudy[String(studyCode)]) ? byStudy[String(studyCode)] : [];
+    subjects = Array.isArray(byStudy[String(studyCode)])
+      ? byStudy[String(studyCode)]
+      : [];
   } catch {
     subjects = [];
   }
@@ -262,7 +239,7 @@ export function getVisitScheduleMatrix(studyCode, planId) {
         visitId: visit.id,
         visitName: visit.visitName,
         procedures: procedures.filter(
-          (proc) => !proc.visitId || proc.visitId === visit.id
+          (proc) => !proc.visitId || proc.visitId === visit.id,
         ),
       })),
     })),
@@ -274,7 +251,9 @@ export function syncVisitPlanToSchedule(studyCode, planId) {
   let subjects = [];
   try {
     const byStudy = readJson("subjectsByStudy", {});
-    subjects = Array.isArray(byStudy[String(studyCode)]) ? byStudy[String(studyCode)] : [];
+    subjects = Array.isArray(byStudy[String(studyCode)])
+      ? byStudy[String(studyCode)]
+      : [];
   } catch {
     subjects = [];
   }

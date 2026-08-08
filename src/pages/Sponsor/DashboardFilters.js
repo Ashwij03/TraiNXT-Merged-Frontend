@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-import './DashboardFilter.css';
+import "./DashboardFilter.css";
 
 const DashboardFilters = ({
   selectedStudy,
@@ -8,149 +8,82 @@ const DashboardFilters = ({
   selectedRegion,
   setSelectedRegion,
   selectedDate,
-  setSelectedDate
+  setSelectedDate,
 }) => {
-
   const handleApplyFilters = () => {
-	
-
     console.log(
       "Applied Filters:",
       selectedStudy,
       selectedRegion,
-      selectedDate
+      selectedDate,
     );
-
   };
 
   const handleResetFilters = () => {
+    setSelectedStudy("All Studies");
 
-    setSelectedStudy(
-      "All Studies"
-    );
-
-    setSelectedRegion(
-      "All Regions"
-    );
+    setSelectedRegion("All Regions");
 
     setSelectedDate("");
-
   };
 
   return (
-
     <div className="dashboard-filters-container">
-
       <div className="filter-group">
-
-        <label>
-          Study
-        </label>
+        <label>Study</label>
 
         <select
           value={selectedStudy}
-          onChange={(e) =>
-            setSelectedStudy(
-              e.target.value
-            )
-          }
+          onChange={(e) => setSelectedStudy(e.target.value)}
         >
+          <option>All Studies</option>
 
-          <option>
-            All Studies
-          </option>
+          <option>Study-001</option>
 
-          <option>
-            Study-001
-          </option>
+          <option>Study-002</option>
 
-          <option>
-            Study-002
-          </option>
-
-          <option>
-            Study-003
-          </option>
-
+          <option>Study-003</option>
         </select>
-
       </div>
 
       <div className="filter-group">
-
-        <label>
-          Region
-        </label>
+        <label>Region</label>
 
         <select
           value={selectedRegion}
-          onChange={(e) =>
-            setSelectedRegion(
-              e.target.value
-            )
-          }
+          onChange={(e) => setSelectedRegion(e.target.value)}
         >
+          <option>All Regions</option>
 
-          <option>
-            All Regions
-          </option>
+          <option>North America</option>
 
-          <option>
-            North America
-          </option>
+          <option>Europe</option>
 
-          <option>
-            Europe
-          </option>
-
-          <option>
-            Asia Pacific
-          </option>
-
+          <option>Asia Pacific</option>
         </select>
-
       </div>
 
       <div className="filter-group">
-
-        <label>
-          Date
-        </label>
+        <label>Date</label>
 
         <input
           type="date"
           value={selectedDate}
-          onChange={(e) =>
-            setSelectedDate(
-              e.target.value
-            )
-          }
+          onChange={(e) => setSelectedDate(e.target.value)}
         />
-
       </div>
 
       <div className="filter-buttons">
-
-        <button
-          className="apply-btn"
-          onClick={handleApplyFilters}
-        >
+        <button className="apply-btn" onClick={handleApplyFilters}>
           Apply Filters
         </button>
 
-        <button
-          className="reset-btn"
-          onClick={handleResetFilters}
-        >
+        <button className="reset-btn" onClick={handleResetFilters}>
           Reset
         </button>
-
       </div>
-
     </div>
-
   );
-
 };
 
 export default DashboardFilters;

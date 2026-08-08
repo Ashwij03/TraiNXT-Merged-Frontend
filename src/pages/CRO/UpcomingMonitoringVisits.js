@@ -17,7 +17,7 @@ function UpcomingMonitoringVisits() {
     value
       ? resolveSiteDisplay(value, {
           sources: siteSources,
-          fallback: value
+          fallback: value,
         })
       : "—";
 

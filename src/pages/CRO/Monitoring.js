@@ -11,12 +11,15 @@ function Monitoring() {
     value
       ? resolveSiteDisplay(value, {
           sources: siteSources,
-          fallback: value
+          fallback: value,
         })
       : "—";
 
   return (
-    <div style={{ padding: "30px" }} className="monitoring-visits-page tnxt-compact">
+    <div
+      style={{ padding: "30px" }}
+      className="monitoring-visits-page tnxt-compact"
+    >
       <h1>Monitoring Visits</h1>
 
       <table className="ctms-standard-table">

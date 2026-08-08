@@ -5,7 +5,7 @@ import useLiveChatNavigation from "../../hooks/useLiveChatNavigation";
 
 function SiteStaffLiveChat() {
   const { returnFromLiveChat, backLabel } = useLiveChatNavigation(
-    "/site-staff-livechat"
+    "/site-staff-livechat",
   );
 
   return (

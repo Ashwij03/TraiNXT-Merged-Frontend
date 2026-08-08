@@ -5,7 +5,7 @@ function GCPCertificationStatus({ counts }) {
   const data = counts || {};
   const total = GCP_CERT_BUCKETS.reduce(
     (sum, key) => sum + (data[key] || 0),
-    0
+    0,
   );
 
   return (
@@ -19,7 +19,10 @@ function GCPCertificationStatus({ counts }) {
       ) : (
         <div className="study-status-grid">
           {GCP_CERT_BUCKETS.map((label) => (
-            <div key={label} className={`study-status-chip gcp-${label.toLowerCase()}`}>
+            <div
+              key={label}
+              className={`study-status-chip gcp-${label.toLowerCase()}`}
+            >
               <span className="study-status-count">{data[label] || 0}</span>
               <span className="study-status-label">{label}</span>
             </div>

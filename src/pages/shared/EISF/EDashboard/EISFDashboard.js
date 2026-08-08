@@ -75,7 +75,7 @@ const moduleConfigById = Object.values(EISF_ASSIGNED_MODULES).reduce(
     map[moduleConfig.id] = moduleConfig;
     return map;
   },
-  {}
+  {},
 );
 
 export default function EISFDashboard({ studyCode } = {}) {
@@ -84,7 +84,7 @@ export default function EISFDashboard({ studyCode } = {}) {
   // Sub-module Enable/Disable state (Item 9) — same localStorage-backed state
   // the workspace already used, now surfaced in the accordion.
   const [enabledMap, setEnabledMap] = useState(() =>
-    getSubModuleEnabledMap(studyCode)
+    getSubModuleEnabledMap(studyCode),
   );
   // Bumped when the workspace persists documents (existing eISF event) so the
   // sub-module counts stay in sync, and when a sub-module is toggled so the
@@ -94,7 +94,7 @@ export default function EISFDashboard({ studyCode } = {}) {
 
   const selectedModuleId = useMemo(
     () => getParentSectionId(selected),
-    [selected]
+    [selected],
   );
 
   useEffect(() => {
@@ -123,7 +123,7 @@ export default function EISFDashboard({ studyCode } = {}) {
         ...counts,
         ...getFolderCounts(
           moduleConfig.sections,
-          initializeModuleDocuments(moduleConfig, studyCode)
+          initializeModuleDocuments(moduleConfig, studyCode),
         ),
       };
     }, {});
@@ -137,7 +137,7 @@ export default function EISFDashboard({ studyCode } = {}) {
       // Default to enabled (backwards compatible) when never toggled.
       return enabledMap[sectionId] !== false;
     },
-    [enabledMap]
+    [enabledMap],
   );
 
   const handleToggleSectionEnabled = useCallback(
@@ -152,7 +152,7 @@ export default function EISFDashboard({ studyCode } = {}) {
       setEnabledMap((prev) => ({ ...prev, [sectionId]: nextEnabled }));
       setEnabledVersion((current) => current + 1);
     },
-    [isSectionEnabled, studyCode]
+    [isSectionEnabled, studyCode],
   );
 
   const CurrentPage = useMemo(() => {
@@ -168,7 +168,7 @@ export default function EISFDashboard({ studyCode } = {}) {
 
   const toggleModule = (moduleId) => {
     setExpandedModuleId((currentModuleId) =>
-      currentModuleId === moduleId ? null : moduleId
+      currentModuleId === moduleId ? null : moduleId,
     );
   };
 

@@ -49,8 +49,7 @@ const SiteDetails = () => {
   useEffect(() => {
     const refresh = () => setPlanningVersion((v) => v + 1);
     window.addEventListener(PLANNING_UPDATED_EVENT, refresh);
-    return () =>
-      window.removeEventListener(PLANNING_UPDATED_EVENT, refresh);
+    return () => window.removeEventListener(PLANNING_UPDATED_EVENT, refresh);
   }, []);
   void planningVersion;
 
@@ -63,13 +62,9 @@ const SiteDetails = () => {
   const [editingContact, setEditingContact] = useState(null);
   const [editingRegulatoryItem, setEditingRegulatoryItem] = useState(null);
 
-  const studyData = siteData
-    ? getStudyByCode(siteData.id)
-    : null;
+  const studyData = siteData ? getStudyByCode(siteData.id) : null;
 
-  const studyTeam = siteData
-    ? getStudyTeam(siteData.id)
-    : [];
+  const studyTeam = siteData ? getStudyTeam(siteData.id) : [];
 
   const regulatoryChecklist = siteData
     ? getRegulatoryChecklist(siteData.id)
@@ -124,73 +119,55 @@ const SiteDetails = () => {
         factors: [],
       };
 
-  const studyLogs = siteData
-    ? getStudyLogs(siteData.id)
-    : [];
+  const studyLogs = siteData ? getStudyLogs(siteData.id) : [];
 
   const [activeTab, setActiveTab] = useState("overview");
 
   if (!siteData) {
     return (
-    
-        <div className="site-details-page">
-          <h2>No Site Selected</h2>
+      <div className="site-details-page">
+        <h2>No Site Selected</h2>
 
-          <button
-            type="button"
-            className="back-btn"
-            onClick={() => navigate(-1)}
-          >
-            ← Back
-          </button>
-        </div>
-      
+        <button type="button" className="back-btn" onClick={() => navigate(-1)}>
+          ← Back
+        </button>
+      </div>
     );
   }
 
   const normalizeValue = (value) =>
-    String(value ?? "").trim().toLowerCase();
+    String(value ?? "")
+      .trim()
+      .toLowerCase();
 
   const siteSubjects = allSubjects.filter((subject) => {
     const sameStudy =
-      normalizeValue(subject.studyKey) ===
-      normalizeValue(siteData.id);
+      normalizeValue(subject.studyKey) === normalizeValue(siteData.id);
 
     const sameSite =
-      normalizeValue(subject.site) ===
-      normalizeValue(siteData.name);
+      normalizeValue(subject.site) === normalizeValue(siteData.name);
 
     return sameStudy && sameSite;
   });
 
-  const subjectStatusAnalytics =
-    getSubjectStatusAnalytics(siteSubjects);
+  const subjectStatusAnalytics = getSubjectStatusAnalytics(siteSubjects);
 
   const getStatusCount = (status) =>
-    subjectStatusAnalytics.find(
-      (item) => item.name === status
-    )?.value ?? 0;
+    subjectStatusAnalytics.find((item) => item.name === status)?.value ?? 0;
 
   const enrollmentAnalytics = {
     planned: 0,
     screened: getStatusCount("Screening"),
     randomized: 0,
     completed: getStatusCount("Completed"),
-    earlyTermination:
-      getStatusCount("Withdrawn") +
-      getStatusCount("Dropout"),
+    earlyTermination: getStatusCount("Withdrawn") + getStatusCount("Dropout"),
   };
 
   const enrolled = Number(siteData.enrolled ?? 0);
   const target = Number(siteData.target ?? 0);
 
   const enrollmentProgress =
-    target > 0
-      ? Math.min(
-          Math.round((enrolled / target) * 100),
-          100
-        )
-      : 0;
+    target > 0 ? Math.min(Math.round((enrolled / target) * 100), 100) : 0;
 
   const enrollmentChartData = [
     {
@@ -216,13 +193,10 @@ const SiteDetails = () => {
               ← Back
             </button>
 
-            <h1>
-              {siteData.siteNumber || siteData.id || "Clinical Site"}
-            </h1>
+            <h1>{siteData.siteNumber || siteData.id || "Clinical Site"}</h1>
 
             <p>
-              Site Name: {siteData.name || "—"} |{" "}
-              {siteData.country || "—"}
+              Site Name: {siteData.name || "—"} | {siteData.country || "—"}
             </p>
           </div>
 
@@ -234,9 +208,7 @@ const SiteDetails = () => {
         <div className="site-workspace-tabs">
           <button
             type="button"
-            className={
-              activeTab === "overview" ? "active" : ""
-            }
+            className={activeTab === "overview" ? "active" : ""}
             onClick={() => setActiveTab("overview")}
           >
             Overview
@@ -244,9 +216,7 @@ const SiteDetails = () => {
 
           <button
             type="button"
-            className={
-              activeTab === "enrollment" ? "active" : ""
-            }
+            className={activeTab === "enrollment" ? "active" : ""}
             onClick={() => setActiveTab("enrollment")}
           >
             Enrollment
@@ -254,9 +224,7 @@ const SiteDetails = () => {
 
           <button
             type="button"
-            className={
-              activeTab === "status" ? "active" : ""
-            }
+            className={activeTab === "status" ? "active" : ""}
             onClick={() => setActiveTab("status")}
           >
             Status
@@ -264,9 +232,7 @@ const SiteDetails = () => {
 
           <button
             type="button"
-            className={
-              activeTab === "activity" ? "active" : ""
-            }
+            className={activeTab === "activity" ? "active" : ""}
             onClick={() => setActiveTab("activity")}
           >
             Activity
@@ -274,9 +240,7 @@ const SiteDetails = () => {
 
           <button
             type="button"
-            className={
-              activeTab === "details" ? "active" : ""
-            }
+            className={activeTab === "details" ? "active" : ""}
             onClick={() => setActiveTab("details")}
           >
             Detailed Site Info
@@ -284,9 +248,7 @@ const SiteDetails = () => {
 
           <button
             type="button"
-            className={
-              activeTab === "analytics" ? "active" : ""
-            }
+            className={activeTab === "analytics" ? "active" : ""}
             onClick={() => setActiveTab("analytics")}
           >
             Enrollment Analytics
@@ -294,9 +256,7 @@ const SiteDetails = () => {
 
           <button
             type="button"
-            className={
-              activeTab === "metrics" ? "active" : ""
-            }
+            className={activeTab === "metrics" ? "active" : ""}
             onClick={() => setActiveTab("metrics")}
           >
             Dashboard Metrics
@@ -325,11 +285,7 @@ const SiteDetails = () => {
 
               <div>
                 <strong>Sponsor</strong>
-                <p>
-                  {siteData.sponsor ||
-                    siteData.account ||
-                    "—"}
-                </p>
+                <p>{siteData.sponsor || siteData.account || "—"}</p>
               </div>
 
               <div>
@@ -366,11 +322,7 @@ const SiteDetails = () => {
                 <YAxis />
                 <Tooltip />
 
-                <Bar
-                  dataKey="subjects"
-                  fill="#082b3d"
-                  radius={[8, 8, 0, 0]}
-                />
+                <Bar dataKey="subjects" fill="#082b3d" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -432,9 +384,9 @@ const SiteDetails = () => {
             <h4>No Activity Available</h4>
 
             <p>
-              There are currently no activity records for this site.
-              Site activity is derived from audit logs and is not
-              manually editable in this workspace.
+              There are currently no activity records for this site. Site
+              activity is derived from audit logs and is not manually editable
+              in this workspace.
             </p>
 
             <button
@@ -485,11 +437,10 @@ const SiteDetails = () => {
                   <strong>Site</strong>
                   <p>
                     {siteData.siteNumber
-                      ? `${siteData.siteNumber}${siteData.name ? ` — ${siteData.name}` : ""
-                      }`
-                      : studyData?.site ||
-                      studyData?.location ||
-                      "—"}
+                      ? `${siteData.siteNumber}${
+                          siteData.name ? ` — ${siteData.name}` : ""
+                        }`
+                      : studyData?.site || studyData?.location || "—"}
                   </p>
                 </div>
 
@@ -509,13 +460,8 @@ const SiteDetails = () => {
                 </div>
 
                 <div>
-                  <strong>
-                    Principal Investigator
-                  </strong>
-                  <p>
-                    {studyData?.principalInvestigator ||
-                      "—"}
-                  </p>
+                  <strong>Principal Investigator</strong>
+                  <p>{studyData?.principalInvestigator || "—"}</p>
                 </div>
 
                 <div>
@@ -537,9 +483,9 @@ const SiteDetails = () => {
                 <h4>No Assignments</h4>
 
                 <p>
-                  No assignments have been created for this site.
-                  Assignments are managed centrally through the study
-                  workspace and cannot be created directly here.
+                  No assignments have been created for this site. Assignments
+                  are managed centrally through the study workspace and cannot
+                  be created directly here.
                 </p>
 
                 <button
@@ -560,9 +506,7 @@ const SiteDetails = () => {
                 <div className="site-empty-state">
                   <h4>No Study Team</h4>
 
-                  <p>
-                    No study team members have been assigned.
-                  </p>
+                  <p>No study team members have been assigned.</p>
 
                   {canEdit && (
                     <button
@@ -581,13 +525,8 @@ const SiteDetails = () => {
                 <>
                   <div className="site-team-grid">
                     {studyTeam.map((member) => (
-                      <div
-                        className="site-team-card"
-                        key={member.id}
-                      >
-                        <strong>
-                          {member.name || "—"}
-                        </strong>
+                      <div className="site-team-card" key={member.id}>
+                        <strong>{member.name || "—"}</strong>
 
                         <p>
                           <span>Role</span>
@@ -619,9 +558,7 @@ const SiteDetails = () => {
                             <button
                               type="button"
                               className="link-btn danger"
-                              onClick={() =>
-                                handleDeleteTeamMember(member.id)
-                              }
+                              onClick={() => handleDeleteTeamMember(member.id)}
                             >
                               Delete
                             </button>
@@ -665,9 +602,7 @@ const SiteDetails = () => {
                 <div className="site-empty-state">
                   <h4>No Contact Information</h4>
 
-                  <p>
-                    No contact information has been added.
-                  </p>
+                  <p>No contact information has been added.</p>
 
                   {canEdit && (
                     <button
@@ -690,9 +625,7 @@ const SiteDetails = () => {
                         className="site-team-card"
                         key={`contact-${member.id}`}
                       >
-                        <strong>
-                          {member.name || "—"}
-                        </strong>
+                        <strong>{member.name || "—"}</strong>
 
                         <p>
                           <span>Email</span>
@@ -756,9 +689,8 @@ const SiteDetails = () => {
                 <h4>No Activation Details</h4>
 
                 <p>
-                  No activation milestones have been recorded.
-                  Activation milestones are managed through the study
-                  Planning workspace.
+                  No activation milestones have been recorded. Activation
+                  milestones are managed through the study Planning workspace.
                 </p>
 
                 <button
@@ -779,9 +711,7 @@ const SiteDetails = () => {
                 <div className="site-empty-state">
                   <h4>No Regulatory Information</h4>
 
-                  <p>
-                    Regulatory records are not available.
-                  </p>
+                  <p>Regulatory records are not available.</p>
 
                   {canEdit && (
                     <button
@@ -799,52 +729,48 @@ const SiteDetails = () => {
               ) : (
                 <>
                   <div className="site-regulatory-list">
-                    {regulatoryChecklist.map(
-                      (item, index) => (
-                        <div
-                          className="site-regulatory-item"
-                          key={item.id || index}
-                        >
-                          {Object.entries(item).map(
-                            ([key, value]) => (
-                              <p key={key}>
-                                <span>{key}</span>
+                    {regulatoryChecklist.map((item, index) => (
+                      <div
+                        className="site-regulatory-item"
+                        key={item.id || index}
+                      >
+                        {Object.entries(item).map(([key, value]) => (
+                          <p key={key}>
+                            <span>{key}</span>
 
-                                {value === null ||
-                                value === undefined ||
-                                value === ""
-                                  ? "—"
-                                  : String(value)}
-                              </p>
-                            )
-                          )}
+                            {value === null ||
+                            value === undefined ||
+                            value === ""
+                              ? "—"
+                              : String(value)}
+                          </p>
+                        ))}
 
-                          {canEdit && (
-                            <div className="site-regulatory-actions">
-                              <button
-                                type="button"
-                                className="link-btn"
-                                onClick={() => {
-                                  setEditingRegulatoryItem(item);
-                                  setRegulatoryFormOpen(true);
-                                }}
-                              >
-                                Edit
-                              </button>
-                              <button
-                                type="button"
-                                className="link-btn danger"
-                                onClick={() =>
-                                  handleDeleteRegulatoryItem(item.id)
-                                }
-                              >
-                                Remove
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    )}
+                        {canEdit && (
+                          <div className="site-regulatory-actions">
+                            <button
+                              type="button"
+                              className="link-btn"
+                              onClick={() => {
+                                setEditingRegulatoryItem(item);
+                                setRegulatoryFormOpen(true);
+                              }}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              className="link-btn danger"
+                              onClick={() =>
+                                handleDeleteRegulatoryItem(item.id)
+                              }
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
 
                   {canEdit && (
@@ -884,37 +810,27 @@ const SiteDetails = () => {
               <div className="site-enrollment-analytics-grid">
                 <div className="site-enrollment-analytics-card">
                   <span>Planned</span>
-                  <strong>
-                    {enrollmentAnalytics.planned}
-                  </strong>
+                  <strong>{enrollmentAnalytics.planned}</strong>
                 </div>
 
                 <div className="site-enrollment-analytics-card">
                   <span>Screened</span>
-                  <strong>
-                    {enrollmentAnalytics.screened}
-                  </strong>
+                  <strong>{enrollmentAnalytics.screened}</strong>
                 </div>
 
                 <div className="site-enrollment-analytics-card">
                   <span>Randomized</span>
-                  <strong>
-                    {enrollmentAnalytics.randomized}
-                  </strong>
+                  <strong>{enrollmentAnalytics.randomized}</strong>
                 </div>
 
                 <div className="site-enrollment-analytics-card">
                   <span>Completed</span>
-                  <strong>
-                    {enrollmentAnalytics.completed}
-                  </strong>
+                  <strong>{enrollmentAnalytics.completed}</strong>
                 </div>
 
                 <div className="site-enrollment-analytics-card">
                   <span>Early Termination</span>
-                  <strong>
-                    {enrollmentAnalytics.earlyTermination}
-                  </strong>
+                  <strong>{enrollmentAnalytics.earlyTermination}</strong>
                 </div>
               </div>
 
@@ -961,30 +877,21 @@ const SiteDetails = () => {
                     />
                   </div>
 
-                  <p>
-                    {enrollmentProgress}% of target enrolled
-                  </p>
+                  <p>{enrollmentProgress}% of target enrolled</p>
                 </div>
               </div>
 
               <div className="site-subject-status-analytics">
                 <h3>Subject Status Analytics</h3>
 
-                <ResponsiveContainer
-                  width="100%"
-                  height={320}
-                >
+                <ResponsiveContainer width="100%" height={320}>
                   <BarChart data={subjectStatusAnalytics}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis allowDecimals={false} />
                     <Tooltip />
 
-                    <Bar
-                      dataKey="value"
-                      fill="#082b3d"
-                      radius={[8, 8, 0, 0]}
-                    />
+                    <Bar dataKey="value" fill="#082b3d" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -998,9 +905,7 @@ const SiteDetails = () => {
 
             <div className="details-grid">
               <div>
-                <strong>
-                  Essential Document Status
-                </strong>
+                <strong>Essential Document Status</strong>
 
                 <p>
                   {essentialDocumentMetrics.complete
@@ -1011,31 +916,23 @@ const SiteDetails = () => {
 
               <div>
                 <strong>Document Completion</strong>
-                <p>
-                  {essentialDocumentMetrics.percent}%
-                </p>
+                <p>{essentialDocumentMetrics.percent}%</p>
               </div>
 
               <div>
                 <strong>Documents Uploaded</strong>
-                <p>
-                  {essentialDocumentMetrics.uploaded}
-                </p>
+                <p>{essentialDocumentMetrics.uploaded}</p>
               </div>
 
               <div>
                 <strong>Expected Documents</strong>
-                <p>
-                  {essentialDocumentMetrics.expected}
-                </p>
+                <p>{essentialDocumentMetrics.expected}</p>
               </div>
             </div>
 
             <div className="site-progress-section">
               <div className="site-progress-header">
-                <span>
-                  Essential Document Completion
-                </span>
+                <span>Essential Document Completion</span>
 
                 <strong>
                   {essentialDocumentMetrics.uploaded} /{" "}
@@ -1068,58 +965,52 @@ const SiteDetails = () => {
 
                 <div>
                   <strong>Study Health Status</strong>
-                  <p>
-                    {studyHealthMetrics.status || "—"}
-                  </p>
+                  <p>{studyHealthMetrics.status || "—"}</p>
                 </div>
 
                 <div>
                   <strong>Total Risk Indicators</strong>
-                  <p>
-                    {studyHealthMetrics.factors.length}
-                  </p>
+                  <p>{studyHealthMetrics.factors.length}</p>
                 </div>
               </div>
 
               <div className="site-regulatory-list">
                 {studyHealthMetrics.factors.length > 0 ? (
-                  studyHealthMetrics.factors.map(
-                    (factor, index) => (
-                      <div
-                        className="site-regulatory-item"
-                        key={`${factor.label}-${index}`}
-                      >
-                        <p>
-                          <span>Risk Indicator</span>
-                          {factor.label}
-                        </p>
-
-                        <p>
-                          <span>Impact</span>
-                          {factor.impact}
-                        </p>
-                      </div>
-                    )
-                  )
-                ) : (
-                    <div className="site-empty-state">
-                      <h4>No Risk Indicators</h4>
-
+                  studyHealthMetrics.factors.map((factor, index) => (
+                    <div
+                      className="site-regulatory-item"
+                      key={`${factor.label}-${index}`}
+                    >
                       <p>
-                        There are currently no risk indicators for this site.
-                        Risk indicators are computed from study health signals
-                        and cannot be added manually here.
+                        <span>Risk Indicator</span>
+                        {factor.label}
                       </p>
 
-                      <button
-                        type="button"
-                        className="site-empty-btn"
-                        disabled
-                        title="Risk indicators are computed from study health signals."
-                      >
-                        + Add Risk Indicator
-                      </button>
+                      <p>
+                        <span>Impact</span>
+                        {factor.impact}
+                      </p>
                     </div>
+                  ))
+                ) : (
+                  <div className="site-empty-state">
+                    <h4>No Risk Indicators</h4>
+
+                    <p>
+                      There are currently no risk indicators for this site. Risk
+                      indicators are computed from study health signals and
+                      cannot be added manually here.
+                    </p>
+
+                    <button
+                      type="button"
+                      className="site-empty-btn"
+                      disabled
+                      title="Risk indicators are computed from study health signals."
+                    >
+                      + Add Risk Indicator
+                    </button>
+                  </div>
                 )}
               </div>
             </section>
@@ -1129,42 +1020,31 @@ const SiteDetails = () => {
 
               {sitePerformanceMetrics.length > 0 ? (
                 <div className="site-regulatory-list">
-                  {sitePerformanceMetrics.map(
-                    (metric, index) => (
-                      <div
-                        className="site-regulatory-item"
-                        key={index}
-                      >
-                        <pre>
-                          {JSON.stringify(
-                            metric,
-                            null,
-                            2
-                          )}
-                        </pre>
-                      </div>
-                    )
-                  )}
+                  {sitePerformanceMetrics.map((metric, index) => (
+                    <div className="site-regulatory-item" key={index}>
+                      <pre>{JSON.stringify(metric, null, 2)}</pre>
+                    </div>
+                  ))}
                 </div>
               ) : (
-                  <div className="site-empty-state">
-                    <h4>No KPI Records</h4>
+                <div className="site-empty-state">
+                  <h4>No KPI Records</h4>
 
-                    <p>
-                      Site KPIs have not been configured.
-                      KPIs are derived automatically from operational
-                      metrics and cannot be added manually.
-                    </p>
+                  <p>
+                    Site KPIs have not been configured. KPIs are derived
+                    automatically from operational metrics and cannot be added
+                    manually.
+                  </p>
 
-                    <button
-                      type="button"
-                      className="site-empty-btn"
-                      disabled
-                      title="Site KPIs are derived automatically from operational metrics."
-                    >
-                      + Add KPI
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    className="site-empty-btn"
+                    disabled
+                    title="Site KPIs are derived automatically from operational metrics."
+                  >
+                    + Add KPI
+                  </button>
+                </div>
               )}
             </section>
 
@@ -1174,45 +1054,38 @@ const SiteDetails = () => {
               {studyLogs.length > 0 ? (
                 <div className="site-regulatory-list">
                   {studyLogs.map((log, index) => (
-                    <div
-                      className="site-regulatory-item"
-                      key={index}
-                    >
-                      {Object.entries(log).map(
-                        ([key, value]) => (
-                          <p key={key}>
-                            <span>{key}</span>
+                    <div className="site-regulatory-item" key={index}>
+                      {Object.entries(log).map(([key, value]) => (
+                        <p key={key}>
+                          <span>{key}</span>
 
-                            {value === null ||
-                            value === undefined ||
-                            value === ""
-                              ? "—"
-                              : String(value)}
-                          </p>
-                        )
-                      )}
+                          {value === null || value === undefined || value === ""
+                            ? "—"
+                            : String(value)}
+                        </p>
+                      ))}
                     </div>
                   ))}
                 </div>
               ) : (
-                  <div className="site-empty-state">
-                    <h4>No Audit Logs</h4>
+                <div className="site-empty-state">
+                  <h4>No Audit Logs</h4>
 
-                    <p>
-                      No audit records are available for this site.
-                      Audit entries are written automatically by the
-                      system and cannot be added manually.
-                    </p>
+                  <p>
+                    No audit records are available for this site. Audit entries
+                    are written automatically by the system and cannot be added
+                    manually.
+                  </p>
 
-                    <button
-                      type="button"
-                      className="site-empty-btn"
-                      disabled
-                      title="Audit entries are written automatically by the system."
-                    >
-                      + Add Audit Entry
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    className="site-empty-btn"
+                    disabled
+                    title="Audit entries are written automatically by the system."
+                  >
+                    + Add Audit Entry
+                  </button>
+                </div>
               )}
             </section>
 
@@ -1225,9 +1098,7 @@ const SiteDetails = () => {
 
                   <p>
                     {studyLogs.length > 0
-                      ? JSON.stringify(
-                          studyLogs[studyLogs.length - 1]
-                        )
+                      ? JSON.stringify(studyLogs[studyLogs.length - 1])
                       : "Not available"}
                   </p>
                 </div>

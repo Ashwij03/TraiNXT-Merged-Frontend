@@ -17,7 +17,10 @@ function NavbarNotificationsDropdown({
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target)
+      ) {
         setOpen(false);
       }
     };
@@ -75,8 +78,7 @@ function NavbarNotificationsDropdown({
           ) : (
             notifications.slice(0, 5).map((notification, index) => {
               const isRead =
-                notification.read === true ||
-                notification.status === "Read";
+                notification.read === true || notification.status === "Read";
 
               return (
                 <div
@@ -96,7 +98,9 @@ function NavbarNotificationsDropdown({
                       }
                     }}
                   >
-                    <strong>{notification.title || notification.message}</strong>
+                    <strong>
+                      {notification.title || notification.message}
+                    </strong>
                     {notification.message && notification.title && (
                       <p>{notification.message}</p>
                     )}

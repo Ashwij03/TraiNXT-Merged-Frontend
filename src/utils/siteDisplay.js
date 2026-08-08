@@ -43,7 +43,7 @@ function pickName(site) {
       site.institution ||
       site.site ||
       site.location ||
-      ""
+      "",
   );
 }
 
@@ -55,7 +55,7 @@ function pickNumber(site) {
       site.siteNo ||
       site.site_number ||
       site.siteCode ||
-      ""
+      "",
   );
 }
 

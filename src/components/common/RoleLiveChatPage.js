@@ -170,7 +170,11 @@ function RoleLiveChatPage({ onBack, role, backLabel = "Back to Dashboard" }) {
             </div>
 
             <div className="header-actions">
-              <button type="button" className="end-chat-btn" onClick={handleEndChat}>
+              <button
+                type="button"
+                className="end-chat-btn"
+                onClick={handleEndChat}
+              >
                 End Chat
               </button>
             </div>

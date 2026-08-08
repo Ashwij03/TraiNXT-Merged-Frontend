@@ -17,7 +17,10 @@ import {
   updateReport,
   getReportsForStudy,
 } from "../../services/reportService";
-import { getCurrentUser, getAccessibleStudies } from "../../services/roleService";
+import {
+  getCurrentUser,
+  getAccessibleStudies,
+} from "../../services/roleService";
 
 const REPORT_TYPE_OPTIONS = [
   "Enrollment",
@@ -33,8 +36,8 @@ function matchesSelectedStudy(study, selectedStudy) {
     return true;
   }
 
-  const candidates = [study.code, study.id, study.studyId, study.name].map((value) =>
-    String(value ?? "")
+  const candidates = [study.code, study.id, study.studyId, study.name].map(
+    (value) => String(value ?? ""),
   );
 
   return candidates.includes(String(selectedStudy));
@@ -48,7 +51,7 @@ function PIReports({ selectedStudy = "All Studies" }) {
 
   const targetStudies = useMemo(
     () => studies.filter((study) => matchesSelectedStudy(study, selectedStudy)),
-    [studies, selectedStudy]
+    [studies, selectedStudy],
   );
 
   const [reports, setReports] = useState([]);
@@ -64,11 +67,13 @@ function PIReports({ selectedStudy = "All Studies" }) {
   const refresh = useCallback(() => {
     const currentUser = getCurrentUser();
     const currentStudies = getAccessibleStudies(currentUser).filter((study) =>
-      matchesSelectedStudy(study, selectedStudy)
+      matchesSelectedStudy(study, selectedStudy),
     );
 
     setReports(
-      currentStudies.flatMap((study) => getReportsForStudy(study.code, currentUser))
+      currentStudies.flatMap((study) =>
+        getReportsForStudy(study.code, currentUser),
+      ),
     );
   }, [selectedStudy]);
 
@@ -91,15 +96,21 @@ function PIReports({ selectedStudy = "All Studies" }) {
       ? reports
       : reports.filter((report) => report.reportType === typeFilter);
 
-  const generatedCount = reports.filter((report) => report.status === "Generated").length;
-  const pendingCount = reports.filter((report) => report.status === "Pending").length;
+  const generatedCount = reports.filter(
+    (report) => report.status === "Generated",
+  ).length;
+  const pendingCount = reports.filter(
+    (report) => report.status === "Pending",
+  ).length;
 
   const dynamicKpis = {
     total: reports.length,
     generated: generatedCount,
-    study: reports.filter((report) => report.reportType === "Study Progress").length,
+    study: reports.filter((report) => report.reportType === "Study Progress")
+      .length,
     pending: pendingCount,
-    compliance: reports.filter((report) => report.reportType === "Compliance").length,
+    compliance: reports.filter((report) => report.reportType === "Compliance")
+      .length,
     safety: reports.filter((report) => report.reportType === "Safety").length,
   };
 
@@ -126,7 +137,7 @@ function PIReports({ selectedStudy = "All Studies" }) {
         status: "Pending",
         studyCode: form.studyCode,
       },
-      getCurrentUser()
+      getCurrentUser(),
     );
 
     if (created) {
@@ -150,14 +161,17 @@ function PIReports({ selectedStudy = "All Studies" }) {
 
     downloadCsvReport(
       `${report.name.replace(/\s+/g, "-")}-${Date.now()}.csv`,
-      rows
+      rows,
     );
     setDownloadMsg(`Downloaded: ${report.name} (CSV)`);
     setTimeout(() => setDownloadMsg(""), 3000);
   };
 
   const handleMarkGenerated = (report) => {
-    if (report.status === "Generated" || !canEditReport(report, getCurrentUser())) {
+    if (
+      report.status === "Generated" ||
+      !canEditReport(report, getCurrentUser())
+    ) {
       return;
     }
 
@@ -190,7 +204,11 @@ function PIReports({ selectedStudy = "All Studies" }) {
             ))}
           </select>
           {canManage && (
-            <button type="button" className="export-btn" onClick={handleOpenForm}>
+            <button
+              type="button"
+              className="export-btn"
+              onClick={handleOpenForm}
+            >
               Generate Report
             </button>
           )}
@@ -200,19 +218,29 @@ function PIReports({ selectedStudy = "All Studies" }) {
       {downloadMsg && <div className="pi-toast-info">{downloadMsg}</div>}
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="pi-table-responsive" style={{ marginBottom: 16 }}>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", padding: 16 }}>
+        <form
+          onSubmit={handleSubmit}
+          className="pi-table-responsive"
+          style={{ marginBottom: 16 }}
+        >
+          <div
+            style={{ display: "flex", gap: 12, flexWrap: "wrap", padding: 16 }}
+          >
             <input
               type="text"
               placeholder="Report name"
               value={form.name}
-              onChange={(event) => setForm({ ...form, name: event.target.value })}
+              onChange={(event) =>
+                setForm({ ...form, name: event.target.value })
+              }
               required
             />
 
             <select
               value={form.reportType}
-              onChange={(event) => setForm({ ...form, reportType: event.target.value })}
+              onChange={(event) =>
+                setForm({ ...form, reportType: event.target.value })
+              }
             >
               {REPORT_TYPE_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -223,7 +251,9 @@ function PIReports({ selectedStudy = "All Studies" }) {
 
             <select
               value={form.studyCode}
-              onChange={(event) => setForm({ ...form, studyCode: event.target.value })}
+              onChange={(event) =>
+                setForm({ ...form, studyCode: event.target.value })
+              }
               required
             >
               <option value="" disabled>
@@ -245,18 +275,65 @@ function PIReports({ selectedStudy = "All Studies" }) {
       )}
 
       <div className="pi-kpi-grid pi-kpi-grid-4">
-        <PIKpiCard title="Total Reports" value={dynamicKpis.total} icon={FaFileAlt} color="blue" clickable onClick={() => setTypeFilter("All")} />
-        <PIKpiCard title="Generated" value={dynamicKpis.generated} icon={FaCalendarAlt} color="green" clickable />
-        <PIKpiCard title="Study Reports" value={dynamicKpis.study} icon={FaBook} color="purple" clickable onClick={() => setTypeFilter("Study Progress")} />
-        <PIKpiCard title="Pending Reports" value={dynamicKpis.pending} icon={FaHourglassHalf} color="orange" clickable onClick={() => setTypeFilter("All")} />
-        <PIKpiCard title="Compliance Reports" value={dynamicKpis.compliance} icon={FaShieldAlt} color="teal" clickable onClick={() => setTypeFilter("Compliance")} />
-        <PIKpiCard title="Safety Reports" value={dynamicKpis.safety} icon={FaFileAlt} color="red" clickable onClick={() => setTypeFilter("Safety")} />
+        <PIKpiCard
+          title="Total Reports"
+          value={dynamicKpis.total}
+          icon={FaFileAlt}
+          color="blue"
+          clickable
+          onClick={() => setTypeFilter("All")}
+        />
+        <PIKpiCard
+          title="Generated"
+          value={dynamicKpis.generated}
+          icon={FaCalendarAlt}
+          color="green"
+          clickable
+        />
+        <PIKpiCard
+          title="Study Reports"
+          value={dynamicKpis.study}
+          icon={FaBook}
+          color="purple"
+          clickable
+          onClick={() => setTypeFilter("Study Progress")}
+        />
+        <PIKpiCard
+          title="Pending Reports"
+          value={dynamicKpis.pending}
+          icon={FaHourglassHalf}
+          color="orange"
+          clickable
+          onClick={() => setTypeFilter("All")}
+        />
+        <PIKpiCard
+          title="Compliance Reports"
+          value={dynamicKpis.compliance}
+          icon={FaShieldAlt}
+          color="teal"
+          clickable
+          onClick={() => setTypeFilter("Compliance")}
+        />
+        <PIKpiCard
+          title="Safety Reports"
+          value={dynamicKpis.safety}
+          icon={FaFileAlt}
+          color="red"
+          clickable
+          onClick={() => setTypeFilter("Safety")}
+        />
       </div>
 
       <div className="table-container">
         <div className="section-header">
           <h2>Report List</h2>
-          <button type="button" className="view-all-btn" onClick={() => setTypeFilter("All")}>View All</button>
+          <button
+            type="button"
+            className="view-all-btn"
+            onClick={() => setTypeFilter("All")}
+          >
+            View All
+          </button>
         </div>
         <div className="pi-table-responsive">
           <table className="pi-table ctms-standard-table">
@@ -276,19 +353,40 @@ function PIReports({ selectedStudy = "All Studies" }) {
                   <td>{report.name}</td>
                   <td>{report.reportType}</td>
                   <td>{report.studyCode || "—"}</td>
-                  <td>{report.createdAt ? new Date(report.createdAt).toLocaleDateString() : "—"}</td>
                   <td>
-                    <span className={report.status === "Generated" ? "status-success" : "status-danger"}>
+                    {report.createdAt
+                      ? new Date(report.createdAt).toLocaleDateString()
+                      : "—"}
+                  </td>
+                  <td>
+                    <span
+                      className={
+                        report.status === "Generated"
+                          ? "status-success"
+                          : "status-danger"
+                      }
+                    >
                       {report.status}
                     </span>
                   </td>
                   <td>
-                    {canEditReport(report, user) && report.status !== "Generated" && (
-                      <button type="button" className="view-all-btn pi-btn-icon" onClick={() => handleMarkGenerated(report)} title="Mark Generated">
-                        <FaEye /> View
-                      </button>
-                    )}
-                    <button type="button" className="export-btn pi-btn-sm pi-btn-icon" onClick={() => handleDownload(report)} title="Download">
+                    {canEditReport(report, user) &&
+                      report.status !== "Generated" && (
+                        <button
+                          type="button"
+                          className="view-all-btn pi-btn-icon"
+                          onClick={() => handleMarkGenerated(report)}
+                          title="Mark Generated"
+                        >
+                          <FaEye /> View
+                        </button>
+                      )}
+                    <button
+                      type="button"
+                      className="export-btn pi-btn-sm pi-btn-icon"
+                      onClick={() => handleDownload(report)}
+                      title="Download"
+                    >
                       <FaDownload /> Download
                     </button>
                   </td>

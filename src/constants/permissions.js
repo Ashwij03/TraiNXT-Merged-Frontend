@@ -1,5 +1,4 @@
 const PERMISSIONS = {
-
   // Dashboard
   VIEW_DASHBOARD: "VIEW_DASHBOARD",
 

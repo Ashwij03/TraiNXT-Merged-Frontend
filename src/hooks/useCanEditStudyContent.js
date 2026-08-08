@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { canEditStudyContent, hasApprovedEditAccess } from "../utils/contentAccess";
+import {
+  canEditStudyContent,
+  hasApprovedEditAccess,
+} from "../utils/contentAccess";
 import { getCurrentUser } from "../services/roleService";
 import { PERMISSIONS_UPDATED } from "../services/accessPermissionService";
 

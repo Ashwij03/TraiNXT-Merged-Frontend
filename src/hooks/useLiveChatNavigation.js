@@ -1,6 +1,10 @@
 import { useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getDashboardPath, getEffectiveRole, getCurrentUser } from "../services/roleService";
+import {
+  getDashboardPath,
+  getEffectiveRole,
+  getCurrentUser,
+} from "../services/roleService";
 
 export function useLiveChatNavigation(liveChatPath) {
   const navigate = useNavigate();
@@ -19,15 +23,14 @@ export function useLiveChatNavigation(liveChatPath) {
   const returnFromLiveChat = useCallback(() => {
     const fromPath = location.state?.from;
     const fallbackPath = getDashboardPath(
-      getEffectiveRole(getCurrentUser()) || getCurrentUser()?.role
+      getEffectiveRole(getCurrentUser()) || getCurrentUser()?.role,
     );
 
     navigate(fromPath || fallbackPath, { replace: true });
   }, [location.state, navigate]);
 
   const backLabel =
-    location.state?.from &&
-    !String(location.state.from).endsWith("-dashboard")
+    location.state?.from && !String(location.state.from).endsWith("-dashboard")
       ? "Back"
       : "Back to Dashboard";
 

@@ -31,9 +31,9 @@ function PISubjectsDashboard({ onProfileClick }) {
   const studyOptions = useMemo(
     () =>
       getStudies().filter(
-        (study) => study && study.status !== STUDY_STATUS_COMPLETED
+        (study) => study && study.status !== STUDY_STATUS_COMPLETED,
       ),
-    []
+    [],
   );
 
   const [subjects, setSubjects] = useState(() => {
@@ -75,12 +75,11 @@ function PISubjectsDashboard({ onProfileClick }) {
     try {
       createdSubject = createSubject(
         newSubject.study,
-        subjectForCanonicalStore
+        subjectForCanonicalStore,
       );
     } catch (error) {
       setSubjectModalError(
-        (error && error.message) ||
-          COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE
+        (error && error.message) || COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE,
       );
       return;
     }
@@ -219,7 +218,7 @@ function PISubjectsDashboard({ onProfileClick }) {
 
   const selectedStudyDefaults = useMemo(
     () => getSubjectStudyDefaults(newSubject.study),
-    [newSubject.study]
+    [newSubject.study],
   );
 
   const handleView = (subject) => {

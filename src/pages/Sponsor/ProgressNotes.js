@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { resolveSiteDisplay } from "../../utils/siteDisplay";
 import { getStudies } from "../../services/studyService";
 
-
 function ProgressNotes() {
   const navigate = useNavigate();
   const [inputValue, setInputValue] = useState("");
@@ -15,7 +14,7 @@ function ProgressNotes() {
     value
       ? resolveSiteDisplay(value, {
           sources: siteSources,
-          fallback: value
+          fallback: value,
         })
       : "—";
 
@@ -29,7 +28,7 @@ function ProgressNotes() {
       category: "Safety",
       createdBy: "Dr Rao",
       date: "10-Jun-2026",
-      status: "Signed"
+      status: "Signed",
     },
     {
       id: "NOTE-002",
@@ -40,7 +39,7 @@ function ProgressNotes() {
       category: "Visit Assessment",
       createdBy: "Dr Rao",
       date: "12-Jun-2026",
-      status: "Pending"
+      status: "Pending",
     },
     {
       id: "NOTE-003",
@@ -51,19 +50,16 @@ function ProgressNotes() {
       category: "Protocol Deviation",
       createdBy: "Dr Kumar",
       date: "15-Jun-2026",
-      status: "Signed"
-    }
+      status: "Signed",
+    },
   ];
 
   const filteredNotes = notesData.filter((note) =>
-    note.subjectId
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
+    note.subjectId.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
     <div className="pn-page tnxt-compact">
-
       <h1>Progress Notes</h1>
 
       <p className="page-subtitle">
@@ -71,7 +67,6 @@ function ProgressNotes() {
       </p>
 
       <div className="notes-summary">
-
         <div className="summary-card">
           <h3>Total Notes</h3>
           <p>245</p>
@@ -91,11 +86,9 @@ function ProgressNotes() {
           <h3>Critical Notes</h3>
           <p>10</p>
         </div>
-
       </div>
 
       <div className="notes-filters">
-
         <input
           type="text"
           placeholder="Search Subject ID..."
@@ -114,13 +107,10 @@ function ProgressNotes() {
         >
           Search
         </button>
-
       </div>
 
       <div className="notes-table-card">
-
         <table className="notes-table ctms-standard-table">
-
           <thead>
             <tr>
               <th>Note ID</th>
@@ -137,11 +127,8 @@ function ProgressNotes() {
           </thead>
 
           <tbody>
-
             {filteredNotes.map((note) => (
-
               <tr key={note.id}>
-
                 <td>{note.id}</td>
                 <td>{note.subjectId}</td>
                 <td>{note.study}</td>
@@ -152,34 +139,26 @@ function ProgressNotes() {
                 <td>{note.date}</td>
 
                 <td>
-                  <span
-                    className={`status-badge ${note.status}`}
-                  >
+                  <span className={`status-badge ${note.status}`}>
                     {note.status}
                   </span>
                 </td>
 
                 <td>
                   <button
-  className="view-btn"
-  onClick={() =>
-    navigate(`/progress-note-details/${note.id}`)
-  }
->
-  View
-</button>
+                    className="view-btn"
+                    onClick={() =>
+                      navigate(`/progress-note-details/${note.id}`)
+                    }
+                  >
+                    View
+                  </button>
                 </td>
-
               </tr>
-
             ))}
-
           </tbody>
-
         </table>
-
       </div>
-
     </div>
   );
 }

@@ -4,11 +4,7 @@ import "./StudyOversight.css";
 import "./SponsorShared.css";
 import KpiCard from "./KpiCard";
 import EnterpriseModal from "./EnterpriseModal";
-import {
-  FiActivity,
-  FiCheckCircle,
-  FiAlertTriangle,
-} from "react-icons/fi";
+import { FiActivity, FiCheckCircle, FiAlertTriangle } from "react-icons/fi";
 import {
   BarChart,
   Bar,
@@ -18,10 +14,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import {
-  getOversightStudies,
-  getOversightKPIs,
-} from "./data/sponsorDataStore";
+import { getOversightStudies, getOversightKPIs } from "./data/sponsorDataStore";
 
 const StudyOversight = () => {
   const [studies, setStudies] = useState(getOversightStudies());
@@ -118,11 +111,7 @@ const StudyOversight = () => {
                 <XAxis dataKey="study" />
                 <YAxis domain={[0, 100]} />
                 <Tooltip formatter={(value) => `${value}%`} />
-                <Bar
-                  dataKey="progress"
-                  fill="#082b3d"
-                  radius={[6, 6, 0, 0]}
-                />
+                <Bar dataKey="progress" fill="#082b3d" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

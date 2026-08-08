@@ -18,7 +18,10 @@ function SiteManagement() {
   }));
 
   return (
-    <div style={{ padding: "30px" }} className="site-management-page tnxt-compact">
+    <div
+      style={{ padding: "30px" }}
+      className="site-management-page tnxt-compact"
+    >
       <h1>Site Management</h1>
 
       {siteData.length === 0 ? (

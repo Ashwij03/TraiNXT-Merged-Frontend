@@ -67,7 +67,14 @@ function CROModal({
   );
 }
 
-export function CROAlertModal({ isOpen, open, title, message, onClose, confirmLabel = "OK" }) {
+export function CROAlertModal({
+  isOpen,
+  open,
+  title,
+  message,
+  onClose,
+  confirmLabel = "OK",
+}) {
   return (
     <CROModal
       open={open ?? isOpen}

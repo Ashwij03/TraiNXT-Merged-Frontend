@@ -26,9 +26,9 @@ const TrainingLog = ({ records = [] }) => {
         delegateNames: (item.delegates || [])
           .map((d) => `${d.name || ""} ${d.role || ""}`.trim())
           .join(" | "),
-        _raw: item
+        _raw: item,
       })),
-    [records]
+    [records],
   );
 
   const trainingColumns = useMemo(
@@ -36,7 +36,7 @@ const TrainingLog = ({ records = [] }) => {
       {
         key: "training",
         label: "Training",
-        render: (value) => <span className="blue-link">{value || "—"}</span>
+        render: (value) => <span className="blue-link">{value || "—"}</span>,
       },
       { key: "linkedDuties", label: "Linked Duties" },
       {
@@ -58,7 +58,7 @@ const TrainingLog = ({ records = [] }) => {
                   <div className="delegate-avatar">
                     <img
                       src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(
-                        delegate.name || String(idx)
+                        delegate.name || String(idx),
                       )}`}
                       alt=""
                     />
@@ -78,7 +78,7 @@ const TrainingLog = ({ records = [] }) => {
                     <h4>{delegate.name || "—"}</h4>
                     <p>{delegate.role || ""}</p>
                     <span>
-                      {(row.training || item.training || "Training")}{" "}
+                      {row.training || item.training || "Training"}{" "}
                       certification
                     </span>
                   </div>
@@ -86,10 +86,10 @@ const TrainingLog = ({ records = [] }) => {
               ))}
             </div>
           );
-        }
-      }
+        },
+      },
     ],
-    []
+    [],
   );
 
   return (

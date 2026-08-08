@@ -3,14 +3,14 @@ import AppLayout from "./AppLayout";
 import { useNavigate } from "react-router-dom";
 
 const CROContracts = () => {
-
   const navigate = useNavigate();
 
   return (
     <AppLayout>
-
-      <div style={{ padding: "24px" }} className="cro-contracts-page tnxt-compact">
-
+      <div
+        style={{ padding: "24px" }}
+        className="cro-contracts-page tnxt-compact"
+      >
         <button
           onClick={() => navigate(-1)}
           style={{
@@ -20,7 +20,7 @@ const CROContracts = () => {
             padding: "10px 18px",
             borderRadius: "8px",
             cursor: "pointer",
-            marginBottom: "20px"
+            marginBottom: "20px",
           }}
         >
           ← Back
@@ -29,7 +29,6 @@ const CROContracts = () => {
         <h1>CRO Contracts</h1>
 
         <table className="cro-table ctms-standard-table">
-
           <thead>
             <tr>
               <th>Contract ID</th>
@@ -41,7 +40,6 @@ const CROContracts = () => {
           </thead>
 
           <tbody>
-
             <tr>
               <td>CON-001</td>
               <td>IQVIA</td>
@@ -65,13 +63,9 @@ const CROContracts = () => {
               <td>01-Mar-2027</td>
               <td>Under Review</td>
             </tr>
-
           </tbody>
-
         </table>
-
       </div>
-
     </AppLayout>
   );
 };

@@ -49,7 +49,9 @@
   border-bottom: 3px solid transparent;
   color: var(--tnxt-text-secondary);
   font-weight: 600;
-  transition: color 0.2s ease, border-color 0.2s ease;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .study-tabs button.active,
@@ -111,7 +113,10 @@
   cursor: pointer;
   font-weight: 600;
   padding: 10px 18px;
-  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .btn-primary:hover,
@@ -140,7 +145,9 @@ textarea,
   color: var(--tnxt-text);
   font-size: var(--tnxt-font-size-sm);
   padding: 10px 12px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 input:focus,
@@ -172,7 +179,9 @@ textarea:focus {
   gap: var(--tnxt-space-md);
   justify-content: center;
   min-height: 180px;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 
 .add-subject-card:hover,
@@ -192,7 +201,9 @@ textarea:focus {
   box-shadow: var(--tnxt-shadow-sm);
   cursor: pointer;
   padding: var(--tnxt-space-xl);
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .folder-tile:hover,

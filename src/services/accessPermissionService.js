@@ -58,7 +58,9 @@ export function getAllAccessRequests() {
 }
 
 export function getPendingAccessRequests() {
-  return getAllAccessRequests().filter((request) => request.status === "Pending");
+  return getAllAccessRequests().filter(
+    (request) => request.status === "Pending",
+  );
 }
 
 export function getAccessRequestHistory() {
@@ -85,7 +87,8 @@ export function getApprovedPermissionScopes(email) {
   const scopes = readJson(APPROVED_SCOPES_KEY, []);
   if (!email) return scopes;
   return scopes.filter(
-    (scope) => String(scope.email).toLowerCase() === String(email).toLowerCase(),
+    (scope) =>
+      String(scope.email).toLowerCase() === String(email).toLowerCase(),
   );
 }
 
@@ -104,7 +107,8 @@ export function hasApprovedScope(
     const actionMatch =
       !action || scope.action === action || scope.accessType === action;
     const moduleMatch = scope.module === module;
-    const recordMatch = !scope.recordId || !recordId || scope.recordId === recordId;
+    const recordMatch =
+      !scope.recordId || !recordId || scope.recordId === recordId;
     const studyMatch =
       !scope.studyCode || !studyCode || scope.studyCode === studyCode;
     return actionMatch && moduleMatch && recordMatch && studyMatch;
@@ -200,7 +204,8 @@ export function removeUserPermission(userEmail) {
   writeJson("users", updated);
 
   const scopes = readJson(APPROVED_SCOPES_KEY, []).filter(
-    (scope) => String(scope.email).toLowerCase() !== String(userEmail).toLowerCase(),
+    (scope) =>
+      String(scope.email).toLowerCase() !== String(userEmail).toLowerCase(),
   );
   writeJson(APPROVED_SCOPES_KEY, scopes);
   notifyPermissionRequestsUpdated();

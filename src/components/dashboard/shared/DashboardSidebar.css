@@ -13,7 +13,9 @@
   flex-shrink: 0;
   scrollbar-width: thin;
   user-select: none;
-  transition: opacity 0.25s ease, width 0.25s ease;
+  transition:
+    opacity 0.25s ease,
+    width 0.25s ease;
 }
 
 .enterprise-sidebar.is-collapsed {
@@ -156,7 +158,8 @@
   gap: var(--sidebar-expander-gap);
   line-height: 1.35;
   min-height: 28px;
-  padding: 5px 8px 5px calc(var(--sidebar-tree-base) + var(--sidebar-tree-indent));
+  padding: 5px 8px 5px
+    calc(var(--sidebar-tree-base) + var(--sidebar-tree-indent));
   text-align: left;
   width: 100%;
 }

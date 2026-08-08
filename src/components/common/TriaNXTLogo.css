@@ -1,16 +1,16 @@
-.trianxt-logo{
-    font-size: 30px;
-    font-weight: 800;
-    color:#fff;
-    line-height:1;
-    letter-spacing:-1px;
+.trianxt-logo {
+  font-size: 30px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  letter-spacing: -1px;
 
-    background:none;
-    box-shadow:none;
-    border:none;
+  background: none;
+  box-shadow: none;
+  border: none;
 
-    padding:0;
-    margin:0;
+  padding: 0;
+  margin: 0;
 }
 
 .trianxt-logo[role="button"] {
@@ -18,18 +18,18 @@
 }
 
 /* Sidebar Logo */
-.trianxt-logo--sidebar{
-    font-size: 30px;      /* was ~40px */
-    font-weight: 800;
-    line-height: 1;
-    color: #ffffff;
-    letter-spacing: -0.5px;
+.trianxt-logo--sidebar {
+  font-size: 30px; /* was ~40px */
+  font-weight: 800;
+  line-height: 1;
+  color: #ffffff;
+  letter-spacing: -0.5px;
 
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 
-    margin: 40px 20px 20px 20px;
-    padding: 0;
+  margin: 40px 20px 20px 20px;
+  padding: 0;
 }
 
 .trianxt-logo--auth {

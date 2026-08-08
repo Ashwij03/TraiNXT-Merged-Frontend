@@ -74,10 +74,7 @@ export function CommentsProvider({ children }) {
   // transition (add / edit / resolve / reopen / updateStatus) refreshes
   // this snapshot in the same tick and every subscribed KPI re-renders
   // with no extra listeners or duplicate localStorage reads.
-  const commentCounts = useMemo(
-    () => buildCommentCounts(comments),
-    [comments]
-  );
+  const commentCounts = useMemo(() => buildCommentCounts(comments), [comments]);
 
   // Contextual counts — Study/Subject/Activity dashboards need Open/
   // Pending/Resolved *scoped to that entity*. Consumers pass a predicate
@@ -93,7 +90,7 @@ export function CommentsProvider({ children }) {
 
       return buildCommentCounts(comments.filter(filter));
     },
-    [comments, commentCounts]
+    [comments, commentCounts],
   );
 
   // Pre-existing API — kept as an alias so every current consumer keeps
@@ -119,7 +116,7 @@ export function CommentsProvider({ children }) {
           module: data.module || "",
           sourceView: data.sourceView || "",
         },
-        currentUser
+        currentUser,
       );
 
       // commentService already dispatches comments-updated /
@@ -130,7 +127,7 @@ export function CommentsProvider({ children }) {
       refreshComments();
       return record;
     },
-    [currentUser, refreshComments]
+    [currentUser, refreshComments],
   );
 
   const editComment = useCallback(
@@ -139,7 +136,7 @@ export function CommentsProvider({ children }) {
       refreshComments();
       return record;
     },
-    [currentUser, refreshComments]
+    [currentUser, refreshComments],
   );
 
   const resolveComment = useCallback(
@@ -147,7 +144,7 @@ export function CommentsProvider({ children }) {
       resolveCommentRecord(id, currentUser);
       refreshComments();
     },
-    [currentUser, refreshComments]
+    [currentUser, refreshComments],
   );
 
   const reopenComment = useCallback(
@@ -155,7 +152,7 @@ export function CommentsProvider({ children }) {
       reopenCommentRecord(id, currentUser);
       refreshComments();
     },
-    [currentUser, refreshComments]
+    [currentUser, refreshComments],
   );
 
   // Phase-7 Subject Comments: expose edit/delete on the shared context so
@@ -168,7 +165,7 @@ export function CommentsProvider({ children }) {
       refreshComments();
       return record;
     },
-    [currentUser, refreshComments]
+    [currentUser, refreshComments],
   );
 
   const deleteComment = useCallback(
@@ -177,7 +174,7 @@ export function CommentsProvider({ children }) {
       refreshComments();
       return ok;
     },
-    [currentUser, refreshComments]
+    [currentUser, refreshComments],
   );
 
   return (

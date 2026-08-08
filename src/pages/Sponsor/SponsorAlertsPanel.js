@@ -1,34 +1,38 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   MdLocalHospital,
   MdWarningAmber,
   MdInfoOutline,
   MdNotificationsActive,
   MdHealthAndSafety,
-} from 'react-icons/md';
-import { getAlerts, getNotifications, SEVERITY_COLORS } from './data/sponsorDataStore';
-import EnterpriseModal from './EnterpriseModal';
-import './SponsorAlertsPanel.css';
+} from "react-icons/md";
+import {
+  getAlerts,
+  getNotifications,
+  SEVERITY_COLORS,
+} from "./data/sponsorDataStore";
+import EnterpriseModal from "./EnterpriseModal";
+import "./SponsorAlertsPanel.css";
 
 const MODULE_ROUTES = {
-  Regulatory: '/regulatory',
-  Recruitment: '/recruitment',
-  'CRO Oversight': '/cro-oversight',
-  Notifications: '/notifications',
-  'Risk Management': '/risk-management',
-  Reports: '/reports',
-  'Study Oversight': '/study-oversight',
-  'Site Performance': '/site-performance',
+  Regulatory: "/regulatory",
+  Recruitment: "/recruitment",
+  "CRO Oversight": "/cro-oversight",
+  Notifications: "/notifications",
+  "Risk Management": "/risk-management",
+  Reports: "/reports",
+  "Study Oversight": "/study-oversight",
+  "Site Performance": "/site-performance",
 };
 
 const severityIcon = (severity) => {
   switch (severity) {
-    case 'Critical':
+    case "Critical":
       return <MdLocalHospital className="alert-icon critical" aria-hidden />;
-    case 'High':
+    case "High":
       return <MdWarningAmber className="alert-icon high" aria-hidden />;
-    case 'Medium':
+    case "Medium":
       return <MdHealthAndSafety className="alert-icon medium" aria-hidden />;
     default:
       return <MdInfoOutline className="alert-icon low" aria-hidden />;
@@ -48,8 +52,8 @@ const SponsorAlertsPanel = () => {
       setNotifications(getNotifications());
     };
     refresh();
-    window.addEventListener('sponsor-data-updated', refresh);
-    return () => window.removeEventListener('sponsor-data-updated', refresh);
+    window.addEventListener("sponsor-data-updated", refresh);
+    return () => window.removeEventListener("sponsor-data-updated", refresh);
   }, []);
 
   const severityCounts = alerts.reduce((acc, a) => {
@@ -58,7 +62,7 @@ const SponsorAlertsPanel = () => {
   }, {});
 
   const handleAlertClick = (alert) => {
-    const route = MODULE_ROUTES[alert.module] || '/notifications';
+    const route = MODULE_ROUTES[alert.module] || "/notifications";
     navigate(route);
   };
 
@@ -69,7 +73,7 @@ const SponsorAlertsPanel = () => {
       onClick={() => handleAlertClick(alert)}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && handleAlertClick(alert)}
+      onKeyDown={(e) => e.key === "Enter" && handleAlertClick(alert)}
     >
       {severityIcon(alert.severity)}
       <div className="alert-content">
@@ -93,15 +97,26 @@ const SponsorAlertsPanel = () => {
           Alerts &amp; Notifications
         </h3>
         <div className="alerts-badges">
-          <span className="alerts-count-badge alerts-total">{alerts.length} alerts</span>
+          <span className="alerts-count-badge alerts-total">
+            {alerts.length} alerts
+          </span>
           <span className="alerts-count-badge">{notificationCount} unread</span>
         </div>
       </div>
 
       <div className="severity-summary">
-        {['Critical', 'High', 'Medium', 'Low'].map((sev) => (
-          <div key={sev} className="severity-chip" style={{ borderColor: SEVERITY_COLORS[sev] }}>
-            <span className="severity-label" style={{ color: SEVERITY_COLORS[sev] }}>{sev}</span>
+        {["Critical", "High", "Medium", "Low"].map((sev) => (
+          <div
+            key={sev}
+            className="severity-chip"
+            style={{ borderColor: SEVERITY_COLORS[sev] }}
+          >
+            <span
+              className="severity-label"
+              style={{ color: SEVERITY_COLORS[sev] }}
+            >
+              {sev}
+            </span>
             <span className="severity-count">{severityCounts[sev] || 0}</span>
           </div>
         ))}
@@ -112,8 +127,13 @@ const SponsorAlertsPanel = () => {
       </div>
 
       <div className="view-all-link">
-        <button type="button" className="view-all-btn" onClick={() => setShowAllModal(true)}>
-          View All Alerts ({alerts.length}) &amp; Notifications ({notifications.length}) →
+        <button
+          type="button"
+          className="view-all-btn"
+          onClick={() => setShowAllModal(true)}
+        >
+          View All Alerts ({alerts.length}) &amp; Notifications (
+          {notifications.length}) →
         </button>
       </div>
 
@@ -121,7 +141,10 @@ const SponsorAlertsPanel = () => {
         <EnterpriseModal
           title="All Alerts & Notifications"
           onClose={() => setShowAllModal(false)}
-          onSave={() => { setShowAllModal(false); navigate('/notifications', { state: { viewAll: true } }); }}
+          onSave={() => {
+            setShowAllModal(false);
+            navigate("/notifications", { state: { viewAll: true } });
+          }}
           saveLabel="Open Notification Center"
         >
           <div className="alerts-modal-section">
@@ -137,14 +160,19 @@ const SponsorAlertsPanel = () => {
                 <div
                   key={n.id}
                   className="alert-item-row"
-                  onClick={() => { setShowAllModal(false); navigate('/notifications'); }}
+                  onClick={() => {
+                    setShowAllModal(false);
+                    navigate("/notifications");
+                  }}
                   role="button"
                   tabIndex={0}
                 >
                   {severityIcon(n.severity)}
                   <div className="alert-content">
                     <p>{n.message}</p>
-                    <span className="alert-module">{n.type} · {n.read ? 'Read' : 'Unread'}</span>
+                    <span className="alert-module">
+                      {n.type} · {n.read ? "Read" : "Unread"}
+                    </span>
                   </div>
                   <span
                     className="severity-badge"

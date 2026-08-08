@@ -21,7 +21,11 @@ function dataUrlToUint8Array(dataUrl) {
   return bytes;
 }
 
-async function addDocumentsToFolder(folderZip, folderId, getDocumentsForFolder) {
+async function addDocumentsToFolder(
+  folderZip,
+  folderId,
+  getDocumentsForFolder,
+) {
   const documents = getDocumentsForFolder(folderId) || [];
 
   for (const doc of documents) {
@@ -32,7 +36,7 @@ async function addDocumentsToFolder(folderZip, folderId, getDocumentsForFolder) 
     } else {
       folderZip.file(
         `${sanitizeZipName(doc.name)}.txt`,
-        `Placeholder for ${doc.name}\nUploaded: ${doc.uploadedAt || "unknown"}`
+        `Placeholder for ${doc.name}\nUploaded: ${doc.uploadedAt || "unknown"}`,
       );
     }
   }
@@ -55,7 +59,7 @@ async function addNodeToZip(parentZip, node, getDocumentsForFolder) {
 export async function buildFolderZip({
   rootName,
   rootNode,
-  getDocumentsForFolder
+  getDocumentsForFolder,
 }) {
   const zip = new JSZip();
   const rootFolder = zip.folder(sanitizeZipName(rootName)) || zip;
@@ -84,7 +88,7 @@ export function sanitizeZipName(name) {
 
 export function parseUploadedFolderFiles(fileList) {
   const files = Array.from(fileList || []).filter(
-    (file) => file.webkitRelativePath
+    (file) => file.webkitRelativePath,
   );
 
   const tree = { name: "", children: new Map(), files: [] };
@@ -116,7 +120,7 @@ export function parseUploadedFolderFiles(fileList) {
         current.children.set(part, {
           name: part,
           children: new Map(),
-          files: []
+          files: [],
         });
       }
 
@@ -131,6 +135,8 @@ export function uploadedTreeToStructure(node) {
   return {
     name: node.name,
     files: node.files || [],
-    children: Array.from(node.children?.values() || []).map(uploadedTreeToStructure)
+    children: Array.from(node.children?.values() || []).map(
+      uploadedTreeToStructure,
+    ),
   };
 }

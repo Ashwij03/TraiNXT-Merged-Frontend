@@ -11,9 +11,7 @@ export const getSectionById = (sectionId) => {
  * Find a section by path
  */
 export const getSectionByPath = (path = "") => {
-  return (
-    EISFMenuConfig.find((section) => section.path === path) || null
-  );
+  return EISFMenuConfig.find((section) => section.path === path) || null;
 };
 
 /**
@@ -21,9 +19,7 @@ export const getSectionByPath = (path = "") => {
  */
 export const getFolderById = (folderId) => {
   for (const section of EISFMenuConfig) {
-    const folder = section.children?.find(
-      (child) => child.id === folderId
-    );
+    const folder = section.children?.find((child) => child.id === folderId);
 
     if (folder) return folder;
   }
@@ -36,9 +32,7 @@ export const getFolderById = (folderId) => {
  */
 export const getFolderByPath = (path = "") => {
   for (const section of EISFMenuConfig) {
-    const folder = section.children?.find(
-      (child) => child.path === path
-    );
+    const folder = section.children?.find((child) => child.path === path);
 
     if (folder) return folder;
   }
@@ -69,12 +63,10 @@ export const searchFolders = (keyword = "") => {
   const value = keyword.toLowerCase();
 
   return EISFMenuConfig.filter((section) => {
-    const sectionMatch = section.title
-      ?.toLowerCase()
-      .includes(value);
+    const sectionMatch = section.title?.toLowerCase().includes(value);
 
     const childMatch = section.children?.some((child) =>
-      child.title?.toLowerCase().includes(value)
+      child.title?.toLowerCase().includes(value),
     );
 
     return sectionMatch || childMatch;
@@ -86,9 +78,7 @@ export const searchFolders = (keyword = "") => {
  */
 export const getFolderBreadcrumb = (path = "") => {
   for (const section of EISFMenuConfig) {
-    const folder = section.children?.find(
-      (child) => child.path === path
-    );
+    const folder = section.children?.find((child) => child.path === path);
 
     if (folder) {
       return [section.title, folder.title];
@@ -110,14 +100,12 @@ export const getAllSections = () => EISFMenuConfig;
 /**
  * Checks if section exists.
  */
-export const hasSection = (sectionId) =>
-  !!getSectionById(sectionId);
+export const hasSection = (sectionId) => !!getSectionById(sectionId);
 
 /**
  * Checks if folder exists.
  */
-export const hasFolder = (folderId) =>
-  !!getFolderById(folderId);
+export const hasFolder = (folderId) => !!getFolderById(folderId);
 
 /**
  * Returns parent section of a folder.
@@ -125,9 +113,7 @@ export const hasFolder = (folderId) =>
 export const getParentSection = (folderId) => {
   return (
     EISFMenuConfig.find((section) =>
-      section.children?.some(
-        (child) => child.id === folderId
-      )
+      section.children?.some((child) => child.id === folderId),
     ) || null
   );
 };

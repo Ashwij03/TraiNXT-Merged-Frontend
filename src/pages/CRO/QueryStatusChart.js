@@ -16,7 +16,7 @@ function QueryStatusChart() {
 
   const open = comments.filter(isOpenComment).length;
   const resolved = comments.filter(
-    (comment) => String(comment?.status || "").toLowerCase() === "resolved"
+    (comment) => String(comment?.status || "").toLowerCase() === "resolved",
   ).length;
 
   const data = [
@@ -49,7 +49,10 @@ function QueryStatusChart() {
             label={false}
           >
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
             ))}
           </Pie>
           <Tooltip />

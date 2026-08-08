@@ -325,7 +325,10 @@
 
 .eisf-documents-toolbar {
   display: grid;
-  grid-template-columns: minmax(220px, 1.2fr) repeat(3, minmax(160px, 0.7fr)) auto;
+  grid-template-columns: minmax(220px, 1.2fr) repeat(
+      3,
+      minmax(160px, 0.7fr)
+    ) auto;
   margin-bottom: 16px;
 }
 
@@ -542,7 +545,9 @@
   height: 18px;
   border-radius: 999px;
   background: #cbd5e1;
-  transition: background 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .eisf-submodule-toggle .toggle-thumb {
@@ -600,7 +605,9 @@
   border: 1px solid transparent;
   border-radius: 7px;
   margin-bottom: 4px;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
 .eisf-accordion-item.expanded {
@@ -636,8 +643,14 @@
 }
 
 @keyframes eisf-accordion-slide {
-  from { opacity: 0; transform: translateY(-2px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .eisf-accordion-panel-desc {

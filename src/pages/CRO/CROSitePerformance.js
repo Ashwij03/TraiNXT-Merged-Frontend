@@ -25,11 +25,11 @@ function CROSitePerformance() {
   });
 
   const excellentCount = sitePerformanceData.filter(
-    (site) => site.status === "Excellent"
+    (site) => site.status === "Excellent",
   ).length;
 
   const atRiskCount = sitePerformanceData.filter(
-    (site) => site.status === "At Risk"
+    (site) => site.status === "At Risk",
   ).length;
 
   const avgEnrollment =
@@ -37,8 +37,8 @@ function CROSitePerformance() {
       ? Math.round(
           sitePerformanceData.reduce(
             (sum, site) => sum + parseInt(site.enrollment, 10),
-            0
-          ) / sitePerformanceData.length
+            0,
+          ) / sitePerformanceData.length,
         )
       : 0;
 
@@ -151,10 +151,15 @@ function CROSitePerformance() {
         onClose={() => setSelectedSite(null)}
         title={
           selectedSite
-            ? `${formatSiteOption({
-                siteNumber: selectedSite.siteNumber || selectedSite.siteNo || "",
-                siteName: selectedSite.site || selectedSite.siteName || "",
-              }) || selectedSite.site || "Site"} Performance`
+            ? `${
+                formatSiteOption({
+                  siteNumber:
+                    selectedSite.siteNumber || selectedSite.siteNo || "",
+                  siteName: selectedSite.site || selectedSite.siteName || "",
+                }) ||
+                selectedSite.site ||
+                "Site"
+              } Performance`
             : "Site Details"
         }
         footer={

@@ -5,7 +5,7 @@ import {
   deleteFolderTemplate,
   getFolderTemplates,
   saveCurrentFolderAsTemplate,
-  saveFolderTemplate
+  saveFolderTemplate,
 } from "../../services/folderService";
 import "./FolderTemplateModal.css";
 
@@ -61,7 +61,7 @@ export default function FolderTemplateModal({
   contextKey,
   selectedFolderId,
   onClose,
-  onApplied
+  onApplied,
 }) {
   const [templates, setTemplates] = useState(() => getFolderTemplates());
   const [templateName, setTemplateName] = useState("");
@@ -102,10 +102,14 @@ export default function FolderTemplateModal({
       sectionId,
       contextKey,
       selectedFolderId,
-      templateName.trim()
+      templateName.trim(),
     );
 
-    setMessage(saved ? "Current folder structure saved as template." : "Unable to save template.");
+    setMessage(
+      saved
+        ? "Current folder structure saved as template."
+        : "Unable to save template.",
+    );
   };
 
   const handleApplyTemplate = (templateId) => {
@@ -118,7 +122,7 @@ export default function FolderTemplateModal({
       sectionId,
       contextKey,
       selectedFolderId,
-      templateId
+      templateId,
     );
 
     if (applied) {
@@ -150,7 +154,8 @@ export default function FolderTemplateModal({
         </div>
 
         <p className="folder-template-help">
-          Save folder templates during this session and apply them to create nested folders automatically.
+          Save folder templates during this session and apply them to create
+          nested folders automatically.
         </p>
 
         {message && <p className="folder-template-message">{message}</p>}

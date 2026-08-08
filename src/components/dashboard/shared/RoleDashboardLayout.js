@@ -5,7 +5,10 @@ import {
   ADMIN_PREVIEW_ROLE_EVENT,
   PI_PREVIEW_ROLE_EVENT,
 } from "../../../constants/headerFilters";
-import { getCurrentUser, getEffectiveRole } from "../../../services/roleService";
+import {
+  getCurrentUser,
+  getEffectiveRole,
+} from "../../../services/roleService";
 import AdminDashboardLayout from "../admin/AdminDashboardLayout";
 import SiteStaffDashboardLayout from "../sitestaff/SiteStaffDashboardLayout";
 import PIDashboardLayout from "../pi/PIDashboardLayout";
@@ -15,13 +18,13 @@ import AppLayout from "../../../pages/Sponsor/AppLayout";
 function RoleDashboardLayout({ children }) {
   const location = useLocation();
   const [effectiveRole, setEffectiveRole] = useState(() =>
-    getEffectiveRole(getCurrentUser())
+    getEffectiveRole(getCurrentUser()),
   );
 
   useEffect(() => {
     const nextRole = getEffectiveRole(getCurrentUser());
     setEffectiveRole((currentRole) =>
-      currentRole === nextRole ? currentRole : nextRole
+      currentRole === nextRole ? currentRole : nextRole,
     );
   }, [location.pathname]);
 
@@ -29,7 +32,7 @@ function RoleDashboardLayout({ children }) {
     const syncRole = () => {
       const nextRole = getEffectiveRole(getCurrentUser());
       setEffectiveRole((currentRole) =>
-        currentRole === nextRole ? currentRole : nextRole
+        currentRole === nextRole ? currentRole : nextRole,
       );
     };
 
@@ -44,9 +47,7 @@ function RoleDashboardLayout({ children }) {
 
   switch (effectiveRole) {
     case ROLES.SITE_STAFF:
-      return (
-        <SiteStaffDashboardLayout>{children}</SiteStaffDashboardLayout>
-      );
+      return <SiteStaffDashboardLayout>{children}</SiteStaffDashboardLayout>;
     case ROLES.PI:
       return <PIDashboardLayout>{children}</PIDashboardLayout>;
     case ROLES.CRO:

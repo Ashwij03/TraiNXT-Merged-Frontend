@@ -21,9 +21,7 @@ function SitePerformance() {
     () => [
       "All",
       ...new Set(
-        performance
-          .map((site) => formatSiteLabel(site))
-          .filter(Boolean),
+        performance.map((site) => formatSiteLabel(site)).filter(Boolean),
       ),
     ],
     [performance],
@@ -52,8 +50,7 @@ function SitePerformance() {
           .toLowerCase()
           .includes(query);
 
-      const matchesSite =
-        siteFilter === "All" || siteLabel === siteFilter;
+      const matchesSite = siteFilter === "All" || siteLabel === siteFilter;
 
       return matchesSearch && matchesSite;
     });
@@ -110,8 +107,7 @@ function SitePerformance() {
               {
                 key: "siteName",
                 label: "Site",
-                render: (_value, row) =>
-                  formatSiteLabel(row) || "—",
+                render: (_value, row) => formatSiteLabel(row) || "—",
               },
               {
                 key: "siteNumber",
@@ -132,17 +128,13 @@ function SitePerformance() {
                 key: "screeningRate",
                 label: "Screening %",
                 render: (value) =>
-                  value !== undefined && value !== null
-                    ? `${value}%`
-                    : "—",
+                  value !== undefined && value !== null ? `${value}%` : "—",
               },
               {
                 key: "visitCompliance",
                 label: "Visit Compliance %",
                 render: (value) =>
-                  value !== undefined && value !== null
-                    ? `${value}%`
-                    : "—",
+                  value !== undefined && value !== null ? `${value}%` : "—",
               },
               {
                 key: "commentResolutionDays",

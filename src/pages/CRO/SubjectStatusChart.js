@@ -4,22 +4,17 @@ import {
   Cell,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
 } from "recharts";
 
 const data = [
   { name: "Active", value: 71 },
   { name: "Screening", value: 18 },
   { name: "Completed", value: 9 },
-  { name: "Withdrawn", value: 2 }
+  { name: "Withdrawn", value: 2 },
 ];
 
-const COLORS = [
-  "#22c55e",
-  "#3b82f6",
-  "#a855f7",
-  "#ef4444"
-];
+const COLORS = ["#22c55e", "#3b82f6", "#a855f7", "#ef4444"];
 
 function SubjectStatusChart() {
   return (
@@ -36,10 +31,7 @@ function SubjectStatusChart() {
             label
           >
             {data.map((entry, index) => (
-              <Cell
-                key={index}
-                fill={COLORS[index]}
-              />
+              <Cell key={index} fill={COLORS[index]} />
             ))}
           </Pie>
 

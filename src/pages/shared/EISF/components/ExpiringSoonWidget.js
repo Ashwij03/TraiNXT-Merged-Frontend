@@ -9,8 +9,7 @@ export default function ExpiringSoonWidget({
   maxItems = 5,
 }) {
   const expiring =
-    expiringSoonDocuments ||
-    getExpiringSoonDocuments(documents, days);
+    expiringSoonDocuments || getExpiringSoonDocuments(documents, days);
 
   return (
     <div className="expiring-soon-widget">
@@ -19,32 +18,21 @@ export default function ExpiringSoonWidget({
       </div>
 
       <div className="widget-body">
-        <div className="expiring-count">
-          {expiring.length}
-        </div>
+        <div className="expiring-count">{expiring.length}</div>
 
         {expiring.length === 0 ? (
-          <div className="empty-message">
-            No documents expiring soon.
-          </div>
+          <div className="empty-message">No documents expiring soon.</div>
         ) : (
           <ul className="expiring-list">
-            {expiring
-              .slice(0, maxItems)
-              .map((document) => (
-                <li
-                  key={document.id || document.name}
-                  className="expiring-item"
-                >
-                  <div className="document-name">
-                    {document.name || "Unnamed Document"}
-                  </div>
+            {expiring.slice(0, maxItems).map((document) => (
+              <li key={document.id || document.name} className="expiring-item">
+                <div className="document-name">
+                  {document.name || "Unnamed Document"}
+                </div>
 
-                  <div className="expiry-date">
-                    {document.expiryDate || "-"}
-                  </div>
-                </li>
-              ))}
+                <div className="expiry-date">{document.expiryDate || "-"}</div>
+              </li>
+            ))}
 
             {expiring.length > maxItems && (
               <li className="more-items">

@@ -23,9 +23,7 @@ function CROStatusBadge({ status }) {
   const variant = STATUS_MAP[status] || "default";
 
   return (
-    <span className={`cro-status-badge cro-status-${variant}`}>
-      {status}
-    </span>
+    <span className={`cro-status-badge cro-status-${variant}`}>{status}</span>
   );
 }
 

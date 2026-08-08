@@ -107,7 +107,9 @@
   font-weight: 800;
   pointer-events: none;
   user-select: none;
-  transition: transform 0.18s ease, color 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    color 0.18s ease;
 }
 
 .eisf-menu-item.active .eisf-expand-indicator {
@@ -216,7 +218,9 @@
   height: 17px;
   border-radius: 999px;
   background: #cbd5e1;
-  transition: background 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .eisf-child-row .eisf-submodule-toggle .toggle-thumb {
@@ -247,12 +251,12 @@
   overflow-y: auto;
   background: #f6f8fb;
 }
-.eisf-content{
-    flex:1;
-    min-width:0;
-    min-height:0;
-    padding:0;
-    overflow:auto;
+.eisf-content {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: auto;
 }
 .eisf-child-item.active {
   background: #e8f1ff;

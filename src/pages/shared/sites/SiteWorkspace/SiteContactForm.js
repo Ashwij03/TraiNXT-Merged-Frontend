@@ -7,11 +7,7 @@ const defaultForm = {
   phone: "",
 };
 
-export default function SiteContactForm({
-  initialData,
-  onSave,
-  onCancel,
-}) {
+export default function SiteContactForm({ initialData, onSave, onCancel }) {
   const [form, setForm] = useState(defaultForm);
 
   useEffect(() => {
@@ -53,21 +49,13 @@ export default function SiteContactForm({
   return (
     <div className="site-form-overlay">
       <div className="site-form-modal">
-
         <div className="site-form-header">
-          <h2>
-            {initialData ? "Edit Contact" : "Add Contact"}
-          </h2>
+          <h2>{initialData ? "Edit Contact" : "Add Contact"}</h2>
         </div>
 
         <form onSubmit={handleSubmit}>
-
           <label>Name</label>
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-          />
+          <input name="name" value={form.name} onChange={handleChange} />
 
           <label>Email</label>
           <input
@@ -78,31 +66,17 @@ export default function SiteContactForm({
           />
 
           <label>Phone</label>
-          <input
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-          />
+          <input name="phone" value={form.phone} onChange={handleChange} />
 
           <div className="site-form-buttons">
-
-            <button
-              type="button"
-              className="secondary-btn"
-              onClick={onCancel}
-            >
+            <button type="button" className="secondary-btn" onClick={onCancel}>
               Cancel
             </button>
 
-            <button
-              type="submit"
-              className="primary-btn"
-            >
+            <button type="submit" className="primary-btn">
               Save
             </button>
-
           </div>
-
         </form>
       </div>
     </div>

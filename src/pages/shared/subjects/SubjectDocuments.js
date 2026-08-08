@@ -6,13 +6,12 @@ function SubjectDocuments({ subject }) {
 
   return (
     <div className="subject-documents tnxt-compact">
-
       <DocumentFolderManager
-  sectionId="subjects"
-  contextKey={subjectId}
-  title="Subject Documents"
-  layout="explorer"
-/>
+        sectionId="subjects"
+        contextKey={subjectId}
+        title="Subject Documents"
+        layout="explorer"
+      />
 
       {/* Subject Timeline */}
       <div className="subject-extra-section">
@@ -97,7 +96,6 @@ function SubjectDocuments({ subject }) {
           </tbody>
         </table>
       </div>
-
     </div>
   );
 }

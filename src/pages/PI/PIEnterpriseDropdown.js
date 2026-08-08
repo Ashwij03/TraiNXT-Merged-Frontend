@@ -86,11 +86,17 @@ function PIEnterpriseDropdown({
                   onClick={() => handleSelect(option.value)}
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && handleSelect(option.value)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && handleSelect(option.value)
+                  }
                 >
-                  <span className="pi-dropdown-option-label">{option.label}</span>
+                  <span className="pi-dropdown-option-label">
+                    {option.label}
+                  </span>
                   {option.subtitle && (
-                    <span className="pi-dropdown-option-sub">{option.subtitle}</span>
+                    <span className="pi-dropdown-option-sub">
+                      {option.subtitle}
+                    </span>
                   )}
                 </div>
               ))

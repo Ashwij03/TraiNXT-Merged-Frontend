@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   HEADER_FILTERS_EVENT,
-  INSTITUTION_FILTER_EVENT
+  INSTITUTION_FILTER_EVENT,
 } from "../constants/headerFilters";
 import { getCurrentUser } from "../services/roleService";
 import {
   getFilteredSchedules,
   getUpcomingVisitsForDate,
   getUpcomingVisitsWindow,
-  SCHEDULES_EVENT
+  SCHEDULES_EVENT,
 } from "../services/visitScheduleService";
 
 export default function useVisitSchedules(options = {}) {
@@ -33,22 +33,21 @@ export default function useVisitSchedules(options = {}) {
     void version;
     return getFilteredSchedules(getCurrentUser(), {
       studyCode,
-      institution: institutionFilter
+      institution: institutionFilter,
     });
   }, [version, studyCode, institutionFilter]);
 
   const upcomingWindow = useMemo(
     () => getUpcomingVisitsWindow(schedules, daysAhead),
-    [schedules, daysAhead]
+    [schedules, daysAhead],
   );
 
-  const getVisitsForDate = (date) =>
-    getUpcomingVisitsForDate(schedules, date);
+  const getVisitsForDate = (date) => getUpcomingVisitsForDate(schedules, date);
 
   return {
     schedules,
     upcomingWindow,
     getVisitsForDate,
-    refresh: () => setVersion((value) => value + 1)
+    refresh: () => setVersion((value) => value + 1),
   };
 }

@@ -7,7 +7,6 @@ import { useNavigate } from "react-router-dom";
 import { resolveSiteDisplay } from "../../utils/siteDisplay";
 import { getStudies } from "../../services/studyService";
 
-
 function CROVisits() {
   const { subjects, visits } = useCROData();
   const navigate = useNavigate();
@@ -17,7 +16,7 @@ function CROVisits() {
     value
       ? resolveSiteDisplay(value, {
           sources: siteSources,
-          fallback: value
+          fallback: value,
         })
       : "—";
 

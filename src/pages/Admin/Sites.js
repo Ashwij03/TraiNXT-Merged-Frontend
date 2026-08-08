@@ -11,7 +11,7 @@ function Sites() {
   const activeSites = sites.filter((site) => site.status === "Active").length;
   const totalEnrolled = sites.reduce(
     (sum, site) => sum + Number(site.subjectsEnrolled || 0),
-    0
+    0,
   );
 
   return (
@@ -53,7 +53,7 @@ function Sites() {
               { key: "location", label: "Location" },
               { key: "pi", label: "PI" },
               { key: "subjectsEnrolled", label: "Enrolled" },
-              { key: "status", label: "Status" }
+              { key: "status", label: "Status" },
             ]}
             data={sites}
             pagination

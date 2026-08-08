@@ -593,7 +593,9 @@
   min-height: 160px;
   padding: 24px;
   text-align: center;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
   width: 100%;
 }
 

@@ -2,7 +2,10 @@ import React from "react";
 import { FaInbox } from "react-icons/fa";
 import "./EmptyState.css";
 
-function EmptyState({ title = "No Data Found", message = "There are no items to display yet." }) {
+function EmptyState({
+  title = "No Data Found",
+  message = "There are no items to display yet.",
+}) {
   return (
     <div className="cro-empty-state">
       <FaInbox className="cro-empty-icon" />

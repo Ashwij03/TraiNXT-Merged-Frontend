@@ -9,7 +9,7 @@ import TrainingLog from "../../../components/TrainingLog";
 import {
   getStudyLogs,
   getDelegationLogs,
-  getTrainingLogs
+  getTrainingLogs,
 } from "../../../services/adminService";
 import { getStudyByCode } from "../../../services/studyService";
 import "./StudyLogsTab.css";
@@ -34,102 +34,98 @@ function StudyLogsTab() {
     name: "",
     role: "",
     responsibility: "",
-    status: "Active"
+    status: "Active",
   });
   const ROLE_OPTIONS = [
-  "Principal Investigator",
-  "Sub Investigator",
-  "Study Coordinator",
-  "Research Nurse",
-  "Clinical Research Associate",
-  "Pharmacist",
-  "Laboratory Technician",
-  "Data Manager",
-  "Regulatory Coordinator",
-  "Quality Assurance",
-  "Medical Monitor"
-];
+    "Principal Investigator",
+    "Sub Investigator",
+    "Study Coordinator",
+    "Research Nurse",
+    "Clinical Research Associate",
+    "Pharmacist",
+    "Laboratory Technician",
+    "Data Manager",
+    "Regulatory Coordinator",
+    "Quality Assurance",
+    "Medical Monitor",
+  ];
 
-const RESPONSIBILITY_MAP = {
-  "Principal Investigator": [
-    "Medical Review",
-    "Physical Exam",
-    "Protocol Oversight",
-    "Subject Eligibility",
-    "Safety Review",
-    "Adverse Event Review"
-  ],
+  const RESPONSIBILITY_MAP = {
+    "Principal Investigator": [
+      "Medical Review",
+      "Physical Exam",
+      "Protocol Oversight",
+      "Subject Eligibility",
+      "Safety Review",
+      "Adverse Event Review",
+    ],
 
-  "Sub Investigator": [
-    "Medical Review",
-    "Physical Exam",
-    "Subject Follow-up",
-    "Adverse Event Assessment"
-  ],
+    "Sub Investigator": [
+      "Medical Review",
+      "Physical Exam",
+      "Subject Follow-up",
+      "Adverse Event Assessment",
+    ],
 
-  "Study Coordinator": [
-    "eReg Access",
-    "Source Documentation",
-    "Visit Coordination",
-    "Subject Scheduling",
-    "Regulatory Documentation"
-  ],
+    "Study Coordinator": [
+      "eReg Access",
+      "Source Documentation",
+      "Visit Coordination",
+      "Subject Scheduling",
+      "Regulatory Documentation",
+    ],
 
-  "Research Nurse": [
-    "Vital Signs",
-    "Blood Collection",
-    "Drug Administration",
-    "ECG",
-    "Sample Collection"
-  ],
+    "Research Nurse": [
+      "Vital Signs",
+      "Blood Collection",
+      "Drug Administration",
+      "ECG",
+      "Sample Collection",
+    ],
 
-  "Clinical Research Associate": [
-    "Source Data Verification",
-    "Monitoring Visit",
-    "Query Resolution",
-    "Site Monitoring"
-  ],
+    "Clinical Research Associate": [
+      "Source Data Verification",
+      "Monitoring Visit",
+      "Query Resolution",
+      "Site Monitoring",
+    ],
 
-  "Pharmacist": [
-    "Drug Dispensing",
-    "IP Accountability",
-    "Drug Storage",
-    "Temperature Monitoring"
-  ],
+    Pharmacist: [
+      "Drug Dispensing",
+      "IP Accountability",
+      "Drug Storage",
+      "Temperature Monitoring",
+    ],
 
-  "Laboratory Technician": [
-    "Sample Collection",
-    "Sample Processing",
-    "Specimen Shipping",
-    "Lab Testing"
-  ],
+    "Laboratory Technician": [
+      "Sample Collection",
+      "Sample Processing",
+      "Specimen Shipping",
+      "Lab Testing",
+    ],
 
-  "Data Manager": [
-    "Data Entry",
-    "Data Validation",
-    "Query Management",
-    "Database Review"
-  ],
+    "Data Manager": [
+      "Data Entry",
+      "Data Validation",
+      "Query Management",
+      "Database Review",
+    ],
 
-  "Regulatory Coordinator": [
-    "IRB Submission",
-    "Regulatory Documents",
-    "Essential Documents",
-    "Protocol Amendment"
-  ],
+    "Regulatory Coordinator": [
+      "IRB Submission",
+      "Regulatory Documents",
+      "Essential Documents",
+      "Protocol Amendment",
+    ],
 
-  "Quality Assurance": [
-    "Internal Audit",
-    "CAPA Review",
-    "Compliance Review"
-  ],
+    "Quality Assurance": ["Internal Audit", "CAPA Review", "Compliance Review"],
 
-  "Medical Monitor": [
-    "Medical Oversight",
-    "Safety Assessment",
-    "Protocol Review"
-  ]
-};
+    "Medical Monitor": [
+      "Medical Oversight",
+      "Safety Assessment",
+      "Protocol Review",
+    ],
+  };
 
   // ---- NEW: Study Logs is now state instead of a static useMemo, so we can
   // append a new row every time a delegation is added/edited/deleted. ----
@@ -156,7 +152,7 @@ const RESPONSIBILITY_MAP = {
       ...item,
       name: item.delegateName,
       responsibility: item.description,
-      status: item.status || "Active"
+      status: item.status || "Active",
     }));
     setStaff(formatted);
   }, []);
@@ -180,8 +176,8 @@ const RESPONSIBILITY_MAP = {
         action,
         user,
         timestamp: new Date().toLocaleDateString(),
-        status
-      }
+        status,
+      },
     ]);
   };
 
@@ -192,9 +188,9 @@ const RESPONSIBILITY_MAP = {
         date: new Date().toLocaleDateString(),
         action,
         user,
-        reason
+        reason,
       },
-      ...prev
+      ...prev,
     ]);
   };
 
@@ -217,9 +213,9 @@ const RESPONSIBILITY_MAP = {
       duties: [
         {
           duty: "A2",
-          description: form.responsibility
-        }
-      ]
+          description: form.responsibility,
+        },
+      ],
     };
 
     setStaff((prev) => [...prev, newStaff]);
@@ -230,7 +226,7 @@ const RESPONSIBILITY_MAP = {
       name: "",
       role: "",
       responsibility: "",
-      status: "Active"
+      status: "Active",
     });
 
     setShowModal(false);
@@ -247,18 +243,27 @@ const RESPONSIBILITY_MAP = {
           ? {
               ...s,
               ...updatedFields,
-              duties: [{ duty: "A2", description: updatedFields.responsibility }]
+              duties: [
+                { duty: "A2", description: updatedFields.responsibility },
+              ],
             }
-          : s
-      )
+          : s,
+      ),
     );
 
     addStudyLogEntry("Edited Staff", updatedFields.name, updatedFields.status);
     addHistoryEntry("Staff Edited", updatedFields.name);
 
     if (original && original.status !== updatedFields.status) {
-      addStudyLogEntry("Status Changed", updatedFields.name, updatedFields.status);
-      addHistoryEntry(`Status Changed to ${updatedFields.status}`, updatedFields.name);
+      addStudyLogEntry(
+        "Status Changed",
+        updatedFields.name,
+        updatedFields.status,
+      );
+      addHistoryEntry(
+        `Status Changed to ${updatedFields.status}`,
+        updatedFields.name,
+      );
     }
   };
 
@@ -305,7 +310,7 @@ const RESPONSIBILITY_MAP = {
           { key: "action", label: "Action" },
           { key: "user", label: "User" },
           { key: "timestamp", label: "Date/Time" },
-          { key: "status", label: "Status" }
+          { key: "status", label: "Status" },
         ]}
         data={studyLogs}
         emptyMessage="No log entries for this study"
@@ -314,7 +319,7 @@ const RESPONSIBILITY_MAP = {
         searchFields={["id", "type", "action", "user", "status"]}
         filters={[
           { key: "type", label: "Type" },
-          { key: "status", label: "Status" }
+          { key: "status", label: "Status" },
         ]}
         pagination
       />
@@ -354,66 +359,57 @@ const RESPONSIBILITY_MAP = {
       {/* ---- NEW: Training Log reuses the existing TrainingLog component.
       Records are fetched by StudyLogsTab (parent = source of truth) and
       passed as a prop, matching the Delegation Log integration pattern. ---- */}
-      {activeLog === "training" && (
-        <TrainingLog records={trainingRecords} />
-      )}
+      {activeLog === "training" && <TrainingLog records={trainingRecords} />}
 
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-box">
-
-            <div className="modal-title">
-              Add Delegation
-            </div>
+            <div className="modal-title">Add Delegation</div>
 
             <div className="modal-body">
               <input
                 placeholder="Name"
                 value={form.name}
-                onChange={(e) =>
-                  setForm({ ...form, name: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
 
               <select
-  value={form.role}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      role: e.target.value,
-      responsibility: ""
-    })
-  }
->
-  <option value="">Select Role</option>
+                value={form.role}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    role: e.target.value,
+                    responsibility: "",
+                  })
+                }
+              >
+                <option value="">Select Role</option>
 
-  {ROLE_OPTIONS.map((role) => (
-    <option key={role} value={role}>
-      {role}
-    </option>
-  ))}
-</select>
+                {ROLE_OPTIONS.map((role) => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
+              </select>
 
               <select
-  value={form.responsibility}
-  disabled={!form.role}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      responsibility: e.target.value
-    })
-  }
->
-  <option value="">
-    Select Responsibility
-  </option>
+                value={form.responsibility}
+                disabled={!form.role}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    responsibility: e.target.value,
+                  })
+                }
+              >
+                <option value="">Select Responsibility</option>
 
-  {(RESPONSIBILITY_MAP[form.role] || []).map((item) => (
-    <option key={item} value={item}>
-      {item}
-    </option>
-  ))}
-</select>
+                {(RESPONSIBILITY_MAP[form.role] || []).map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
 
               <select
                 value={form.status}
@@ -437,14 +433,10 @@ const RESPONSIBILITY_MAP = {
                 Cancel
               </button>
 
-              <button
-                className="save-btn"
-                onClick={handleSave}
-              >
+              <button className="save-btn" onClick={handleSave}>
                 Save
               </button>
             </div>
-
           </div>
         </div>
       )}

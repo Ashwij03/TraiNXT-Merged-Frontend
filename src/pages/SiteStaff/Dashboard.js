@@ -12,9 +12,12 @@ import QuickActions from "../../components/dashboard/shared/QuickActions";
 import VisitCalendarSection from "../../components/dashboard/shared/VisitCalendarSection";
 import {
   getSiteStaffDashboardData,
-  getSubjectsForAnalytics
+  getSubjectsForAnalytics,
 } from "../../services/adminService";
-import { getAccessibleStudies, getAssignedSite } from "../../services/roleService";
+import {
+  getAccessibleStudies,
+  getAssignedSite,
+} from "../../services/roleService";
 import { useComments } from "../../comments/CommentsContext";
 import { resolveSiteDisplay } from "../../utils/siteDisplay";
 
@@ -27,7 +30,7 @@ function SiteStaffDashboard() {
   const navigate = useNavigate();
   const { pendingCount: openCommentsCount } = useComments();
   const [dashboardData, setDashboardData] = useState(() =>
-    getSiteStaffDashboardData()
+    getSiteStaffDashboardData(),
   );
   const assignedSite = getAssignedSite();
   const studyCount = useMemo(() => getAccessibleStudies().length, []);
@@ -55,12 +58,8 @@ function SiteStaffDashboard() {
     };
   }, []);
 
-  const {
-    enrolledCount,
-    upcomingVisitsCount,
-    subjectActivity,
-    alerts
-  } = dashboardData;
+  const { enrolledCount, upcomingVisitsCount, subjectActivity, alerts } =
+    dashboardData;
 
   // Item 17 — operational Site column shows Site Number, not Site Name.
   const siteResolvedSubjectActivity = useMemo(() => {
@@ -142,23 +141,23 @@ function SiteStaffDashboard() {
               {
                 icon: "📁",
                 label: "Studies",
-                path: "/studies"
+                path: "/studies",
               },
               {
                 icon: "🔍",
                 label: "Recruitment",
-                path: "/recruitment"
+                path: "/recruitment",
               },
               {
                 icon: "📚",
                 label: "Study Logs",
-                path: "/studies"
+                path: "/studies",
               },
               {
                 icon: "💬",
                 label: "Comments",
-                path: "/comments"
-              }
+                path: "/comments",
+              },
             ]}
           />
         </div>
@@ -169,35 +168,30 @@ function SiteStaffDashboard() {
           columns={[
             {
               key: "studyNumber",
-              label: "Study Number"
+              label: "Study Number",
             },
             {
               key: "siteNumber",
-              label: "Site Number"
+              label: "Site Number",
             },
             {
               key: "subjectId",
-              label: "Subject ID"
+              label: "Subject ID",
             },
             {
               key: "status",
-              label: "Status"
-            }
+              label: "Status",
+            },
           ]}
           data={subjectActivity}
           searchable
           searchPlaceholder="Search subject activity..."
-          searchFields={[
-            "studyNumber",
-            "siteNumber",
-            "subjectId",
-            "status"
-          ]}
+          searchFields={["studyNumber", "siteNumber", "subjectId", "status"]}
           filters={[
             {
               key: "status",
-              label: "Status"
-            }
+              label: "Status",
+            },
           ]}
           pagination
           initialPageSize={5}

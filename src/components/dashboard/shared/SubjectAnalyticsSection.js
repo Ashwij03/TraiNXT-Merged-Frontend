@@ -21,12 +21,10 @@ function SubjectAnalyticsSection({
   const subjectStatusData = getSubjectStatusAnalytics(subjects);
   const enrollmentStatusData = getEnrollmentStatusAnalytics(subjects, {
     studyCode,
-    studies
+    studies,
   });
 
-  const compactClass = compactKpis
-    ? " subject-analytics-section--compact"
-    : "";
+  const compactClass = compactKpis ? " subject-analytics-section--compact" : "";
 
   const showEnrollmentSummary =
     plannedSubjects !== null &&

@@ -2,18 +2,22 @@ import { readJson } from "../utils/storageHelpers";
 import { DEFAULT_ADMIN_CONFIG } from "../config/defaultAdmin";
 // UPDATED: Central admin data service — localStorage-backed, fully dynamic (no default/seed data)
 
-import { getStudies, getRecentActivityLogs, getStudyByCode } from "./studyService";
+import {
+  getStudies,
+  getRecentActivityLogs,
+  getStudyByCode,
+} from "./studyService";
 import {
   filterBySite,
   getAssignedSite,
   getCurrentUser,
-  isAdmin
+  isAdmin,
 } from "./roleService";
 import { getSiteNumberDirectory } from "./filterService";
 import {
   getFilteredSchedules,
   getMergedSchedules,
-  getUpcomingVisitsWindow
+  getUpcomingVisitsWindow,
 } from "./visitScheduleService";
 import { isOpenComment } from "./commentService";
 import { getPendingAccessRequests } from "./accessPermissionService";
@@ -21,7 +25,7 @@ import {
   getNotificationsForUser,
   markNotificationRead as markSharedNotificationRead,
   markAllNotificationsReadForUser,
-  NOTIFICATIONS_UPDATED
+  NOTIFICATIONS_UPDATED,
 } from "./notificationService";
 import { getCanonicalSubjectStatus } from "../utils/subjectLifecycle";
 
@@ -38,7 +42,7 @@ const STORAGE_KEYS = {
   reports: "adminReports",
   compliance: "adminCompliance",
   trainingLogs: "trainingLogs",
-  delegationLogs: "delegationLogs"
+  delegationLogs: "delegationLogs",
 };
 
 function writeJson(key, value) {
@@ -46,8 +50,8 @@ function writeJson(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
     window.dispatchEvent(
       new CustomEvent("admin-data-updated", {
-        detail: { key }
-      })
+        detail: { key },
+      }),
     );
   } catch {
     // Swallow storage write failures (e.g. quota exceeded) rather than
@@ -56,16 +60,14 @@ function writeJson(key, value) {
 }
 
 function getAllSubjectsFlat() {
-  const subjectsByStudy =
-    readJson("subjectsByStudy", {});
+  const subjectsByStudy = readJson("subjectsByStudy", {});
 
-  return Object.entries(subjectsByStudy).flatMap(
-    ([studyKey, subjects]) =>
-      (Array.isArray(subjects) ? subjects : []).map((subject) => ({
-        ...subject,
-        studyKey,
-        subjectId: subject.subjectId || subject.id
-      }))
+  return Object.entries(subjectsByStudy).flatMap(([studyKey, subjects]) =>
+    (Array.isArray(subjects) ? subjects : []).map((subject) => ({
+      ...subject,
+      studyKey,
+      subjectId: subject.subjectId || subject.id,
+    })),
   );
 }
 
@@ -87,8 +89,8 @@ function resolveStudyForSubject(subject, studies) {
   return (
     studies.find((study) =>
       [study.code, study.studyId, study.id].some(
-        (value) => normalizeRelationshipValue(value) === normalizedReference
-      )
+        (value) => normalizeRelationshipValue(value) === normalizedReference,
+      ),
     ) || null
   );
 }
@@ -105,8 +107,8 @@ function resolveSiteForSubject(subject, sites) {
   return (
     sites.find((site) =>
       [site.siteNumber, site.id, site.name].some(
-        (value) => normalizeRelationshipValue(value) === normalizedReference
-      )
+        (value) => normalizeRelationshipValue(value) === normalizedReference,
+      ),
     ) || null
   );
 }
@@ -202,7 +204,7 @@ export function approveSignupRequest(email) {
     updatedUser = {
       ...user,
       approvalStatus: "Approved",
-      accountStatus: "Active"
+      accountStatus: "Active",
     };
 
     return updatedUser;
@@ -224,7 +226,7 @@ export function rejectSignupRequest(email) {
     updatedUser = {
       ...user,
       approvalStatus: "Rejected",
-      accountStatus: "Inactive"
+      accountStatus: "Inactive",
     };
 
     return updatedUser;
@@ -247,7 +249,9 @@ export function rejectSignupRequest(email) {
 const SITE_BASED_ROLES = ["Admin", "PI", "SiteStaff"];
 
 function normalizeSiteKey(value) {
-  return String(value ?? "").trim().toLowerCase();
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
 }
 
 function deriveSiteRecords() {
@@ -269,7 +273,7 @@ function deriveSiteRecords() {
         subjectsEnrolled: 0,
         hasActiveStudy: false,
         hasCompletedStudy: false,
-        hasStudy: false
+        hasStudy: false,
       });
     }
     return siteMap.get(key);
@@ -277,9 +281,7 @@ function deriveSiteRecords() {
 
   // 1. Registration-derived sites.
   users
-    .filter(
-      (user) => SITE_BASED_ROLES.includes(user.role) && user.assignedSite
-    )
+    .filter((user) => SITE_BASED_ROLES.includes(user.role) && user.assignedSite)
     .forEach((user) => {
       const site = ensureSite(user.assignedSite);
       if (site && user.role === "PI" && !site.pi) {
@@ -330,7 +332,7 @@ function deriveSiteRecords() {
         location: site.location,
         pi: site.pi || "—",
         subjectsEnrolled: site.subjectsEnrolled,
-        status
+        status,
       };
     });
 }
@@ -401,7 +403,7 @@ export function markNotificationRead(notificationId) {
 export function markNotificationUnread(notificationId) {
   const user = getCurrentUser();
   const visibleIds = new Set(
-    getNotificationsForUser(user).map((item) => item.id)
+    getNotificationsForUser(user).map((item) => item.id),
   );
 
   if (!visibleIds.has(notificationId)) {
@@ -416,7 +418,7 @@ export function markNotificationUnread(notificationId) {
   }
 
   const updated = all.map((item) =>
-    item.id === notificationId ? { ...item, read: false } : item
+    item.id === notificationId ? { ...item, read: false } : item,
   );
   writeJson(STORAGE_KEYS.notifications, updated);
   dispatchAdminNotificationsUpdated();
@@ -451,43 +453,44 @@ export function getSitePerformance(user = getCurrentUser()) {
     const siteKey = normalizeSiteKey(site.name);
 
     const siteStudies = studies.filter(
-      (study) => normalizeSiteKey(study.site || study.location) === siteKey
+      (study) => normalizeSiteKey(study.site || study.location) === siteKey,
     );
     const siteSubjects = subjects.filter(
-      (subject) => normalizeSiteKey(subject.site || subject.siteNumber) === siteKey
+      (subject) =>
+        normalizeSiteKey(subject.site || subject.siteNumber) === siteKey,
     );
     const siteComments = comments.filter(
-      (comment) => normalizeSiteKey(comment.site) === siteKey
+      (comment) => normalizeSiteKey(comment.site) === siteKey,
     );
     const siteSchedules = schedules.filter(
-      (schedule) => normalizeSiteKey(schedule.site) === siteKey
+      (schedule) => normalizeSiteKey(schedule.site) === siteKey,
     );
 
     const enrollmentTarget = siteStudies.reduce(
       (sum, study) => sum + Number(study.targetSubjects || 0),
-      0
+      0,
     );
 
     const statusedSubjects = siteSubjects
       .map((subject) =>
         getCanonicalSubjectStatus(subject, {
-          studyId: subject.studyId || subject.studyKey
-        })
+          studyId: subject.studyId || subject.studyKey,
+        }),
       )
       .filter(Boolean);
 
     const screeningRate = statusedSubjects.length
       ? Math.round(
           (statusedSubjects.filter((status) =>
-            passedScreeningStages.includes(status)
+            passedScreeningStages.includes(status),
           ).length /
             statusedSubjects.length) *
-            100
+            100,
         )
       : 0;
 
     const completedVisits = siteSchedules.filter(
-      (schedule) => String(schedule.status || "").toLowerCase() === "completed"
+      (schedule) => String(schedule.status || "").toLowerCase() === "completed",
     ).length;
 
     const visitCompliance = siteSchedules.length
@@ -495,7 +498,7 @@ export function getSitePerformance(user = getCurrentUser()) {
       : 0;
 
     const resolvedComments = siteComments.filter(
-      (comment) => comment.resolvedAt && comment.createdAt
+      (comment) => comment.resolvedAt && comment.createdAt,
     );
 
     const commentResolutionDays = resolvedComments.length
@@ -505,7 +508,7 @@ export function getSitePerformance(user = getCurrentUser()) {
             const resolved = new Date(comment.resolvedAt).getTime();
             const days = (resolved - created) / (1000 * 60 * 60 * 24);
             return sum + (Number.isFinite(days) ? Math.max(days, 0) : 0);
-          }, 0) / resolvedComments.length
+          }, 0) / resolvedComments.length,
         )
       : "—";
 
@@ -516,7 +519,7 @@ export function getSitePerformance(user = getCurrentUser()) {
       enrollmentTarget,
       screeningRate,
       visitCompliance,
-      commentResolutionDays
+      commentResolutionDays,
     };
   });
 
@@ -561,34 +564,30 @@ export function getStudyLogs(studyCode, user = getCurrentUser()) {
   const matchedAuditLogs = getRecentActivityLogs(50).filter(
     (log) =>
       String(log.studyCode) === normalizedCode ||
-      String(log.studyName) === normalizedCode
+      String(log.studyName) === normalizedCode,
   );
 
-  const auditLogs = filterBySite(matchedAuditLogs, "site", user).map(
-    (log) => ({
-      id: `AUD-${log.id}`,
-      type: "Audit",
-      action: log.action || "System activity",
-      user: log.deletedBy || log.user || "System",
-      // BUG-5.5: this row represents a historical audit/activity event.
-      // It must display the site that was recorded on the event itself,
-      // never the study's current live site — falling back to studySite
-      // here would make a past entry's site silently change whenever the
-      // study's site is edited later.
-      site: log.site || "",
-      timestamp: log.timestamp
-        ? new Date(log.timestamp).toLocaleString()
-        : "—",
-      status: "Recorded"
-    })
-  );
+  const auditLogs = filterBySite(matchedAuditLogs, "site", user).map((log) => ({
+    id: `AUD-${log.id}`,
+    type: "Audit",
+    action: log.action || "System activity",
+    user: log.deletedBy || log.user || "System",
+    // BUG-5.5: this row represents a historical audit/activity event.
+    // It must display the site that was recorded on the event itself,
+    // never the study's current live site — falling back to studySite
+    // here would make a past entry's site silently change whenever the
+    // study's site is edited later.
+    site: log.site || "",
+    timestamp: log.timestamp ? new Date(log.timestamp).toLocaleString() : "—",
+    status: "Recorded",
+  }));
 
   const trainingLogs = getTrainingLogs(user)
     .filter(
       (log) =>
         !studySite ||
         log.site === studySite ||
-        String(log.site).includes(studySite)
+        String(log.site).includes(studySite),
     )
     .map((log) => ({
       id: log.id,
@@ -597,7 +596,7 @@ export function getStudyLogs(studyCode, user = getCurrentUser()) {
       user: log.delegates || "—",
       site: log.site || studySite || "",
       timestamp: "—",
-      status: log.status || "Active"
+      status: log.status || "Active",
     }));
 
   const delegationLogs = getDelegationLogs(user)
@@ -605,7 +604,7 @@ export function getStudyLogs(studyCode, user = getCurrentUser()) {
       (log) =>
         !studySite ||
         log.site === studySite ||
-        String(log.site).includes(studySite)
+        String(log.site).includes(studySite),
     )
     .map((log) => ({
       id: log.id,
@@ -614,7 +613,7 @@ export function getStudyLogs(studyCode, user = getCurrentUser()) {
       user: log.delegateName || "—",
       site: log.site || studySite || "",
       timestamp: log.effectivePeriod || "—",
-      status: log.status || "Active"
+      status: log.status || "Active",
     }));
 
   return [...auditLogs, ...trainingLogs, ...delegationLogs];
@@ -643,21 +642,21 @@ export function getRecruitment(user = getCurrentUser()) {
         return [study.code, study.studyId, study.id].some(
           (value) =>
             normalizeRelationshipValue(value) ===
-            normalizeRelationshipValue(reference)
+            normalizeRelationshipValue(reference),
         );
       });
 
       const statusedSubjects = studySubjects
         .map((subject) =>
           getCanonicalSubjectStatus(subject, {
-            studyId: subject.studyId || subject.studyKey
-          })
+            studyId: subject.studyId || subject.studyKey,
+          }),
         )
         .filter(Boolean);
 
       const screened = statusedSubjects.length;
       const enrolled = statusedSubjects.filter((status) =>
-        PASSED_SCREENING_STAGES.includes(status)
+        PASSED_SCREENING_STAGES.includes(status),
       ).length;
       const conversionRate = screened
         ? Math.round((enrolled / screened) * 100)
@@ -668,7 +667,7 @@ export function getRecruitment(user = getCurrentUser()) {
         site: study.site || study.location || "—",
         screened,
         enrolled,
-        conversionRate
+        conversionRate,
       };
     })
     .filter((record) => record.screened > 0);
@@ -717,7 +716,7 @@ export function getAdminDashboardData(filters = "") {
     institution = "",
     indication = "",
     siteNumber = "",
-    studyCode = ""
+    studyCode = "",
   } = typeof filters === "string" ? { institution: filters } : filters || {};
 
   initializeAdminData();
@@ -735,7 +734,7 @@ export function getAdminDashboardData(filters = "") {
   // feed into the same name-based filtering everything else already uses.
   const siteNumberInstitution = siteNumber
     ? getSiteNumberDirectory().find(
-        (entry) => String(entry.number) === String(siteNumber)
+        (entry) => String(entry.number) === String(siteNumber),
       )?.name || ""
     : "";
 
@@ -757,7 +756,7 @@ export function getAdminDashboardData(filters = "") {
     });
 
     indicationSites = new Set(
-      matchingStudies.map((study) => study.site).filter(Boolean)
+      matchingStudies.map((study) => study.site).filter(Boolean),
     );
   }
 
@@ -773,7 +772,7 @@ export function getAdminDashboardData(filters = "") {
       (siteName) =>
         value === siteName ||
         String(value).includes(siteName) ||
-        siteName.includes(String(value || ""))
+        siteName.includes(String(value || "")),
     );
 
   const passesSiteFilters = (value) =>
@@ -788,26 +787,24 @@ export function getAdminDashboardData(filters = "") {
       !studyCode || String(study.code) === String(studyCode);
 
     return (
-      matchesIndication &&
-      matchesStudyCode &&
-      passesSiteFilters(study.site)
+      matchesIndication && matchesStudyCode && passesSiteFilters(study.site)
     );
   });
 
   const sites = allSites.filter((site) =>
-    passesSiteFilters(site.name || site.id)
+    passesSiteFilters(site.name || site.id),
   );
 
   const comments = allComments.filter((comment) =>
-    passesSiteFilters(comment.site)
+    passesSiteFilters(comment.site),
   );
 
   const schedules = allSchedules.filter((schedule) =>
-    passesSiteFilters(schedule.site)
+    passesSiteFilters(schedule.site),
   );
 
   const pendingUsers = users.filter(
-    (user) => user.approvalStatus === "Pending"
+    (user) => user.approvalStatus === "Pending",
   );
 
   // UPDATED: no more fabricated fallback numbers (previously "index + 4")
@@ -817,24 +814,25 @@ export function getAdminDashboardData(filters = "") {
     studies.length > 0
       ? studies.slice(0, 6).map((study, index) => ({
           name: study.code || study.name || `Study ${index + 1}`,
-          value: Number(study.enrolled || study.subjects || 0)
+          value: Number(study.enrolled || study.subjects || 0),
         }))
       : sites.slice(0, 5).map((site, index) => ({
           name: site.name || `Site ${index + 1}`,
-          value: Number(site.subjectsEnrolled || 0)
+          value: Number(site.subjectsEnrolled || 0),
         }));
 
   const auditActivities = getRecentActivityLogs(5).map((log) => ({
     id: `audit-${log.id}`,
     title: log.action || "System activity",
-    description: log.studyName || log.studyCode || log.subjectId || "Audit log entry",
+    description:
+      log.studyName || log.studyCode || log.subjectId || "Audit log entry",
     time: log.timestamp
       ? new Date(log.timestamp).toLocaleTimeString([], {
           hour: "2-digit",
-          minute: "2-digit"
+          minute: "2-digit",
         })
       : "Recently",
-    type: "info"
+    type: "info",
   }));
 
   return {
@@ -848,22 +846,22 @@ export function getAdminDashboardData(filters = "") {
     pieData: [
       {
         name: "Approved",
-        value: Math.max(users.length - pendingUsers.length, 0)
+        value: Math.max(users.length - pendingUsers.length, 0),
       },
       {
         name: "Pending",
-        value: pendingUsers.length
-      }
+        value: pendingUsers.length,
+      },
     ],
     studyData,
     requestData: pendingUsers.map((user) => ({
       name: user.name || "N/A",
       email: user.email || "N/A",
       role: user.role || "N/A",
-      status: user.approvalStatus || "Pending"
+      status: user.approvalStatus || "Pending",
     })),
     complianceScore: getComplianceScore(),
-    auditActivities
+    auditActivities,
   };
 }
 
@@ -895,13 +893,17 @@ export function getSiteStaffDashboardData(user = getCurrentUser()) {
   const upcomingVisits = getUpcomingVisitsWindow(schedules, 7, today);
 
   const screeningCount = subjects.filter((s) =>
-    String(s.status || "").toLowerCase().includes("screen")
+    String(s.status || "")
+      .toLowerCase()
+      .includes("screen"),
   ).length;
 
   const enrolledCount = subjects.filter((s) =>
     ["active", "enrolled"].some((status) =>
-      String(s.status || "").toLowerCase().includes(status)
-    )
+      String(s.status || "")
+        .toLowerCase()
+        .includes(status),
+    ),
   ).length;
 
   const subjectActivity = subjects.map((subject) => {
@@ -914,7 +916,7 @@ export function getSiteStaffDashboardData(user = getCurrentUser()) {
       studyNumber: study?.code || "",
       siteNumber: site?.siteNumber || site?.id || subject.siteNumber || "",
       subjectId: subject.subjectId || subject.id,
-      status: getCanonicalSubjectStatus(subject, { studyId }) || ""
+      status: getCanonicalSubjectStatus(subject, { studyId }) || "",
     };
   });
 
@@ -922,8 +924,15 @@ export function getSiteStaffDashboardData(user = getCurrentUser()) {
   // fallbacks (used only when no subject records exist yet for this site) —
   // not fabricated demo numbers.
   return {
-    screeningCount: screeningCount || getRecruitment(user).reduce((sum, r) => sum + Number(r.screened || 0), 0),
-    enrolledCount: enrolledCount || getSites(user).reduce((sum, s) => sum + Number(s.subjectsEnrolled || 0), 0),
+    screeningCount:
+      screeningCount ||
+      getRecruitment(user).reduce((sum, r) => sum + Number(r.screened || 0), 0),
+    enrolledCount:
+      enrolledCount ||
+      getSites(user).reduce(
+        (sum, s) => sum + Number(s.subjectsEnrolled || 0),
+        0,
+      ),
     upcomingVisitsCount: upcomingVisits.length,
     openCommentsCount: comments.length,
     upcomingVisits,
@@ -932,7 +941,7 @@ export function getSiteStaffDashboardData(user = getCurrentUser()) {
       {
         type: "warning",
         title: "Upcoming Visit",
-        message: `${upcomingVisits.length} visits scheduled in the next 7 days`
+        message: `${upcomingVisits.length} visits scheduled in the next 7 days`,
       },
       {
         type: comments.length > 0 ? "danger" : "success",
@@ -940,9 +949,9 @@ export function getSiteStaffDashboardData(user = getCurrentUser()) {
         message:
           comments.length > 0
             ? `${comments.length} comments require review`
-            : "All comments are resolved"
-      }
-    ]
+            : "All comments are resolved",
+      },
+    ],
   };
 }
 
@@ -955,17 +964,21 @@ export function getPIDashboardData() {
   const studies = getStudies();
   const totalTarget = studies.reduce(
     (sum, study) => sum + Number(study.targetSubjects || 0),
-    0
+    0,
   );
   const totalEnrolled = studies.reduce(
     (sum, study) => sum + Number(study.enrolled || 0),
-    0
+    0,
   );
   const activeSubjects = subjects.filter((s) =>
-    String(s.status || "").toLowerCase().includes("active")
+    String(s.status || "")
+      .toLowerCase()
+      .includes("active"),
   ).length;
 
-  const completedVisitCount = schedules.filter((s) => s.status === "Completed").length;
+  const completedVisitCount = schedules.filter(
+    (s) => s.status === "Completed",
+  ).length;
 
   // UPDATED: removed hardcoded fallback percentages ("92%", "88%") and the
   // hardcoded enrollment-target fallback (150). Metrics now reflect actual
@@ -986,33 +999,35 @@ export function getPIDashboardData() {
     recentSubjects: subjects.slice(0, 5).map((s) => ({
       subjectId: s.subjectId || s.id,
       status: s.status || "Unknown",
-      lastVisit: s.lastVisit || s.currentVisit || "N/A"
+      lastVisit: s.lastVisit || s.currentVisit || "N/A",
     })),
-    upcomingVisits: getUpcomingVisitsWindow(schedules, 30).slice(0, 5).map((s) => ({
-      subjectId: s.subjectId,
-      visit: s.visit,
-      date: s.date
-    })),
+    upcomingVisits: getUpcomingVisitsWindow(schedules, 30)
+      .slice(0, 5)
+      .map((s) => ({
+        subjectId: s.subjectId,
+        visit: s.visit,
+        date: s.date,
+      })),
     pendingComments: comments.slice(0, 5).map((c) => ({
       commentId: c.id,
       subjectId: c.subjectId,
-      status: c.status
+      status: c.status,
     })),
     schedules,
     alerts: [
       {
         type: "warning",
         title: "Pending Tasks",
-        message: `${comments.length} open comments assigned to site`
+        message: `${comments.length} open comments assigned to site`,
       },
       {
         type: "info",
         title: "Upcoming Visit",
         message:
           schedules.find((s) => s.status === "Scheduled")?.visit ||
-          "No scheduled visits"
-      }
-    ]
+          "No scheduled visits",
+      },
+    ],
   };
 }
 
@@ -1032,14 +1047,14 @@ export function getCRODashboardData() {
       {
         type: "warning",
         title: "Monitoring Due",
-        message: `${sites.filter((s) => s.status === "Active").length} active sites under monitoring`
+        message: `${sites.filter((s) => s.status === "Active").length} active sites under monitoring`,
       },
       {
         type: "danger",
         title: "Open Comments",
-        message: `${comments.filter(isOpenComment).length} unresolved comments across sites`
-      }
-    ]
+        message: `${comments.filter(isOpenComment).length} unresolved comments across sites`,
+      },
+    ],
   };
 }
 
@@ -1059,20 +1074,20 @@ export function getSponsorDashboardData() {
     complianceScore: getComplianceScore(),
     enrollmentTotal: studies.reduce(
       (sum, s) => sum + Number(s.enrolled || 0),
-      0
+      0,
     ),
     alerts: [
       {
         type: "info",
         title: "Portfolio Update",
-        message: `${studies.length} studies in sponsor portfolio`
+        message: `${studies.length} studies in sponsor portfolio`,
       },
       {
         type: "success",
         title: "Compliance",
-        message: `Overall compliance score: ${getComplianceScore()}`
-      }
-    ]
+        message: `Overall compliance score: ${getComplianceScore()}`,
+      },
+    ],
   };
 }
 

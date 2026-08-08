@@ -28,10 +28,7 @@ function ClinicalSiteQuickView({ site, study, onClose }) {
     target > 0 ? Math.min(Math.round((enrolled / target) * 100), 100) : 0;
 
   return (
-    <div
-      className="clinical-site-quick-view-overlay"
-      onClick={onClose}
-    >
+    <div className="clinical-site-quick-view-overlay" onClick={onClose}>
       <div
         className="clinical-site-quick-view-modal"
         role="dialog"

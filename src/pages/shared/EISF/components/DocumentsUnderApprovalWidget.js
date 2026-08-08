@@ -17,26 +17,17 @@ export default function DocumentsUnderApprovalWidget({
       </div>
 
       <div className="widget-body">
-        <div className="approval-count">
-          {pendingDocuments.length}
-        </div>
+        <div className="approval-count">{pendingDocuments.length}</div>
 
         {pendingDocuments.length === 0 ? (
-          <div className="empty-message">
-            No documents awaiting approval.
-          </div>
+          <div className="empty-message">No documents awaiting approval.</div>
         ) : (
           <ul className="approval-list">
-            {pendingDocuments
-              .slice(0, maxItems)
-              .map((document) => (
-                <li
-                  key={document.id || document.name}
-                  className="approval-item"
-                >
-                  {document.name || "Unnamed Document"}
-                </li>
-              ))}
+            {pendingDocuments.slice(0, maxItems).map((document) => (
+              <li key={document.id || document.name} className="approval-item">
+                {document.name || "Unnamed Document"}
+              </li>
+            ))}
 
             {pendingDocuments.length > maxItems && (
               <li className="more-items">

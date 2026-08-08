@@ -5,7 +5,10 @@ import StatusBadge from "./StatusBadge";
 import EmptyState from "./EmptyState";
 import CROModal from "./CROModal";
 import RequestPermissionButton from "../../components/common/RequestPermissionButton";
-import { getAccessibleStudies, getCurrentUser } from "../../services/roleService";
+import {
+  getAccessibleStudies,
+  getCurrentUser,
+} from "../../services/roleService";
 import { resolveSiteDisplay } from "../../utils/siteDisplay";
 import { getStudies } from "../../services/studyService";
 
@@ -16,7 +19,9 @@ function CRORegulatoryDocuments() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState(null);
-  const [studies, setStudies] = useState(() => getAccessibleStudies(getCurrentUser()));
+  const [studies, setStudies] = useState(() =>
+    getAccessibleStudies(getCurrentUser()),
+  );
   const [uploadStudyCode, setUploadStudyCode] = useState("");
 
   const siteSources = useMemo(() => getStudies(), []);
@@ -24,10 +29,9 @@ function CRORegulatoryDocuments() {
     value
       ? resolveSiteDisplay(value, {
           sources: siteSources,
-          fallback: value
+          fallback: value,
         })
       : "—";
-
 
   React.useEffect(() => {
     const refresh = () => setStudies(getAccessibleStudies(getCurrentUser()));
@@ -43,8 +47,12 @@ function CRORegulatoryDocuments() {
     return matchesSearch && matchesStatus;
   });
 
-  const approvedCount = documents.filter((doc) => doc.status === "Approved").length;
-  const pendingCount = documents.filter((doc) => doc.status === "Pending").length;
+  const approvedCount = documents.filter(
+    (doc) => doc.status === "Approved",
+  ).length;
+  const pendingCount = documents.filter(
+    (doc) => doc.status === "Pending",
+  ).length;
   const expiringCount = documents.filter((doc) => {
     if (!doc.expiry) return false;
     const expiry = new Date(doc.expiry);
@@ -205,7 +213,8 @@ function CRORegulatoryDocuments() {
               <strong>Expiry:</strong> {selectedDoc.expiry}
             </p>
             <p>
-              <strong>Status:</strong> <StatusBadge status={selectedDoc.status} />
+              <strong>Status:</strong>{" "}
+              <StatusBadge status={selectedDoc.status} />
             </p>
           </div>
         )}

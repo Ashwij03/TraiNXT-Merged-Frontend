@@ -1,11 +1,11 @@
 import "./Files.css";
 import { useNavigate } from "react-router-dom";
 
-	export default function Files() {
-	  const navigate = useNavigate(); // ✅ CORRECT PLACE
+export default function Files() {
+  const navigate = useNavigate(); // ✅ CORRECT PLACE
 
-	  return (
-	    <div className="files-box tnxt-compact">
+  return (
+    <div className="files-box tnxt-compact">
       <h3>Files</h3>
 
       {/* TOP */}
@@ -13,22 +13,20 @@ import { useNavigate } from "react-router-dom";
         <span>Showing 1 to 7 of 7 entries</span>
 
         <div>
-          Previous 		<span
-		  className="link"
-		  onClick={() => navigate("/file-details")}
-		>
-		  Lab Report
-		</span>
+          Previous{" "}
+          <span className="link" onClick={() => navigate("/file-details")}>
+            Lab Report
+          </span>
         </div>
       </div>
 
       {/* FILTER */}
       <div className="files-filter">
         <div>
-          Show 
+          Show
           <select>
             <option>10</option>
-          </select> 
+          </select>
           entries
         </div>
 
@@ -51,17 +49,18 @@ import { useNavigate } from "react-router-dom";
         </thead>
 
         <tbody>
-
           <tr>
             <td>
-              📄 <span className="link">Lab Report</span><br />
+              📄 <span className="link">Lab Report</span>
+              <br />
               <small>(PDF 103.19KB)</small>
             </td>
 
             <td className="link">T-S 123-0001</td>
 
             <td>
-              OBETICHOLIC ACID (OCA)<br />
+              OBETICHOLIC ACID (OCA)
+              <br />
               <small>747-303</small>
             </td>
 
@@ -76,14 +75,16 @@ import { useNavigate } from "react-router-dom";
 
           <tr>
             <td>
-              📄 <span className="link">Other</span><br />
+              📄 <span className="link">Other</span>
+              <br />
               <small>(PDF 14KB)</small>
             </td>
 
             <td className="link">T-S 123-0001</td>
 
             <td>
-              OBETICHOLIC ACID (OCA)<br />
+              OBETICHOLIC ACID (OCA)
+              <br />
               <small>747-303</small>
             </td>
 
@@ -98,29 +99,30 @@ import { useNavigate } from "react-router-dom";
 
           <tr>
             <td>
-              📄 <span className="link">Informed Consent</span><br />
+              📄 <span className="link">Informed Consent</span>
+              <br />
               <small>(PDF 1MB)</small>
             </td>
 
             <td className="link">T-S 123-0001</td>
 
             <td>
-              OBETICHOLIC ACID (OCA)<br />
+              OBETICHOLIC ACID (OCA)
+              <br />
               <small>747-303</small>
             </td>
 
             <td>
-              Visit<br />
+              Visit
+              <br />
               <small>Unscheduled</small>
             </td>
 
             <td>Informed Consent</td>
             <td>13-OCT-2022</td>
           </tr>
-
         </tbody>
       </table>
-
     </div>
   );
 }

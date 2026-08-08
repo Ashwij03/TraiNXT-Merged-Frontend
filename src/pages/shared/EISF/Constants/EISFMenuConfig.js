@@ -196,7 +196,7 @@ const EISFMenuConfig = [
       },
     ],
   },
-    {
+  {
     id: "7.0",
     title: "Research Governance Office (RGO)",
     path: "/eisf/research-governance",
@@ -627,7 +627,6 @@ const EISFMenuConfig = [
       },
     ],
   },
-
 ];
 
 /* -------------------------------------------------------------------------- */
@@ -644,57 +643,45 @@ export const TOTAL_SECTIONS = EISFMenuConfig.length;
  */
 export const TOTAL_FOLDERS = EISFMenuConfig.reduce(
   (count, section) => count + (section.children?.length || 0),
-  0
+  0,
 );
 
 /**
  * Flat folder list.
  */
 export const ALL_FOLDERS = EISFMenuConfig.flatMap(
-  (section) => section.children || []
+  (section) => section.children || [],
 );
 
 /**
  * Section ids.
  */
-export const SECTION_IDS = EISFMenuConfig.map(
-  (section) => section.id
-);
+export const SECTION_IDS = EISFMenuConfig.map((section) => section.id);
 
 /**
  * Section paths.
  */
-export const SECTION_PATHS = EISFMenuConfig.map(
-  (section) => section.path
-);
+export const SECTION_PATHS = EISFMenuConfig.map((section) => section.path);
 
 /**
  * Folder paths.
  */
-export const FOLDER_PATHS = ALL_FOLDERS.map(
-  (folder) => folder.path
-);
+export const FOLDER_PATHS = ALL_FOLDERS.map((folder) => folder.path);
 
 /**
  * Folder ids.
  */
-export const FOLDER_IDS = ALL_FOLDERS.map(
-  (folder) => folder.id
-);
+export const FOLDER_IDS = ALL_FOLDERS.map((folder) => folder.id);
 
 /**
  * Lookup maps.
  */
 export const SECTION_MAP = Object.freeze(
-  Object.fromEntries(
-    EISFMenuConfig.map((section) => [section.id, section])
-  )
+  Object.fromEntries(EISFMenuConfig.map((section) => [section.id, section])),
 );
 
 export const FOLDER_MAP = Object.freeze(
-  Object.fromEntries(
-    ALL_FOLDERS.map((folder) => [folder.id, folder])
-  )
+  Object.fromEntries(ALL_FOLDERS.map((folder) => [folder.id, folder])),
 );
 
 export default EISFMenuConfig;

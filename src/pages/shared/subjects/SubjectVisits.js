@@ -3,100 +3,75 @@
 import { useState } from "react";
 import {
   markVisitStageCompleted,
-  syncSubjectSchedules
+  syncSubjectSchedules,
 } from "../../../services/visitScheduleService";
 import "./SubjectVisits.css";
 
-function SubjectVisits({
-  subject,
-  setActiveTab
-}) {
-
+function SubjectVisits({ subject, setActiveTab }) {
   const [visits, setVisits] = useState(
-    JSON.parse(
-      localStorage.getItem(
-        `subject_${subject.id}_visits`
-      )
-    ) || []
+    JSON.parse(localStorage.getItem(`subject_${subject.id}_visits`)) || [],
   );
 
   // const navigate = useNavigate();
 
+  const [showVisitModal, setShowVisitModal] = useState(false);
 
-  const [showVisitModal, setShowVisitModal] =
-    useState(false);
-  
-  const [showDeleteModal, setShowDeleteModal] =
-    useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const [selectedVisit, setSelectedVisit] =
-    useState(null);
+  const [selectedVisit, setSelectedVisit] = useState(null);
 
-  const [deleteInfo, setDeleteInfo] =
-    useState({
-      deletedBy: "",
-      reason: ""
-    });
+  const [deleteInfo, setDeleteInfo] = useState({
+    deletedBy: "",
+    reason: "",
+  });
 
-  const [newVisit, setNewVisit] =
-    useState({
-      id: "",
-      name: "",
-      plannedDate: "",
-      actualDate: "",
-      status: "Scheduled"
-    });
+  const [newVisit, setNewVisit] = useState({
+    id: "",
+    name: "",
+    plannedDate: "",
+    actualDate: "",
+    status: "Scheduled",
+  });
 
   const persistVisits = (updatedVisits, completedVisitName = "") => {
     setVisits(updatedVisits);
 
     localStorage.setItem(
       `subject_${subject.id}_visits`,
-      JSON.stringify(updatedVisits)
+      JSON.stringify(updatedVisits),
     );
 
     syncSubjectSchedules(
       subject.studyId || subject.study || subject.studyName,
       subject.id,
-      subject
+      subject,
     );
 
     if (completedVisitName) {
       markVisitStageCompleted(
         subject.studyId || subject.study || subject.studyName,
         subject.id,
-        completedVisitName
+        completedVisitName,
       );
     }
   };
 
   const addVisit = () => {
-
     let updatedVisits;
 
     if (newVisit.id) {
-
-      updatedVisits =
-        visits.map(v =>
-          String(v.id) ===
-          String(newVisit.id)
-            ? newVisit
-            : v
-        );
-
+      updatedVisits = visits.map((v) =>
+        String(v.id) === String(newVisit.id) ? newVisit : v,
+      );
     } else {
-
       updatedVisits = [
-
         ...visits,
 
         {
           ...newVisit,
-          id: Date.now()
-        }
-
+          id: Date.now(),
+        },
       ];
-
     }
 
     const completedVisitName =
@@ -109,46 +84,31 @@ function SubjectVisits({
       name: "",
       plannedDate: "",
       actualDate: "",
-      status: "Scheduled"
+      status: "Scheduled",
     });
 
     setShowVisitModal(false);
-
   };
 
   const deleteVisit = (visit) => {
-
     setSelectedVisit(visit);
 
     setShowDeleteModal(true);
-
   };
 
   const confirmDeleteVisit = () => {
-
-    if (
-      !deleteInfo.deletedBy.trim() ||
-      !deleteInfo.reason.trim()
-    ) {
-      alert(
-        "Deleted By and Reason are required."
-      );
+    if (!deleteInfo.deletedBy.trim() || !deleteInfo.reason.trim()) {
+      alert("Deleted By and Reason are required.");
       return;
     }
 
-    const updatedVisits =
-      visits.filter(
-        visit =>
-          String(visit.id) !==
-          String(selectedVisit.id)
-      );
+    const updatedVisits = visits.filter(
+      (visit) => String(visit.id) !== String(selectedVisit.id),
+    );
 
     persistVisits(updatedVisits);
 
-    const logs =
-      JSON.parse(
-        localStorage.getItem("auditLogs")
-      ) || [];
+    const logs = JSON.parse(localStorage.getItem("auditLogs")) || [];
 
     logs.push({
       action: "DELETE VISIT",
@@ -156,14 +116,10 @@ function SubjectVisits({
       visitName: selectedVisit.name,
       deletedBy: deleteInfo.deletedBy,
       reason: deleteInfo.reason,
-      deletedAt:
-        new Date().toISOString()
+      deletedAt: new Date().toISOString(),
     });
 
-    localStorage.setItem(
-      "auditLogs",
-      JSON.stringify(logs)
-    );
+    localStorage.setItem("auditLogs", JSON.stringify(logs));
 
     setShowDeleteModal(false);
 
@@ -171,305 +127,210 @@ function SubjectVisits({
 
     setDeleteInfo({
       deletedBy: "",
-      reason: ""
+      reason: "",
     });
-
   };
 
   // eslint-disable-next-line no-unused-vars
-  const updateVisit = (
-    visitId,
-    data
-  ) => {
-  
-    const updatedVisits =
-      visits.map(
-        visit =>
-          visit.id === visitId
-            ? {
-                ...visit,
-                ...data
-              }
-            : visit
-      );
-    
+  const updateVisit = (visitId, data) => {
+    const updatedVisits = visits.map((visit) =>
+      visit.id === visitId
+        ? {
+            ...visit,
+            ...data,
+          }
+        : visit,
+    );
+
     persistVisits(updatedVisits);
-  
   };
 
   const viewVisit = (visit) => {
-
-    localStorage.setItem(
-      "selectedVisit",
-      JSON.stringify(visit)
-    );
+    localStorage.setItem("selectedVisit", JSON.stringify(visit));
 
     setActiveTab("VisitDetails");
-
   };
 
   const editVisit = (visit) => {
-
     setNewVisit({
       id: visit.id,
       name: visit.name,
       plannedDate: visit.plannedDate,
       actualDate: visit.actualDate || "",
-      status: visit.status
+      status: visit.status,
     });
 
     setShowVisitModal(true);
-
   };
 
-
   return (
-
     <div className="subject-tab-card">
-
       <div className="visits-header">
-
         <h2>Subject Visits</h2>
 
         <button
           className="add-visit-btn"
-          onClick={() =>
-            setShowVisitModal(true)
-          }
+          onClick={() => setShowVisitModal(true)}
         >
           + Add Visit
         </button>
-        
       </div>
 
       <table>
-
         <thead>
-
           <tr>
-
             <th>Visit Name</th>
             <th>Planned Date</th>
             <th>Status</th>
             <th>Action</th>
-
           </tr>
-
         </thead>
 
         <tbody>
-
           {visits.length === 0 ? (
-          
             <tr>
-            
-              <td
-                colSpan="4"
-                className="no-visits"
-              >
+              <td colSpan="4" className="no-visits">
                 No Visits Added Yet
               </td>
-          
             </tr>
-
           ) : (
-          
             visits.map((visit) => (
-            
               <tr key={visit.id}>
-              
                 <td>{visit.name}</td>
-            
+
                 <td>{visit.plannedDate}</td>
-            
+
                 <td>{visit.status}</td>
-            
+
                 <td className="visit-actions">
-            
                   <button
                     className="view-visit-btn"
                     onClick={() => viewVisit(visit)}
                   >
                     View
                   </button>
-            
+
                   <button
                     className="btn-edit edit-visit-btn"
                     onClick={() => editVisit(visit)}
                   >
                     Edit
                   </button>
-            
+
                   <button
                     className="delete-visit-btn"
                     onClick={() => deleteVisit(visit)}
                   >
                     Delete
                   </button>
-            
                 </td>
-            
               </tr>
-
             ))
-          
           )}
-
         </tbody>
-
       </table>
 
-      {
-        showVisitModal && (
-        
-          <div className="visit-modal-overlay">
-          
-            <div className="visit-modal">
-        
-              <h3>
-                {newVisit.id
-                  ? "Edit Visit"
-                  : "Add Visit"}
-              </h3>
-        
-              <input
-                type="text"
-                value={newVisit.name}
-                placeholder="Visit Name"
-                onChange={(e)=>
-                  setNewVisit({
-                    ...newVisit,
-                    name:e.target.value
-                  })
-                }
-              />
+      {showVisitModal && (
+        <div className="visit-modal-overlay">
+          <div className="visit-modal">
+            <h3>{newVisit.id ? "Edit Visit" : "Add Visit"}</h3>
 
-              <input
-                type="date"
-                value={newVisit.plannedDate}
-                onChange={(e)=>
-                  setNewVisit({
-                    ...newVisit,
-                    plannedDate:e.target.value
-                  })
-                }
-              />
+            <input
+              type="text"
+              value={newVisit.name}
+              placeholder="Visit Name"
+              onChange={(e) =>
+                setNewVisit({
+                  ...newVisit,
+                  name: e.target.value,
+                })
+              }
+            />
 
-              <select
-                value={newVisit.status}
-                onChange={(e)=>
-                  setNewVisit({
-                    ...newVisit,
-                    status:e.target.value
-                  })
-                }
-              >
-                <option>Scheduled</option>
-                <option>Completed</option>
-                <option>Missed</option>
-              </select>
-              
-              <div className="visit-modal-actions">
-              
-                <button
-                  onClick={() =>
-                    setShowVisitModal(false)
-                  }
-                >
-                  Cancel
-                </button>
-                
-                <button
-                  onClick={addVisit}
-                >
-                  {
-                    newVisit.id
-                      ? "Update Visit"
-                      : "Save Visit"
-                  }
-                </button>
-                
-              </div>
-                
+            <input
+              type="date"
+              value={newVisit.plannedDate}
+              onChange={(e) =>
+                setNewVisit({
+                  ...newVisit,
+                  plannedDate: e.target.value,
+                })
+              }
+            />
+
+            <select
+              value={newVisit.status}
+              onChange={(e) =>
+                setNewVisit({
+                  ...newVisit,
+                  status: e.target.value,
+                })
+              }
+            >
+              <option>Scheduled</option>
+              <option>Completed</option>
+              <option>Missed</option>
+            </select>
+
+            <div className="visit-modal-actions">
+              <button onClick={() => setShowVisitModal(false)}>Cancel</button>
+
+              <button onClick={addVisit}>
+                {newVisit.id ? "Update Visit" : "Save Visit"}
+              </button>
             </div>
-                
           </div>
+        </div>
+      )}
 
-        )
-      }
+      {showDeleteModal && (
+        <div className="visit-modal-overlay">
+          <div className="visit-modal">
+            <h3>Delete Visit</h3>
 
-      {
-        showDeleteModal && (
-        
-          <div className="visit-modal-overlay">
-          
-            <div className="visit-modal">
-        
-              <h3>
+            <p>This action will be recorded in Audit Trail.</p>
+
+            <input
+              type="text"
+              placeholder="Deleted By"
+              value={deleteInfo.deletedBy}
+              onChange={(e) =>
+                setDeleteInfo({
+                  ...deleteInfo,
+                  deletedBy: e.target.value,
+                })
+              }
+              required
+            />
+
+            <textarea
+              placeholder="Reason For Deletion"
+              value={deleteInfo.reason}
+              onChange={(e) =>
+                setDeleteInfo({
+                  ...deleteInfo,
+                  reason: e.target.value,
+                })
+              }
+              required
+            />
+
+            <div className="visit-modal-actions">
+              <button
+                className="visit-cancel-btn"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancel
+              </button>
+
+              <button className="visit-delete-btn" onClick={confirmDeleteVisit}>
                 Delete Visit
-              </h3>
-        
-              <p>
-                This action will be
-                recorded in Audit Trail.
-              </p>
-        
-              <input
-                type="text"
-                placeholder="Deleted By"
-                value={deleteInfo.deletedBy}
-                onChange={(e)=>
-                  setDeleteInfo({
-                    ...deleteInfo,
-                    deletedBy:e.target.value
-                  })
-                }
-                required
-              />
-
-              <textarea
-                placeholder="Reason For Deletion"
-                value={deleteInfo.reason}
-                onChange={(e)=>
-                  setDeleteInfo({
-                    ...deleteInfo,
-                    reason:e.target.value
-                  })
-                }
-                required
-              />
-
-              <div
-                className="visit-modal-actions"
-              >
-              
-                <button
-                  className="visit-cancel-btn"
-                  onClick={() =>
-                    setShowDeleteModal(false)
-                  }
-                >
-                  Cancel
-                </button>
-                
-                <button
-                  className="visit-delete-btn"
-                  onClick={confirmDeleteVisit}
-                >
-                  Delete Visit
-                </button>
-                
-              </div>
-                
+              </button>
             </div>
-                
           </div>
-
-        )
-      }
-
+        </div>
+      )}
     </div>
-
   );
 }
 

@@ -7,10 +7,7 @@ import {
   FaCheckCircle,
   FaExclamationCircle,
 } from "react-icons/fa";
-import {
-  getSecurityData,
-  saveSecurityData,
-} from "./piDashboardService";
+import { getSecurityData, saveSecurityData } from "./piDashboardService";
 
 function PIAccountSecurity() {
   const [data, setData] = useState(getSecurityData);
@@ -82,7 +79,8 @@ function PIAccountSecurity() {
     }, 1200);
   };
 
-  const passwordStatus = data.password.daysUntilExpiry <= 14 ? "warning" : "good";
+  const passwordStatus =
+    data.password.daysUntilExpiry <= 14 ? "warning" : "good";
   const activeSessions = data.sessions.filter((s) => s.active).length;
 
   return (
@@ -90,9 +88,12 @@ function PIAccountSecurity() {
       <div className="pi-kpi-cards-grid">
         <div className="pi-enterprise-kpi blue pi-kpi-clickable">
           <span className="pi-enterprise-kpi-label">Password Status</span>
-          <span className="pi-enterprise-kpi-value">{data.password.status}</span>
+          <span className="pi-enterprise-kpi-value">
+            {data.password.status}
+          </span>
           <span className="pi-enterprise-kpi-desc">
-            Last changed {data.password.lastChanged} · Expires in {data.password.daysUntilExpiry} days
+            Last changed {data.password.lastChanged} · Expires in{" "}
+            {data.password.daysUntilExpiry} days
           </span>
         </div>
         <div className="pi-enterprise-kpi green pi-kpi-clickable">
@@ -124,7 +125,11 @@ function PIAccountSecurity() {
             <FaLock /> Password &amp; Access
           </h3>
           <div className={`pi-security-status-banner ${passwordStatus}`}>
-            {passwordStatus === "good" ? <FaCheckCircle /> : <FaExclamationCircle />}
+            {passwordStatus === "good" ? (
+              <FaCheckCircle />
+            ) : (
+              <FaExclamationCircle />
+            )}
             <div>
               <strong>{data.password.status}</strong>
               <p>
@@ -148,10 +153,26 @@ function PIAccountSecurity() {
           </h3>
           <div className="pi-security-settings-list">
             {[
-              { key: "twoFactor", label: "Two-Factor Authentication (2FA)", desc: "Require verification code at sign-in" },
-              { key: "sessionAlerts", label: "New Device Alerts", desc: "Email when login from unrecognized device" },
-              { key: "autoLock", label: "Auto-Lock Session", desc: "Lock after 15 minutes of inactivity" },
-              { key: "auditLog", label: "Audit Logging", desc: "Track all account access events" },
+              {
+                key: "twoFactor",
+                label: "Two-Factor Authentication (2FA)",
+                desc: "Require verification code at sign-in",
+              },
+              {
+                key: "sessionAlerts",
+                label: "New Device Alerts",
+                desc: "Email when login from unrecognized device",
+              },
+              {
+                key: "autoLock",
+                label: "Auto-Lock Session",
+                desc: "Lock after 15 minutes of inactivity",
+              },
+              {
+                key: "auditLog",
+                label: "Audit Logging",
+                desc: "Track all account access events",
+              },
             ].map((item) => (
               <div
                 key={item.key}
@@ -165,7 +186,9 @@ function PIAccountSecurity() {
                   <strong>{item.label}</strong>
                   <p>{item.desc}</p>
                 </div>
-                <span className={`pi-toggle ${data.settings[item.key] ? "on" : "off"}`}>
+                <span
+                  className={`pi-toggle ${data.settings[item.key] ? "on" : "off"}`}
+                >
                   {data.settings[item.key] ? "ON" : "OFF"}
                 </span>
               </div>
@@ -196,7 +219,13 @@ function PIAccountSecurity() {
                     <td>{entry.location}</td>
                     <td>{entry.device}</td>
                     <td>
-                      <span className={entry.status === "Success" ? "status-success" : "status-danger"}>
+                      <span
+                        className={
+                          entry.status === "Success"
+                            ? "status-success"
+                            : "status-danger"
+                        }
+                      >
                         {entry.status}
                       </span>
                     </td>
@@ -216,28 +245,51 @@ function PIAccountSecurity() {
               type="password"
               placeholder="Current Password"
               value={passwordForm.current}
-              onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
+              onChange={(e) =>
+                setPasswordForm({ ...passwordForm, current: e.target.value })
+              }
             />
             <input
               type="password"
               placeholder="New Password"
               value={passwordForm.next}
-              onChange={(e) => setPasswordForm({ ...passwordForm, next: e.target.value })}
+              onChange={(e) =>
+                setPasswordForm({ ...passwordForm, next: e.target.value })
+              }
             />
             <input
               type="password"
               placeholder="Confirm New Password"
               value={passwordForm.confirm}
-              onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
+              onChange={(e) =>
+                setPasswordForm({ ...passwordForm, confirm: e.target.value })
+              }
             />
             {passwordMessage && (
-              <p className={passwordMessage.includes("success") ? "pi-toast-info" : "status-danger"} style={{ padding: 8, borderRadius: 8 }}>
+              <p
+                className={
+                  passwordMessage.includes("success")
+                    ? "pi-toast-info"
+                    : "status-danger"
+                }
+                style={{ padding: 8, borderRadius: 8 }}
+              >
                 {passwordMessage}
               </p>
             )}
             <div className="modal-buttons">
-              <button type="button" onClick={() => { setShowPasswordModal(false); setPasswordMessage(""); }}>Cancel</button>
-              <button type="button" onClick={handleSavePassword}>Save Password</button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setPasswordMessage("");
+                }}
+              >
+                Cancel
+              </button>
+              <button type="button" onClick={handleSavePassword}>
+                Save Password
+              </button>
             </div>
           </div>
         </div>

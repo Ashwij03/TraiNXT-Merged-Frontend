@@ -6,7 +6,7 @@ import "./EISFHub.css";
 const DOCUMENT_TABS = [
   { id: "eISF", label: "eISF" },
   { id: "icf", label: "ICF" },
-  { id: "others", label: "Others" }
+  { id: "others", label: "Others" },
 ];
 
 function EISFHub() {

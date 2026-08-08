@@ -8,7 +8,7 @@ import { getStudies } from "../../services/studyService";
 import useVisitSchedules from "../../hooks/useVisitSchedules";
 import {
   isCompletedVisitSchedule,
-  isPastCalendarDate
+  isPastCalendarDate,
 } from "../../services/visitScheduleService";
 import { formatScheduleDisplayDate } from "../../utils/formatScheduleDisplayDate";
 
@@ -26,7 +26,7 @@ function Visits() {
     value
       ? resolveSiteDisplay(value, {
           sources: siteSources,
-          fallback: value
+          fallback: value,
         })
       : "—";
 
@@ -41,9 +41,9 @@ function Visits() {
         scheduledDate: schedule.date,
         actualDate: isCompletedVisitSchedule(schedule) ? schedule.date : "",
         status: schedule.status || "Scheduled",
-        deviation: schedule.deviation || "—"
+        deviation: schedule.deviation || "—",
       })),
-    [schedules]
+    [schedules],
   );
 
   const completedCount = schedules.filter(isCompletedVisitSchedule).length;
@@ -51,10 +51,10 @@ function Visits() {
     (schedule) =>
       !isCompletedVisitSchedule(schedule) &&
       (String(schedule.status || "").toLowerCase() === "missed" ||
-        isPastCalendarDate(schedule.date))
+        isPastCalendarDate(schedule.date)),
   ).length;
   const deviationCount = schedules.filter((schedule) =>
-    Boolean(schedule.deviation)
+    Boolean(schedule.deviation),
   ).length;
 
   const columns = useMemo(
@@ -65,25 +65,25 @@ function Visits() {
       {
         key: "site",
         label: "Site",
-        render: (value) => displaySite(value)
+        render: (value) => displaySite(value),
       },
       { key: "visit", label: "Visit Type" },
       {
         key: "scheduledDate",
         label: "Scheduled Date",
-        render: (value) => formatScheduleDisplayDate(value)
+        render: (value) => formatScheduleDisplayDate(value),
       },
       {
         key: "actualDate",
         label: "Actual Date",
-        render: (value) => (value ? formatScheduleDisplayDate(value) : "-")
+        render: (value) => (value ? formatScheduleDisplayDate(value) : "-"),
       },
       {
         key: "status",
         label: "Status",
         render: (value) => (
           <span className={`status-badge ${value}`}>{value}</span>
-        )
+        ),
       },
       { key: "deviation", label: "Deviation" },
       {
@@ -98,11 +98,11 @@ function Visits() {
           >
             View
           </button>
-        )
-      }
+        ),
+      },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [siteSources]
+    [siteSources],
   );
 
   return (

@@ -8,7 +8,10 @@ import RequestPermissionButton from "../../components/common/RequestPermissionBu
 import { FiFileText, FiCheckCircle, FiClock, FiDownload } from "react-icons/fi";
 import { getSponsorDocumentReportCards } from "./data/sponsorDocumentReportService";
 import { getReportsForStudy } from "../../services/reportService";
-import { getCurrentUser, getAccessibleStudies } from "../../services/roleService";
+import {
+  getCurrentUser,
+  getAccessibleStudies,
+} from "../../services/roleService";
 
 // Reads reports through reportService's own study-scoped, permission-aware
 // getter rather than the old sponsorDataStore path. getReports()/saveReports()

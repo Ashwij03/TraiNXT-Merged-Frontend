@@ -5,12 +5,16 @@ import RequestPermissionButton from "../../components/common/RequestPermissionBu
 
 function readScreeningRecords() {
   try {
-    const subjectsByStudy = JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
+    const subjectsByStudy =
+      JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
     return Object.entries(subjectsByStudy).flatMap(([studyCode, subjects]) =>
       (Array.isArray(subjects) ? subjects : [])
-        .filter((subject) =>
-          ["Screening", "Pending"].includes(subject.status) ||
-          String(subject.visit || "").toLowerCase().includes("screening"),
+        .filter(
+          (subject) =>
+            ["Screening", "Pending"].includes(subject.status) ||
+            String(subject.visit || "")
+              .toLowerCase()
+              .includes("screening"),
         )
         .map((subject, index) => ({
           id: subject.id || subject.subjectId || `${studyCode}-${index}`,
@@ -83,7 +87,11 @@ function Screening() {
           {filteredScreenings.length === 0 ? (
             <p>No data available yet</p>
           ) : (
-            <table className="ctms-standard-table" width="100%" cellPadding="10">
+            <table
+              className="ctms-standard-table"
+              width="100%"
+              cellPadding="10"
+            >
               <thead>
                 <tr>
                   <th>Subject ID</th>

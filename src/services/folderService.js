@@ -12,7 +12,7 @@ export const FOLDER_SECTIONS = {
   logs: "Logs",
   eISF: "eISF",
   icf: "ICF",
-  others: "Others"
+  others: "Others",
 };
 
 const folderTreesStore = {};
@@ -29,7 +29,7 @@ function writeJson(key, value) {
   } catch (error) {
     if (error?.name === "QuotaExceededError") {
       throw new Error(
-        "Storage limit reached. Remove large uploaded files or use smaller files."
+        "Storage limit reached. Remove large uploaded files or use smaller files.",
       );
     }
 
@@ -44,15 +44,14 @@ function getStorageKey(sectionId, contextKey) {
 export const ICF_FOLDER_NAME = "ICF";
 
 function defaultTree(sectionId) {
-  const rootName =
-    FOLDER_SECTIONS[sectionId] || sectionId || "Documents";
+  const rootName = FOLDER_SECTIONS[sectionId] || sectionId || "Documents";
 
   return [
     {
       id: createId("root"),
       name: rootName,
-      children: []
-    }
+      children: [],
+    },
   ];
 }
 
@@ -70,7 +69,7 @@ function createICFFolder() {
     name: ICF_FOLDER_NAME,
     isICF: true,
     isProtected: true,
-    children: []
+    children: [],
   };
 }
 
@@ -87,7 +86,7 @@ export function ensureSubjectFolderWithICF(sectionId, contextKey) {
     const subjectFolder = {
       id: createId("folder"),
       name: "Subject",
-      children: [createICFFolder()]
+      children: [createICFFolder()],
     };
 
     root.children = [subjectFolder];
@@ -100,13 +99,13 @@ export function ensureSubjectFolderWithICF(sectionId, contextKey) {
 
   // Ensure ICF folder exists inside Subject
   const hasICF = subjectFolder.children?.some(
-    (child) => child.name === ICF_FOLDER_NAME
+    (child) => child.name === ICF_FOLDER_NAME,
   );
 
   if (!hasICF) {
     subjectFolder.children = [
       ...(subjectFolder.children || []),
-      createICFFolder()
+      createICFFolder(),
     ];
 
     saveFolderTree(sectionId, contextKey, tree);
@@ -117,8 +116,8 @@ export function ensureSubjectFolderWithICF(sectionId, contextKey) {
 function emitTreeUpdate(sectionId, contextKey) {
   window.dispatchEvent(
     new CustomEvent(FOLDER_TREE_EVENT, {
-      detail: { sectionId, contextKey }
-    })
+      detail: { sectionId, contextKey },
+    }),
   );
 }
 
@@ -149,7 +148,7 @@ function removeFolderNode(nodes, folderId) {
     .filter((node) => node.id !== folderId)
     .map((node) => ({
       ...node,
-      children: node.children ? removeFolderNode(node.children, folderId) : []
+      children: node.children ? removeFolderNode(node.children, folderId) : [],
     }));
 }
 
@@ -185,7 +184,7 @@ export function getFolderTree(sectionId, contextKey = "default") {
 
     if (root?.children?.length) {
       root.children = root.children.filter(
-        (child) => child.name !== contextKey
+        (child) => child.name !== contextKey,
       );
     }
   }
@@ -221,7 +220,7 @@ export function createFolder(sectionId, contextKey, parentId, name) {
   const newFolder = {
     id: createId("folder"),
     name: trimmed,
-    children: []
+    children: [],
   };
 
   parent.children = [...(parent.children || []), newFolder];
@@ -269,11 +268,7 @@ export function deleteFolder(sectionId, contextKey, folderId) {
   delete docs[folderId];
   saveFolderDocuments(sectionId, contextKey, docs);
 
-  saveFolderTree(
-    sectionId,
-    contextKey,
-    removeFolderNode(tree, folderId)
-  );
+  saveFolderTree(sectionId, contextKey, removeFolderNode(tree, folderId));
 
   return true;
 }
@@ -314,18 +309,14 @@ export function saveDocumentsForFolder(
   sectionId,
   contextKey,
   folderId,
-  documents
+  documents,
 ) {
   const docs = getFolderDocuments(sectionId, contextKey);
   docs[folderId] = documents;
   saveFolderDocuments(sectionId, contextKey, docs);
 }
 
-export function deleteDocumentsInFolderTree(
-  sectionId,
-  contextKey,
-  folderId
-) {
+export function deleteDocumentsInFolderTree(sectionId, contextKey, folderId) {
   const docs = getFolderDocuments(sectionId, contextKey);
   delete docs[folderId];
 
@@ -350,7 +341,7 @@ export function snapshotFolderNode(node) {
     name: node.name,
     children: (node.children || [])
       .map((child) => snapshotFolderNode(child))
-      .filter(Boolean)
+      .filter(Boolean),
   };
 }
 
@@ -369,16 +360,16 @@ export function saveFolderTemplate(name, structure) {
     id: createId("tmpl"),
     name: trimmed,
     structure: cloneTree([structure])[0] || structure,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
 
- const templates = readJson(FOLDER_TEMPLATE_KEY, []);
+  const templates = readJson(FOLDER_TEMPLATE_KEY, []);
 
-templates.push(template);
+  templates.push(template);
 
-writeJson(FOLDER_TEMPLATE_KEY, templates);
+  writeJson(FOLDER_TEMPLATE_KEY, templates);
 
-emitTemplatesUpdate();
+  emitTemplatesUpdate();
 
   return template;
 }
@@ -388,9 +379,7 @@ export function deleteFolderTemplate(templateId) {
 
   const oldLength = templates.length;
 
-  templates = templates.filter(
-    (t) => t.id !== templateId
-  );
+  templates = templates.filter((t) => t.id !== templateId);
 
   writeJson(FOLDER_TEMPLATE_KEY, templates);
 
@@ -424,7 +413,7 @@ export function applyFolderTemplate(
   sectionId,
   contextKey,
   parentId,
-  templateId
+  templateId,
 ) {
   const template = folderTemplatesStore.find((item) => item.id === templateId);
 
@@ -432,12 +421,7 @@ export function applyFolderTemplate(
     return false;
   }
 
-  applyStructureNodes(
-    sectionId,
-    contextKey,
-    parentId,
-    [template.structure]
-  );
+  applyStructureNodes(sectionId, contextKey, parentId, [template.structure]);
 
   return true;
 }
@@ -446,7 +430,7 @@ export function saveCurrentFolderAsTemplate(
   sectionId,
   contextKey,
   folderId,
-  templateName
+  templateName,
 ) {
   const tree = getFolderTree(sectionId, contextKey);
   const node = findFolderNode(tree, folderId);
@@ -464,12 +448,7 @@ export function saveCurrentFolderAsTemplate(
   return saveFolderTemplate(templateName, structure);
 }
 
-async function importStructureNode(
-  sectionId,
-  contextKey,
-  parentId,
-  node
-) {
+async function importStructureNode(sectionId, contextKey, parentId, node) {
   const created = createFolder(sectionId, contextKey, parentId, node.name);
 
   if (!created) {
@@ -482,7 +461,7 @@ async function importStructureNode(
     const existingDocs = getDocumentsForFolder(
       sectionId,
       contextKey,
-      created.id
+      created.id,
     );
     const importedDocs = [];
 
@@ -499,17 +478,15 @@ async function importStructureNode(
         id: createId("doc"),
         name: file.name,
         size: file.size,
-        uploadedAt: new Date().toISOString()
+        uploadedAt: new Date().toISOString(),
       });
     }
 
     if (importedDocs.length) {
-      saveDocumentsForFolder(
-        sectionId,
-        contextKey,
-        created.id,
-        [...existingDocs, ...importedDocs]
-      );
+      saveDocumentsForFolder(sectionId, contextKey, created.id, [
+        ...existingDocs,
+        ...importedDocs,
+      ]);
     }
   }
 
@@ -524,7 +501,7 @@ export async function importUploadedFolderStructure(
   sectionId,
   contextKey,
   parentId,
-  structure
+  structure,
 ) {
   if (!structure?.children?.length && !structure?.files?.length) {
     return false;
@@ -543,7 +520,7 @@ export async function importUploadedFolderStructure(
   } catch (error) {
     window.alert(
       error?.message ||
-        "Unable to import this folder. Storage limit may have been reached."
+        "Unable to import this folder. Storage limit may have been reached.",
     );
     return false;
   }

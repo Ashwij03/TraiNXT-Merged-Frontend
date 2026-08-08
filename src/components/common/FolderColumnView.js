@@ -31,7 +31,7 @@ export default function FolderColumnView({
   onRenameFolder,
   onDeleteFolder,
   onUploadFolder,
-  onDownloadFolder
+  onDownloadFolder,
 }) {
   const root = tree[0];
   const columns = [];
@@ -39,7 +39,7 @@ export default function FolderColumnView({
   if (root) {
     columns.push({
       parentId: root.id,
-      folders: root.children || []
+      folders: root.children || [],
     });
   }
 
@@ -52,7 +52,7 @@ export default function FolderColumnView({
 
     columns.push({
       parentId: node.id,
-      folders: node.children || []
+      folders: node.children || [],
     });
   }
 

@@ -22,7 +22,9 @@
   border-radius: 8px;
   font-size: 0.875rem;
   box-sizing: border-box;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .cro-global-search-input:focus {

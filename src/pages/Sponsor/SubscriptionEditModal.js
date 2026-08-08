@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
-import './SubscriptionEditModal.css';
+import React, { useState } from "react";
+import "./SubscriptionEditModal.css";
 
-const PLAN_OPTIONS = ['Basic', 'Professional', 'Enterprise'];
-const STATUS_OPTIONS = ['Active', 'Expired', 'Suspended'];
+const PLAN_OPTIONS = ["Basic", "Professional", "Enterprise"];
+const STATUS_OPTIONS = ["Active", "Expired", "Suspended"];
 
 const SubscriptionEditModal = ({ subscription, onSave, onClose }) => {
   const [formData, setFormData] = useState({
-    plan: subscription?.plan || 'Basic',
-    status: subscription?.status || 'Active',
-    startDate: subscription?.startDate || '',
-    endDate: subscription?.endDate || '',
-    maxUsers: subscription?.maxUsers ?? '',
-    maxStudies: subscription?.maxStudies ?? '',
-    storageLimit: subscription?.storageLimit ?? '',
+    plan: subscription?.plan || "Basic",
+    status: subscription?.status || "Active",
+    startDate: subscription?.startDate || "",
+    endDate: subscription?.endDate || "",
+    maxUsers: subscription?.maxUsers ?? "",
+    maxStudies: subscription?.maxStudies ?? "",
+    storageLimit: subscription?.storageLimit ?? "",
     autoRenewal: subscription?.autoRenewal ?? false,
-    notes: subscription?.notes || '',
+    notes: subscription?.notes || "",
   });
   const [errors, setErrors] = useState({});
 
@@ -28,34 +28,50 @@ const SubscriptionEditModal = ({ subscription, onSave, onClose }) => {
   const validate = () => {
     const newErrors = {};
 
-    if (!formData.plan) newErrors.plan = 'Plan is required';
-    if (!formData.status) newErrors.status = 'Status is required';
-    if (!formData.startDate) newErrors.startDate = 'Start date is required';
-    if (!formData.endDate) newErrors.endDate = 'End date is required';
+    if (!formData.plan) newErrors.plan = "Plan is required";
+    if (!formData.status) newErrors.status = "Status is required";
+    if (!formData.startDate) newErrors.startDate = "Start date is required";
+    if (!formData.endDate) newErrors.endDate = "End date is required";
 
-    if (formData.startDate && formData.endDate && formData.endDate < formData.startDate) {
-      newErrors.endDate = 'End date must be on or after start date';
+    if (
+      formData.startDate &&
+      formData.endDate &&
+      formData.endDate < formData.startDate
+    ) {
+      newErrors.endDate = "End date must be on or after start date";
     }
 
     const maxUsers = Number(formData.maxUsers);
-    if (formData.maxUsers === '' || formData.maxUsers === null || formData.maxUsers === undefined) {
-      newErrors.maxUsers = 'Maximum users is required';
+    if (
+      formData.maxUsers === "" ||
+      formData.maxUsers === null ||
+      formData.maxUsers === undefined
+    ) {
+      newErrors.maxUsers = "Maximum users is required";
     } else if (Number.isNaN(maxUsers) || maxUsers <= 0) {
-      newErrors.maxUsers = 'Maximum users must be greater than 0';
+      newErrors.maxUsers = "Maximum users must be greater than 0";
     }
 
     const maxStudies = Number(formData.maxStudies);
-    if (formData.maxStudies === '' || formData.maxStudies === null || formData.maxStudies === undefined) {
-      newErrors.maxStudies = 'Maximum studies is required';
+    if (
+      formData.maxStudies === "" ||
+      formData.maxStudies === null ||
+      formData.maxStudies === undefined
+    ) {
+      newErrors.maxStudies = "Maximum studies is required";
     } else if (Number.isNaN(maxStudies) || maxStudies <= 0) {
-      newErrors.maxStudies = 'Maximum studies must be greater than 0';
+      newErrors.maxStudies = "Maximum studies must be greater than 0";
     }
 
     const storageLimit = Number(formData.storageLimit);
-    if (formData.storageLimit === '' || formData.storageLimit === null || formData.storageLimit === undefined) {
-      newErrors.storageLimit = 'Storage limit is required';
+    if (
+      formData.storageLimit === "" ||
+      formData.storageLimit === null ||
+      formData.storageLimit === undefined
+    ) {
+      newErrors.storageLimit = "Storage limit is required";
     } else if (Number.isNaN(storageLimit) || storageLimit <= 0) {
-      newErrors.storageLimit = 'Storage limit must be greater than 0';
+      newErrors.storageLimit = "Storage limit must be greater than 0";
     }
 
     setErrors(newErrors);
@@ -94,26 +110,36 @@ const SubscriptionEditModal = ({ subscription, onSave, onClose }) => {
               <label>Plan *</label>
               <select
                 value={formData.plan}
-                onChange={(e) => handleChange('plan', e.target.value)}
+                onChange={(e) => handleChange("plan", e.target.value)}
               >
                 {PLAN_OPTIONS.map((plan) => (
-                  <option key={plan} value={plan}>{plan}</option>
+                  <option key={plan} value={plan}>
+                    {plan}
+                  </option>
                 ))}
               </select>
-              {errors.plan && <span className="subscription-field-error">{errors.plan}</span>}
+              {errors.plan && (
+                <span className="subscription-field-error">{errors.plan}</span>
+              )}
             </div>
 
             <div className="subscription-form-group">
               <label>Status *</label>
               <select
                 value={formData.status}
-                onChange={(e) => handleChange('status', e.target.value)}
+                onChange={(e) => handleChange("status", e.target.value)}
               >
                 {STATUS_OPTIONS.map((status) => (
-                  <option key={status} value={status}>{status}</option>
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
                 ))}
               </select>
-              {errors.status && <span className="subscription-field-error">{errors.status}</span>}
+              {errors.status && (
+                <span className="subscription-field-error">
+                  {errors.status}
+                </span>
+              )}
             </div>
 
             <div className="subscription-form-group">
@@ -121,9 +147,13 @@ const SubscriptionEditModal = ({ subscription, onSave, onClose }) => {
               <input
                 type="date"
                 value={formData.startDate}
-                onChange={(e) => handleChange('startDate', e.target.value)}
+                onChange={(e) => handleChange("startDate", e.target.value)}
               />
-              {errors.startDate && <span className="subscription-field-error">{errors.startDate}</span>}
+              {errors.startDate && (
+                <span className="subscription-field-error">
+                  {errors.startDate}
+                </span>
+              )}
             </div>
 
             <div className="subscription-form-group">
@@ -131,9 +161,13 @@ const SubscriptionEditModal = ({ subscription, onSave, onClose }) => {
               <input
                 type="date"
                 value={formData.endDate}
-                onChange={(e) => handleChange('endDate', e.target.value)}
+                onChange={(e) => handleChange("endDate", e.target.value)}
               />
-              {errors.endDate && <span className="subscription-field-error">{errors.endDate}</span>}
+              {errors.endDate && (
+                <span className="subscription-field-error">
+                  {errors.endDate}
+                </span>
+              )}
             </div>
 
             <div className="subscription-form-group">
@@ -142,9 +176,13 @@ const SubscriptionEditModal = ({ subscription, onSave, onClose }) => {
                 type="number"
                 min="1"
                 value={formData.maxUsers}
-                onChange={(e) => handleChange('maxUsers', e.target.value)}
+                onChange={(e) => handleChange("maxUsers", e.target.value)}
               />
-              {errors.maxUsers && <span className="subscription-field-error">{errors.maxUsers}</span>}
+              {errors.maxUsers && (
+                <span className="subscription-field-error">
+                  {errors.maxUsers}
+                </span>
+              )}
             </div>
 
             <div className="subscription-form-group">
@@ -153,9 +191,13 @@ const SubscriptionEditModal = ({ subscription, onSave, onClose }) => {
                 type="number"
                 min="1"
                 value={formData.maxStudies}
-                onChange={(e) => handleChange('maxStudies', e.target.value)}
+                onChange={(e) => handleChange("maxStudies", e.target.value)}
               />
-              {errors.maxStudies && <span className="subscription-field-error">{errors.maxStudies}</span>}
+              {errors.maxStudies && (
+                <span className="subscription-field-error">
+                  {errors.maxStudies}
+                </span>
+              )}
             </div>
 
             <div className="subscription-form-group">
@@ -164,28 +206,34 @@ const SubscriptionEditModal = ({ subscription, onSave, onClose }) => {
                 type="number"
                 min="1"
                 value={formData.storageLimit}
-                onChange={(e) => handleChange('storageLimit', e.target.value)}
+                onChange={(e) => handleChange("storageLimit", e.target.value)}
               />
-              {errors.storageLimit && <span className="subscription-field-error">{errors.storageLimit}</span>}
+              {errors.storageLimit && (
+                <span className="subscription-field-error">
+                  {errors.storageLimit}
+                </span>
+              )}
             </div>
 
             <div className="subscription-form-group subscription-form-group-checkbox">
-  <label className="checkbox-label">
-    <input
-      type="checkbox"
-      checked={!!formData.autoRenewal}
-      onChange={(e) => handleChange('autoRenewal', e.target.checked)}
-    />
-    <span>Auto Renewal</span>
-  </label>
-</div>
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={!!formData.autoRenewal}
+                  onChange={(e) =>
+                    handleChange("autoRenewal", e.target.checked)
+                  }
+                />
+                <span>Auto Renewal</span>
+              </label>
+            </div>
 
             <div className="subscription-form-group subscription-form-group-wide">
               <label>Notes</label>
               <textarea
                 rows={3}
                 value={formData.notes}
-                onChange={(e) => handleChange('notes', e.target.value)}
+                onChange={(e) => handleChange("notes", e.target.value)}
                 placeholder="Add any notes about this subscription..."
               />
             </div>
@@ -193,10 +241,18 @@ const SubscriptionEditModal = ({ subscription, onSave, onClose }) => {
         </div>
 
         <div className="subscription-modal-footer">
-          <button type="button" className="subscription-btn-cancel" onClick={onClose}>
+          <button
+            type="button"
+            className="subscription-btn-cancel"
+            onClick={onClose}
+          >
             Cancel
           </button>
-          <button type="button" className="subscription-btn-save" onClick={handleSave}>
+          <button
+            type="button"
+            className="subscription-btn-save"
+            onClick={handleSave}
+          >
             Save Changes
           </button>
         </div>

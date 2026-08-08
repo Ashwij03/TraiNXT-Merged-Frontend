@@ -1,31 +1,32 @@
 import React from "react";
 
 function Regulatory() {
-
   const documents = [
     {
       name: "Protocol v3.0",
       version: "3.0",
       expiry: "31-Dec-2026",
-      status: "Approved"
+      status: "Approved",
     },
     {
       name: "Investigator Brochure",
       version: "5.0",
       expiry: "15-Nov-2026",
-      status: "Approved"
+      status: "Approved",
     },
     {
       name: "Informed Consent Form",
       version: "2.1",
       expiry: "10-Oct-2026",
-      status: "Pending Review"
-    }
+      status: "Pending Review",
+    },
   ];
 
   return (
-    <div style={{ padding: "30px" }} className="regulatory-documents-page tnxt-compact">
-
+    <div
+      style={{ padding: "30px" }}
+      className="regulatory-documents-page tnxt-compact"
+    >
       <h1>Regulatory Documents</h1>
 
       <table className="ctms-standard-table">
@@ -48,9 +49,7 @@ function Regulatory() {
             </tr>
           ))}
         </tbody>
-
       </table>
-
     </div>
   );
 }

@@ -2,32 +2,15 @@ import { createContext, useContext } from "react";
 
 import rolePermissions from "../utils/rolePermissions";
 
-const PermissionContext =
-  createContext(null);
+const PermissionContext = createContext(null);
 
-export const PermissionProvider = ({
-  children,
-}) => {
+export const PermissionProvider = ({ children }) => {
+  const user = JSON.parse(localStorage.getItem("currentUser")) || {};
 
-  const user =
-    JSON.parse(
-      localStorage.getItem(
-        "currentUser"
-      )
-    ) || {};
+  const permissions = rolePermissions[user.role] || [];
 
-  const permissions =
-    rolePermissions[
-      user.role
-    ] || [];
-
-  const hasPermission = (
-    permission
-  ) => {
-
-    return permissions.includes(
-      permission
-    );
+  const hasPermission = (permission) => {
+    return permissions.includes(permission);
   };
 
   return (
@@ -42,7 +25,4 @@ export const PermissionProvider = ({
   );
 };
 
-export const usePermission =
-  () => useContext(
-    PermissionContext
-  );
+export const usePermission = () => useContext(PermissionContext);

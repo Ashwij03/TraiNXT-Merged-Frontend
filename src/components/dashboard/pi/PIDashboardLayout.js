@@ -64,7 +64,7 @@ function getSelectedPageFromPath(pathname) {
   ) {
     return "studies";
   }
-  
+
   return ROUTE_TO_PAGE[pathname] || "dashboard";
 }
 

@@ -47,8 +47,8 @@ export default function AuthLayout({ title, children, wide }) {
             </h1>
 
             <p className="auth-left-description">
-              A unified platform to manage clinical trials, sites, documents
-              and compliance with confidence.
+              A unified platform to manage clinical trials, sites, documents and
+              compliance with confidence.
             </p>
 
             <ul className="auth-left-features">

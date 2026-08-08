@@ -58,7 +58,7 @@ import { useComments } from "../../comments/CommentsContext";
 import { getStudies } from "../../services/studyService";
 import {
   addOrUpdateVisitSchedule,
-  SCHEDULES_EVENT
+  SCHEDULES_EVENT,
 } from "../../services/visitScheduleService";
 import {
   getStudyKey,
@@ -70,7 +70,8 @@ import "../shared/studies/StudyDashboard.css";
 
 function PIDashboard({ embeddedInLayout = false }) {
   const navigate = useNavigate();
-  const { comments: liveComments, pendingCount: openCommentsCount } = useComments();
+  const { comments: liveComments, pendingCount: openCommentsCount } =
+    useComments();
 
   const { studyCount } = useRoleStudiesSidebar();
 
@@ -87,7 +88,9 @@ function PIDashboard({ embeddedInLayout = false }) {
   );
   const selectedStudyCode =
     selectedStudy && selectedStudy !== "All Studies" ? selectedStudy : "";
-  const { upcomingWindow } = useVisitSchedules({ studyCode: selectedStudyCode });
+  const { upcomingWindow } = useVisitSchedules({
+    studyCode: selectedStudyCode,
+  });
 
   const [dashboardData, setDashboardData] = useState(() =>
     syncKpisFromData(getDashboardData()),
@@ -192,7 +195,9 @@ function PIDashboard({ embeddedInLayout = false }) {
   });
 
   const activeSubjectsCount = realSubjects.filter((subject) => {
-    const status = String(subject.status || "").trim().toLowerCase();
+    const status = String(subject.status || "")
+      .trim()
+      .toLowerCase();
 
     return !["inactive", "withdrawn", "completed", "screen-failed"].includes(
       status,
@@ -304,8 +309,10 @@ function PIDashboard({ embeddedInLayout = false }) {
   const navigateToSubjects = () => {
     const firstStudyWithSubjects = sharedStudies.find((study) => {
       const studyKey = getStudyKey(study);
-      return Array.isArray(subjectsByStudy[studyKey]) &&
-        subjectsByStudy[studyKey].length > 0;
+      return (
+        Array.isArray(subjectsByStudy[studyKey]) &&
+        subjectsByStudy[studyKey].length > 0
+      );
     });
 
     const targetStudy = firstStudyWithSubjects || sharedStudies[0];
@@ -327,7 +334,8 @@ function PIDashboard({ embeddedInLayout = false }) {
   const getAlertIcon = (type) => {
     if (type === "critical") return <FaFileMedical className="alert-svg" />;
     if (type === "danger") return <FaExclamationCircle className="alert-svg" />;
-    if (type === "warning") return <FaExclamationCircle className="alert-svg" />;
+    if (type === "warning")
+      return <FaExclamationCircle className="alert-svg" />;
     if (type === "study-alert") {
       return <FaExclamationTriangle className="alert-svg" />;
     }
@@ -435,8 +443,7 @@ function PIDashboard({ embeddedInLayout = false }) {
     {
       name: "Screened",
       value: realSubjects.filter(
-        (subject) =>
-          String(subject.status || "").toLowerCase() === "screening",
+        (subject) => String(subject.status || "").toLowerCase() === "screening",
       ).length,
     },
     {
@@ -450,8 +457,7 @@ function PIDashboard({ embeddedInLayout = false }) {
     {
       name: "Completed",
       value: realSubjects.filter(
-        (subject) =>
-          String(subject.status || "").toLowerCase() === "completed",
+        (subject) => String(subject.status || "").toLowerCase() === "completed",
       ).length,
     },
     {
@@ -480,9 +486,10 @@ function PIDashboard({ embeddedInLayout = false }) {
 
     const subjectRecord = realSubjects.find(
       (subject) =>
-        String(subject.subjectId || subject.id) === String(newVisit.subject)
+        String(subject.subjectId || subject.id) === String(newVisit.subject),
     );
-    const studyId = selectedStudyCode || subjectRecord?.studyCode || subjectRecord?.studyKey;
+    const studyId =
+      selectedStudyCode || subjectRecord?.studyCode || subjectRecord?.studyKey;
 
     if (!studyId) {
       alert("Select a study or enter a subject linked to a study");
@@ -494,11 +501,11 @@ function PIDashboard({ embeddedInLayout = false }) {
       subjectId: newVisit.subject,
       subject: subjectRecord || {
         id: newVisit.subject,
-        subjectId: newVisit.subject
+        subjectId: newVisit.subject,
       },
       visitName: newVisit.visit,
       date: newVisit.date,
-      status: "Scheduled"
+      status: "Scheduled",
     });
     refreshDashboardData();
 
@@ -531,9 +538,7 @@ function PIDashboard({ embeddedInLayout = false }) {
 
   const renderPageContent = (forcedPage) => {
     const page =
-      forcedPage && selectedPage === "dashboard"
-        ? forcedPage
-        : selectedPage;
+      forcedPage && selectedPage === "dashboard" ? forcedPage : selectedPage;
 
     if (page === "livechat") {
       return <PILiveChat key="livechat" setSelectedPage={setSelectedPage} />;
@@ -562,10 +567,7 @@ function PIDashboard({ embeddedInLayout = false }) {
 
     if (page === "notifications") {
       return (
-        <PINotifications
-          key="notifications"
-          selectedStudy={selectedStudy}
-        />
+        <PINotifications key="notifications" selectedStudy={selectedStudy} />
       );
     }
 
@@ -605,137 +607,137 @@ function PIDashboard({ embeddedInLayout = false }) {
           </div>
 
           <div className="pi-kpi-grid dashboard-header-kpis">
-          <div
-            className="pi-card pi-kpi-clickable"
-            onClick={() => navigateToPage("recruitment")}
-            role="button"
-            tabIndex={0}
-          >
-            <div className="card-header">
-              <div className="icon-circle blue">
-                <FaUsers />
-              </div>
+            <div
+              className="pi-card pi-kpi-clickable"
+              onClick={() => navigateToPage("recruitment")}
+              role="button"
+              tabIndex={0}
+            >
+              <div className="card-header">
+                <div className="icon-circle blue">
+                  <FaUsers />
+                </div>
 
-              <div className="card-content">
-                <span className="card-title">Enrollment Count</span>
-                <span className="card-value">
-                  {dynamicKpis.enrollmentCount || 0}
-                </span>
-                <span className="card-subtitle">
-                  Target: {dynamicKpis.targetCount || 0}
-                </span>
+                <div className="card-content">
+                  <span className="card-title">Enrollment Count</span>
+                  <span className="card-value">
+                    {dynamicKpis.enrollmentCount || 0}
+                  </span>
+                  <span className="card-subtitle">
+                    Target: {dynamicKpis.targetCount || 0}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="pi-card pi-kpi-clickable"
+              onClick={navigateToSubjects}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  navigateToSubjects();
+                }
+              }}
+            >
+              <div className="card-header">
+                <div className="icon-circle green">
+                  <FaUser />
+                </div>
+
+                <div className="card-content">
+                  <span className="card-title">Active Subjects</span>
+                  <span className="card-value">
+                    {dynamicKpis.activeSubjects || 0}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="pi-card pi-kpi-clickable"
+              onClick={navigateToStudies}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  navigateToStudies();
+                }
+              }}
+            >
+              <div className="card-header">
+                <div className="icon-circle orange">
+                  <FaClipboardList />
+                </div>
+
+                <div className="card-content">
+                  <span className="card-title">Studies</span>
+                  <span className="card-value">{actualStudiesCount}</span>
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="pi-card pi-kpi-clickable"
+              onClick={() => navigateToPage("comments")}
+              role="button"
+              tabIndex={0}
+            >
+              <div className="card-header">
+                <div className="icon-circle red">
+                  <FaFileAlt />
+                </div>
+
+                <div className="card-content">
+                  <span className="card-title">Comments</span>
+                  <span className="card-value">
+                    {dynamicKpis.commentsCount || 0}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="pi-card pi-kpi-clickable"
+              onClick={() => navigateToPage("site-performance")}
+              role="button"
+              tabIndex={0}
+            >
+              <div className="card-header">
+                <div className="icon-circle purple">
+                  <FaChartBar />
+                </div>
+
+                <div className="card-content">
+                  <span className="card-title">Visit Completion %</span>
+                  <span className="card-value">
+                    {dynamicKpis.visitCompletion || 0}%
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="pi-card pi-kpi-clickable"
+              onClick={() => navigateToPage("regulatory")}
+              role="button"
+              tabIndex={0}
+            >
+              <div className="card-header">
+                <div className="icon-circle teal">
+                  <FaShieldAlt />
+                </div>
+
+                <div className="card-content">
+                  <span className="card-title">Consent Rate</span>
+                  <span className="card-value">
+                    {dynamicKpis.consentRate || 0}%
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-
-          <div
-            className="pi-card pi-kpi-clickable"
-            onClick={navigateToSubjects}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                navigateToSubjects();
-              }
-            }}
-          >
-            <div className="card-header">
-              <div className="icon-circle green">
-                <FaUser />
-              </div>
-
-              <div className="card-content">
-                <span className="card-title">Active Subjects</span>
-                <span className="card-value">
-                  {dynamicKpis.activeSubjects || 0}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="pi-card pi-kpi-clickable"
-            onClick={navigateToStudies}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                navigateToStudies();
-              }
-            }}
-          >
-            <div className="card-header">
-              <div className="icon-circle orange">
-                <FaClipboardList />
-              </div>
-
-              <div className="card-content">
-                <span className="card-title">Studies</span>
-                <span className="card-value">{actualStudiesCount}</span>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="pi-card pi-kpi-clickable"
-            onClick={() => navigateToPage("comments")}
-            role="button"
-            tabIndex={0}
-          >
-            <div className="card-header">
-              <div className="icon-circle red">
-                <FaFileAlt />
-              </div>
-
-              <div className="card-content">
-                <span className="card-title">Comments</span>
-                <span className="card-value">
-                  {dynamicKpis.commentsCount || 0}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="pi-card pi-kpi-clickable"
-            onClick={() => navigateToPage("site-performance")}
-            role="button"
-            tabIndex={0}
-          >
-            <div className="card-header">
-              <div className="icon-circle purple">
-                <FaChartBar />
-              </div>
-
-              <div className="card-content">
-                <span className="card-title">Visit Completion %</span>
-                <span className="card-value">
-                  {dynamicKpis.visitCompletion || 0}%
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="pi-card pi-kpi-clickable"
-            onClick={() => navigateToPage("regulatory")}
-            role="button"
-            tabIndex={0}
-          >
-            <div className="card-header">
-              <div className="icon-circle teal">
-                <FaShieldAlt />
-              </div>
-
-              <div className="card-content">
-                <span className="card-title">Consent Rate</span>
-                <span className="card-value">
-                  {dynamicKpis.consentRate || 0}%
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
         </div>
 
         <div className="pi-chart-sections">
@@ -749,11 +751,7 @@ function PIDashboard({ embeddedInLayout = false }) {
                     <XAxis dataKey="name" />
                     <YAxis allowDecimals={false} />
                     <Tooltip />
-                    <Bar
-                      dataKey="value"
-                      fill="#2563eb"
-                      radius={[6, 6, 0, 0]}
-                    />
+                    <Bar dataKey="value" fill="#2563eb" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -922,10 +920,7 @@ function PIDashboard({ embeddedInLayout = false }) {
                   </div>
 
                   <span className="alert-date">
-                    <FaClock
-                      className="alert-field-icon"
-                      aria-hidden="true"
-                    />
+                    <FaClock className="alert-field-icon" aria-hidden="true" />
                     {alert.date}
                   </span>
                 </div>
@@ -1004,9 +999,7 @@ function PIDashboard({ embeddedInLayout = false }) {
               />
 
               <div className="modal-buttons">
-                <button onClick={() => setShowVisitModal(false)}>
-                  Cancel
-                </button>
+                <button onClick={() => setShowVisitModal(false)}>Cancel</button>
 
                 <button onClick={handleAddVisit}>Save Visit</button>
               </div>
@@ -1058,9 +1051,7 @@ function PIDashboard({ embeddedInLayout = false }) {
               </select>
 
               <div className="modal-buttons">
-                <button onClick={() => setShowQueryModal(false)}>
-                  Cancel
-                </button>
+                <button onClick={() => setShowQueryModal(false)}>Cancel</button>
 
                 <button onClick={handleAddQuery}>Save Query</button>
               </div>

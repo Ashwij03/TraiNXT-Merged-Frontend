@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import DataTable from "../../../components/dashboard/shared/DataTable";
 import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
-import { canWriteComments, canViewComment } from "../../../services/commentService";
+import {
+  canWriteComments,
+  canViewComment,
+} from "../../../services/commentService";
 import { getCurrentUser } from "../../../services/roleService";
 import { readJson } from "../../../utils/storageHelpers";
 import { useComments } from "../../../comments/CommentsContext";
@@ -94,14 +97,15 @@ function SubjectComments({
 
   const fallbackStudyId = useMemo(
     () => studyIdProp || resolveStudyIdForSubject(subjectId),
-    [subjectId, studyIdProp]
+    [subjectId, studyIdProp],
   );
 
   const comments = useMemo(() => {
     return liveComments
       .filter((comment) => canViewComment(comment, currentUser))
       .filter(
-        (comment) => String(comment.subjectId || "") === String(subjectId || "")
+        (comment) =>
+          String(comment.subjectId || "") === String(subjectId || ""),
       )
       .map((comment) => ({
         id: comment.id,

@@ -6,8 +6,7 @@ export default function CompletionPercentageWidget({
   summary = null,
   title = "Completion",
 }) {
-  const dashboardSummary =
-    summary || getDashboardSummary(documents);
+  const dashboardSummary = summary || getDashboardSummary(documents);
 
   const {
     completionPercentage = 0,
@@ -22,9 +21,7 @@ export default function CompletionPercentageWidget({
       </div>
 
       <div className="completion-widget-body">
-        <div className="completion-percentage">
-          {completionPercentage}%
-        </div>
+        <div className="completion-percentage">{completionPercentage}%</div>
 
         <div className="completion-progress">
           <div

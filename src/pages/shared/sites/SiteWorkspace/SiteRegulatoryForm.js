@@ -8,11 +8,7 @@ const defaultForm = {
   notes: "",
 };
 
-export default function SiteRegulatoryForm({
-  initialData,
-  onSave,
-  onCancel,
-}) {
+export default function SiteRegulatoryForm({ initialData, onSave, onCancel }) {
   const [form, setForm] = useState(defaultForm);
 
   useEffect(() => {
@@ -49,23 +45,15 @@ export default function SiteRegulatoryForm({
   return (
     <div className="site-form-overlay">
       <div className="site-form-modal">
-
         <div className="site-form-header">
           <h2>
-            {initialData
-              ? "Edit Regulatory Record"
-              : "Add Regulatory Record"}
+            {initialData ? "Edit Regulatory Record" : "Add Regulatory Record"}
           </h2>
         </div>
 
         <form onSubmit={handleSubmit}>
-
           <label>Regulatory Item</label>
-          <input
-            name="label"
-            value={form.label}
-            onChange={handleChange}
-          />
+          <input name="label" value={form.label} onChange={handleChange} />
 
           <label>Due Date</label>
           <input
@@ -101,24 +89,14 @@ export default function SiteRegulatoryForm({
           </label>
 
           <div className="site-form-buttons">
-
-            <button
-              type="button"
-              className="secondary-btn"
-              onClick={onCancel}
-            >
+            <button type="button" className="secondary-btn" onClick={onCancel}>
               Cancel
             </button>
 
-            <button
-              type="submit"
-              className="primary-btn"
-            >
+            <button type="submit" className="primary-btn">
               Save
             </button>
-
           </div>
-
         </form>
       </div>
     </div>

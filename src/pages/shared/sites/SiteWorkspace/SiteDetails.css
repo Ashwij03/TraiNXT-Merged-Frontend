@@ -133,10 +133,7 @@
 .details-grid {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(220px, 1fr)
-  );
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
   box-sizing: border-box;
 }
@@ -261,10 +258,7 @@
 .site-team-grid {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(240px, 1fr)
-  );
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
   box-sizing: border-box;
 }
@@ -305,10 +299,7 @@
 .site-regulatory-list {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(280px, 1fr)
-  );
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 16px;
   box-sizing: border-box;
 }
@@ -357,10 +348,7 @@
 .site-enrollment-analytics-grid {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(160px, 1fr)
-  );
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 16px;
   margin-top: 20px;
   box-sizing: border-box;
@@ -469,10 +457,7 @@
 
 @media (min-width: 1200px) {
   .details-grid {
-    grid-template-columns: repeat(
-      auto-fit,
-      minmax(200px, 1fr)
-    );
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 
   .site-enrollment-analytics-grid {
@@ -480,17 +465,11 @@
   }
 
   .site-team-grid {
-    grid-template-columns: repeat(
-      auto-fit,
-      minmax(260px, 1fr)
-    );
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   }
 
   .site-regulatory-list {
-    grid-template-columns: repeat(
-      auto-fit,
-      minmax(300px, 1fr)
-    );
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   }
 }
 
@@ -500,10 +479,7 @@
 
 @media (max-width: 1024px) {
   .details-grid {
-    grid-template-columns: repeat(
-      auto-fit,
-      minmax(180px, 1fr)
-    );
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   }
 
   .site-workspace-tabs {

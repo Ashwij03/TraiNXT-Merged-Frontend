@@ -42,7 +42,9 @@
   font-size: 14px;
   font-weight: 700;
   white-space: nowrap;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .add-study-btn:hover {
@@ -145,7 +147,9 @@
   color: #334155;
   cursor: pointer;
   font-size: 13px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .studies-filters select:hover {
@@ -185,7 +189,9 @@
   cursor: pointer;
   font-size: 13px;
   font-weight: 700;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .studies-view-toggle button:last-child {
@@ -227,7 +233,9 @@
   background: #ffffff;
   box-shadow: 0 5px 15px rgba(15, 23, 42, 0.08);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .study-card:hover {
@@ -364,7 +372,9 @@
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .open-study-btn:hover {
@@ -405,7 +415,9 @@
   background: #ffffff;
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.07);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .studies-list {
@@ -728,7 +740,10 @@
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .pagination-btn:hover:not(:disabled) {

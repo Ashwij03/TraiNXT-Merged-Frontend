@@ -131,7 +131,10 @@ button.primary,
   cursor: pointer;
   font-weight: 600;
   padding: 10px 18px;
-  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
 }
 
 button.primary:hover,
@@ -152,7 +155,9 @@ button.primary:hover,
   cursor: pointer;
   font-weight: 500;
   padding: 10px 18px;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 
 .btn-outline:hover,
@@ -201,7 +206,9 @@ button.primary:hover,
   font-size: 14px;
   font-weight: 500;
   padding: 12px 18px;
-  transition: color 0.2s ease, border-color 0.2s ease;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
   white-space: nowrap;
 }
 
@@ -236,7 +243,9 @@ select {
   color: var(--tnxt-text);
   font-size: 14px;
   padding: 10px 14px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 input:focus,
@@ -256,7 +265,9 @@ select:focus {
   border-radius: var(--tnxt-radius-lg);
   padding: var(--tnxt-space-xl);
   text-align: center;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 
 .upload-zone:hover,
@@ -283,7 +294,9 @@ select:focus {
 
 .subject-card {
   padding: var(--tnxt-space-md);
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .subject-card:hover {
@@ -315,7 +328,9 @@ select:focus {
   border-radius: var(--tnxt-radius);
   cursor: pointer;
   padding: var(--tnxt-space-md);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .folder-tile:hover,
@@ -325,12 +340,30 @@ select:focus {
 }
 
 /* ── KPI color accents ── */
-.enterprise-kpi:nth-child(1) .enterprise-kpi-icon { background: var(--tnxt-primary-light); color: var(--tnxt-primary); }
-.enterprise-kpi:nth-child(2) .enterprise-kpi-icon { background: var(--tnxt-warning-light); color: var(--tnxt-warning); }
-.enterprise-kpi:nth-child(3) .enterprise-kpi-icon { background: var(--tnxt-success-light); color: var(--tnxt-success); }
-.enterprise-kpi:nth-child(4) .enterprise-kpi-icon { background: var(--tnxt-danger-light); color: var(--tnxt-danger); }
-.enterprise-kpi:nth-child(5) .enterprise-kpi-icon { background: var(--tnxt-info-light); color: var(--tnxt-info); }
-.enterprise-kpi:nth-child(6) .enterprise-kpi-icon { background: #f3e8ff; color: #7c3aed; }
+.enterprise-kpi:nth-child(1) .enterprise-kpi-icon {
+  background: var(--tnxt-primary-light);
+  color: var(--tnxt-primary);
+}
+.enterprise-kpi:nth-child(2) .enterprise-kpi-icon {
+  background: var(--tnxt-warning-light);
+  color: var(--tnxt-warning);
+}
+.enterprise-kpi:nth-child(3) .enterprise-kpi-icon {
+  background: var(--tnxt-success-light);
+  color: var(--tnxt-success);
+}
+.enterprise-kpi:nth-child(4) .enterprise-kpi-icon {
+  background: var(--tnxt-danger-light);
+  color: var(--tnxt-danger);
+}
+.enterprise-kpi:nth-child(5) .enterprise-kpi-icon {
+  background: var(--tnxt-info-light);
+  color: var(--tnxt-info);
+}
+.enterprise-kpi:nth-child(6) .enterprise-kpi-icon {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
 
 /* ── Auth pages ── */
 .auth-container,

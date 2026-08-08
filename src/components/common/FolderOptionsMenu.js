@@ -7,7 +7,7 @@ const MENU_ITEMS = [
   { key: "rename", label: "Rename Folder" },
   { key: "delete", label: "Delete Folder" },
   { key: "upload", label: "Upload Folder" },
-  { key: "download", label: "Download Folder" }
+  { key: "download", label: "Download Folder" },
 ];
 
 export default function FolderOptionsMenu({
@@ -19,7 +19,7 @@ export default function FolderOptionsMenu({
   onDelete,
   onUpload,
   onDownload,
-  className = ""
+  className = "",
 }) {
   const [open, setOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
@@ -74,7 +74,7 @@ export default function FolderOptionsMenu({
 
     setMenuPosition({
       top: clientY,
-      left: clientX
+      left: clientX,
     });
     setOpen(true);
   };

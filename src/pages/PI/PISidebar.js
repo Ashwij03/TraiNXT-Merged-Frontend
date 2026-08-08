@@ -26,24 +26,15 @@ const ICON_MAP = {
   cog: FaCog,
 };
 
-function PISidebar({
-  selectedPage,
-  setSelectedPage,
-  isOpen = true,
-  onClose,
-}) {
+function PISidebar({ selectedPage, setSelectedPage, isOpen = true, onClose }) {
   const { pathname } = useLocation();
 
   const menuData = getSidebarMenuData();
 
-  const {
-    studyCount,
-    studiesOpen,
-    isStudiesActive,
-    handleStudiesClick,
-  } = useRoleStudiesSidebar({
-    onNavigate: onClose,
-  });
+  const { studyCount, studiesOpen, isStudiesActive, handleStudiesClick } =
+    useRoleStudiesSidebar({
+      onNavigate: onClose,
+    });
 
   const handleStudiesNav = () => {
     handleStudiesClick();
@@ -78,8 +69,7 @@ function PISidebar({
     const route = routeMap[page];
 
     const isActive =
-      route &&
-      (pathname === route || pathname.startsWith(`${route}/`));
+      route && (pathname === route || pathname.startsWith(`${route}/`));
 
     return `menu-item${isActive ? " active-menu" : ""}`;
   };
@@ -120,9 +110,7 @@ function PISidebar({
         {/* Studies */}
         <div
           className={`menu-item studies-menu${
-            selectedPage === "studies" || isStudiesActive
-              ? " active-menu"
-              : ""
+            selectedPage === "studies" || isStudiesActive ? " active-menu" : ""
           }`}
           onClick={handleStudiesNav}
         >

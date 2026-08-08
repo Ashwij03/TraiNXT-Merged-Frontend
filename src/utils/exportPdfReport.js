@@ -2,7 +2,6 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 export function downloadPdfReport(documents) {
-
   const doc = new jsPDF();
 
   doc.setFontSize(18);
@@ -15,10 +14,9 @@ export function downloadPdfReport(documents) {
       item.documentName,
       item.category,
       item.version,
-      item.status
-    ])
+      item.status,
+    ]),
   });
 
   doc.save("EssentialDocuments.pdf");
-
 }

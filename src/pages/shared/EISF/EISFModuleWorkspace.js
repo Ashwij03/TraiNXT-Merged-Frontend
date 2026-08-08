@@ -35,21 +35,30 @@ export default function EISFModuleWorkspace({
   onModuleChange,
 }) {
   const [documents, setDocuments] = useState(() =>
-    initializeModuleDocuments(moduleConfig, studyCode, initialDocuments)
+    initializeModuleDocuments(moduleConfig, studyCode, initialDocuments),
   );
   // [Phase 11–13] Role Based Permission – eISF Module. Reuses the existing
   // RBAC system (roleService.hasPermission + rolePermissions) — no new
   // permission service. Monitor maps to the existing CRO role already
   // defined in rolePermissions.js, so no per-role branching is needed here.
-  const canUploadDocs = useMemo(() => hasPermission(PERMISSIONS.UPLOAD_REGULATORY_DOCS), []);
-  const canEditDocs = useMemo(() => hasPermission(PERMISSIONS.EDIT_REGULATORY_DOCS), []);
-  const canDeleteDocs = useMemo(() => hasPermission(PERMISSIONS.DELETE_REGULATORY_DOCS), []);
+  const canUploadDocs = useMemo(
+    () => hasPermission(PERMISSIONS.UPLOAD_REGULATORY_DOCS),
+    [],
+  );
+  const canEditDocs = useMemo(
+    () => hasPermission(PERMISSIONS.EDIT_REGULATORY_DOCS),
+    [],
+  );
+  const canDeleteDocs = useMemo(
+    () => hasPermission(PERMISSIONS.DELETE_REGULATORY_DOCS),
+    [],
+  );
   const [selectedSectionId, setSelectedSectionId] = useState(
-    activeSectionId || moduleConfig.sections[0]?.id
+    activeSectionId || moduleConfig.sections[0]?.id,
   );
   // Sub-module Enable/Disable state (Item 9) — persisted via localStorage.
   const [enabledMap, setEnabledMap] = useState(() =>
-    getSubModuleEnabledMap(studyCode)
+    getSubModuleEnabledMap(studyCode),
   );
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -72,7 +81,9 @@ export default function EISFModuleWorkspace({
   const [guidelineOpen, setGuidelineOpen] = useState(false);
 
   useEffect(() => {
-    setDocuments(initializeModuleDocuments(moduleConfig, studyCode, initialDocuments));
+    setDocuments(
+      initializeModuleDocuments(moduleConfig, studyCode, initialDocuments),
+    );
     setSearch("");
     setStatusFilter("");
     setTypeFilter("");
@@ -90,7 +101,7 @@ export default function EISFModuleWorkspace({
       // Default to enabled (backwards compatible) when never toggled.
       return enabledMap[sectionId] !== false;
     },
-    [enabledMap]
+    [enabledMap],
   );
 
   useEffect(() => {
@@ -99,7 +110,7 @@ export default function EISFModuleWorkspace({
 
   useEffect(() => {
     const requestedSection = moduleConfig.sections.find(
-      (section) => section.id === activeSectionId
+      (section) => section.id === activeSectionId,
     );
 
     setSelectedSectionId(requestedSection?.id || moduleConfig.sections[0]?.id);
@@ -118,18 +129,28 @@ export default function EISFModuleWorkspace({
 
   useEffect(() => {
     setPage(1);
-  }, [search, statusFilter, typeFilter, versionFilter, sortField, sortDirection, selectedSectionId, pageSize]);
+  }, [
+    search,
+    statusFilter,
+    typeFilter,
+    versionFilter,
+    sortField,
+    sortDirection,
+    selectedSectionId,
+    pageSize,
+  ]);
 
   const activeSection = useMemo(
     () =>
-      moduleConfig.sections.find((section) => section.id === selectedSectionId) ||
-      null,
-    [moduleConfig.sections, selectedSectionId]
+      moduleConfig.sections.find(
+        (section) => section.id === selectedSectionId,
+      ) || null,
+    [moduleConfig.sections, selectedSectionId],
   );
 
   const activeSectionEnabled = useMemo(
     () => (activeSection ? isSectionEnabled(activeSection.id) : false),
-    [activeSection, isSectionEnabled]
+    [activeSection, isSectionEnabled],
   );
 
   const processedSectionDocuments = useMemo(() => {
@@ -137,7 +158,9 @@ export default function EISFModuleWorkspace({
     if (!activeSection || !activeSectionEnabled) return [];
 
     const sectionDocuments = documents.filter(
-      (document) => document.section === activeSection?.id || document.sectionId === activeSection?.id
+      (document) =>
+        document.section === activeSection?.id ||
+        document.sectionId === activeSection?.id,
     );
 
     return processDocuments(sectionDocuments, {
@@ -150,36 +173,46 @@ export default function EISFModuleWorkspace({
       sortField,
       sortDirection,
     });
-  }, [activeSection, activeSectionEnabled, documents, search, statusFilter, typeFilter, versionFilter, sortField, sortDirection]);
+  }, [
+    activeSection,
+    activeSectionEnabled,
+    documents,
+    search,
+    statusFilter,
+    typeFilter,
+    versionFilter,
+    sortField,
+    sortDirection,
+  ]);
 
   const pagination = useMemo(
     () => paginateDocuments(processedSectionDocuments, page, pageSize),
-    [processedSectionDocuments, page, pageSize]
+    [processedSectionDocuments, page, pageSize],
   );
 
   const statusOptions = useMemo(
     () => getFilterOptions(documents, "status"),
-    [documents]
+    [documents],
   );
 
   const categoryOptions = useMemo(
     () => moduleConfig.sections.map((section) => section.title),
-    [moduleConfig.sections]
+    [moduleConfig.sections],
   );
 
   const typeOptions = useMemo(
     () => getFilterOptions(documents, "documentType"),
-    [documents]
+    [documents],
   );
 
   const versionOptions = useMemo(
     () => getFilterOptions(documents, "version"),
-    [documents]
+    [documents],
   );
 
   const dashboardCards = useMemo(
     () => buildReferenceDashboardCards(documents, moduleConfig.sections),
-    [documents, moduleConfig.sections]
+    [documents, moduleConfig.sections],
   );
 
   const clearFilters = () => {
@@ -208,32 +241,22 @@ export default function EISFModuleWorkspace({
     // other path — the Upload button itself is also hidden below.
     if (!canUploadDocs) return;
 
-    const incomingName = (
-      formData.documentName ||
-      formData.name ||
-      ""
-    )
+    const incomingName = (formData.documentName || formData.name || "")
       .trim()
       .toLowerCase();
 
     const incomingVersion = String(formData.version || "").trim();
 
     const duplicate = documents.some((doc) => {
-      const existingName = (
-        doc.documentName ||
-        doc.name ||
-        ""
-      )
+      const existingName = (doc.documentName || doc.name || "")
         .trim()
         .toLowerCase();
 
       const existingVersion = String(doc.version || "").trim();
 
-      const sameStudy =
-        (doc.studyCode || studyCode) === studyCode;
+      const sameStudy = (doc.studyCode || studyCode) === studyCode;
 
-      const sameModule =
-        (doc.moduleId || moduleConfig.id) === moduleConfig.id;
+      const sameModule = (doc.moduleId || moduleConfig.id) === moduleConfig.id;
 
       const sameSection =
         (doc.section || doc.sectionId || "") === activeSection.id;
@@ -249,7 +272,7 @@ export default function EISFModuleWorkspace({
 
     if (duplicate) {
       window.alert(
-        `Version ${incomingVersion} already exists for "${formData.documentName}". Please upload a higher version.`
+        `Version ${incomingVersion} already exists for "${formData.documentName}". Please upload a higher version.`,
       );
       return;
     }
@@ -259,14 +282,13 @@ export default function EISFModuleWorkspace({
       activeSection,
       moduleConfig,
       studyCode,
-      "Current User"
+      "Current User",
     );
 
     setDocuments((prev) => [newDocument, ...prev]);
 
     setShowUpload(false);
   };
-
 
   const handleSaveDocument = (updatedDocument) => {
     if (!activeSectionEnabled) {
@@ -290,11 +312,7 @@ export default function EISFModuleWorkspace({
         return false;
       }
 
-      const existingName = (
-        doc.documentName ||
-        doc.name ||
-        ""
-      )
+      const existingName = (doc.documentName || doc.name || "")
         .trim()
         .toLowerCase();
 
@@ -309,17 +327,16 @@ export default function EISFModuleWorkspace({
       return (
         (doc.studyCode || studyCode) === studyCode &&
         (doc.moduleId || moduleConfig.id) === moduleConfig.id &&
-        (doc.section || doc.sectionId || "") ===
-        activeSection.id &&
+        (doc.section || doc.sectionId || "") === activeSection.id &&
         existingName === updatedName &&
         String(doc.version || "").trim() ===
-        String(updatedDocument.version || "").trim()
+          String(updatedDocument.version || "").trim()
       );
     });
 
     if (duplicate) {
       window.alert(
-        `Version ${version} already exists for "${updatedDocument.documentName}".`
+        `Version ${version} already exists for "${updatedDocument.documentName}".`,
       );
       return;
     }
@@ -328,8 +345,8 @@ export default function EISFModuleWorkspace({
       prev.map((document) =>
         document.id === updatedDocument.id
           ? updateDocumentRecord(document, updatedDocument, "Current User")
-          : document
-      )
+          : document,
+      ),
     );
 
     setEditOpen(false);
@@ -375,7 +392,11 @@ export default function EISFModuleWorkspace({
     if (!activeSection || !activeSectionEnabled) return null;
 
     const sectionName = activeSection?.title || moduleConfig.title;
-    const fileName = `${moduleConfig.id}-${activeSection?.id || "all"}-documents.csv`.replace(/\s+/g, "_");
+    const fileName =
+      `${moduleConfig.id}-${activeSection?.id || "all"}-documents.csv`.replace(
+        /\s+/g,
+        "_",
+      );
 
     exportDocuments(processedSectionDocuments, fileName);
     return sectionName;
@@ -402,7 +423,11 @@ export default function EISFModuleWorkspace({
               <h2>{moduleConfig.title}</h2>
             </div>
 
-            <DashboardCards documents={documents} cards={dashboardCards} variant="reference" />
+            <DashboardCards
+              documents={documents}
+              cards={dashboardCards}
+              variant="reference"
+            />
           </div>
         </div>
 
@@ -423,152 +448,208 @@ export default function EISFModuleWorkspace({
         )}
       </div>
 
-      <div className={`eisf-module-grid${previewDocument ? " eisf-split-view" : ""}`}>
+      <div
+        className={`eisf-module-grid${previewDocument ? " eisf-split-view" : ""}`}
+      >
         <section className="eisf-module-documents-card eisf-split-list">
           {!activeSection ? (
             <div className="eisf-submodule-disabled-panel">
-              <span className="disabled-icon" aria-hidden="true">▤</span>
+              <span className="disabled-icon" aria-hidden="true">
+                ▤
+              </span>
               <h4>No sub-module selected</h4>
               <p>Select a sub-module from the list to view its documents.</p>
             </div>
           ) : !activeSectionEnabled ? (
             <div className="eisf-submodule-disabled-panel">
-              <span className="disabled-icon" aria-hidden="true">🚫</span>
-              <h4>{activeSection.id} {activeSection.title}</h4>
+              <span className="disabled-icon" aria-hidden="true">
+                🚫
+              </span>
+              <h4>
+                {activeSection.id} {activeSection.title}
+              </h4>
               <p>This eISF sub-module is disabled.</p>
               <p style={{ marginTop: 6, fontSize: 12 }}>
-                Existing documents are preserved and will reappear when the sub-module is enabled.
+                Existing documents are preserved and will reappear when the
+                sub-module is enabled.
               </p>
             </div>
           ) : (
             <>
-          <div className="eisf-documents-header">
-            <div className="eisf-documents-title-row">
-              <h3>{activeSection?.id} {activeSection?.title}</h3>
-              <span>{totalLabel}</span>
-            </div>
+              <div className="eisf-documents-header">
+                <div className="eisf-documents-title-row">
+                  <h3>
+                    {activeSection?.id} {activeSection?.title}
+                  </h3>
+                  <span>{totalLabel}</span>
+                </div>
 
-            <div className="eisf-documents-actions">
-              <button
-                type="button"
-                className="filing-guideline-btn"
-                onClick={() => setGuidelineOpen(true)}
-              >
-                View Filing Guidelines ↗
-              </button>
-              <button type="button" onClick={handleExport}>⇩ Export</button>
-              {canUploadDocs && (
-                <button type="button" className="primary" onClick={() => setShowUpload(true)}>Upload</button>
-              )}
-              <button
-                type="button"
-                className="more-action"
-                onClick={() => setShowFilters((current) => !current)}
-                aria-label="Toggle filters"
-                title="Toggle filters"
-              >
-                ⋯
-              </button>
-            </div>
-          </div>
-
-          {showFilters && (
-            <div className="eisf-documents-toolbar">
-              <input
-                type="text"
-                placeholder="Search documents..."
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-              />
-
-              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-                <option value="">Status: All</option>
-                {statusOptions.map((status) => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
-              </select>
-
-              <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
-                <option value="">Document Type: All</option>
-                {typeOptions.map((type) => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
-
-              <select value={versionFilter} onChange={(event) => setVersionFilter(event.target.value)}>
-                <option value="">Version: All</option>
-                {versionOptions.map((version) => (
-                  <option key={version} value={version}>{version}</option>
-                ))}
-              </select>
-
-              <button type="button" className="filter-action" onClick={clearFilters}>Reset</button>
-            </div>
-          )}
-
-          <DocumentTable
-            documents={pagination.documents}
-            variant="reference"
-            sortField={sortField}
-            sortDirection={sortDirection}
-            onSort={handleSort}
-            selectedDocumentId={previewDocument?.id || null}
-            onSelect={handlePreview}
-            onView={handlePreview}
-            onHistory={(document) => openModal(document, setHistoryOpen)}
-            onAudit={(document) => openModal(document, setAuditOpen)}
-            onDownload={handleDownload}
-            onEdit={(document) => openModal(document, setEditOpen)}
-            onDelete={handleDelete}
-            canEdit={canEditDocs}
-            canDelete={canDeleteDocs}
-          />
-
-          <div className="eisf-table-footer">
-            <span>
-              Showing {pagination.start} to {pagination.end} of {pagination.totalItems} documents
-            </span>
-            <div className="eisf-pagination-controls">
-              <label>
-                Rows
-                <select
-                  value={pageSize}
-                  onChange={(event) => setPageSize(Number(event.target.value))}
-                >
-                  {DOCUMENT_PAGE_SIZE_OPTIONS.map((option) => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-              </label>
-
-              <div className="eisf-pagination">
-                <button
-                  type="button"
-                  disabled={pagination.page === 1}
-                  onClick={() => setPage((current) => Math.max(1, current - 1))}
-                >
-                  ‹
-                </button>
-                {Array.from({ length: pagination.totalPages }, (_, index) => index + 1).map((pageNumber) => (
+                <div className="eisf-documents-actions">
                   <button
                     type="button"
-                    key={pageNumber}
-                    className={pagination.page === pageNumber ? "active" : ""}
-                    onClick={() => setPage(pageNumber)}
+                    className="filing-guideline-btn"
+                    onClick={() => setGuidelineOpen(true)}
                   >
-                    {pageNumber}
+                    View Filing Guidelines ↗
                   </button>
-                ))}
-                <button
-                  type="button"
-                  disabled={pagination.page === pagination.totalPages}
-                  onClick={() => setPage((current) => Math.min(pagination.totalPages, current + 1))}
-                >
-                  ›
-                </button>
+                  <button type="button" onClick={handleExport}>
+                    ⇩ Export
+                  </button>
+                  {canUploadDocs && (
+                    <button
+                      type="button"
+                      className="primary"
+                      onClick={() => setShowUpload(true)}
+                    >
+                      Upload
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="more-action"
+                    onClick={() => setShowFilters((current) => !current)}
+                    aria-label="Toggle filters"
+                    title="Toggle filters"
+                  >
+                    ⋯
+                  </button>
+                </div>
               </div>
-            </div>
-          </div>
+
+              {showFilters && (
+                <div className="eisf-documents-toolbar">
+                  <input
+                    type="text"
+                    placeholder="Search documents..."
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                  />
+
+                  <select
+                    value={statusFilter}
+                    onChange={(event) => setStatusFilter(event.target.value)}
+                  >
+                    <option value="">Status: All</option>
+                    {statusOptions.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={typeFilter}
+                    onChange={(event) => setTypeFilter(event.target.value)}
+                  >
+                    <option value="">Document Type: All</option>
+                    {typeOptions.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={versionFilter}
+                    onChange={(event) => setVersionFilter(event.target.value)}
+                  >
+                    <option value="">Version: All</option>
+                    {versionOptions.map((version) => (
+                      <option key={version} value={version}>
+                        {version}
+                      </option>
+                    ))}
+                  </select>
+
+                  <button
+                    type="button"
+                    className="filter-action"
+                    onClick={clearFilters}
+                  >
+                    Reset
+                  </button>
+                </div>
+              )}
+
+              <DocumentTable
+                documents={pagination.documents}
+                variant="reference"
+                sortField={sortField}
+                sortDirection={sortDirection}
+                onSort={handleSort}
+                selectedDocumentId={previewDocument?.id || null}
+                onSelect={handlePreview}
+                onView={handlePreview}
+                onHistory={(document) => openModal(document, setHistoryOpen)}
+                onAudit={(document) => openModal(document, setAuditOpen)}
+                onDownload={handleDownload}
+                onEdit={(document) => openModal(document, setEditOpen)}
+                onDelete={handleDelete}
+                canEdit={canEditDocs}
+                canDelete={canDeleteDocs}
+              />
+
+              <div className="eisf-table-footer">
+                <span>
+                  Showing {pagination.start} to {pagination.end} of{" "}
+                  {pagination.totalItems} documents
+                </span>
+                <div className="eisf-pagination-controls">
+                  <label>
+                    Rows
+                    <select
+                      value={pageSize}
+                      onChange={(event) =>
+                        setPageSize(Number(event.target.value))
+                      }
+                    >
+                      {DOCUMENT_PAGE_SIZE_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <div className="eisf-pagination">
+                    <button
+                      type="button"
+                      disabled={pagination.page === 1}
+                      onClick={() =>
+                        setPage((current) => Math.max(1, current - 1))
+                      }
+                    >
+                      ‹
+                    </button>
+                    {Array.from(
+                      { length: pagination.totalPages },
+                      (_, index) => index + 1,
+                    ).map((pageNumber) => (
+                      <button
+                        type="button"
+                        key={pageNumber}
+                        className={
+                          pagination.page === pageNumber ? "active" : ""
+                        }
+                        onClick={() => setPage(pageNumber)}
+                      >
+                        {pageNumber}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      disabled={pagination.page === pagination.totalPages}
+                      onClick={() =>
+                        setPage((current) =>
+                          Math.min(pagination.totalPages, current + 1),
+                        )
+                      }
+                    >
+                      ›
+                    </button>
+                  </div>
+                </div>
+              </div>
             </>
           )}
         </section>

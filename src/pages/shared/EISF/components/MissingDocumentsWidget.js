@@ -7,8 +7,7 @@ export default function MissingDocumentsWidget({
   title = "Missing Documents",
   maxItems = 5,
 }) {
-  const missing =
-    missingDocuments || getMissingDocuments(documents);
+  const missing = missingDocuments || getMissingDocuments(documents);
 
   return (
     <div className="missing-documents-widget">
@@ -17,21 +16,14 @@ export default function MissingDocumentsWidget({
       </div>
 
       <div className="widget-body">
-        <div className="missing-count">
-          {missing.length}
-        </div>
+        <div className="missing-count">{missing.length}</div>
 
         {missing.length === 0 ? (
-          <div className="empty-message">
-            No missing documents.
-          </div>
+          <div className="empty-message">No missing documents.</div>
         ) : (
           <ul className="missing-list">
             {missing.slice(0, maxItems).map((document) => (
-              <li
-                key={document.id || document.name}
-                className="missing-item"
-              >
+              <li key={document.id || document.name} className="missing-item">
                 {document.name || "Unnamed Document"}
               </li>
             ))}

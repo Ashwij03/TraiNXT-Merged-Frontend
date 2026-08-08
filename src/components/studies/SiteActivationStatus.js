@@ -5,7 +5,7 @@ function SiteActivationStatus({ counts }) {
   const data = counts || {};
   const total = SITE_ACTIVATION_BUCKETS.reduce(
     (sum, key) => sum + (data[key] || 0),
-    0
+    0,
   );
 
   return (

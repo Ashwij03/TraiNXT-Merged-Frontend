@@ -3,11 +3,9 @@ import React from "react";
 function PIICFDashboard() {
   return (
     <div className="pi-page-content tnxt-compact">
-
       <h1>ICF Dashboard</h1>
 
       <div className="cards-container">
-
         <div className="dashboard-card">
           <h3>Total Subjects</h3>
           <h2>120</h2>
@@ -27,11 +25,9 @@ function PIICFDashboard() {
           <h3>Expired Consents</h3>
           <h2>3</h2>
         </div>
-
       </div>
 
       <div className="table-container">
-
         <h2>Consent Status</h2>
 
         <table className="ctms-standard-table">
@@ -45,7 +41,6 @@ function PIICFDashboard() {
           </thead>
 
           <tbody>
-
             <tr>
               <td>SUB-001</td>
               <td>Version 3</td>
@@ -73,13 +68,9 @@ function PIICFDashboard() {
               <td>-</td>
               <td>Pending</td>
             </tr>
-
           </tbody>
         </table>
-
-
       </div>
-
     </div>
   );
 }

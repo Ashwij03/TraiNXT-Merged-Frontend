@@ -5,7 +5,9 @@ function escapeCsvCell(value) {
 
 export function rowsToCsv(rows) {
   return rows
-    .map((row) => (Array.isArray(row) ? row : [row]).map(escapeCsvCell).join(","))
+    .map((row) =>
+      (Array.isArray(row) ? row : [row]).map(escapeCsvCell).join(","),
+    )
     .join("\n");
 }
 

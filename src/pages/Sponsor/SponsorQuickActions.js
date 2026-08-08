@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {  MdWorkspaces,
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  MdWorkspaces,
   MdWarning,
   MdAssessment,
   MdGroups,
   MdBusiness,
-} from 'react-icons/md';
-import { syncQuickActionValues } from './data/sponsorDataStore';
-import './SponsorQuickActions.css';
+} from "react-icons/md";
+import { syncQuickActionValues } from "./data/sponsorDataStore";
+import "./SponsorQuickActions.css";
 
 const iconMap = {
   study: MdWorkspaces,
@@ -24,8 +25,8 @@ const SponsorQuickActions = () => {
   useEffect(() => {
     const refresh = () => setActions(syncQuickActionValues());
     refresh();
-    window.addEventListener('sponsor-data-updated', refresh);
-    return () => window.removeEventListener('sponsor-data-updated', refresh);
+    window.addEventListener("sponsor-data-updated", refresh);
+    return () => window.removeEventListener("sponsor-data-updated", refresh);
   }, []);
 
   const handleCardClick = (action) => {
@@ -50,15 +51,20 @@ const SponsorQuickActions = () => {
               onClick={() => handleCardClick(action)}
               role="button"
               tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && handleCardClick(action)}
+              onKeyDown={(e) => e.key === "Enter" && handleCardClick(action)}
             >
-              <div className="qa-icon" style={{ backgroundColor: action.bg, color: action.color }}>
+              <div
+                className="qa-icon"
+                style={{ backgroundColor: action.bg, color: action.color }}
+              >
                 <Icon size={24} />
               </div>
               <div className="qa-text">
                 <span className="qa-value">{action.value}</span>
                 <span className="qa-label">{action.label}</span>
-                {action.subtitle && <span className="qa-subtitle">{action.subtitle}</span>}
+                {action.subtitle && (
+                  <span className="qa-subtitle">{action.subtitle}</span>
+                )}
               </div>
             </div>
           );

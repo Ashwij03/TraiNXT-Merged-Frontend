@@ -25,5 +25,5 @@ export const PERMISSIONS = {
   COMMENT_CREATE: "comment.create",
   // UPDATED: legacy keys retained for backward compatibility
   QUERY_VIEW: "comment.view",
-  QUERY_CREATE: "comment.create"
+  QUERY_CREATE: "comment.create",
 };

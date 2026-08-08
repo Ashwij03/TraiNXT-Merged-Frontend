@@ -24,11 +24,7 @@ export default function CommentsPage({ embedded = false }) {
   const studyCode = code || "";
   const currentUser = getCurrentUser();
   const assignedSite = getAssignedSite() || "";
-  const {
-    comments: liveComments,
-    addComment,
-    resolveComment,
-  } = useComments();
+  const { comments: liveComments, addComment, resolveComment } = useComments();
 
   // UI state
   const [showAddModal, setShowAddModal] = useState(false);
@@ -43,7 +39,7 @@ export default function CommentsPage({ embedded = false }) {
     return liveComments
       .filter((comment) => canViewComment(comment, currentUser))
       .filter(
-        (comment) => !studyCode || String(comment.study) === String(studyCode)
+        (comment) => !studyCode || String(comment.study) === String(studyCode),
       );
   }, [liveComments, studyCode, currentUser]);
 
@@ -53,13 +49,9 @@ export default function CommentsPage({ embedded = false }) {
 
     // Status filter
     if (statusFilter === "resolved") {
-      result = result.filter(
-        (comment) => comment.status === "Resolved",
-      );
+      result = result.filter((comment) => comment.status === "Resolved");
     } else if (statusFilter === "unresolved") {
-      result = result.filter(
-        (comment) => comment.status !== "Resolved",
-      );
+      result = result.filter((comment) => comment.status !== "Resolved");
     }
 
     // Search filter
@@ -94,18 +86,12 @@ export default function CommentsPage({ embedded = false }) {
 
   // ===== PAGINATION CALCULATION =====
   const totalRows = filteredComments.length;
-  const totalPages = Math.max(
-    1,
-    Math.ceil(totalRows / rowsPerPage),
-  );
+  const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
 
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
 
-  const paginatedComments = filteredComments.slice(
-    startIndex,
-    endIndex,
-  );
+  const paginatedComments = filteredComments.slice(startIndex, endIndex);
 
   const toggleStatus = (comment) => {
     if (comment.status !== "Resolved") {
@@ -140,7 +126,10 @@ export default function CommentsPage({ embedded = false }) {
   };
 
   const content = (
-    <div className="operations-comments-page tnxt-compact" style={{ padding: "20px" }}>
+    <div
+      className="operations-comments-page tnxt-compact"
+      style={{ padding: "20px" }}
+    >
       <h2 style={{ marginBottom: "20px" }}>
         Comments — {studyCode || "Study"}
       </h2>
@@ -262,9 +251,7 @@ export default function CommentsPage({ embedded = false }) {
                   <td>{comment.subjectId || "—"}</td>
                   <td>
                     {comment.createdBy || "—"}
-                    {comment.createdRole
-                      ? ` (${comment.createdRole})`
-                      : ""}
+                    {comment.createdRole ? ` (${comment.createdRole})` : ""}
                   </td>
                   <td>{comment.createdAt || "—"}</td>
                   <td>{comment.description || "—"}</td>
@@ -278,17 +265,13 @@ export default function CommentsPage({ embedded = false }) {
                       }
                       style={{
                         background:
-                          comment.status === "Resolved"
-                            ? "#d4edda"
-                            : "#fff3cd",
+                          comment.status === "Resolved" ? "#d4edda" : "#fff3cd",
                         border: "1px solid #ccc",
                         padding: "5px 10px",
                         borderRadius: "5px",
                       }}
                     >
-                      {comment.status === "Resolved"
-                        ? "Resolved"
-                        : "Open"}
+                      {comment.status === "Resolved" ? "Resolved" : "Open"}
                     </button>
                   </td>
                 </tr>
@@ -329,9 +312,7 @@ export default function CommentsPage({ embedded = false }) {
 
           <button
             type="button"
-            onClick={() =>
-              setCurrentPage((page) => Math.max(1, page - 1))
-            }
+            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
             disabled={currentPage === 1}
           >
             Previous
@@ -344,9 +325,7 @@ export default function CommentsPage({ embedded = false }) {
           <button
             type="button"
             onClick={() =>
-              setCurrentPage((page) =>
-                Math.min(totalPages, page + 1),
-              )
+              setCurrentPage((page) => Math.min(totalPages, page + 1))
             }
             disabled={currentPage === totalPages}
           >

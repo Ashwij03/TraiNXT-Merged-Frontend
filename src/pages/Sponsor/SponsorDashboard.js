@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { HEADER_FILTERS_EVENT } from '../../constants/headerFilters';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from "react";
+import { HEADER_FILTERS_EVENT } from "../../constants/headerFilters";
+import { useNavigate } from "react-router-dom";
 import {
   MdWorkspaces,
   MdMonitorHeart,
@@ -10,7 +10,7 @@ import {
   MdAssessment,
   MdNotifications,
   MdCheckCircle,
-} from 'react-icons/md';
+} from "react-icons/md";
 import {
   PieChart,
   Pie,
@@ -24,17 +24,17 @@ import {
   CartesianGrid,
   LineChart,
   Line,
-} from 'recharts';
+} from "recharts";
 
-import './SponsorDashboard.css';
-import '../shared/studies/StudyDashboard.css';
-import AppLayout from './AppLayout.js';
-import EnrollmentChart from './EnrollmentChart';
-import StatusPieChart from './StatusPieChart';
-import KpiCard from './KpiCard';
-import AlertsPanel from './SponsorAlertsPanel';
-import QuickActions from './SponsorQuickActions';
-import SubscriptionEditModal from './SubscriptionEditModal';
+import "./SponsorDashboard.css";
+import "../shared/studies/StudyDashboard.css";
+import AppLayout from "./AppLayout.js";
+import EnrollmentChart from "./EnrollmentChart";
+import StatusPieChart from "./StatusPieChart";
+import KpiCard from "./KpiCard";
+import AlertsPanel from "./SponsorAlertsPanel";
+import QuickActions from "./SponsorQuickActions";
+import SubscriptionEditModal from "./SubscriptionEditModal";
 import {
   FaCheckCircle,
   FaSearch,
@@ -53,15 +53,15 @@ import {
   getSubscription,
   saveSubscription,
   getAllSubjectsFromStorage,
-} from './data/sponsorDataStore';
+} from "./data/sponsorDataStore";
 
 const CHART_COLORS = [
-  '#22c55e',
-  '#3b82f6',
-  '#f59e0b',
-  '#ef4444',
-  '#8b5cf6',
-  '#06b6d4',
+  "#22c55e",
+  "#3b82f6",
+  "#f59e0b",
+  "#ef4444",
+  "#8b5cf6",
+  "#06b6d4",
 ];
 
 const SponsorDashboard = () => {
@@ -78,7 +78,7 @@ const SponsorDashboard = () => {
   const [subscriptionSuccess, setSubscriptionSuccess] = useState(false);
 
   const [analyticsSubjects, setAnalyticsSubjects] = useState(
-    getAllSubjectsFromStorage()
+    getAllSubjectsFromStorage(),
   );
 
   const portfolioStudiesForAnalytics = useMemo(() => {
@@ -107,16 +107,16 @@ const SponsorDashboard = () => {
       refreshData();
     };
 
-    window.addEventListener('sponsor-data-updated', handler);
+    window.addEventListener("sponsor-data-updated", handler);
     window.addEventListener(HEADER_FILTERS_EVENT, handler);
-    window.addEventListener('studies-updated', handler);
-    window.addEventListener('subjects-updated', handler);
+    window.addEventListener("studies-updated", handler);
+    window.addEventListener("subjects-updated", handler);
 
     return () => {
-      window.removeEventListener('sponsor-data-updated', handler);
+      window.removeEventListener("sponsor-data-updated", handler);
       window.removeEventListener(HEADER_FILTERS_EVENT, handler);
-      window.removeEventListener('studies-updated', handler);
-      window.removeEventListener('subjects-updated', handler);
+      window.removeEventListener("studies-updated", handler);
+      window.removeEventListener("subjects-updated", handler);
     };
   }, []);
 
@@ -138,7 +138,7 @@ const SponsorDashboard = () => {
     setShowSubscriptionModal(false);
     setSubscriptionSuccess(true);
 
-    window.dispatchEvent(new Event('sponsor-data-updated'));
+    window.dispatchEvent(new Event("sponsor-data-updated"));
   };
 
   return (
@@ -161,7 +161,7 @@ const SponsorDashboard = () => {
               icon={<MdWorkspaces size={28} />}
               iconBg="#eff6ff"
               iconColor="#2563eb"
-              onClick={() => navigate('/portfolio')}
+              onClick={() => navigate("/portfolio")}
             />
 
             <KpiCard
@@ -171,7 +171,7 @@ const SponsorDashboard = () => {
               icon={<MdMonitorHeart size={28} />}
               iconBg="#ecfdf5"
               iconColor="#16a34a"
-              onClick={() => navigate('/studies')}
+              onClick={() => navigate("/studies")}
             />
 
             <KpiCard
@@ -181,7 +181,7 @@ const SponsorDashboard = () => {
               icon={<MdBusiness size={28} />}
               iconBg="#fef3c7"
               iconColor="#d97706"
-              onClick={() => navigate('/cro-oversight')}
+              onClick={() => navigate("/cro-oversight")}
             />
 
             <KpiCard
@@ -191,7 +191,7 @@ const SponsorDashboard = () => {
               icon={<MdGroups size={28} />}
               iconBg="#ede9fe"
               iconColor="#7c3aed"
-              onClick={() => navigate('/recruitment')}
+              onClick={() => navigate("/recruitment")}
             />
 
             <KpiCard
@@ -201,7 +201,7 @@ const SponsorDashboard = () => {
               icon={<MdWarning size={28} />}
               iconBg="#fee2e2"
               iconColor="#dc2626"
-              onClick={() => navigate('/risk-management')}
+              onClick={() => navigate("/risk-management")}
             />
 
             <KpiCard
@@ -211,7 +211,7 @@ const SponsorDashboard = () => {
               icon={<MdAssessment size={28} />}
               iconBg="#fce7f3"
               iconColor="#db2777"
-              onClick={() => navigate('/reports')}
+              onClick={() => navigate("/reports")}
             />
 
             <KpiCard
@@ -221,7 +221,7 @@ const SponsorDashboard = () => {
               icon={<MdNotifications size={28} />}
               iconBg="#e0f2fe"
               iconColor="#0284c7"
-              onClick={() => navigate('/notifications')}
+              onClick={() => navigate("/notifications")}
             />
           </div>
         </div>
@@ -248,34 +248,34 @@ const SponsorDashboard = () => {
           <div className="subscription-overview-grid">
             <div className="subscription-overview-item">
               <p>Current Plan</p>
-              <h4>{subscription?.plan || '-'}</h4>
+              <h4>{subscription?.plan || "-"}</h4>
             </div>
 
             <div className="subscription-overview-item">
               <p>Status</p>
-              <h4>{subscription?.status || '-'}</h4>
+              <h4>{subscription?.status || "-"}</h4>
             </div>
 
             <div className="subscription-overview-item">
               <p>Expiry Date</p>
-              <h4>{subscription?.endDate || '-'}</h4>
+              <h4>{subscription?.endDate || "-"}</h4>
             </div>
 
             <div className="subscription-overview-item">
               <p>Maximum Users</p>
-              <h4>{subscription?.maxUsers ?? '-'}</h4>
+              <h4>{subscription?.maxUsers ?? "-"}</h4>
             </div>
 
             <div className="subscription-overview-item">
               <p>Maximum Studies</p>
-              <h4>{subscription?.maxStudies ?? '-'}</h4>
+              <h4>{subscription?.maxStudies ?? "-"}</h4>
             </div>
 
             <div className="subscription-overview-item">
               <p>Storage</p>
               <h4>
-                {subscription?.storageLimit ?? '-'}
-                {subscription?.storageLimit !== undefined ? ' GB' : ''}
+                {subscription?.storageLimit ?? "-"}
+                {subscription?.storageLimit !== undefined ? " GB" : ""}
               </h4>
             </div>
           </div>
@@ -327,11 +327,7 @@ const SponsorDashboard = () => {
                   <XAxis dataKey="phase" />
                   <YAxis allowDecimals={false} />
                   <Tooltip />
-                  <Bar
-                    dataKey="studies"
-                    fill="#082b3d"
-                    radius={[8, 8, 0, 0]}
-                  />
+                  <Bar dataKey="studies" fill="#082b3d" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -369,51 +365,48 @@ const SponsorDashboard = () => {
 
         <div className="bottom-grid bottom-grid-single">
           <div className="regulatory-card">
-  <h3>Regulatory Status Overview</h3>
+            <h3>Regulatory Status Overview</h3>
 
-  <div className="regulatory-stats">
+            <div className="regulatory-stats">
+              <div className="reg-item">
+                <div className="reg-icon approved-icon">
+                  <FaCheckCircle />
+                </div>
 
-    <div className="reg-item">
-      <div className="reg-icon approved-icon">
-        <FaCheckCircle />
-      </div>
+                <h2>{regKpis.approved}</h2>
+                <p>Approved</p>
+              </div>
 
-      <h2>{regKpis.approved}</h2>
-      <p>Approved</p>
-    </div>
+              <div className="reg-item">
+                <div className="reg-icon review-icon">
+                  <FaSearch />
+                </div>
 
-    <div className="reg-item">
-      <div className="reg-icon review-icon">
-        <FaSearch />
-      </div>
+                <h2>{regKpis.inReview}</h2>
+                <p>In Review</p>
+              </div>
 
-      <h2>{regKpis.inReview}</h2>
-      <p>In Review</p>
-    </div>
+              <div className="reg-item">
+                <div className="reg-icon submitted-icon">
+                  <FaUpload />
+                </div>
 
-    <div className="reg-item">
-      <div className="reg-icon submitted-icon">
-        <FaUpload />
-      </div>
+                <h2>{regKpis.submitted}</h2>
+                <p>Submitted</p>
+              </div>
 
-      <h2>{regKpis.submitted}</h2>
-      <p>Submitted</p>
-    </div>
+              <div className="reg-item">
+                <div className="reg-icon overdue-icon">
+                  <FaExclamationTriangle />
+                </div>
 
-    <div className="reg-item">
-      <div className="reg-icon overdue-icon">
-        <FaExclamationTriangle />
-      </div>
-
-      <h2>{regKpis.overdue}</h2>
-      <p>Overdue</p>
-    </div>
-
-  </div>
-
+                <h2>{regKpis.overdue}</h2>
+                <p>Overdue</p>
+              </div>
+            </div>
 
             <div className="view-all-link">
-              <span onClick={() => navigate('/regulatory')}>
+              <span onClick={() => navigate("/regulatory")}>
                 View Regulatory →
               </span>
             </div>

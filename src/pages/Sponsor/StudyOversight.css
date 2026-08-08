@@ -168,7 +168,7 @@
   padding: 20px;
   border-radius: 10px;
   text-align: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .milestone-card.completed {
@@ -187,9 +187,9 @@
    Study Oversight Modal
 =========================== */
 
-.study-modal{
-    width:900px;
-    max-width:90vw;
+.study-modal {
+  width: 900px;
+  max-width: 90vw;
 }
 
 .study-modal-title {
@@ -323,7 +323,6 @@
 /* Responsive */
 
 @media (max-width: 768px) {
-
   .oversight-grid {
     grid-template-columns: 1fr;
   }
@@ -335,39 +334,38 @@
   .oversight-footer button {
     width: 100%;
   }
-
 }
-.study-oversight-details{
-    width:100%;
-    max-width:900px;
-    margin:0 auto;
-}
-
-.study-oversight-details h2{
-    margin-bottom:8px;
+.study-oversight-details {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-.study-modal-subtitle{
-    margin-bottom:24px;
-    color:#64748b;
+.study-oversight-details h2 {
+  margin-bottom: 8px;
 }
 
-.oversight-grid{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:16px;
+.study-modal-subtitle {
+  margin-bottom: 24px;
+  color: #64748b;
 }
 
-.oversight-item{
-    background:#f8fafc;
-    border:1px solid #e5e7eb;
-    border-radius:8px;
-    padding:16px;
+.oversight-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
 }
 
-.oversight-footer{
-    display:flex;
-    justify-content:flex-end;
-    gap:12px;
-    margin-top:30px;
+.oversight-item {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.oversight-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 30px;
 }

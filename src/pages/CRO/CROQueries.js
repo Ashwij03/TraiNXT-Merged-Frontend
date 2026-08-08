@@ -5,20 +5,17 @@ import CRONavbar from "./CRONavbar";
 function Queries() {
   return (
     <div className="dashboard-layout tnxt-compact">
-
       <CROSidebar />
 
       <div className="main-content">
-
         <CRONavbar />
 
         <div style={{ padding: "30px" }}>
-
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
-              alignItems: "center"
+              alignItems: "center",
             }}
           >
             <h1>Queries Management</h1>
@@ -29,7 +26,7 @@ function Queries() {
                 background: "#dc3545",
                 color: "white",
                 border: "none",
-                borderRadius: "5px"
+                borderRadius: "5px",
               }}
             >
               Raise Query
@@ -41,7 +38,7 @@ function Queries() {
               background: "#fff",
               padding: "20px",
               borderRadius: "10px",
-              marginTop: "20px"
+              marginTop: "20px",
             }}
           >
             <input
@@ -50,14 +47,15 @@ function Queries() {
               style={{
                 padding: "10px",
                 width: "300px",
-                marginBottom: "20px"
+                marginBottom: "20px",
               }}
             />
 
-            <table className="ctms-standard-table"
+            <table
+              className="ctms-standard-table"
               style={{
                 width: "100%",
-                borderCollapse: "collapse"
+                borderCollapse: "collapse",
               }}
             >
               <thead>
@@ -78,7 +76,9 @@ function Queries() {
                   <td>Site-01</td>
                   <td>High</td>
                   <td>Open</td>
-                  <td><button>View</button></td>
+                  <td>
+                    <button>View</button>
+                  </td>
                 </tr>
 
                 <tr>
@@ -87,18 +87,15 @@ function Queries() {
                   <td>Site-02</td>
                   <td>Medium</td>
                   <td>Closed</td>
-                  <td><button>View</button></td>
+                  <td>
+                    <button>View</button>
+                  </td>
                 </tr>
               </tbody>
-
             </table>
-
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }

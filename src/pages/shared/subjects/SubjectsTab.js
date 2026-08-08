@@ -33,7 +33,6 @@ export default function SubjectsTab() {
 
   return (
     <div className="subjects-wrapper tnxt-compact">
-
       {/* LEGEND */}
       <div className="legend-row">
         <span className="lg scheduled">Scheduled</span>
@@ -48,7 +47,6 @@ export default function SubjectsTab() {
       {/* TIMELINE */}
       <div className="timeline-scroll">
         <table className="timeline-table ctms-standard-table">
-
           <colgroup>
             <col className="col-subject" />
             <col className="col-status" />
@@ -66,25 +64,53 @@ export default function SubjectsTab() {
 
           <thead>
             <tr className="group-header">
-              <th rowSpan="2" className="subject-col">Subject ID</th>
-              <th rowSpan="2" className="status-col">Status</th>
+              <th rowSpan="2" className="subject-col">
+                Subject ID
+              </th>
+              <th rowSpan="2" className="status-col">
+                Status
+              </th>
               <th className="pre">Pre</th>
-              <th colSpan="2" className="screening">Screening</th>
+              <th colSpan="2" className="screening">
+                Screening
+              </th>
               <th className="day">Day</th>
-              <th colSpan="6" className="followup">Follow-up</th>
+              <th colSpan="6" className="followup">
+                Follow-up
+              </th>
             </tr>
 
             <tr className="column-header">
-              <th><span>Prescreen</span></th>
-              <th><span>Screening 1</span></th>
-              <th><span>Screening 2</span></th>
-              <th><span>Day 1</span></th>
-              <th><span>Month 1</span></th>
-              <th><span>Month 3</span></th>
-              <th><span>Month 6</span></th>
-              <th><span>Month 9</span></th>
-              <th><span>Month 12</span></th>
-              <th><span>Month 15</span></th>
+              <th>
+                <span>Prescreen</span>
+              </th>
+              <th>
+                <span>Screening 1</span>
+              </th>
+              <th>
+                <span>Screening 2</span>
+              </th>
+              <th>
+                <span>Day 1</span>
+              </th>
+              <th>
+                <span>Month 1</span>
+              </th>
+              <th>
+                <span>Month 3</span>
+              </th>
+              <th>
+                <span>Month 6</span>
+              </th>
+              <th>
+                <span>Month 9</span>
+              </th>
+              <th>
+                <span>Month 12</span>
+              </th>
+              <th>
+                <span>Month 15</span>
+              </th>
             </tr>
           </thead>
 
@@ -137,101 +163,82 @@ export default function SubjectsTab() {
 
               {/* Visit History */}
 
-<div className="visit-history">
+              <div className="visit-history">
+                <h3>Visit History</h3>
 
-  <h3>Visit History</h3>
+                <table className="history-table ctms-standard-table">
+                  <thead>
+                    <tr>
+                      <th>Visit</th>
 
-  <table className="history-table ctms-standard-table">
+                      <th>Date</th>
 
-    <thead>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
 
-      <tr>
+                  <tbody>
+                    <tr>
+                      <td>Screening 1</td>
 
-        <th>Visit</th>
+                      <td>24-FEB-2022</td>
 
-        <th>Date</th>
+                      <td>Completed</td>
+                    </tr>
 
-        <th>Status</th>
+                    <tr>
+                      <td>Day 1</td>
 
-      </tr>
+                      <td>28-FEB-2022</td>
 
-    </thead>
+                      <td>Scheduled</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
 
-    <tbody>
+              {/* Activity Log */}
 
-      <tr>
+              <div className="activity-log">
+                <h3>Activity Log</h3>
 
-        <td>Screening 1</td>
+                <ul>
+                  <li>Subject Created</li>
 
-        <td>24-FEB-2022</td>
+                  <li>Screening Visit Completed</li>
 
-        <td>Completed</td>
-
-      </tr>
-
-      <tr>
-
-        <td>Day 1</td>
-
-        <td>28-FEB-2022</td>
-
-        <td>Scheduled</td>
-
-      </tr>
-
-    </tbody>
-
-  </table>
-
-</div>
-
-{/* Activity Log */}
-
-<div className="activity-log">
-
-  <h3>Activity Log</h3>
-
-  <ul>
-
-    <li>Subject Created</li>
-
-    <li>Screening Visit Completed</li>
-
-    <li>Subject Enrolled</li>
-
-  </ul>
-
-</div>
+                  <li>Subject Enrolled</li>
+                </ul>
+              </div>
 
               {/* CLICK POPUP CELL */}
               <td className="cell">
                 <div
                   className="visit-cell"
                   onClick={() =>
-                    setOpenPopup(openPopup === "screening1" ? null : "screening1")
+                    setOpenPopup(
+                      openPopup === "screening1" ? null : "screening1",
+                    )
                   }
                 >
                   ✔
-
                   {openPopup === "screening1" && (
                     <div className="visit-popup">
-                      <div className="popup-title">
-                        Visit 1 – Screening 1
-                      </div>
+                      <div className="popup-title">Visit 1 – Screening 1</div>
 
                       <div className="popup-date">
-                        Partially completed on<br />
+                        Partially completed on
+                        <br />
                         <strong>24-FEB-2022</strong>
                       </div>
 
-					 <Link
-  to="/visit/1"
-  className="popup-link"
-  onClick={(e) => e.stopPropagation()}
->
-  View Visit Details
-</Link>
-
+                      <Link
+                        to="/visit/1"
+                        className="popup-link"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        View Visit Details
+                      </Link>
                     </div>
                   )}
                 </div>
@@ -247,7 +254,6 @@ export default function SubjectsTab() {
               <td className="cell"></td>
             </tr>
           </tbody>
-
         </table>
       </div>
     </div>

@@ -13,10 +13,10 @@
 .pi-sidebar-brand {
   padding: 20px;
   margin: 0 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 .pi-sidebar-brand {
-  height: 72px;      /* Navbar height */
+  height: 72px; /* Navbar height */
   display: flex;
   align-items: center;
 }
@@ -24,7 +24,7 @@
   content: "";
   display: block;
   width: 100%;
-  border-bottom: 1px solid rgba(255,255,255,0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   margin-top: 14px;
 }
 .pi-sidebar-brand {
@@ -32,8 +32,8 @@
 }
 .pi-sidebar-brand::after,
 .trianxt-logo::after {
-    display: none !important;
-    content: none !important;
+  display: none !important;
+  content: none !important;
 }
 
 .menu-item {
@@ -49,10 +49,10 @@
 }
 .pi-sidebar,
 .sidebar {
-    width: 250px !important;
-    min-width: 250px !important;
-    max-width: 250px !important;
-    flex: 0 0 250px !important;
+  width: 250px !important;
+  min-width: 250px !important;
+  max-width: 250px !important;
+  flex: 0 0 250px !important;
 }
 .menu-item:hover {
   background: rgba(37, 99, 235, 0.6);
@@ -206,15 +206,15 @@
 .pi-sidebar-brand h1,
 .pi-sidebar-brand h2,
 .pi-sidebar-brand h3 {
-    font-size: 30px !important;
-    font-weight: 700 !important;
-    line-height: 1 !important;
+  font-size: 30px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
 }
 
 .pi-sidebar-brand svg,
 .pi-sidebar-brand img {
-    width: 42px !important;
-    height: 42px !important;
+  width: 42px !important;
+  height: 42px !important;
 }
 .pi-sidebar .menu-item {
   cursor: pointer !important;

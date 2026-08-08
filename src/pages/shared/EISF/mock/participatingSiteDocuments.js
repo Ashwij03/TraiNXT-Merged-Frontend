@@ -11,7 +11,7 @@ const participatingSiteDocuments = [
     modifiedDate: "25-Jun-2026",
     expiryDate: "-",
     fileName: "Contact_List.pdf",
-    fileSize: "1.2 MB"
+    fileSize: "1.2 MB",
   },
 
   {
@@ -26,7 +26,7 @@ const participatingSiteDocuments = [
     modifiedDate: "24-Jun-2026",
     expiryDate: "-",
     fileName: "Delegation_Log.pdf",
-    fileSize: "2.1 MB"
+    fileSize: "2.1 MB",
   },
 
   {
@@ -41,7 +41,7 @@ const participatingSiteDocuments = [
     modifiedDate: "20-Jun-2026",
     expiryDate: "20-Jun-2028",
     fileName: "CV.pdf",
-    fileSize: "3.5 MB"
+    fileSize: "3.5 MB",
   },
 
   {
@@ -56,7 +56,7 @@ const participatingSiteDocuments = [
     modifiedDate: "22-Jun-2026",
     expiryDate: "22-Jun-2027",
     fileName: "GCP.pdf",
-    fileSize: "800 KB"
+    fileSize: "800 KB",
   },
 
   {
@@ -71,7 +71,7 @@ const participatingSiteDocuments = [
     modifiedDate: "18-Jun-2026",
     expiryDate: "-",
     fileName: "EDC.pdf",
-    fileSize: "900 KB"
+    fileSize: "900 KB",
   },
 
   {
@@ -86,8 +86,8 @@ const participatingSiteDocuments = [
     modifiedDate: "17-Jun-2026",
     expiryDate: "-",
     fileName: "Training.pdf",
-    fileSize: "1.1 MB"
-  }
+    fileSize: "1.1 MB",
+  },
 ];
 
 export default participatingSiteDocuments;

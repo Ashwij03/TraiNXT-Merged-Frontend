@@ -30,13 +30,17 @@ function StudyHealthSummary({ health }) {
       </div>
       <div className="study-health-score">
         <span className="study-health-value">{score}</span>
-        <span className={`study-health-status status-${String(status).toLowerCase().replace(/\s+/g, "-")}`}>
+        <span
+          className={`study-health-status status-${String(status).toLowerCase().replace(/\s+/g, "-")}`}
+        >
           {status}
         </span>
       </div>
       {incompleteModules.length === 0 ? (
         factors.length === 0 ? (
-          <p className="study-widget-empty">No contributing factors — study looks healthy</p>
+          <p className="study-widget-empty">
+            No contributing factors — study looks healthy
+          </p>
         ) : (
           <ul className="study-health-factors">
             {factors.map((factor) => (

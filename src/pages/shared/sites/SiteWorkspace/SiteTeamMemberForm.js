@@ -10,11 +10,7 @@ const defaultForm = {
   startDate: "",
 };
 
-export default function SiteTeamMemberForm({
-  initialData,
-  onSave,
-  onCancel,
-}) {
+export default function SiteTeamMemberForm({ initialData, onSave, onCancel }) {
   const [form, setForm] = useState(defaultForm);
 
   useEffect(() => {
@@ -56,28 +52,16 @@ export default function SiteTeamMemberForm({
   return (
     <div className="site-form-overlay">
       <div className="site-form-modal">
-
         <div className="site-form-header">
-          <h2>
-            {initialData ? "Edit Team Member" : "Add Team Member"}
-          </h2>
+          <h2>{initialData ? "Edit Team Member" : "Add Team Member"}</h2>
         </div>
 
         <form onSubmit={handleSubmit}>
-
           <label>Name</label>
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-          />
+          <input name="name" value={form.name} onChange={handleChange} />
 
           <label>Role</label>
-          <input
-            name="role"
-            value={form.role}
-            onChange={handleChange}
-          />
+          <input name="role" value={form.role} onChange={handleChange} />
 
           <label>Organization</label>
           <input
@@ -95,11 +79,7 @@ export default function SiteTeamMemberForm({
           />
 
           <label>Phone</label>
-          <input
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-          />
+          <input name="phone" value={form.phone} onChange={handleChange} />
 
           <label>Start Date</label>
           <input
@@ -110,24 +90,14 @@ export default function SiteTeamMemberForm({
           />
 
           <div className="site-form-buttons">
-
-            <button
-              type="button"
-              className="secondary-btn"
-              onClick={onCancel}
-            >
+            <button type="button" className="secondary-btn" onClick={onCancel}>
               Cancel
             </button>
 
-            <button
-              type="submit"
-              className="primary-btn"
-            >
+            <button type="submit" className="primary-btn">
               Save
             </button>
-
           </div>
-
         </form>
       </div>
     </div>

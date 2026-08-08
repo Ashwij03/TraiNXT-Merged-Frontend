@@ -10,8 +10,8 @@ function sortOptions(options) {
   const sortedRest = [...rest].sort((a, b) =>
     String(a.label).localeCompare(String(b.label), undefined, {
       numeric: true,
-      sensitivity: "base"
-    })
+      sensitivity: "base",
+    }),
   );
 
   return allOption ? [allOption, ...sortedRest] : sortedRest;
@@ -25,7 +25,7 @@ function SearchableDropdown({
   placeholder = "Select...",
   searchPlaceholder = "Search...",
   initialVisibleCount = DEFAULT_VISIBLE,
-  className = ""
+  className = "",
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -43,7 +43,7 @@ function SearchableDropdown({
     return sortedOptions.filter(
       (option) =>
         String(option.label).toLowerCase().includes(query) ||
-        String(option.value).toLowerCase().includes(query)
+        String(option.value).toLowerCase().includes(query),
     );
   }, [sortedOptions, search]);
 

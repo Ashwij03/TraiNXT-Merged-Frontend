@@ -13,11 +13,7 @@ import { FiTrendingUp } from "react-icons/fi";
 function pickSiteNumberOnly(site) {
   if (!site || typeof site !== "object") return "";
   return (
-    site.siteNumber ||
-    site.number ||
-    site.siteNo ||
-    site.site_number ||
-    ""
+    site.siteNumber || site.number || site.siteNo || site.site_number || ""
   );
 }
 
@@ -58,7 +54,7 @@ const COLUMN_CATALOG = [
     label: "Site Number",
     always: true,
     hasValue: (row) => Boolean(pickSiteNumberOnly(row)),
-    render: (row) => pickSiteNumberOnly(row) || "—"
+    render: (row) => pickSiteNumberOnly(row) || "—",
   },
   {
     key: "enrollment",
@@ -71,20 +67,19 @@ const COLUMN_CATALOG = [
         (target != null && target !== "" && Number(target) > 0)
       );
     },
-    render: (row) => formatEnrollment(row)
+    render: (row) => formatEnrollment(row),
   },
   {
     key: "screeningRate",
     label: "Screening",
     hasValue: (row) => row?.screeningRate != null && row?.screeningRate !== "",
-    render: (row) => formatPercent(row.screeningRate)
+    render: (row) => formatPercent(row.screeningRate),
   },
   {
     key: "screenFailure",
     label: "Screen Failure",
-    hasValue: (row) =>
-      row?.screenFailure != null && row?.screenFailure !== "",
-    render: (row) => formatPercent(row.screenFailure)
+    hasValue: (row) => row?.screenFailure != null && row?.screenFailure !== "",
+    render: (row) => formatPercent(row.screenFailure),
   },
   {
     key: "visitCompliance",
@@ -92,19 +87,19 @@ const COLUMN_CATALOG = [
     hasValue: (row) =>
       (row?.visitCompliance != null && row?.visitCompliance !== "") ||
       (row?.compliance != null && row?.compliance !== ""),
-    render: (row) => formatPercent(row.visitCompliance, row.compliance)
+    render: (row) => formatPercent(row.visitCompliance, row.compliance),
   },
   {
     key: "status",
     label: "Status",
     hasValue: (row) => Boolean(row?.status),
-    render: (row) => formatPlain(row.status)
-  }
+    render: (row) => formatPlain(row.status),
+  },
 ];
 
 function buildColumns(list) {
   return COLUMN_CATALOG.filter(
-    (column) => column.always || list.some((row) => column.hasValue(row))
+    (column) => column.always || list.some((row) => column.hasValue(row)),
   );
 }
 
@@ -119,7 +114,9 @@ function SitePerformanceSummary({ records }) {
         <h3>Site Performance Summary</h3>
       </div>
       {list.length === 0 ? (
-        <p className="study-widget-empty">No site performance data for this study</p>
+        <p className="study-widget-empty">
+          No site performance data for this study
+        </p>
       ) : (
         <div className="study-table-wrap">
           <table className="ctms-standard-table">
@@ -134,14 +131,7 @@ function SitePerformanceSummary({ records }) {
               {list.map((site, index) => {
                 const siteNumber = pickSiteNumberOnly(site);
                 return (
-                  <tr
-                    key={
-                      site.siteId ||
-                      siteNumber ||
-                      site.siteName ||
-                      index
-                    }
-                  >
+                  <tr key={site.siteId || siteNumber || site.siteName || index}>
                     {columns.map((column) => (
                       <td key={column.key}>{column.render(site)}</td>
                     ))}

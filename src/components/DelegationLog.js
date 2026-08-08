@@ -15,7 +15,6 @@ import "./DelegationLog.css";
 // View flows and their modals are preserved verbatim — only the row
 // container/columns changed.
 const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
-
   // ---- Phase 6 cleanup: replaced the boolean `showModal` (which drove a
   // hardcoded "Megan Richards / Investigator / A2 / A3 / Physical Exam /
   // Medical Review" dialog) with a `viewTarget` that stores the actual
@@ -31,7 +30,7 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
     name: "",
     role: "",
     responsibility: "",
-    status: "Active"
+    status: "Active",
   });
 
   // ---- NEW: Delete flow state — step 1 (confirm) then step 2 (mandatory reason). ----
@@ -47,7 +46,7 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
       name: editConfirmTarget.name || "",
       role: editConfirmTarget.role || "",
       responsibility: editConfirmTarget.responsibility || "",
-      status: editConfirmTarget.status || "Active"
+      status: editConfirmTarget.status || "Active",
     });
     setEditTarget(editConfirmTarget);
     setEditConfirmTarget(null);
@@ -55,7 +54,11 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
 
   // ---- NEW: called from the Edit modal's Update button. ----
   const handleUpdateSubmit = () => {
-    if (!editForm.name.trim() || !editForm.role.trim() || !editForm.responsibility.trim()) {
+    if (
+      !editForm.name.trim() ||
+      !editForm.role.trim() ||
+      !editForm.responsibility.trim()
+    ) {
       alert("Please fill in Name, Role, and Responsibility.");
       return;
     }
@@ -96,9 +99,9 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
         role: member.role || "-",
         responsibility: member.responsibility || member.description || "",
         status: member.status || "Active",
-        _raw: member
+        _raw: member,
       })),
-    [staff]
+    [staff],
   );
 
   // Column definitions for the shared DataTable. `render` on Actions is
@@ -135,29 +138,19 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
               View
             </button>
           </div>
-        )
-      }
+        ),
+      },
     ],
-    []
+    [],
   );
 
   return (
-
     <div className="delegation-container tnxt-compact">
-
-      <h2 className="delegation-title">
-         Electronic Delegation Log
-      </h2>
+      <h2 className="delegation-title">Electronic Delegation Log</h2>
       <div className="delegation-header">
+        <button onClick={() => alert("Open Add Staff Form")}>Add Staff</button>
 
-        <button onClick={() => alert("Open Add Staff Form")}>
-          Add Staff
-        </button>
-
-        <button onClick={() => setShowHistory(true)}>
-          Delegation History
-        </button>
-
+        <button onClick={() => setShowHistory(true)}>Delegation History</button>
       </div>
 
       {/* Phase 6 — IMP-3: shared DataTable replaces the raw staff table.
@@ -181,7 +174,7 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
         searchFields={["name", "role", "responsibility", "status"]}
         filters={[
           { key: "role", label: "Role" },
-          { key: "status", label: "Status" }
+          { key: "status", label: "Status" },
         ]}
         pagination
         initialPageSize={10}
@@ -196,10 +189,7 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
           <div className="modal-box">
             <div className="modal-header">
               <h3>Delegation History</h3>
-              <span
-                className="close-btn"
-                onClick={() => setShowHistory(false)}
-              >
+              <span className="close-btn" onClick={() => setShowHistory(false)}>
                 ✖
               </span>
             </div>
@@ -215,7 +205,10 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
               <tbody>
                 {history.length === 0 ? (
                   <tr>
-                    <td colSpan={3} style={{ textAlign: "center", color: "#98a2b3" }}>
+                    <td
+                      colSpan={3}
+                      style={{ textAlign: "center", color: "#98a2b3" }}
+                    >
                       No history yet.
                     </td>
                   </tr>
@@ -253,10 +246,7 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
                   <p>{viewTarget.role || "—"}</p>
                 </div>
               </div>
-              <span
-                className="close-btn"
-                onClick={() => setViewTarget(null)}
-              >
+              <span className="close-btn" onClick={() => setViewTarget(null)}>
                 ✖
               </span>
             </div>
@@ -274,9 +264,7 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
                 <tr>
                   <th>Responsibility</th>
                   <td>
-                    {viewTarget.responsibility ||
-                      viewTarget.description ||
-                      "—"}
+                    {viewTarget.responsibility || viewTarget.description || "—"}
                   </td>
                 </tr>
                 <tr>
@@ -286,8 +274,14 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
               </tbody>
             </table>
 
-            <div className="modal-footer" style={{ marginTop: "20px", textAlign: "right" }}>
-              <button className="cancel-btn" onClick={() => setViewTarget(null)}>
+            <div
+              className="modal-footer"
+              style={{ marginTop: "20px", textAlign: "right" }}
+            >
+              <button
+                className="cancel-btn"
+                onClick={() => setViewTarget(null)}
+              >
                 Close
               </button>
             </div>
@@ -306,7 +300,10 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
               <p>Are you sure you want to edit this delegation?</p>
             </div>
             <div className="modal-footer">
-              <button className="cancel-btn" onClick={() => setEditConfirmTarget(null)}>
+              <button
+                className="cancel-btn"
+                onClick={() => setEditConfirmTarget(null)}
+              >
                 Cancel
               </button>
               <button className="save-btn" onClick={handleContinueToEdit}>
@@ -328,31 +325,42 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
               <input
                 placeholder="Name"
                 value={editForm.name}
-                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, name: e.target.value })
+                }
               />
 
               <input
                 placeholder="Role"
                 value={editForm.role}
-                onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, role: e.target.value })
+                }
               />
 
               <input
                 placeholder="Responsibility"
                 value={editForm.responsibility}
-                onChange={(e) => setEditForm({ ...editForm, responsibility: e.target.value })}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, responsibility: e.target.value })
+                }
               />
 
               <select
                 value={editForm.status}
-                onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, status: e.target.value })
+                }
               >
                 <option>Active</option>
                 <option>Inactive</option>
               </select>
             </div>
             <div className="modal-footer">
-              <button className="cancel-btn" onClick={() => setEditTarget(null)}>
+              <button
+                className="cancel-btn"
+                onClick={() => setEditTarget(null)}
+              >
                 Cancel
               </button>
               <button className="save-btn" onClick={handleUpdateSubmit}>
@@ -374,10 +382,16 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
               <p>Are you sure you want to delete this delegation?</p>
             </div>
             <div className="modal-footer">
-              <button className="cancel-btn" onClick={() => setDeleteConfirmTarget(null)}>
+              <button
+                className="cancel-btn"
+                onClick={() => setDeleteConfirmTarget(null)}
+              >
                 Cancel
               </button>
-              <button className="save-btn" onClick={handleContinueToDeleteReason}>
+              <button
+                className="save-btn"
+                onClick={handleContinueToDeleteReason}
+              >
                 Continue
               </button>
             </div>
@@ -404,21 +418,32 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
                   width: "100%",
                   minHeight: "90px",
                   padding: "10px 12px",
-                  border: deleteReasonError ? "1px solid #dc3545" : "1px solid #d5dce5",
+                  border: deleteReasonError
+                    ? "1px solid #dc3545"
+                    : "1px solid #d5dce5",
                   borderRadius: "6px",
                   fontSize: "14px",
                   fontFamily: "inherit",
-                  boxSizing: "border-box"
+                  boxSizing: "border-box",
                 }}
               />
               {deleteReasonError && (
-                <p style={{ color: "#dc3545", fontSize: "13px", marginTop: "6px" }}>
+                <p
+                  style={{
+                    color: "#dc3545",
+                    fontSize: "13px",
+                    marginTop: "6px",
+                  }}
+                >
                   {deleteReasonError}
                 </p>
               )}
             </div>
             <div className="modal-footer">
-              <button className="cancel-btn" onClick={() => setDeleteReasonTarget(null)}>
+              <button
+                className="cancel-btn"
+                onClick={() => setDeleteReasonTarget(null)}
+              >
                 Cancel
               </button>
               <button className="save-btn" onClick={handleDeleteSubmit}>
@@ -428,11 +453,8 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
           </div>
         </div>
       )}
-
     </div>
-
   );
-
 };
 
 export default DelegationLog;

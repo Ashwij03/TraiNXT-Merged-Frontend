@@ -125,7 +125,7 @@ function Settings() {
   const [activeSection, setActiveSection] = useState("profile");
 
   const [systemSettings, setSystemSettings] = useState(
-    adminMode ? getSettings() : {}
+    adminMode ? getSettings() : {},
   );
 
   const [userSettings, setUserSettings] = useState({
@@ -144,7 +144,7 @@ function Settings() {
 
   const [savedMessage, setSavedMessage] = useState("");
   const [previewRole, setPreviewRoleState] = useState(
-    () => getEffectiveRole(currentUser) || ROLES.ADMIN
+    () => getEffectiveRole(currentUser) || ROLES.ADMIN,
   );
   const [sessionsVersion, setSessionsVersion] = useState(0);
 
@@ -156,7 +156,7 @@ function Settings() {
       "profile";
 
     const validSection = SETTINGS_SECTIONS.some(
-      (section) => section.id === requestedSection
+      (section) => section.id === requestedSection,
     )
       ? requestedSection
       : "profile";
@@ -223,7 +223,7 @@ function Settings() {
             },
           ]
         : NOTIFICATION_ITEMS,
-    [adminMode]
+    [adminMode],
   );
 
   const handleSystemChange = (field, value) => {
@@ -261,7 +261,7 @@ function Settings() {
       setSavedMessage("Settings saved successfully.");
     } catch (error) {
       setSavedMessage(
-        error?.message || "Failed to save settings. Please try again."
+        error?.message || "Failed to save settings. Please try again.",
       );
     }
   };
@@ -346,9 +346,7 @@ function Settings() {
                   }
                 }}
                 className={
-                  isActive
-                    ? "settings-nav-card is-active"
-                    : "settings-nav-card"
+                  isActive ? "settings-nav-card is-active" : "settings-nav-card"
                 }
               >
                 <div
@@ -501,7 +499,7 @@ function Settings() {
                         onChange={(event) =>
                           handleSystemChange(
                             "organizationName",
-                            event.target.value
+                            event.target.value,
                           )
                         }
                       />
@@ -544,7 +542,7 @@ function Settings() {
                         onChange={(event) =>
                           handleSystemChange(
                             "defaultStudyStatus",
-                            event.target.value
+                            event.target.value,
                           )
                         }
                       >
@@ -563,7 +561,7 @@ function Settings() {
                         onChange={(event) =>
                           handleSystemChange(
                             "auditRetentionDays",
-                            Number(event.target.value)
+                            Number(event.target.value),
                           )
                         }
                       />
@@ -658,20 +656,16 @@ function Settings() {
                               </div>
                             </td>
                             <td>
-                              {ROLE_LABELS[session.role] ||
-                                session.role ||
-                                "—"}
+                              {ROLE_LABELS[session.role] || session.role || "—"}
                             </td>
-                            <td>
-                              {formatSessionTimestamp(session.startedAt)}
-                            </td>
+                            <td>{formatSessionTimestamp(session.startedAt)}</td>
                             <td>{getSessionDurationMinutes(session)} min</td>
                             <td>{session.device || "—"}</td>
                             <td>
                               {session.role &&
                               session.role !== ROLES.ADMIN &&
                               SWITCHABLE_ROLE_DASHBOARDS.includes(
-                                session.role
+                                session.role,
                               ) ? (
                                 <button
                                   type="button"
@@ -715,7 +709,10 @@ function Settings() {
                         profile.preferredLanguage
                       }
                       onChange={(event) =>
-                        handleUserChange("preferredLanguage", event.target.value)
+                        handleUserChange(
+                          "preferredLanguage",
+                          event.target.value,
+                        )
                       }
                     >
                       <option>English</option>
@@ -731,7 +728,7 @@ function Settings() {
                       onChange={(event) =>
                         handleUserChange(
                           "defaultLandingPage",
-                          event.target.value
+                          event.target.value,
                         )
                       }
                     >
@@ -750,7 +747,7 @@ function Settings() {
                         onChange={(event) =>
                           handleUserChange(
                             "compactDashboard",
-                            event.target.checked
+                            event.target.checked,
                           )
                         }
                       />

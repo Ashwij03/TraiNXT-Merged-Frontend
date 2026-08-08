@@ -1,8 +1,6 @@
-
 /* newly added */
 
 .site-dashboard {
-
   display: flex;
 
   flex-direction: column;
@@ -11,7 +9,6 @@
 }
 
 .dashboard-title-section h1 {
-
   margin: 0;
 
   color: #111827;
@@ -20,7 +17,6 @@
 }
 
 .dashboard-title-section p {
-
   margin-top: 6px;
 
   color: #6b7280;
@@ -29,14 +25,9 @@
 }
 
 .kpi-grid {
-
   display: grid;
 
-  grid-template-columns:
-    repeat(
-      auto-fit,
-      minmax(min(100%, 220px), 1fr)
-    );
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
 
   gap: 20px;
 }
@@ -55,13 +46,11 @@
 }
 
 @media screen and (max-width: 768px) {
-
   .site-dashboard {
     gap: 18px;
   }
 
   .kpi-grid {
-
     grid-template-columns: 1fr;
   }
 }

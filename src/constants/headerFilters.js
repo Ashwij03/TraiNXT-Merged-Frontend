@@ -25,9 +25,7 @@ function dispatchFilterEvent(detail = {}) {
     return;
   }
 
-  window.dispatchEvent(
-    new CustomEvent(HEADER_FILTERS_EVENT, { detail })
-  );
+  window.dispatchEvent(new CustomEvent(HEADER_FILTERS_EVENT, { detail }));
 }
 
 export function getStoredValue(key) {
@@ -59,7 +57,7 @@ export function setStoredInstitutionFilter(value) {
   dispatchFilterEvent({ institution: value });
 
   window.dispatchEvent(
-    new CustomEvent(INSTITUTION_FILTER_EVENT, { detail: value })
+    new CustomEvent(INSTITUTION_FILTER_EVENT, { detail: value }),
   );
 }
 
@@ -160,7 +158,7 @@ export function setStoredAdminPreviewRole(role) {
   }
 
   window.dispatchEvent(
-    new CustomEvent(ADMIN_PREVIEW_ROLE_EVENT, { detail: role || "" })
+    new CustomEvent(ADMIN_PREVIEW_ROLE_EVENT, { detail: role || "" }),
   );
 }
 
@@ -187,7 +185,7 @@ export function setStoredPIPreviewRole(role) {
   }
 
   window.dispatchEvent(
-    new CustomEvent(PI_PREVIEW_ROLE_EVENT, { detail: role || "" })
+    new CustomEvent(PI_PREVIEW_ROLE_EVENT, { detail: role || "" }),
   );
 }
 
@@ -209,31 +207,28 @@ const FILTER_CASCADE = {
     SELECTED_INSTITUTION_KEY,
     SELECTED_SITE_NUMBER_KEY,
     SELECTED_STUDY_FILTER_KEY,
-    SELECTED_SUBJECT_KEY
+    SELECTED_SUBJECT_KEY,
   ],
   [SELECTED_SPONSOR_KEY]: [
     SELECTED_CRO_KEY,
     SELECTED_INSTITUTION_KEY,
     SELECTED_SITE_NUMBER_KEY,
     SELECTED_STUDY_FILTER_KEY,
-    SELECTED_SUBJECT_KEY
+    SELECTED_SUBJECT_KEY,
   ],
   [SELECTED_CRO_KEY]: [
     SELECTED_INSTITUTION_KEY,
     SELECTED_SITE_NUMBER_KEY,
     SELECTED_STUDY_FILTER_KEY,
-    SELECTED_SUBJECT_KEY
+    SELECTED_SUBJECT_KEY,
   ],
   [SELECTED_INSTITUTION_KEY]: [
     SELECTED_SITE_NUMBER_KEY,
     SELECTED_STUDY_FILTER_KEY,
-    SELECTED_SUBJECT_KEY
+    SELECTED_SUBJECT_KEY,
   ],
-  [SELECTED_SITE_NUMBER_KEY]: [
-    SELECTED_STUDY_FILTER_KEY,
-    SELECTED_SUBJECT_KEY
-  ],
-  [SELECTED_STUDY_FILTER_KEY]: [SELECTED_SUBJECT_KEY]
+  [SELECTED_SITE_NUMBER_KEY]: [SELECTED_STUDY_FILTER_KEY, SELECTED_SUBJECT_KEY],
+  [SELECTED_STUDY_FILTER_KEY]: [SELECTED_SUBJECT_KEY],
 };
 
 export function getDependentFilterKeys(fromKey) {
@@ -258,7 +253,7 @@ export const ALL_HEADER_FILTER_KEYS = [
   SELECTED_INSTITUTION_KEY,
   SELECTED_SITE_NUMBER_KEY,
   SELECTED_STUDY_FILTER_KEY,
-  SELECTED_SUBJECT_KEY
+  SELECTED_SUBJECT_KEY,
 ];
 
 export function resetAllHeaderFilters() {

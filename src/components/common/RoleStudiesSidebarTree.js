@@ -96,9 +96,7 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                     <button
                       type="button"
                       className="study-label-block study-label-block-button"
-                      onClick={(event) =>
-                        handleStudyNameClick(studyKey, event)
-                      }
+                      onClick={(event) => handleStudyNameClick(studyKey, event)}
                     >
                       <span className="study-label-name">{studyName}</span>
 

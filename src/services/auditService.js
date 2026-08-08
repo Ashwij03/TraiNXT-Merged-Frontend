@@ -25,7 +25,7 @@ import {
   getAssignedSite,
   getCurrentUser,
   isAdmin,
-  matchesOrg
+  matchesOrg,
 } from "./roleService";
 
 const AUDIT_STORAGE_KEY = "auditLogs";
@@ -54,7 +54,7 @@ export const AUDIT_ACTION_TYPES = {
   SCHEDULE: "SCHEDULE",
   RESCHEDULE: "RESCHEDULE",
   COMPLETE: "COMPLETE",
-  CANCEL: "CANCEL"
+  CANCEL: "CANCEL",
 };
 
 const ACTION_TYPE_KEYWORD_MAP = [
@@ -72,7 +72,7 @@ const ACTION_TYPE_KEYWORD_MAP = [
   [/status/i, AUDIT_ACTION_TYPES.STATUS_CHANGE],
   [/delet/i, AUDIT_ACTION_TYPES.DELETE],
   [/creat|add|enroll/i, AUDIT_ACTION_TYPES.CREATE],
-  [/updat|edit|modif|chang/i, AUDIT_ACTION_TYPES.UPDATE]
+  [/updat|edit|modif|chang/i, AUDIT_ACTION_TYPES.UPDATE],
 ];
 
 export function normalizeActionType(rawAction) {
@@ -118,7 +118,9 @@ function writeAuditStore(events) {
       // Fail safe rather than crash a business mutation just because audit
       // history is full — the mutation itself already succeeded.
       // eslint-disable-next-line no-console
-      console.warn("Audit storage limit reached; oldest records will be trimmed.");
+      console.warn(
+        "Audit storage limit reached; oldest records will be trimmed.",
+      );
       const trimmed = events.slice(0, Math.max(0, events.length - 20));
       localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(trimmed));
       return;
@@ -206,7 +208,8 @@ export function normalizeAuditEvent(input = {}) {
   const actor = resolveActor(input);
 
   const siteNumber = input.siteNumber || input.site || "";
-  const siteName = input.siteName || (siteNumber && siteNumber !== input.siteNumber ? "" : "");
+  const siteName =
+    input.siteName || (siteNumber && siteNumber !== input.siteNumber ? "" : "");
 
   const record = {
     id: input.id || buildAuditId(),
@@ -246,7 +249,7 @@ export function normalizeAuditEvent(input = {}) {
     action: input.action || input.actionLabel || actionType,
     deletedBy: input.deletedBy,
     reason: input.reason,
-    performedBy: actor.actorName
+    performedBy: actor.actorName,
   };
 
   record.description = buildDescription(input, actionType);
@@ -327,7 +330,7 @@ export function getVisibleAuditEvents(options = {}) {
     (event) =>
       String(event.studyId || "") === normalizedStudyId ||
       String(event.studyCode || "") === normalizedStudyId ||
-      String(event.studyName || "") === normalizedStudyId
+      String(event.studyName || "") === normalizedStudyId,
   );
 }
 
@@ -435,7 +438,7 @@ const auditService = {
   getVisibleAuditEvents,
   notifyAuditUpdated,
   formatActorLabel,
-  formatAuditTimestamp
+  formatAuditTimestamp,
 };
 
 // NOTE: there is exactly one storage key and one event for audit activity

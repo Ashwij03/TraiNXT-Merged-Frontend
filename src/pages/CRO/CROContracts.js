@@ -7,7 +7,7 @@ const DEFAULT_CONTRACTS = [
     studies: 3,
     sites: 8,
     status: "Active",
-    contractEnd: "2026-12-31"
+    contractEnd: "2026-12-31",
   },
   {
     id: "CRO-002",
@@ -15,7 +15,7 @@ const DEFAULT_CONTRACTS = [
     studies: 2,
     sites: 5,
     status: "Active",
-    contractEnd: "2027-03-15"
+    contractEnd: "2027-03-15",
   },
   {
     id: "CRO-003",
@@ -23,8 +23,8 @@ const DEFAULT_CONTRACTS = [
     studies: 1,
     sites: 3,
     status: "Onboarding",
-    contractEnd: "2026-09-30"
-  }
+    contractEnd: "2026-09-30",
+  },
 ];
 
 function CROContracts({ onViewDetails }) {

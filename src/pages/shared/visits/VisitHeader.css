@@ -6,7 +6,7 @@
   border: 1px solid #dcdcdc;
   border-radius: 6px;
   background: #ffffff;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   font-family: Arial, sans-serif;
   overflow: hidden;
 }
@@ -108,7 +108,7 @@
   background: #ffffff;
   padding: 8px 10px;
   border-radius: 6px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   font-size: 12px;
   white-space: nowrap;
   display: none;
@@ -192,8 +192,6 @@
   padding: 4px;
 }
 
-
-
 .print-btn:hover svg {
   stroke: #1a73e8;
 }
@@ -213,7 +211,7 @@
   left: 0;
   background: #fff;
   border: 1px solid #ddd;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 100;
   min-width: 200px;
 }
@@ -226,4 +224,3 @@
 .visit-dropdown div:hover {
   background: #f5f5f5;
 }
-

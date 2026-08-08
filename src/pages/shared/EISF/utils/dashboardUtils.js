@@ -3,10 +3,7 @@ import DOCUMENT_STATUS from "../Constants/documentStatus";
 /**
  * Calculate completion percentage.
  */
-export const calculateCompletionPercentage = (
-  approved = 0,
-  total = 0
-) => {
+export const calculateCompletionPercentage = (approved = 0, total = 0) => {
   if (!total) return 0;
 
   return Math.round((approved / total) * 100);
@@ -19,7 +16,7 @@ export const getDashboardSummary = (documents = []) => {
   const today = new Date();
 
   const approvedDocuments = documents.filter(
-    (doc) => doc.status === DOCUMENT_STATUS.APPROVED
+    (doc) => doc.status === DOCUMENT_STATUS.APPROVED,
   );
 
   const pendingDocuments = documents.filter((doc) =>
@@ -27,7 +24,7 @@ export const getDashboardSummary = (documents = []) => {
       DOCUMENT_STATUS.PENDING,
       DOCUMENT_STATUS.UNDER_REVIEW,
       DOCUMENT_STATUS.UNDER_APPROVAL,
-    ].includes(doc.status)
+    ].includes(doc.status),
   );
 
   const expiredDocuments = documents.filter((doc) => {
@@ -39,7 +36,7 @@ export const getDashboardSummary = (documents = []) => {
   });
 
   const missingDocuments = documents.filter(
-    (doc) => doc.status === DOCUMENT_STATUS.MISSING
+    (doc) => doc.status === DOCUMENT_STATUS.MISSING,
   );
 
   const expiringSoonDocuments = getExpiringSoonDocuments(documents);
@@ -59,7 +56,7 @@ export const getDashboardSummary = (documents = []) => {
 
     completionPercentage: calculateCompletionPercentage(
       approvedDocuments.length,
-      documents.length
+      documents.length,
     ),
   };
 };
@@ -67,10 +64,7 @@ export const getDashboardSummary = (documents = []) => {
 /**
  * Documents expiring within given days.
  */
-export const getExpiringSoonDocuments = (
-  documents = [],
-  days = 30
-) => {
+export const getExpiringSoonDocuments = (documents = [], days = 30) => {
   const today = new Date();
 
   const target = new Date();
@@ -118,7 +112,7 @@ export const buildDashboardCards = (
       title: "Completion",
       suffix: "%",
     },
-  ]
+  ],
 ) => {
   return cardConfig.map((card) => ({
     ...card,
@@ -129,21 +123,22 @@ export const buildDashboardCards = (
 /**
  * Generic dashboard cards used by the eISF module workspace reference layout.
  */
-export const buildReferenceDashboardCards = (
-  documents = [],
-  sections = []
-) => {
+export const buildReferenceDashboardCards = (documents = [], sections = []) => {
   const summary = getDashboardSummary(documents);
   const total = summary.totalDocuments;
-  const percent = (count) => (total ? `${Math.round((count / total) * 100)}%` : "0%");
+  const percent = (count) =>
+    total ? `${Math.round((count / total) * 100)}%` : "0%";
   const completedSections = sections.filter((section) => {
     const sectionDocuments = documents.filter(
-      (document) => document.section === section.id || document.sectionId === section.id
+      (document) =>
+        document.section === section.id || document.sectionId === section.id,
     );
 
     return (
       sectionDocuments.length > 0 &&
-      sectionDocuments.every((document) => document.status === DOCUMENT_STATUS.APPROVED)
+      sectionDocuments.every(
+        (document) => document.status === DOCUMENT_STATUS.APPROVED,
+      )
     );
   }).length;
 
@@ -195,18 +190,14 @@ export const buildReferenceDashboardCards = (
 /**
  * Returns dashboard metric.
  */
-export const getDashboardMetric = (
-  summary = {},
-  metric
-) => {
+export const getDashboardMetric = (summary = {}, metric) => {
   return summary[metric] ?? 0;
 };
 
 /**
  * Returns whether dashboard has data.
  */
-export const hasDashboardData = (documents = []) =>
-  documents.length > 0;
+export const hasDashboardData = (documents = []) => documents.length > 0;
 
 /**
  * Returns empty dashboard summary.

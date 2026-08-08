@@ -46,7 +46,7 @@ function ProfileSettingsSection({ showTitle = false }) {
     } catch (error) {
       setSaveError(true);
       setSavedMessage(
-        error?.message || "Failed to save profile. Please try again."
+        error?.message || "Failed to save profile. Please try again.",
       );
     }
   };

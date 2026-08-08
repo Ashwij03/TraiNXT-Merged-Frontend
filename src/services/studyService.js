@@ -11,7 +11,7 @@ import {
 } from "../utils/siteDisplay";
 import {
   addAuditLog as recordCanonicalAuditLog,
-  getRecentActivityLogs as getCanonicalRecentActivityLogs
+  getRecentActivityLogs as getCanonicalRecentActivityLogs,
 } from "./auditService";
 
 const STUDIES_STORAGE_KEY = "trianxtStudies";
@@ -98,9 +98,7 @@ export function getStudies() {
 }
 
 export function getStudyByCode(code) {
-  return getStudies().find(
-    (study) => String(study.code) === String(code)
-  );
+  return getStudies().find((study) => String(study.code) === String(code));
 }
 
 function getSiteRecords() {
@@ -109,11 +107,7 @@ function getSiteRecords() {
 }
 
 function getStudySiteReference(study = {}) {
-  const siteName =
-    study.siteName ||
-    study.site ||
-    study.location ||
-    "";
+  const siteName = study.siteName || study.site || study.location || "";
 
   return {
     siteNumber:
@@ -142,11 +136,7 @@ function deriveStudySiteRelationship(study = {}) {
     study.site ||
     study.location ||
     "";
-  const siteId =
-    matchedSite?.id ||
-    matchedSite?.siteId ||
-    study.siteId ||
-    "";
+  const siteId = matchedSite?.id || matchedSite?.siteId || study.siteId || "";
 
   return {
     site: siteNumber || siteName,
@@ -187,7 +177,7 @@ export function createStudy(study) {
   const storedStudies = getStoredStudies();
 
   const duplicateStudy = storedStudies.some(
-    (item) => String(item.code) === String(normalizedStudy.code)
+    (item) => String(item.code) === String(normalizedStudy.code),
   );
 
   if (duplicateStudy) {
@@ -200,7 +190,7 @@ export function createStudy(study) {
     studyCode: normalizedStudy.code,
     studyName: normalizedStudy.name,
     status: normalizedStudy.status,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 
   notifyStudiesUpdated();
@@ -219,7 +209,7 @@ export function updateStudy(studyCode, updates) {
   const storedStudies = getStoredStudies();
 
   const index = storedStudies.findIndex(
-    (study) => String(study.code) === String(studyCode)
+    (study) => String(study.code) === String(studyCode),
   );
 
   if (index === -1) {
@@ -253,7 +243,7 @@ export function updateStudy(studyCode, updates) {
 
   const requestedStatus = Object.prototype.hasOwnProperty.call(
     updates || {},
-    "status"
+    "status",
   )
     ? updates.status
     : previousStatus;
@@ -292,7 +282,7 @@ export function updateStudy(studyCode, updates) {
     studyCode: updatedStudy.code,
     studyName: updatedStudy.name,
     status: updatedStudy.status,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 
   /*
@@ -343,10 +333,7 @@ function saveSubjectsByStudy(subjectsByStudy) {
     return;
   }
 
-  localStorage.setItem(
-    SUBJECTS_STORAGE_KEY,
-    JSON.stringify(subjectsByStudy)
-  );
+  localStorage.setItem(SUBJECTS_STORAGE_KEY, JSON.stringify(subjectsByStudy));
 
   window.dispatchEvent(new Event("subjects-updated"));
 }
@@ -361,7 +348,7 @@ export function createSubject(studyCode, subject) {
   }
 
   const study = getStoredStudies().find(
-    (item) => String(item.code) === String(studyCode)
+    (item) => String(item.code) === String(studyCode),
   );
 
   if (!study) {
@@ -378,7 +365,9 @@ export function createSubject(studyCode, subject) {
     ? subjectsByStudy[studyCode]
     : [];
 
-  const normalizedNewId = String(subject.id || "").trim().toLowerCase();
+  const normalizedNewId = String(subject.id || "")
+    .trim()
+    .toLowerCase();
 
   if (!normalizedNewId) {
     throw new Error("Subject ID is required.");
@@ -386,7 +375,9 @@ export function createSubject(studyCode, subject) {
 
   const duplicateExists = currentSubjectsForStudy.some(
     (existing) =>
-      String(existing.id || "").trim().toLowerCase() === normalizedNewId
+      String(existing.id || "")
+        .trim()
+        .toLowerCase() === normalizedNewId,
   );
 
   if (duplicateExists) {
@@ -443,7 +434,7 @@ export function updateSubject(studyCode, subjectId, updatedFields) {
   }
 
   const study = getStoredStudies().find(
-    (item) => String(item.code) === String(studyCode)
+    (item) => String(item.code) === String(studyCode),
   );
 
   if (!study) {
@@ -463,9 +454,11 @@ export function updateSubject(studyCode, subjectId, updatedFields) {
   const normalizedId = String(subjectId).trim().toLowerCase();
 
   const nextSubjectsForStudy = currentSubjectsForStudy.map((existing) =>
-    String(existing.id || "").trim().toLowerCase() === normalizedId
+    String(existing.id || "")
+      .trim()
+      .toLowerCase() === normalizedId
       ? { ...existing, ...updatedFields }
-      : existing
+      : existing,
   );
 
   const nextSubjectsByStudy = {
@@ -476,7 +469,10 @@ export function updateSubject(studyCode, subjectId, updatedFields) {
   saveSubjectsByStudy(nextSubjectsByStudy);
 
   return nextSubjectsForStudy.find(
-    (item) => String(item.id || "").trim().toLowerCase() === normalizedId
+    (item) =>
+      String(item.id || "")
+        .trim()
+        .toLowerCase() === normalizedId,
   );
 }
 
@@ -486,7 +482,7 @@ export function isStudyCompletedByCode(studyCode) {
   }
 
   const study = getStoredStudies().find(
-    (item) => String(item.code) === String(studyCode)
+    (item) => String(item.code) === String(studyCode),
   );
 
   return Boolean(study && study.status === STUDY_STATUS_COMPLETED);
@@ -504,7 +500,7 @@ export function deleteStudy(studyCode, deletionDetails = {}) {
   const storedStudies = getStoredStudies();
 
   const study = storedStudies.find(
-    (item) => String(item.code) === String(studyCode)
+    (item) => String(item.code) === String(studyCode),
   );
 
   if (!study) {
@@ -512,7 +508,7 @@ export function deleteStudy(studyCode, deletionDetails = {}) {
   }
 
   const updatedStudies = storedStudies.filter(
-    (item) => String(item.code) !== String(studyCode)
+    (item) => String(item.code) !== String(studyCode),
   );
 
   saveStoredStudies(updatedStudies);
@@ -523,10 +519,7 @@ export function deleteStudy(studyCode, deletionDetails = {}) {
   if (subjectsByStudy[studyCode]) {
     delete subjectsByStudy[studyCode];
 
-    localStorage.setItem(
-      "subjectsByStudy",
-      JSON.stringify(subjectsByStudy)
-    );
+    localStorage.setItem("subjectsByStudy", JSON.stringify(subjectsByStudy));
   }
 
   addAuditLog("STUDY_DELETED", {
@@ -535,7 +528,7 @@ export function deleteStudy(studyCode, deletionDetails = {}) {
     site: study.site || study.location || "",
     deletedBy: deletionDetails.deletedBy || "Unknown",
     reason: deletionDetails.reason || "",
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 
   notifyStudiesUpdated();
@@ -549,19 +542,16 @@ export function deleteSubject(studyCode, subjectId, deletionDetails = {}) {
 
   const existingSubject = Array.isArray(subjectsByStudy[studyCode])
     ? subjectsByStudy[studyCode].find(
-        (subject) => String(subject.id) === String(subjectId)
+        (subject) => String(subject.id) === String(subjectId),
       )
     : null;
 
   if (Array.isArray(subjectsByStudy[studyCode])) {
     subjectsByStudy[studyCode] = subjectsByStudy[studyCode].filter(
-      (subject) => String(subject.id) !== String(subjectId)
+      (subject) => String(subject.id) !== String(subjectId),
     );
 
-    localStorage.setItem(
-      "subjectsByStudy",
-      JSON.stringify(subjectsByStudy)
-    );
+    localStorage.setItem("subjectsByStudy", JSON.stringify(subjectsByStudy));
   }
 
   addAuditLog("SUBJECT_DELETED", {
@@ -570,7 +560,7 @@ export function deleteSubject(studyCode, subjectId, deletionDetails = {}) {
     site: existingSubject?.site || "",
     deletedBy: deletionDetails.deletedBy || "Unknown",
     reason: deletionDetails.reason || "",
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 
   return true;

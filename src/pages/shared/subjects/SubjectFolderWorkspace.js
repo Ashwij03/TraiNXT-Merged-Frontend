@@ -4,18 +4,18 @@ import PERMISSIONS from "../../../constants/permissions";
 import {
   getCurrentUser,
   getEffectiveRole,
-  hasPermission
+  hasPermission,
 } from "../../../services/roleService";
 import {
   ensureSubjectFolderWithICF,
-  FOLDER_TREE_EVENT
+  FOLDER_TREE_EVENT,
 } from "../../../services/folderService";
 import {
   markVisitStageCompleted,
   SCHEDULES_EVENT,
   shouldPromptNextVisit,
   syncSubjectSchedules,
-  VISIT_STAGES
+  VISIT_STAGES,
 } from "../../../services/visitScheduleService";
 import NextVisitPromptModal from "../../../components/common/NextVisitPromptModal";
 import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
@@ -30,7 +30,7 @@ const SUBJECT_STATUSES = [
   "Ongoing",
   "Completed",
   "Withdrawn",
-  "Dropout"
+  "Dropout",
 ];
 
 function readSubjectDetails(studyId, subjectId) {
@@ -65,7 +65,7 @@ function SubjectDetailsPanel({ subject, studyId, onUpdate }) {
     pi: stored.pi || subject.pi || "",
     site: stored.site || subject.site || "",
     screeningDate: stored.screeningDate || subject.screeningDate || "",
-    enrollmentDate: stored.enrollmentDate || subject.enrollmentDate || ""
+    enrollmentDate: stored.enrollmentDate || subject.enrollmentDate || "",
   });
 
   const canEdit = canModifySubjects();
@@ -152,7 +152,7 @@ function SubjectDetailsPanel({ subject, studyId, onUpdate }) {
               onChange={(e) =>
                 setForm((prev) => ({
                   ...prev,
-                  screeningDate: e.target.value
+                  screeningDate: e.target.value,
                 }))
               }
             />
@@ -165,12 +165,16 @@ function SubjectDetailsPanel({ subject, studyId, onUpdate }) {
               onChange={(e) =>
                 setForm((prev) => ({
                   ...prev,
-                  enrollmentDate: e.target.value
+                  enrollmentDate: e.target.value,
                 }))
               }
             />
           </label>
-          <button type="button" className="save-details-btn" onClick={handleSave}>
+          <button
+            type="button"
+            className="save-details-btn"
+            onClick={handleSave}
+          >
             Save Details
           </button>
         </div>
@@ -198,7 +202,7 @@ function SubjectDetailsPanel({ subject, studyId, onUpdate }) {
               {form.site
                 ? resolveSiteDisplay(form.site, {
                     sources: getStudies(),
-                    fallback: form.site
+                    fallback: form.site,
                   })
                 : "—"}
             </strong>
@@ -228,7 +232,7 @@ function SubjectFolderWorkspace({ subject, studyId, onBack }) {
         screeningDate: subject?.screeningDate || "",
         enrollmentDate: subject?.enrollmentDate || "",
         pi: subject?.pi || "",
-        site: subject?.site || ""
+        site: subject?.site || "",
       }),
     [
       subject?.initials,
@@ -236,8 +240,8 @@ function SubjectFolderWorkspace({ subject, studyId, onBack }) {
       subject?.screeningDate,
       subject?.enrollmentDate,
       subject?.pi,
-      subject?.site
-    ]
+      subject?.site,
+    ],
   );
 
   useEffect(() => {
@@ -275,7 +279,7 @@ function SubjectFolderWorkspace({ subject, studyId, onBack }) {
       syncSubjectSchedules(studyId, subjectId, subject);
       setShowNextVisitPrompt(shouldPromptNextVisit(studyId, subjectId));
     },
-    [studyId, subjectId, subjectScheduleKey, subject]
+    [studyId, subjectId, subjectScheduleKey, subject],
   );
 
   useEffect(() => {
@@ -293,17 +297,17 @@ function SubjectFolderWorkspace({ subject, studyId, onBack }) {
           JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
         const list = subjectsByStudy[studyId] || [];
         subjectsByStudy[studyId] = list.map((item) =>
-          item.id === subjectId ? { ...item, ...details } : item
+          item.id === subjectId ? { ...item, ...details } : item,
         );
         localStorage.setItem(
           "subjectsByStudy",
-          JSON.stringify(subjectsByStudy)
+          JSON.stringify(subjectsByStudy),
         );
       } catch {
         /* ignore */
       }
     },
-    [studyId, subjectId]
+    [studyId, subjectId],
   );
 
   return (

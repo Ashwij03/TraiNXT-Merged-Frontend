@@ -5,13 +5,12 @@ import {
   getAccessibleStudies,
   getStudiesForSite,
   isAdmin,
-  getCurrentUser
+  getCurrentUser,
 } from "../services/roleService";
 
 function getAllSubjectsFlat() {
   try {
-    const byStudy =
-      JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
+    const byStudy = JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
     const results = [];
 
     Object.entries(byStudy).forEach(([studyKey, subjects]) => {
@@ -25,14 +24,9 @@ function getAllSubjectsFlat() {
           id: subject.id || subject.subjectId,
           studyKey,
           label: subject.id || subject.subjectId,
-          meta: [
-            subject.status,
-            subject.site,
-            subject.pi,
-            studyKey
-          ]
+          meta: [subject.status, subject.site, subject.pi, studyKey]
             .filter(Boolean)
-            .join(" • ")
+            .join(" • "),
         });
       });
     });
@@ -54,7 +48,7 @@ function getStudySearchFields(study) {
     study.sponsor,
     study.principalInvestigator,
     study.description,
-    study.phase
+    study.phase,
   ]
     .filter(Boolean)
     .map(String);
@@ -75,8 +69,8 @@ export function searchHeader(query, { institutionFilter } = {}) {
   const studyResults = studies
     .filter((study) =>
       getStudySearchFields(study).some((field) =>
-        field.toLowerCase().includes(trimmed)
-      )
+        field.toLowerCase().includes(trimmed),
+      ),
     )
     .slice(0, 5)
     .map((study) => ({
@@ -91,10 +85,10 @@ export function searchHeader(query, { institutionFilter } = {}) {
           : null,
         study.site,
         study.status,
-        study.sponsor ? `Sponsor: ${study.sponsor}` : null
+        study.sponsor ? `Sponsor: ${study.sponsor}` : null,
       ]
         .filter(Boolean)
-        .join(" • ")
+        .join(" • "),
     }));
 
   const subjectResults = getAllSubjectsFlat()
@@ -105,7 +99,7 @@ export function searchHeader(query, { institutionFilter } = {}) {
           .includes(trimmed) ||
         String(subject.meta || "")
           .toLowerCase()
-          .includes(trimmed)
+          .includes(trimmed),
     )
     .slice(0, 4);
 

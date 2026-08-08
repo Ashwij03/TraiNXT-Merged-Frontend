@@ -7,50 +7,24 @@ function KPICard({
   icon,
   variant = "blue",
   trend,
-  onClick
+  onClick,
 }) {
   const variantClass = variant ? ` enterprise-kpi--${variant}` : "";
 
   return (
-    <div
-      className={`enterprise-kpi${variantClass}`}
-      onClick={onClick}
-    >
-
-      <div className="enterprise-kpi-icon">
-
-        {icon}
-
-      </div>
+    <div className={`enterprise-kpi${variantClass}`} onClick={onClick}>
+      <div className="enterprise-kpi-icon">{icon}</div>
 
       <div className="enterprise-kpi-content">
+        <div className="enterprise-kpi-title">{title}</div>
 
-        <div className="enterprise-kpi-title">
+        <div className="enterprise-kpi-value">{value}</div>
 
-          {title}
+        <div className="enterprise-kpi-sub">{subtitle}</div>
 
-        </div>
-
-        <div className="enterprise-kpi-value">
-
-          {value}
-
-        </div>
-
-        <div className="enterprise-kpi-sub">
-
-          {subtitle}
-
-        </div>
-
-        {trend && (
-          <div className="enterprise-kpi-trend">{trend}</div>
-        )}
-
+        {trend && <div className="enterprise-kpi-trend">{trend}</div>}
       </div>
-
     </div>
-
   );
 }
 

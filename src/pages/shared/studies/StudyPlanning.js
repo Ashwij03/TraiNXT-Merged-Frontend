@@ -31,8 +31,8 @@ function StudyPlanning() {
   const canEdit = useCanEditStudyContent("Study Planning", studyCode);
   const [version, setVersion] = useState(0);
   const [editingMilestone, setEditingMilestone] = useState(null);
-const [editingTask, setEditingTask] = useState(null);
-const [editingChecklistItem, setEditingChecklistItem] = useState(null);
+  const [editingTask, setEditingTask] = useState(null);
+  const [editingChecklistItem, setEditingChecklistItem] = useState(null);
 
   useEffect(() => {
     const refresh = () => setVersion((v) => v + 1);
@@ -85,20 +85,19 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
       </div>
 
       <section className="planning-section">
+        <div className="planning-section-header">
+          <h3>Site Management Milestone</h3>
 
-  <div className="planning-section-header">
-    <h3>Site Management Milestone</h3>
-
-    <button
-      type="button"
-      className="secondary-btn"
-      onClick={() => {
-        // navigate/open full milestone list
-      }}
-    >
-      View All
-    </button>
-  </div>
+          <button
+            type="button"
+            className="secondary-btn"
+            onClick={() => {
+              // navigate/open full milestone list
+            }}
+          >
+            View All
+          </button>
+        </div>
         {milestones.length === 0 ? (
           <p className="planning-empty">No planning milestones yet</p>
         ) : (
@@ -121,25 +120,25 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
                   <td>{item.status}</td>
                   {canEdit && (
                     <td>
-  <button
-    type="button"
-    className="link-btn"
-    onClick={() => setEditingMilestone(item)}
-  >
-    Edit
-  </button>
+                      <button
+                        type="button"
+                        className="link-btn"
+                        onClick={() => setEditingMilestone(item)}
+                      >
+                        Edit
+                      </button>
 
-  <button
-    type="button"
-    className="link-btn danger"
-    onClick={() => {
-      deletePlanningMilestone(studyCode, item.id);
-      bump();
-    }}
-  >
-    Delete
-  </button>
-</td>
+                      <button
+                        type="button"
+                        className="link-btn danger"
+                        onClick={() => {
+                          deletePlanningMilestone(studyCode, item.id);
+                          bump();
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </td>
                   )}
                 </tr>
               ))}
@@ -148,75 +147,75 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
         )}
         {canEdit && (
           <PlanningMilestoneForm
-    initialData={editingMilestone}
-    onSave={(data)=>{
-        savePlanningMilestone(studyCode,data);
-        setEditingMilestone(null);
-        bump();
-    }}
-/>
+            initialData={editingMilestone}
+            onSave={(data) => {
+              savePlanningMilestone(studyCode, data);
+              setEditingMilestone(null);
+              bump();
+            }}
+          />
         )}
       </section>
 
       <section className="planning-section">
         <div className="planning-section-header">
-  <h3>Tasks</h3>
+          <h3>Tasks</h3>
 
-  <button
-    type="button"
-    className="secondary-btn"
-    onClick={() => {
-      // navigate/open full task list
-    }}
-  >
-    View All
-  </button>
-</div>
+          <button
+            type="button"
+            className="secondary-btn"
+            onClick={() => {
+              // navigate/open full task list
+            }}
+          >
+            View All
+          </button>
+        </div>
         {tasks.length === 0 ? (
           <p className="planning-empty">No tasks yet</p>
         ) : (
           <table className="planning-table ctms-standard-table">
             <thead>
-  <tr>
-    <th>Task ID</th>
-    <th>Task</th>
-    <th>Assignee</th>
-    <th>Due</th>
-    <th>Priority</th>
-    <th>Status</th>
-    {canEdit && <th>Actions</th>}
-  </tr>
-</thead>
+              <tr>
+                <th>Task ID</th>
+                <th>Task</th>
+                <th>Assignee</th>
+                <th>Due</th>
+                <th>Priority</th>
+                <th>Status</th>
+                {canEdit && <th>Actions</th>}
+              </tr>
+            </thead>
             <tbody>
               {tasks.map((item) => (
                 <tr key={item.id}>
                   <td>{item.taskId || item.id}</td>
-<td>{item.title}</td>
-<td>{item.assignee || "—"}</td>
-<td>{item.dueDate || "—"}</td>
-<td>{item.priority}</td>
-<td>{item.status}</td>
+                  <td>{item.title}</td>
+                  <td>{item.assignee || "—"}</td>
+                  <td>{item.dueDate || "—"}</td>
+                  <td>{item.priority}</td>
+                  <td>{item.status}</td>
                   {canEdit && (
                     <td>
-  <button
-    type="button"
-    className="link-btn"
-    onClick={() => setEditingTask(item)}
-  >
-    Edit
-  </button>
+                      <button
+                        type="button"
+                        className="link-btn"
+                        onClick={() => setEditingTask(item)}
+                      >
+                        Edit
+                      </button>
 
-  <button
-    type="button"
-    className="link-btn danger"
-    onClick={() => {
-      deletePlanningTask(studyCode, item.id);
-      bump();
-    }}
-  >
-    Delete
-  </button>
-</td>
+                      <button
+                        type="button"
+                        className="link-btn danger"
+                        onClick={() => {
+                          deletePlanningTask(studyCode, item.id);
+                          bump();
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </td>
                   )}
                 </tr>
               ))}
@@ -225,13 +224,13 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
         )}
         {canEdit && (
           <PlanningTaskForm
-  initialData={editingTask}
-  onSave={(data) => {
-    savePlanningTask(studyCode, data);
-    setEditingTask(null);
-    bump();
-  }}
-/>
+            initialData={editingTask}
+            onSave={(data) => {
+              savePlanningTask(studyCode, data);
+              setEditingTask(null);
+              bump();
+            }}
+          />
         )}
       </section>
 
@@ -260,29 +259,25 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
                   <td>{member.organization || "—"}</td>
                   <td>{member.email || "—"}</td>
                   {canEdit && (
-                    
-                      <td>
+                    <td>
+                      <button
+                        type="button"
+                        className="link-btn"
+                        onClick={() => setEditingMember(member)}
+                      >
+                        Edit
+                      </button>
 
-<button
-type="button"
-className="link-btn"
-onClick={() => setEditingMember(member)}
->
-Edit
-</button>
-
-<button
-type="button"
-className="link-btn danger"
-onClick={() => {
-deleteStudyTeamMember(studyCode, member.id);
-bump();
-}}
->
-Delete
-</button>
-
-
+                      <button
+                        type="button"
+                        className="link-btn danger"
+                        onClick={() => {
+                          deleteStudyTeamMember(studyCode, member.id);
+                          bump();
+                        }}
+                      >
+                        Delete
+                      </button>
                     </td>
                   )}
                 </tr>
@@ -292,13 +287,13 @@ Delete
         )}
         {canEdit && (
           <StudyTeamForm
-  initialData={editingMember}
-  onSave={(data) => {
-    saveStudyTeamMember(studyCode, data);
-    setEditingMember(null);
-    bump();
-  }}
-/>
+            initialData={editingMember}
+            onSave={(data) => {
+              saveStudyTeamMember(studyCode, data);
+              setEditingMember(null);
+              bump();
+            }}
+          />
         )}
       </section>
 
@@ -310,82 +305,75 @@ Delete
           <ul className="regulatory-checklist">
             {checklist.map((item) => (
               <li key={item.id}>
+                <div className="checklist-info">
+                  <strong>{item.label}</strong>
 
-             <div className="checklist-info">
+                  <div>
+                    Document Date:
+                    {item.documentDate || "—"}
+                  </div>
 
-<strong>{item.label}</strong>
+                  <div>
+                    Status:
+                    {item.status || "Pending"}
+                  </div>
 
-<div>
-Document Date:
-{item.documentDate || "—"}
-</div>
+                  <div>
+                    Due:
+                    {item.dueDate || "—"}
+                  </div>
 
-<div>
-Status:
-{item.status || "Pending"}
-</div>
+                  {item.documentName && (
+                    <div>
+                      Uploaded:
+                      {item.documentName}
+                    </div>
+                  )}
+                </div>
 
-<div>
-Due:
-{item.dueDate || "—"}
-</div>
+                <div className="checklist-actions">
+                  <button
+                    type="button"
+                    className="link-btn"
+                    onClick={() => setEditingChecklistItem(item)}
+                  >
+                    Edit
+                  </button>
 
-{item.documentName && (
-<div>
-Uploaded:
-{item.documentName}
-</div>
-)}
+                  {item.documentUrl && (
+                    <button
+                      type="button"
+                      className="link-btn"
+                      onClick={() => window.open(item.documentUrl, "_blank")}
+                    >
+                      View Document
+                    </button>
+                  )}
 
-</div>
-
-<div className="checklist-actions">
-
-<button
-type="button"
-className="link-btn"
-onClick={() => setEditingChecklistItem(item)}
->
-Edit
-</button>
-
-{item.documentUrl && (
-<button
-type="button"
-className="link-btn"
-onClick={() =>
-window.open(item.documentUrl, "_blank")
-}
->
-View Document
-</button>
-)}
-
-<button
-type="button"
-className="link-btn danger"
-onClick={() => {
-deleteRegulatoryChecklistItem(studyCode, item.id);
-bump();
-}}
->
-Remove
-</button>
-
-</div>
-</li>
+                  <button
+                    type="button"
+                    className="link-btn danger"
+                    onClick={() => {
+                      deleteRegulatoryChecklistItem(studyCode, item.id);
+                      bump();
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </li>
             ))}
           </ul>
         )}
         {canEdit && (
-         <RegulatoryItemForm
-  initialData={editingChecklistItem}
-  onSave={(data) => {
-    saveRegulatoryChecklistItem(studyCode, data);
-    setEditingChecklistItem(null);
-    bump();
-  }}
-/>
+          <RegulatoryItemForm
+            initialData={editingChecklistItem}
+            onSave={(data) => {
+              saveRegulatoryChecklistItem(studyCode, data);
+              setEditingChecklistItem(null);
+              bump();
+            }}
+          />
         )}
       </section>
 
@@ -397,48 +385,47 @@ Remove
           protocols.map((protocol) => (
             <div key={protocol.id} className="protocol-card">
               <div className="protocol-header">
-  <div>
-    <strong>{protocol.title}</strong>
+                <div>
+                  <strong>{protocol.title}</strong>
 
-    <div>
-      <strong>Protocol Number:</strong>{" "}
-      {protocol.protocolNumber || "—"}
-    </div>
+                  <div>
+                    <strong>Protocol Number:</strong>{" "}
+                    {protocol.protocolNumber || "—"}
+                  </div>
 
-    <div>
-      <strong>Current Version:</strong>{" "}
-      v{protocol.currentVersion || "—"}
-    </div>
+                  <div>
+                    <strong>Current Version:</strong> v
+                    {protocol.currentVersion || "—"}
+                  </div>
 
-    <div>
-      <strong>Status:</strong>{" "}
-      {protocol.status || "Draft"}
-    </div>
-  </div>
+                  <div>
+                    <strong>Status:</strong> {protocol.status || "Draft"}
+                  </div>
+                </div>
 
-  {canEdit && (
-    <div>
-      <button
-        type="button"
-        className="link-btn"
-        onClick={() => setEditingProtocol(protocol)}
-      >
-        Edit
-      </button>
+                {canEdit && (
+                  <div>
+                    <button
+                      type="button"
+                      className="link-btn"
+                      onClick={() => setEditingProtocol(protocol)}
+                    >
+                      Edit
+                    </button>
 
-      <button
-        type="button"
-        className="link-btn danger"
-        onClick={() => {
-          deleteProtocol(studyCode, protocol.id);
-          bump();
-        }}
-      >
-        Delete
-      </button>
-    </div>
-  )}
-</div>
+                    <button
+                      type="button"
+                      className="link-btn danger"
+                      onClick={() => {
+                        deleteProtocol(studyCode, protocol.id);
+                        bump();
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </div>
               <ul className="protocol-versions">
                 {(protocol.versions || []).map((versionRow, index) => (
                   <li key={`${protocol.id}-v-${index}`}>
@@ -452,13 +439,13 @@ Remove
         )}
         {canEdit && (
           <ProtocolForm
-initialData={editingProtocol}
-onSave={(data)=>{
-saveProtocol(studyCode,data);
-setEditingProtocol(null);
-bump();
-}}
-/>
+            initialData={editingProtocol}
+            onSave={(data) => {
+              saveProtocol(studyCode, data);
+              setEditingProtocol(null);
+              bump();
+            }}
+          />
         )}
       </section>
     </div>
@@ -472,10 +459,7 @@ const MILESTONE_FORM_DEFAULTS = {
   status: "Not Started",
 };
 
-function PlanningMilestoneForm({
-    initialData,
-    onSave
-}) {
+function PlanningMilestoneForm({ initialData, onSave }) {
   const [form, setForm] = useState(MILESTONE_FORM_DEFAULTS);
   useEffect(() => {
     // Phase 11–13 BUG-1: Merge stored record onto defaults so every controlled
@@ -534,10 +518,7 @@ const TASK_FORM_DEFAULTS = {
   status: "Open",
 };
 
-function PlanningTaskForm({
-  initialData,
-  onSave,
-}) {
+function PlanningTaskForm({ initialData, onSave }) {
   const [form, setForm] = useState(TASK_FORM_DEFAULTS);
   useEffect(() => {
     // Phase 11–13 BUG-1: keep every controlled field defined when editing an
@@ -579,9 +560,9 @@ function PlanningTaskForm({
         value={form.dueDate ?? ""}
         onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
       />
-     <button type="submit" className="secondary-btn">
-  {form.id ? "Update Task" : "Add Task"}
-</button>
+      <button type="submit" className="secondary-btn">
+        {form.id ? "Update Task" : "Add Task"}
+      </button>
     </form>
   );
 }
@@ -594,10 +575,7 @@ const STUDY_TEAM_FORM_DEFAULTS = {
   startDate: "",
 };
 
-function StudyTeamForm({
-  initialData,
-  onSave,
-}) {
+function StudyTeamForm({ initialData, onSave }) {
   const [form, setForm] = useState(STUDY_TEAM_FORM_DEFAULTS);
   useEffect(() => {
     // Phase 11–13 BUG-1: keep every controlled field defined when editing an
@@ -636,15 +614,15 @@ function StudyTeamForm({
         onChange={(e) => setForm({ ...form, role: e.target.value })}
       />
       <input
-  type="date"
-  value={form.startDate ?? ""}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      startDate: e.target.value,
-    })
-  }
-/>
+        type="date"
+        value={form.startDate ?? ""}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            startDate: e.target.value,
+          })
+        }
+      />
       <input
         placeholder="Email"
         value={form.email ?? ""}
@@ -671,10 +649,7 @@ const REGULATORY_ITEM_FORM_DEFAULTS = {
   documentUrl: "",
 };
 
-function RegulatoryItemForm({
-  initialData,
-  onSave,
-}) {
+function RegulatoryItemForm({ initialData, onSave }) {
   const [form, setForm] = useState(REGULATORY_ITEM_FORM_DEFAULTS);
   useEffect(() => {
     // Phase 11–13 BUG-1: keep every controlled field defined when editing an
@@ -700,76 +675,76 @@ function RegulatoryItemForm({
         e.preventDefault();
         if (!form.label.trim()) return;
 
-onSave({
-  ...form,
-  completed: false,
-});
+        onSave({
+          ...form,
+          completed: false,
+        });
 
-setForm(REGULATORY_ITEM_FORM_DEFAULTS);
+        setForm(REGULATORY_ITEM_FORM_DEFAULTS);
       }}
     >
       <input
-  placeholder="Checklist Item"
-  value={form.label ?? ""}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      label: e.target.value,
-    })
-  }
-/>
+        placeholder="Checklist Item"
+        value={form.label ?? ""}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            label: e.target.value,
+          })
+        }
+      />
 
-<input
-  type="date"
-  value={form.documentDate ?? ""}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      documentDate: e.target.value,
-    })
-  }
-/>
+      <input
+        type="date"
+        value={form.documentDate ?? ""}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            documentDate: e.target.value,
+          })
+        }
+      />
 
-<input
-  type="date"
-  value={form.dueDate ?? ""}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      dueDate: e.target.value,
-    })
-  }
-/>
+      <input
+        type="date"
+        value={form.dueDate ?? ""}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            dueDate: e.target.value,
+          })
+        }
+      />
 
-<select
-  value={form.status ?? "Pending"}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      status: e.target.value,
-    })
-  }
->
-  <option>Pending</option>
-  <option>Submitted</option>
-  <option>Approved</option>
-  <option>Rejected</option>
-</select>
+      <select
+        value={form.status ?? "Pending"}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            status: e.target.value,
+          })
+        }
+      >
+        <option>Pending</option>
+        <option>Submitted</option>
+        <option>Approved</option>
+        <option>Rejected</option>
+      </select>
 
-<input
-  type="file"
-  onChange={(e) => {
-    const file = e.target.files?.[0];
+      <input
+        type="file"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
 
-    if (!file) return;
+          if (!file) return;
 
-    setForm({
-      ...form,
-      documentName: file.name,
-      documentUrl: URL.createObjectURL(file),
-    });
-  }}
-/>
+          setForm({
+            ...form,
+            documentName: file.name,
+            documentUrl: URL.createObjectURL(file),
+          });
+        }}
+      />
       <button type="submit" className="secondary-btn">
         Add Item
       </button>
@@ -786,10 +761,7 @@ const PROTOCOL_FORM_DEFAULTS = {
   status: "Draft",
 };
 
-function ProtocolForm({
-initialData,
-onSave
-}) {
+function ProtocolForm({ initialData, onSave }) {
   const [form, setForm] = useState(PROTOCOL_FORM_DEFAULTS);
   useEffect(() => {
     // Phase 11–13 BUG-1: keep every controlled field defined when editing an
@@ -825,32 +797,30 @@ onSave
         onChange={(e) => setForm({ ...form, title: e.target.value })}
       />
       <input
-placeholder="Protocol Number"
-value={form.protocolNumber ?? ""}
-onChange={(e)=>
-setForm({
-...form,
-protocolNumber:e.target.value
-})
-}
-/>
-<select
-value={form.status ?? "Draft"}
-onChange={(e)=>
-setForm({
-...form,
-status:e.target.value
-})
-}
->
-
-<option>Draft</option>
-<option>In Review</option>
-<option>Approved</option>
-<option>Active</option>
-<option>Archived</option>
-
-</select>
+        placeholder="Protocol Number"
+        value={form.protocolNumber ?? ""}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            protocolNumber: e.target.value,
+          })
+        }
+      />
+      <select
+        value={form.status ?? "Draft"}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            status: e.target.value,
+          })
+        }
+      >
+        <option>Draft</option>
+        <option>In Review</option>
+        <option>Approved</option>
+        <option>Active</option>
+        <option>Archived</option>
+      </select>
       <input
         placeholder="Version"
         value={form.version ?? ""}

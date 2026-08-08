@@ -7,14 +7,14 @@ import {
   isAdmin,
   getUserSettings,
   saveUserSettings,
-  updateUserPassword
+  updateUserPassword,
 } from "../../../services/roleService";
 import {
   formatSessionTimestamp,
   getCurrentSession,
   getSessionDurationMinutes,
   getSessionHistory,
-  terminateCurrentSession
+  terminateCurrentSession,
 } from "../../../services/sessionService";
 
 function SecuritySettingsSection({ showTitle = false }) {
@@ -29,26 +29,29 @@ function SecuritySettingsSection({ showTitle = false }) {
   const [form, setForm] = useState({
     currentPassword: "",
     newPassword: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
   const [securityPrefs, setSecurityPrefs] = useState({
     twoFactorEnabled: Boolean(storedSettings.twoFactorEnabled),
     loginAlerts: storedSettings.loginAlerts !== false,
     sessionTimeoutMinutes:
-      storedSettings.sessionTimeoutMinutes || (adminMode ? 60 : 30)
+      storedSettings.sessionTimeoutMinutes || (adminMode ? 60 : 30),
   });
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   const sessionDuration = useMemo(
     () => getSessionDurationMinutes(session),
-    [session]
+    [session],
   );
 
   const handleSecurityPrefChange = (field, value) => {
     setSecurityPrefs((prev) => {
       const next = { ...prev, [field]: value };
-      saveUserSettings({ ...getUserSettings(currentUser), ...next }, currentUser);
+      saveUserSettings(
+        { ...getUserSettings(currentUser), ...next },
+        currentUser,
+      );
       return next;
     });
   };
@@ -56,7 +59,7 @@ function SecuritySettingsSection({ showTitle = false }) {
   const handleChange = (field, value) => {
     setForm((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -85,7 +88,7 @@ function SecuritySettingsSection({ showTitle = false }) {
     setForm({
       currentPassword: "",
       newPassword: "",
-      confirmPassword: ""
+      confirmPassword: "",
     });
     setMessage("Password updated successfully.");
   };
@@ -156,15 +159,15 @@ function SecuritySettingsSection({ showTitle = false }) {
           <button type="submit">Update Password</button>
 
           {error && <p style={{ color: "#dc2626", margin: 0 }}>{error}</p>}
-          {message && (
-            <p style={{ color: "#059669", margin: 0 }}>{message}</p>
-          )}
+          {message && <p style={{ color: "#059669", margin: 0 }}>{message}</p>}
         </form>
       </DashboardCard>
 
       <DashboardCard
         title={
-          adminMode ? "Account Security Preferences" : "Site Security Preferences"
+          adminMode
+            ? "Account Security Preferences"
+            : "Site Security Preferences"
         }
       >
         <div className="admin-settings-form">
@@ -176,7 +179,7 @@ function SecuritySettingsSection({ showTitle = false }) {
                 onChange={(event) =>
                   handleSecurityPrefChange(
                     "twoFactorEnabled",
-                    event.target.checked
+                    event.target.checked,
                   )
                 }
               />{" "}
@@ -204,7 +207,7 @@ function SecuritySettingsSection({ showTitle = false }) {
               onChange={(event) =>
                 handleSecurityPrefChange(
                   "sessionTimeoutMinutes",
-                  Number(event.target.value)
+                  Number(event.target.value),
                 )
               }
             >
@@ -270,7 +273,9 @@ function SecuritySettingsSection({ showTitle = false }) {
                       : " • Active"}
                   </p>
                 </div>
-                <span>{entry.device || entry.ipAddress || "Unknown device"}</span>
+                <span>
+                  {entry.device || entry.ipAddress || "Unknown device"}
+                </span>
               </div>
             ))}
           </div>

@@ -38,12 +38,7 @@ import PendingCommentsWidget from "../../../components/dashboard/shared/PendingC
 import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
 import EISFWorkspace from "../EISF/EISFWorkspace";
 import { EISF_SIDEBAR_COLLAPSE_EVENT } from "../../../constants/headerFilters";
-import {
-  FiTrash2,
-  FiArrowLeft,
-  FiEdit2,
-  FiRefreshCw,
-} from "react-icons/fi";
+import { FiTrash2, FiArrowLeft, FiEdit2, FiRefreshCw } from "react-icons/fi";
 import {
   canDeleteStudy,
   requiresPermissionRequest,
@@ -103,7 +98,10 @@ function StudyDashboard() {
       // must not expose the tab's content to a role without
       // VIEW_SITE_ACTIVITIES, even though the tab button is already
       // hidden from them in StudyWorkspaceTabs.
-      if (resolvedTab === "Activity" && !hasPermission(PERMISSIONS.VIEW_SITE_ACTIVITIES)) {
+      if (
+        resolvedTab === "Activity" &&
+        !hasPermission(PERMISSIONS.VIEW_SITE_ACTIVITIES)
+      ) {
         resolvedTab = "Overview";
       }
       // ===== END D2 PART 1 CHANGES =====
@@ -119,32 +117,28 @@ function StudyDashboard() {
     localStorage.setItem("sidebarStudyBinderOpen", JSON.stringify(true));
   }, [id]);
   useEffect(() => {
-const handleStudyUpdated = (event) => {
-  if (event.detail?.code === id) {
+    const handleStudyUpdated = (event) => {
+      if (event.detail?.code === id) {
+        console.log("EVENT STUDY:", event.detail);
 
-    console.log("EVENT STUDY:", event.detail);
+        localStorage.setItem("selectedStudy", JSON.stringify(event.detail));
 
-    localStorage.setItem(
-      "selectedStudy",
-      JSON.stringify(event.detail)
-    );
+        setCurrentStudy(event.detail);
 
-    setCurrentStudy(event.detail);
+        setTimeout(() => {
+          console.log("AFTER EVENT:", getStudyByCode(id));
+        }, 100);
 
-    setTimeout(() => {
-      console.log("AFTER EVENT:", getStudyByCode(id));
-    }, 100);
+        setStudyRefreshKey((value) => value + 1);
+      }
+    };
 
-    setStudyRefreshKey((value) => value + 1);
-  }
-};
+    window.addEventListener("study-updated", handleStudyUpdated);
 
-  window.addEventListener("study-updated", handleStudyUpdated);
-
-  return () => {
-    window.removeEventListener("study-updated", handleStudyUpdated);
-  };
-}, [id]);
+    return () => {
+      window.removeEventListener("study-updated", handleStudyUpdated);
+    };
+  }, [id]);
 
   const { data } = useStudiesDashboard();
   const { comments: liveComments } = useComments();
@@ -152,23 +146,27 @@ const handleStudyUpdated = (event) => {
 
   const canEditStudy = useCanEditStudyContent("Study Overview", id);
   const canRemoveStudy = canDeleteStudy(currentUser);
-  const needsPermissionRequest = requiresPermissionRequest(currentUser) && !canEditStudy;
+  const needsPermissionRequest =
+    requiresPermissionRequest(currentUser) && !canEditStudy;
   // ===== START D2 PART 1 CHANGES =====
   // Role-based Activity visibility, backed by the shared rolePermissions
   // map (VIEW_SITE_ACTIVITIES) rather than a hardcoded role check.
-  const canViewActivity = hasPermission(PERMISSIONS.VIEW_SITE_ACTIVITIES, currentUser);
+  const canViewActivity = hasPermission(
+    PERMISSIONS.VIEW_SITE_ACTIVITIES,
+    currentUser,
+  );
   // ===== END D2 PART 1 CHANGES =====
 
   const [currentStudy, setCurrentStudy] = useState(() => getStudyByCode(id));
   const overview = useStudyOverview(id, studyRefreshKey);
 
-useEffect(() => {
-  const study = getStudyByCode(id);
+  useEffect(() => {
+    const study = getStudyByCode(id);
 
-  console.log("USE EFFECT STUDY:", study);
+    console.log("USE EFFECT STUDY:", study);
 
-  setCurrentStudy(study);
-}, [id, studyRefreshKey]);
+    setCurrentStudy(study);
+  }, [id, studyRefreshKey]);
   // A2 (Role-Scoped Study Visibility): the route itself allows any
   // authenticated role to reach /study-dashboard/:id, and getStudyByCode()
   // reads the unfiltered study list, so this is the only place left that
@@ -512,22 +510,22 @@ useEffect(() => {
     event.preventDefault();
 
     try {
-      console.log("EDIT FORM:", JSON.stringify(editForm, null, 2))
+      console.log("EDIT FORM:", JSON.stringify(editForm, null, 2));
       const updatedStudy = updateStudy(editForm.code, {
         ...editForm,
-       site: editForm.site,
-location: editForm.site,
+        site: editForm.site,
+        location: editForm.site,
         enrolled: Number(editForm.enrolled) || 0,
         targetSubjects: Number(editForm.targetSubjects) || 0,
       });
- console.log("UPDATED STUDY:", JSON.stringify(updatedStudy, null, 2));
+      console.log("UPDATED STUDY:", JSON.stringify(updatedStudy, null, 2));
       localStorage.setItem("selectedStudy", JSON.stringify(updatedStudy));
       window.dispatchEvent(
-  new CustomEvent("study-updated", {
-    detail: updatedStudy,
-  })
-);
-window.dispatchEvent(new Event("studies-updated"));
+        new CustomEvent("study-updated", {
+          detail: updatedStudy,
+        }),
+      );
+      window.dispatchEvent(new Event("studies-updated"));
       setShowEditModal(false);
       setStudyRefreshKey((value) => value + 1);
     } catch (error) {

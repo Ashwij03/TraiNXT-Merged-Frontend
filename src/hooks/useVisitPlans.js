@@ -35,7 +35,7 @@ export default function useVisitPlans(studyCode) {
       procedures: getVisitPlanProcedures(planId),
       tasks: getVisitPlanTasks(planId),
     }),
-    []
+    [],
   );
 
   return {

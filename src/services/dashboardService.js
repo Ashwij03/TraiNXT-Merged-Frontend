@@ -6,7 +6,7 @@ import {
   getComments,
   getSchedules,
   getSites,
-  initializeAdminData
+  initializeAdminData,
 } from "./adminService";
 import { buildCommentCounts, isOpenComment } from "./commentService";
 import { getUpcomingVisitsWindow } from "./visitScheduleService";
@@ -20,7 +20,7 @@ export function getStudiesDashboard() {
   const sites = getSites();
   const totalSubjects = studies.reduce(
     (sum, study) => sum + Number(study.enrolled || 0),
-    0
+    0,
   );
   const openComments = comments.filter(isOpenComment);
   // Phase 7 — IMP-4.12: single source for Open/Pending/Resolved/total
@@ -44,7 +44,7 @@ export function getStudiesDashboard() {
       commentsPendingReview: commentCounts.pendingReview,
       commentsResolved: commentCounts.resolved,
       commentsTotal: commentCounts.total,
-      visits: schedules.length
+      visits: schedules.length,
     },
 
     // Same breakdown at the top level for consumers that treat KPIs as
@@ -56,7 +56,7 @@ export function getStudiesDashboard() {
       studies.length > 0
         ? studies.slice(0, 6).map((study, index) => ({
             name: study.code || study.name || `Study ${index + 1}`,
-            value: Number(study.enrolled || index + 4)
+            value: Number(study.enrolled || index + 4),
           }))
         : [
             { name: "Jan", value: 12 },
@@ -64,45 +64,47 @@ export function getStudiesDashboard() {
             { name: "Mar", value: 25 },
             { name: "Apr", value: 32 },
             { name: "May", value: 41 },
-            { name: "Jun", value: 55 }
+            { name: "Jun", value: 55 },
           ],
 
     studyDistribution: studies.map((study) => ({
       name: study.name,
-      value: Number(study.enrolled || 0)
+      value: Number(study.enrolled || 0),
     })),
 
     recentSubjects: Object.entries(
-      JSON.parse(localStorage.getItem("subjectsByStudy") || "{}")
+      JSON.parse(localStorage.getItem("subjectsByStudy") || "{}"),
     )
       .flatMap(([, subjects]) => (Array.isArray(subjects) ? subjects : []))
       .slice(0, 5)
       .map((subject) => ({
         id: subject.subjectId || subject.id,
         study: subject.study || "N/A",
-        status: subject.status || "Unknown"
+        status: subject.status || "Unknown",
       })),
 
-    upcomingVisits: getUpcomingVisitsWindow(schedules, 30).slice(0, 8).map((item) => ({
-      subject: item.subjectId,
-      subjectId: item.subjectId,
-      visit: item.visit,
-      date: item.date,
-      study: item.study,
-      studyCode: item.study,
-      status: item.status
-    })),
+    upcomingVisits: getUpcomingVisitsWindow(schedules, 30)
+      .slice(0, 8)
+      .map((item) => ({
+        subject: item.subjectId,
+        subjectId: item.subjectId,
+        visit: item.visit,
+        date: item.date,
+        study: item.study,
+        studyCode: item.study,
+        status: item.status,
+      })),
 
     pendingComments: openComments.slice(0, 5).map((comment) => ({
       id: comment.id,
       subject: comment.subjectId,
-      status: comment.status
+      status: comment.status,
     })),
     // UPDATED: legacy key retained for StudyDashboard (studies folder — not modified)
     pendingQueries: openComments.slice(0, 5).map((comment) => ({
       id: comment.id,
       subject: comment.subjectId,
-      status: comment.status
+      status: comment.status,
     })),
 
     calendarSchedules: schedules,
@@ -113,8 +115,8 @@ export function getStudiesDashboard() {
             {
               type: "danger",
               title: "Open Comments",
-              message: `${openComments.length} comments require resolution`
-            }
+              message: `${openComments.length} comments require resolution`,
+            },
           ]
         : []),
       ...(schedules.find((s) => s.status === "Due")
@@ -122,8 +124,8 @@ export function getStudiesDashboard() {
             {
               type: "warning",
               title: "Visit Window",
-              message: `${schedules.find((s) => s.status === "Due").subjectId} visit is due`
-            }
+              message: `${schedules.find((s) => s.status === "Due").subjectId} visit is due`,
+            },
           ]
         : []),
       ...(sites.length > 0
@@ -131,10 +133,10 @@ export function getStudiesDashboard() {
             {
               type: "info",
               title: "Site Network",
-              message: `${sites.filter((s) => s.status === "Active").length} active sites`
-            }
+              message: `${sites.filter((s) => s.status === "Active").length} active sites`,
+            },
           ]
-        : [])
+        : []),
     ],
 
     studies: studies.map((study) => ({
@@ -142,8 +144,8 @@ export function getStudiesDashboard() {
       protocol: study.protocol || study.name,
       site: study.site || study.location,
       subjects: study.enrolled,
-      status: study.status
-    }))
+      status: study.status,
+    })),
   };
 }
 
@@ -158,9 +160,9 @@ export const getRecentActivities = () => {
     time: log.timestamp
       ? new Date(log.timestamp).toLocaleTimeString([], {
           hour: "2-digit",
-          minute: "2-digit"
+          minute: "2-digit",
         })
-      : "Recently"
+      : "Recently",
   }));
 
   if (auditLogs.length > 0) {
@@ -174,6 +176,6 @@ export const getRecentActivities = () => {
     type: "Visit",
     title: `${item.visit} for ${item.subjectName}`,
     site: item.site,
-    time: item.time
+    time: item.time,
   }));
 };

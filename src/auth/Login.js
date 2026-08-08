@@ -2,10 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
 import { initializeUserSession } from "../services/sessionService";
-import {
-  setPIPreviewRole,
-  setAdminPreviewRole
-} from "../services/roleService";
+import { setPIPreviewRole, setAdminPreviewRole } from "../services/roleService";
 function Login() {
   const navigate = useNavigate();
 
@@ -65,108 +62,63 @@ function Login() {
     e.preventDefault();
 
     const isEmailValid = validateUsername(username);
-	
+
     const isPasswordValid = validatePassword(password);
 
     if (!isEmailValid || !isPasswordValid) return;
 
     // 🔥 GET ALL USERS (ARRAY)
-    const users =
-      JSON.parse(localStorage.getItem("users")) || [];
+    const users = JSON.parse(localStorage.getItem("users")) || [];
 
     // 🔍 FIND MATCHING USER
     const user = users.find(
-      (u) => u.email === username && u.password === password
+      (u) => u.email === username && u.password === password,
     );
 
-	if (user) {
-    // newly added
-    if (
-      user.role !== "Admin" &&
-      user.approvalStatus !== "Approved"
-    ) {
+    if (user) {
+      // newly added
+      if (user.role !== "Admin" && user.approvalStatus !== "Approved") {
+        setPasswordError("Your account is waiting for Admin approval.");
 
-      setPasswordError(
-        "Your account is waiting for Admin approval."
-      );
+        return;
+      }
+      // newly added till here
+      // 🔐 LOGIN SUCCESS
+      localStorage.setItem("isLoggedIn", "true");
 
-      return;
-    }
-    // newly added till here
-	  // 🔐 LOGIN SUCCESS
-	  localStorage.setItem("isLoggedIn", "true");
+      // 🔥 STORE NAME FOR DASHBOARD
+      localStorage.setItem("userFullName", user.name);
 
-	  // 🔥 STORE NAME FOR DASHBOARD
-	  localStorage.setItem("userFullName", user.name);
+      localStorage.removeItem("adminPreviewRole");
 
-    localStorage.removeItem("adminPreviewRole");
+      // ✅ ADD THIS LINE (THIS IS YOUR STEP-1 FIX)
+      localStorage.setItem("currentUser", JSON.stringify(user));
+      initializeUserSession(user);
+      setPIPreviewRole(null);
+      setAdminPreviewRole(null);
 
-	  // ✅ ADD THIS LINE (THIS IS YOUR STEP-1 FIX)
-	  localStorage.setItem("currentUser", JSON.stringify(user));
-    initializeUserSession(user);
-    setPIPreviewRole(null);
-setAdminPreviewRole(null);
+      localStorage.removeItem("piPreviewRole");
+      localStorage.removeItem("adminPreviewRole");
 
-localStorage.removeItem("piPreviewRole");
-localStorage.removeItem("adminPreviewRole");
-    
-    
-  
+      // newly added
 
-
-    // newly added
-
-	  if (user.role === "Admin") {
-
-      navigate(
-        "/studies",
-        { replace: true }
-      );
-    
-    } else if (
-      user.role === "SiteStaff"
-    ) {
-    
-      navigate(
-        "/studies",
-        { replace: true }
-      );
-    
-    } else if (
-      user.role === "PI"
-    ) {
-    
-      navigate(
-        "/studies",
-        { replace: true }
-      );
-    
-    } else if (
-      user.role === "CRO"
-    ) {
-    
-      navigate(
-        "/studies",
-        { replace: true }
-      );
-    
-    } else if (
-      user.role === "Sponsor"
-    ) {
-    
-      navigate(
-        "/studies",
-        { replace: true }
-      );
-    
+      if (user.role === "Admin") {
+        navigate("/studies", { replace: true });
+      } else if (user.role === "SiteStaff") {
+        navigate("/studies", { replace: true });
+      } else if (user.role === "PI") {
+        navigate("/studies", { replace: true });
+      } else if (user.role === "CRO") {
+        navigate("/studies", { replace: true });
+      } else if (user.role === "Sponsor") {
+        navigate("/studies", { replace: true });
+      } else {
+        setPasswordError(
+          "Your account role is not recognized. Please contact your administrator.",
+        );
+        return;
+      } // newly added till here
     } else {
-    
-      setPasswordError(
-        "Your account role is not recognized. Please contact your administrator."
-      );
-      return;
-    } // newly added till here
-	} else {
       setPasswordError("Invalid email or password");
     }
   };
@@ -174,7 +126,6 @@ localStorage.removeItem("adminPreviewRole");
   return (
     <AuthLayout title="Welcome Back">
       <form onSubmit={handleLogin}>
-
         {/* SIGNUP LINK */}
         <p style={{ marginTop: "15px", fontSize: "14px", textAlign: "center" }}>
           Don’t have an account?{" "}
@@ -182,7 +133,7 @@ localStorage.removeItem("adminPreviewRole");
             style={{
               color: "#007bff",
               cursor: "pointer",
-              fontWeight: "500"
+              fontWeight: "500",
             }}
             onClick={() => navigate("/register")}
           >
@@ -204,71 +155,44 @@ localStorage.removeItem("adminPreviewRole");
           />
 
           {usernameError && (
-            <p style={{ color: "red", fontSize: "12px" }}>
-              {usernameError}
-            </p>
+            <p style={{ color: "red", fontSize: "12px" }}>{usernameError}</p>
           )}
         </div>
 
         {/* PASSWORD */}
         <div className="input-group">
-                
           <label>Password</label>
-                
+
           <div className="password-box">
-                
             <input
-              type={
-                showPassword
-                  ? "text"
-                  : "password"
-              }
+              type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
-                validatePassword(
-                  e.target.value
-                );
+                validatePassword(e.target.value);
               }}
-              onPaste={(e) =>
-                e.preventDefault()
-              }
-              onCopy={(e) =>
-                e.preventDefault()
-              }
-              onCut={(e) =>
-                e.preventDefault()
-              }
-              onContextMenu={(e) =>
-                e.preventDefault()
-              }
+              onPaste={(e) => e.preventDefault()}
+              onCopy={(e) => e.preventDefault()}
+              onCut={(e) => e.preventDefault()}
+              onContextMenu={(e) => e.preventDefault()}
             />
-        
+
             <span
               className="toggle-text"
-              onClick={() =>
-                setShowPassword(
-                  !showPassword
-                )
-              }
+              onClick={() => setShowPassword(!showPassword)}
             >
-              {showPassword
-                ? "Hide"
-                : "Show"}
+              {showPassword ? "Hide" : "Show"}
             </span>
-              
           </div>
-              
+
           <p
             className="forgot-password"
-            onClick={() =>
-              navigate("/forgot-password")
-            }
+            onClick={() => navigate("/forgot-password")}
           >
             Forgot Password?
           </p>
-          
+
           {passwordError && (
             <p
               style={{
@@ -279,7 +203,6 @@ localStorage.removeItem("adminPreviewRole");
               {passwordError}
             </p>
           )}
-        
         </div>
 
         <button type="submit" className="auth-btn">
@@ -329,26 +252,18 @@ localStorage.removeItem("adminPreviewRole");
         </button>
 
         <div className="security-card">
-
-          <div className="security-icon">
-            🔐
-          </div>
+          <div className="security-icon">🔐</div>
 
           <div>
-
             <h4>Secure Login</h4>
 
             <p>
-              Your credentials are protected
-              using encrypted authentication
-              and secure access controls.
+              Your credentials are protected using encrypted authentication and
+              secure access controls.
             </p>
-
           </div>
-
         </div>
-
-        </form>
+      </form>
     </AuthLayout>
   );
 }

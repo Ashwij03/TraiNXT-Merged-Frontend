@@ -2,12 +2,7 @@ import { useEffect, useState } from "react";
 import { DOCUMENT_STATUS_OPTIONS } from "../Constants/documentStatus";
 import "./EditDocumentModal.css";
 
-export default function EditDocumentModal({
-  open,
-  document,
-  onClose,
-  onSave
-}) {
+export default function EditDocumentModal({ open, document, onClose, onSave }) {
   const [form, setForm] = useState({});
 
   useEffect(() => {
@@ -21,27 +16,20 @@ export default function EditDocumentModal({
   const handleChange = (field, value) => {
     setForm((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   return (
     <div className="edit-overlay">
-
       <div className="edit-modal">
-
-        <div className="edit-header">
-          Edit Document
-        </div>
+        <div className="edit-header">Edit Document</div>
 
         <div className="edit-body">
-
           <label>Document Name</label>
           <input
             value={form.documentName || ""}
-            onChange={(e) =>
-              handleChange("documentName", e.target.value)
-            }
+            onChange={(e) => handleChange("documentName", e.target.value)}
           />
 
           <label>Category</label>
@@ -56,18 +44,14 @@ export default function EditDocumentModal({
           <label>Version</label>
           <input
             value={form.version || ""}
-            onChange={(e) =>
-              handleChange("version", e.target.value)
-            }
+            onChange={(e) => handleChange("version", e.target.value)}
           />
 
           <label>Status</label>
 
           <select
             value={form.status || ""}
-            onChange={(e) =>
-              handleChange("status", e.target.value)
-            }
+            onChange={(e) => handleChange("status", e.target.value)}
           >
             {DOCUMENT_STATUS_OPTIONS.map((status) => (
               <option key={status} value={status}>
@@ -75,16 +59,10 @@ export default function EditDocumentModal({
               </option>
             ))}
           </select>
-
         </div>
 
         <div className="edit-footer">
-
-          <button
-            type="button"
-            className="cancel-btn"
-            onClick={onClose}
-          >
+          <button type="button" className="cancel-btn" onClick={onClose}>
             Cancel
           </button>
 
@@ -95,11 +73,8 @@ export default function EditDocumentModal({
           >
             Save
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 }

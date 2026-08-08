@@ -8,7 +8,7 @@ export function getFixedEISFModules() {
     .filter((moduleConfig) => moduleConfig?.id)
     .sort(
       (firstModule, secondModule) =>
-        Number.parseFloat(firstModule.id) - Number.parseFloat(secondModule.id)
+        Number.parseFloat(firstModule.id) - Number.parseFloat(secondModule.id),
     )
     .slice(0, FIXED_EISF_MODULE_TOTAL);
 }
@@ -29,14 +29,15 @@ export function getEssentialDocumentsHealth(studyCode) {
     };
   });
 
-  const completedModules = moduleBreakdown.filter((module) => module.complete)
-    .length;
+  const completedModules = moduleBreakdown.filter(
+    (module) => module.complete,
+  ).length;
   const documentCount = moduleBreakdown.reduce(
     (total, module) => total + module.documentCount,
-    0
+    0,
   );
   const percent = Math.round(
-    (completedModules / FIXED_EISF_MODULE_TOTAL) * 100
+    (completedModules / FIXED_EISF_MODULE_TOTAL) * 100,
   );
 
   return {

@@ -8,16 +8,16 @@ import "../../components/dashboard/shared/DashboardLayout.css";
 import "./CROLayout.css";
 
 function CROLayout({ children }) {
-const {
-  contentRef,
-  viewportMode,
-  sidebarWrapClass,
-  sidebarIsOpen,
-  sidebarCollapsed,
-  headerWrapClass,
-  handleToggleSidebar,
-  closeSidebar
-} = useEnterpriseDashboardShell();
+  const {
+    contentRef,
+    viewportMode,
+    sidebarWrapClass,
+    sidebarIsOpen,
+    sidebarCollapsed,
+    headerWrapClass,
+    handleToggleSidebar,
+    closeSidebar,
+  } = useEnterpriseDashboardShell();
 
   return (
     <div className="dashboard-shell dashboard-shell--cro cro-layout">
@@ -30,11 +30,11 @@ const {
       )}
 
       <div className={sidebarWrapClass}>
-            <CROSidebar
-            isOpen={sidebarIsOpen}
-            collapsed={sidebarCollapsed}
-            onClose={closeSidebar}
-          />
+        <CROSidebar
+          isOpen={sidebarIsOpen}
+          collapsed={sidebarCollapsed}
+          onClose={closeSidebar}
+        />
       </div>
 
       <div className="dashboard-main cro-main-content">

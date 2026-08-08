@@ -9,7 +9,7 @@ import {
   getCurrentUser,
   getDashboardPath,
   getPIPreviewRole,
-  isAdmin
+  isAdmin,
 } from "../services/roleService";
 
 function ProtectedRoute({ children, requiredPermission, allowedRoles }) {
@@ -24,9 +24,7 @@ function ProtectedRoute({ children, requiredPermission, allowedRoles }) {
   if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
     const previewRole = getAdminPreviewRole();
     const adminPreviewAllowed =
-      isAdmin(currentUser) &&
-      previewRole &&
-      allowedRoles.includes(previewRole);
+      isAdmin(currentUser) && previewRole && allowedRoles.includes(previewRole);
 
     const piPreviewRole = getPIPreviewRole();
     const piPreviewAllowed =
@@ -35,12 +33,7 @@ function ProtectedRoute({ children, requiredPermission, allowedRoles }) {
       allowedRoles.includes(piPreviewRole);
 
     if (!adminPreviewAllowed && !piPreviewAllowed) {
-      return (
-        <Navigate
-          to={getDashboardPath(currentUser.role)}
-          replace
-        />
-      );
+      return <Navigate to={getDashboardPath(currentUser.role)} replace />;
     }
   }
 
@@ -52,27 +45,18 @@ function ProtectedRoute({ children, requiredPermission, allowedRoles }) {
             ? getAdminPreviewRole() || ROLES.ADMIN
             : currentUser.role === ROLES.PI
               ? getPIPreviewRole() || ROLES.PI
-              : currentUser.role
+              : currentUser.role,
         )}
         replace
       />
     );
   }
 
-  if (
-    requiredPermission &&
-    currentUser.role !== "Admin"
-  ) {
-    const permissions =
-      rolePermissions[currentUser.role] || [];
+  if (requiredPermission && currentUser.role !== "Admin") {
+    const permissions = rolePermissions[currentUser.role] || [];
 
     if (!permissions.includes(requiredPermission)) {
-      return (
-        <Navigate
-          to={getDashboardPath(currentUser.role)}
-          replace
-        />
-      );
+      return <Navigate to={getDashboardPath(currentUser.role)} replace />;
     }
   }
 

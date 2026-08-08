@@ -10,21 +10,21 @@ export function getDashboardSummary() {
   const totalDocuments = documents.length;
 
   const approvedDocuments = documents.filter(
-    (doc) => doc.status === DOCUMENT_STATUS.APPROVED
+    (doc) => doc.status === DOCUMENT_STATUS.APPROVED,
   ).length;
 
   const pendingDocuments = documents.filter(
     (doc) =>
       doc.status === DOCUMENT_STATUS.PENDING ||
-      doc.status === DOCUMENT_STATUS.UNDER_REVIEW
+      doc.status === DOCUMENT_STATUS.UNDER_REVIEW,
   ).length;
 
   const expiredDocuments = documents.filter(
-    (doc) => doc.status === DOCUMENT_STATUS.EXPIRED
+    (doc) => doc.status === DOCUMENT_STATUS.EXPIRED,
   ).length;
 
   const missingDocuments = documents.filter(
-    (doc) => doc.status === DOCUMENT_STATUS.MISSING
+    (doc) => doc.status === DOCUMENT_STATUS.MISSING,
   ).length;
 
   const completionPercentage =
@@ -49,29 +49,24 @@ export function getDocumentStatusSummary() {
   const documents = getEISFModuleDocuments();
 
   return {
-    draft: documents.filter(
-      (doc) => doc.status === DOCUMENT_STATUS.DRAFT
-    ).length,
+    draft: documents.filter((doc) => doc.status === DOCUMENT_STATUS.DRAFT)
+      .length,
 
-    pending: documents.filter(
-      (doc) => doc.status === DOCUMENT_STATUS.PENDING
-    ).length,
+    pending: documents.filter((doc) => doc.status === DOCUMENT_STATUS.PENDING)
+      .length,
 
     underReview: documents.filter(
-      (doc) => doc.status === DOCUMENT_STATUS.UNDER_REVIEW
+      (doc) => doc.status === DOCUMENT_STATUS.UNDER_REVIEW,
     ).length,
 
-    approved: documents.filter(
-      (doc) => doc.status === DOCUMENT_STATUS.APPROVED
-    ).length,
+    approved: documents.filter((doc) => doc.status === DOCUMENT_STATUS.APPROVED)
+      .length,
 
-    expired: documents.filter(
-      (doc) => doc.status === DOCUMENT_STATUS.EXPIRED
-    ).length,
+    expired: documents.filter((doc) => doc.status === DOCUMENT_STATUS.EXPIRED)
+      .length,
 
-    archived: documents.filter(
-      (doc) => doc.status === DOCUMENT_STATUS.ARCHIVED
-    ).length,
+    archived: documents.filter((doc) => doc.status === DOCUMENT_STATUS.ARCHIVED)
+      .length,
   };
 }
 
@@ -82,7 +77,7 @@ export function getDocumentsUnderApproval() {
   return getEISFModuleDocuments().filter(
     (doc) =>
       doc.status === DOCUMENT_STATUS.PENDING ||
-      doc.status === DOCUMENT_STATUS.UNDER_REVIEW
+      doc.status === DOCUMENT_STATUS.UNDER_REVIEW,
   );
 }
 
@@ -91,7 +86,7 @@ export function getDocumentsUnderApproval() {
  */
 export function getExpiredDocuments() {
   return getEISFModuleDocuments().filter(
-    (doc) => doc.status === DOCUMENT_STATUS.EXPIRED
+    (doc) => doc.status === DOCUMENT_STATUS.EXPIRED,
   );
 }
 
@@ -100,7 +95,7 @@ export function getExpiredDocuments() {
  */
 export function getMissingDocuments() {
   return getEISFModuleDocuments().filter(
-    (doc) => doc.status === DOCUMENT_STATUS.MISSING
+    (doc) => doc.status === DOCUMENT_STATUS.MISSING,
   );
 }
 
@@ -119,9 +114,7 @@ export function getCompletionPercentage() {
  * Returns documents by status.
  */
 export function getDocumentsByStatus(status) {
-  return getEISFModuleDocuments().filter(
-    (doc) => doc.status === status
-  );
+  return getEISFModuleDocuments().filter((doc) => doc.status === status);
 }
 
 /**
@@ -138,9 +131,7 @@ export function getApprovalPercentage() {
   const summary = getDashboardSummary();
 
   return summary.totalDocuments
-    ? Math.round(
-        (summary.approvedDocuments / summary.totalDocuments) * 100
-      )
+    ? Math.round((summary.approvedDocuments / summary.totalDocuments) * 100)
     : 0;
 }
 
@@ -151,9 +142,7 @@ export function getPendingPercentage() {
   const summary = getDashboardSummary();
 
   return summary.totalDocuments
-    ? Math.round(
-        (summary.pendingDocuments / summary.totalDocuments) * 100
-      )
+    ? Math.round((summary.pendingDocuments / summary.totalDocuments) * 100)
     : 0;
 }
 
@@ -164,9 +153,7 @@ export function getExpiredPercentage() {
   const summary = getDashboardSummary();
 
   return summary.totalDocuments
-    ? Math.round(
-        (summary.expiredDocuments / summary.totalDocuments) * 100
-      )
+    ? Math.round((summary.expiredDocuments / summary.totalDocuments) * 100)
     : 0;
 }
 

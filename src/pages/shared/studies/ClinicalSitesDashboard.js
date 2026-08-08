@@ -300,8 +300,6 @@ function ClinicalSitesDashboard({ study }) {
 
                   <td>{resolveSiteDisplay(site)}</td>
 
-                  
-
                   <td>{site.country || "—"}</td>
 
                   <td>{site.sponsor || study?.sponsor || "—"}</td>

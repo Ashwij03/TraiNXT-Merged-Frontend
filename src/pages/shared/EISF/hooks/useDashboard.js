@@ -13,22 +13,21 @@ export default function useDashboard(documents = []) {
     const totalDocuments = safeDocuments.length;
 
     const approvedDocuments = safeDocuments.filter(
-      (document) => document.status === DOCUMENT_STATUS.APPROVED
+      (document) => document.status === DOCUMENT_STATUS.APPROVED,
     );
 
     const pendingDocuments = safeDocuments.filter((document) =>
-      [
-        DOCUMENT_STATUS.PENDING,
-        DOCUMENT_STATUS.UNDER_REVIEW,
-      ].includes(document.status)
+      [DOCUMENT_STATUS.PENDING, DOCUMENT_STATUS.UNDER_REVIEW].includes(
+        document.status,
+      ),
     );
 
     const draftDocuments = safeDocuments.filter(
-      (document) => document.status === DOCUMENT_STATUS.DRAFT
+      (document) => document.status === DOCUMENT_STATUS.DRAFT,
     );
 
     const missingDocuments = safeDocuments.filter(
-      (document) => document.status === DOCUMENT_STATUS.MISSING
+      (document) => document.status === DOCUMENT_STATUS.MISSING,
     );
 
     const expiredDocuments = safeDocuments.filter((document) => {
@@ -52,15 +51,13 @@ export default function useDashboard(documents = []) {
         DOCUMENT_STATUS.PENDING,
         DOCUMENT_STATUS.UNDER_REVIEW,
         DOCUMENT_STATUS.UNDER_APPROVAL,
-      ].includes(document.status)
+      ].includes(document.status),
     );
 
     const completionPercentage =
       totalDocuments === 0
         ? 0
-        : Math.round(
-            (approvedDocuments.length / totalDocuments) * 100
-          );
+        : Math.round((approvedDocuments.length / totalDocuments) * 100);
 
     return {
       documents: safeDocuments,
@@ -82,8 +79,7 @@ export default function useDashboard(documents = []) {
       missingCount: missingDocuments.length,
       expiredCount: expiredDocuments.length,
       expiringSoonCount: expiringSoonDocuments.length,
-      documentsUnderApprovalCount:
-        documentsUnderApproval.length,
+      documentsUnderApprovalCount: documentsUnderApproval.length,
 
       completionPercentage,
 

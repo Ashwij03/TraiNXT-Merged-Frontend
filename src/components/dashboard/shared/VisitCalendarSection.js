@@ -4,7 +4,7 @@ import CalendarWidget from "./CalendarWidget";
 import DataTable from "./DataTable";
 import {
   compareScheduleDates,
-  isUpcomingVisitSchedule
+  isUpcomingVisitSchedule,
 } from "../../../services/visitScheduleService";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
 import { resolveSiteDisplay } from "../../../utils/siteDisplay";
@@ -23,7 +23,7 @@ const UPCOMING_COLUMNS = [
   },
   { key: "study", label: "Study", width: "18%" },
   { key: "site", label: "Site", width: "14%" },
-  { key: "status", label: "Status", width: "14%" }
+  { key: "status", label: "Status", width: "14%" },
 ];
 
 /*
@@ -40,12 +40,12 @@ function VisitCalendarSection({
   institutionFilter = "",
   studyCode = "",
   daysAhead = 30,
-  cardClassName = "calendar-table-unified-card"
+  cardClassName = "calendar-table-unified-card",
 }) {
   const { schedules, upcomingWindow, getVisitsForDate } = useVisitSchedules({
     studyCode,
     institutionFilter,
-    daysAhead
+    daysAhead,
   });
   console.log("Dashboard schedules:", schedules);
 
@@ -64,10 +64,10 @@ function VisitCalendarSection({
       selectedScheduleDate
         ? getVisitsForDate(selectedScheduleDate).map((item) => ({
             ...item,
-            subjectid: item.subjectid || item.subjectId || item.subject
+            subjectid: item.subjectid || item.subjectId || item.subject,
           }))
         : [],
-    [getVisitsForDate, selectedScheduleDate]
+    [getVisitsForDate, selectedScheduleDate],
   );
 
   // BUG-2 fix: the Calendar previously only excluded Completed visits,
@@ -80,34 +80,31 @@ function VisitCalendarSection({
   // lock-step through a single source of truth in visitScheduleService.
   const calendarSchedules = useMemo(
     () => schedules.filter((item) => isUpcomingVisitSchedule(item)),
-    [schedules]
+    [schedules],
   );
 
-  
   const baseRows = useMemo(() => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  const isUpcoming = (item) => {
-    if (!item?.date) {
-      return false;
+    const isUpcoming = (item) => {
+      if (!item?.date) {
+        return false;
+      }
+
+      const visitDate = new Date(item.date);
+      visitDate.setHours(0, 0, 0, 0);
+
+      // only today and future visits
+      return visitDate >= today;
+    };
+
+    if (selectedScheduleDate) {
+      return selectedDaySchedules.filter(isUpcoming);
     }
 
-    const visitDate = new Date(item.date);
-    visitDate.setHours(0, 0, 0, 0);
-
-    // only today and future visits
-    return visitDate >= today;
-  };
-
-  if (selectedScheduleDate) {
-    return selectedDaySchedules.filter(isUpcoming);
-  }
-
-  return [...upcomingWindow]
-    .filter(isUpcoming)
-    .sort(compareScheduleDates);
-}, [selectedDaySchedules, selectedScheduleDate, upcomingWindow]);
+    return [...upcomingWindow].filter(isUpcoming).sort(compareScheduleDates);
+  }, [selectedDaySchedules, selectedScheduleDate, upcomingWindow]);
 
   // Item 17 — Site column renders resolved Site Number (not stored Site Name).
   // Authoritative schedule/site data is left untouched; this is display only.
@@ -119,11 +116,11 @@ function VisitCalendarSection({
         site: row?.site
           ? resolveSiteDisplay(row.site, {
               sources: siteResolutionSources,
-              fallback: row.site || "—"
+              fallback: row.site || "—",
             })
-          : "—"
+          : "—",
       })),
-    [baseRows, siteResolutionSources]
+    [baseRows, siteResolutionSources],
   );
 
   const tableEmptyMessage = selectedScheduleDate
@@ -149,7 +146,8 @@ function VisitCalendarSection({
           {selectedScheduleDate && selectedDaySchedules.length > 0 && (
             <p className="visit-calendar-day-summary">
               {selectedDaySchedules.length} visit
-              {selectedDaySchedules.length !== 1 ? "s" : ""} on {selectedScheduleDate}
+              {selectedDaySchedules.length !== 1 ? "s" : ""} on{" "}
+              {selectedScheduleDate}
             </p>
           )}
         </div>

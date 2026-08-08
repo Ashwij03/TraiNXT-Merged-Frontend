@@ -24,13 +24,21 @@ const DEFAULT_CONVERSATIONS = [
     id: 2,
     name: "Clinical Monitor",
     unread: 1,
-    messages: [{ sender: "them", text: "Visit completed successfully", time: "11:00 AM" }],
+    messages: [
+      {
+        sender: "them",
+        text: "Visit completed successfully",
+        time: "11:00 AM",
+      },
+    ],
   },
   {
     id: 3,
     name: "Data Manager",
     unread: 0,
-    messages: [{ sender: "them", text: "Database lock scheduled", time: "9:15 AM" }],
+    messages: [
+      { sender: "them", text: "Database lock scheduled", time: "9:15 AM" },
+    ],
   },
 ];
 

@@ -75,7 +75,12 @@ function SitePerformance() {
           {filteredSites.length === 0 ? (
             <p>No data available yet</p>
           ) : (
-            <table className="ctms-standard-table" width="100%" border="1" cellPadding="10">
+            <table
+              className="ctms-standard-table"
+              width="100%"
+              border="1"
+              cellPadding="10"
+            >
               <thead>
                 <tr>
                   <th>Site</th>

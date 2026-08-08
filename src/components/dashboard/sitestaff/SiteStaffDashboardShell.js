@@ -9,7 +9,7 @@ import {
   getCurrentUser,
   isAdmin,
   setAdminPreviewRole,
-  setPIPreviewRole
+  setPIPreviewRole,
 } from "../../../services/roleService";
 import { EISF_SIDEBAR_COLLAPSE_EVENT } from "../../../constants/headerFilters";
 
@@ -21,7 +21,7 @@ const DASHBOARD_ROUTE_ROLES = {
   "/site-staff-dashboard": ROLES.SITE_STAFF,
   "/pi-dashboard": ROLES.PI,
   "/cro-dashboard": ROLES.CRO,
-  "/sponsor-dashboard": ROLES.SPONSOR
+  "/sponsor-dashboard": ROLES.SPONSOR,
 };
 
 function SiteStaffDashboardShell({ children }) {
@@ -91,7 +91,7 @@ function SiteStaffDashboardShell({ children }) {
     return () => {
       window.removeEventListener(
         EISF_SIDEBAR_COLLAPSE_EVENT,
-        handleEisfEntered
+        handleEisfEntered,
       );
     };
   }, [viewportMode]);
@@ -99,7 +99,7 @@ function SiteStaffDashboardShell({ children }) {
   const sidebarWrapClass = [
     "dashboard-sidebar-wrap",
     viewportMode !== "desktop" && sidebarOpen ? "is-open" : "",
-    viewportMode === "desktop" && sidebarCollapsed ? "is-collapsed" : ""
+    viewportMode === "desktop" && sidebarCollapsed ? "is-collapsed" : "",
   ]
     .filter(Boolean)
     .join(" ");

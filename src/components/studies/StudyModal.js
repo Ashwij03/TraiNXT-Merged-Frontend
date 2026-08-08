@@ -91,8 +91,8 @@ function StudyModal({
     subtitle !== undefined
       ? subtitle
       : mode === "edit"
-      ? "Update all study details and save changes."
-      : "Enter the study, site and subject details.";
+        ? "Update all study details and save changes."
+        : "Enter the study, site and subject details.";
   const resolvedSubmitLabel =
     submitLabel || (mode === "edit" ? "Save Changes" : "Submit Study");
   const resolvedCloseAriaLabel =

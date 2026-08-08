@@ -16,7 +16,7 @@ function VisitDetails() {
   const decodedId = decodeURIComponent(id || "");
   const visit = useMemo(
     () => schedules.find((schedule) => String(schedule.id) === decodedId),
-    [decodedId, schedules]
+    [decodedId, schedules],
   );
 
   const siteSources = useMemo(() => getStudies(), []);
@@ -24,7 +24,7 @@ function VisitDetails() {
     value
       ? resolveSiteDisplay(value, {
           sources: siteSources,
-          fallback: value
+          fallback: value,
         })
       : "—";
 
@@ -48,11 +48,21 @@ function VisitDetails() {
         <h1>Visit Details</h1>
 
         <div className="details-card">
-          <p><strong>Visit ID:</strong> {visit.id}</p>
-          <p><strong>Study ID:</strong> {visit.study || visit.studyKey || "—"}</p>
-          <p><strong>Subject ID:</strong> {visit.subjectId || "—"}</p>
-          <p><strong>Site:</strong> {displaySite(visit.site)}</p>
-          <p><strong>Visit Type:</strong> {visit.visit || "—"}</p>
+          <p>
+            <strong>Visit ID:</strong> {visit.id}
+          </p>
+          <p>
+            <strong>Study ID:</strong> {visit.study || visit.studyKey || "—"}
+          </p>
+          <p>
+            <strong>Subject ID:</strong> {visit.subjectId || "—"}
+          </p>
+          <p>
+            <strong>Site:</strong> {displaySite(visit.site)}
+          </p>
+          <p>
+            <strong>Visit Type:</strong> {visit.visit || "—"}
+          </p>
           <p>
             <strong>Scheduled Date:</strong>{" "}
             {formatScheduleDisplayDate(visit.date)}
@@ -63,9 +73,15 @@ function VisitDetails() {
               ? formatScheduleDisplayDate(visit.actualDate || visit.date)
               : "-"}
           </p>
-          <p><strong>Status:</strong> {visit.status || "Scheduled"}</p>
-          <p><strong>Protocol Deviation:</strong> {visit.deviation || "—"}</p>
-          <p><strong>Notes:</strong> {visit.notes || "—"}</p>
+          <p>
+            <strong>Status:</strong> {visit.status || "Scheduled"}
+          </p>
+          <p>
+            <strong>Protocol Deviation:</strong> {visit.deviation || "—"}
+          </p>
+          <p>
+            <strong>Notes:</strong> {visit.notes || "—"}
+          </p>
         </div>
       </div>
     </AppLayout>

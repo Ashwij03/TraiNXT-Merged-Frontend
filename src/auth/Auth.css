@@ -36,7 +36,10 @@ body {
   align-items: center;
   box-sizing: border-box;
   padding: 48px 32px 48px 56px;
-  background: linear-gradient(rgba(255, 255, 255, 0.88), rgba(224, 255, 246, 0.82));
+  background: linear-gradient(
+    rgba(255, 255, 255, 0.88),
+    rgba(224, 255, 246, 0.82)
+  );
 }
 
 /* Content column widened (was 440px) to use the extra space now given
@@ -164,7 +167,10 @@ body {
   padding: 24px 48px;
   box-sizing: border-box;
   overflow: visible;
-  background: linear-gradient(rgba(255, 255, 255, 0.88), rgba(224, 255, 246, 0.82));
+  background: linear-gradient(
+    rgba(255, 255, 255, 0.88),
+    rgba(224, 255, 246, 0.82)
+  );
 }
 
 @media (max-width: 900px) {

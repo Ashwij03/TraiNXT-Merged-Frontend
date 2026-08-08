@@ -30,7 +30,7 @@ function PINotifications({ selectedStudy = "All Studies" }) {
   const persistNotifications = (updated) => {
     const unread = updated.items.filter((i) => i.status === "Unread").length;
     const alerts = updated.items.filter(
-      (i) => i.priority === "High" || i.priority === "Critical"
+      (i) => i.priority === "High" || i.priority === "Critical",
     ).length;
     const saved = saveNotificationsPageData({
       ...updated,
@@ -44,7 +44,7 @@ function PINotifications({ selectedStudy = "All Studies" }) {
     const updatedItems = data.items.map((item) =>
       item.id === id
         ? { ...item, status: item.status === "Unread" ? "Read" : "Unread" }
-        : item
+        : item,
     );
     persistNotifications({ ...data, items: updatedItems });
   };
@@ -63,12 +63,14 @@ function PINotifications({ selectedStudy = "All Studies" }) {
     return items;
   }, [data.items, selectedStudy, priorityFilter, categoryFilter, statusFilter]);
 
-  const unreadFiltered = filteredItems.filter((i) => i.status === "Unread").length;
+  const unreadFiltered = filteredItems.filter(
+    (i) => i.status === "Unread",
+  ).length;
   const highPriority = filteredItems.filter(
-    (i) => i.priority === "High" || i.priority === "Critical"
+    (i) => i.priority === "High" || i.priority === "Critical",
   ).length;
   const tasksDue = filteredItems.filter(
-    (i) => i.status === "Unread" && i.priority !== "Low"
+    (i) => i.status === "Unread" && i.priority !== "Low",
   ).length;
 
   const kpiItems = [
@@ -89,17 +91,33 @@ function PINotifications({ selectedStudy = "All Studies" }) {
           </p>
         </div>
         <div className="dashboard-actions pi-filter-row">
-          <select className="pi-filter-select" value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)}>
+          <select
+            className="pi-filter-select"
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+          >
             {PRIORITY_OPTIONS.map((p) => (
-              <option key={p} value={p}>{p === "All" ? "All Priorities" : p}</option>
+              <option key={p} value={p}>
+                {p === "All" ? "All Priorities" : p}
+              </option>
             ))}
           </select>
-          <select className="pi-filter-select" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+          <select
+            className="pi-filter-select"
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+          >
             {CATEGORY_OPTIONS.map((c) => (
-              <option key={c} value={c}>{c === "All" ? "All Categories" : c}</option>
+              <option key={c} value={c}>
+                {c === "All" ? "All Categories" : c}
+              </option>
             ))}
           </select>
-          <select className="pi-filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <select
+            className="pi-filter-select"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
             <option value="All">All Status</option>
             <option value="Unread">Unread</option>
             <option value="Read">Read</option>
@@ -109,7 +127,10 @@ function PINotifications({ selectedStudy = "All Studies" }) {
 
       <div className="pi-kpi-cards-grid">
         {kpiItems.map((kpi) => (
-          <div key={kpi.label} className={`pi-enterprise-kpi ${kpi.tone} pi-kpi-clickable`}>
+          <div
+            key={kpi.label}
+            className={`pi-enterprise-kpi ${kpi.tone} pi-kpi-clickable`}
+          >
             <span className="pi-enterprise-kpi-label">{kpi.label}</span>
             <span className="pi-enterprise-kpi-value">{kpi.value}</span>
           </div>
@@ -162,13 +183,21 @@ function PINotifications({ selectedStudy = "All Studies" }) {
                     <td>{item.category || "—"}</td>
                     <td>{item.study || "—"}</td>
                     <td>
-                      <span className={`pi-priority-badge ${item.priority.toLowerCase()}`}>
+                      <span
+                        className={`pi-priority-badge ${item.priority.toLowerCase()}`}
+                      >
                         {item.priority}
                       </span>
                     </td>
                     <td>{item.date}</td>
                     <td>
-                      <span className={item.status === "Unread" ? "status-danger" : "status-success"}>
+                      <span
+                        className={
+                          item.status === "Unread"
+                            ? "status-danger"
+                            : "status-success"
+                        }
+                      >
                         {item.status}
                       </span>
                     </td>

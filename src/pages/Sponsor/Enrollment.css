@@ -28,27 +28,27 @@
   height: 100%;
   background: #2563eb;
 }
-.enrollment-summary{
-  display:flex;
-  gap:20px;
-  margin-bottom:25px;
-  flex-wrap:wrap;
+.enrollment-summary {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
 }
 
-.summary-card{
-  background:#fff;
-  padding:20px;
-  border-radius:10px;
-  min-width:180px;
-  text-align:center;
-  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+.summary-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  min-width: 180px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.view-btn{
-  background:#2563eb;
-  color:#fff;
-  border:none;
-  padding:8px 14px;
-  border-radius:6px;
-  cursor:pointer;
+.view-btn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
 }

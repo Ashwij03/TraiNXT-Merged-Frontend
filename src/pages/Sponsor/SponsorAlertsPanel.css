@@ -111,10 +111,18 @@
   height: 20px;
 }
 
-.alert-icon.critical { color: #dc2626; }
-.alert-icon.high { color: #ea580c; }
-.alert-icon.medium { color: #ca8a04; }
-.alert-icon.low { color: #2563eb; }
+.alert-icon.critical {
+  color: #dc2626;
+}
+.alert-icon.high {
+  color: #ea580c;
+}
+.alert-icon.medium {
+  color: #ca8a04;
+}
+.alert-icon.low {
+  color: #2563eb;
+}
 
 .alert-content {
   flex: 1;

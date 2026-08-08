@@ -70,7 +70,7 @@ function writeStorage(key, value, eventName) {
     window.dispatchEvent(
       new CustomEvent(eventName, {
         detail: value,
-      })
+      }),
     );
   }
 }
@@ -129,7 +129,7 @@ function getSubjectsForStudy(subjectsByStudy, studyId) {
   const normalizedStudyId = normalizeValue(studyId);
 
   const matchingKey = Object.keys(subjectsByStudy).find(
-    (key) => normalizeValue(key) === normalizedStudyId
+    (key) => normalizeValue(key) === normalizedStudyId,
   );
 
   if (matchingKey && Array.isArray(subjectsByStudy[matchingKey])) {
@@ -141,14 +141,14 @@ function getSubjectsForStudy(subjectsByStudy, studyId) {
 
 function getSubjectDetailCards(subject, siteSources = []) {
   const latestSite =
-  getSubjectStudyDefaults(subject?.studyId).site || subject?.site;
+    getSubjectStudyDefaults(subject?.studyId).site || subject?.site;
 
-const siteDisplay = latestSite
-  ? resolveSiteDisplay(latestSite, {
-      sources: siteSources,
-      fallback: latestSite,
-    })
-  : "—";
+  const siteDisplay = latestSite
+    ? resolveSiteDisplay(latestSite, {
+        sources: siteSources,
+        fallback: latestSite,
+      })
+    : "—";
 
   return [
     {
@@ -159,13 +159,10 @@ const siteDisplay = latestSite
       label: "Status",
       value: subject?.status || "—",
     },
-   {
-  label: "Principal Investigator",
-  value:
-    getSubjectStudyDefaults(subject?.studyId).pi ||
-    subject?.pi ||
-    "—",
-},
+    {
+      label: "Principal Investigator",
+      value: getSubjectStudyDefaults(subject?.studyId).pi || subject?.pi || "—",
+    },
     {
       label: "Study ID",
       value: subject?.studyId || "—",
@@ -198,17 +195,18 @@ function StudySubjects({
   const navigate = useNavigate();
 
   const studyId = String(
-    params.id || params.studyId || params.code || ""
+    params.id || params.studyId || params.code || "",
   ).trim();
 
   const [subjectsByStudy, setSubjectsByStudy] = useState(() =>
-    readStorage(SUBJECTS_STORAGE_KEY, {})
+    readStorage(SUBJECTS_STORAGE_KEY, {}),
   );
   const [searchTerm, setSearchTerm] = useState("");
   const [showSubjectModal, setShowSubjectModal] = useState(false);
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
   // Phase-7: Subject Details "Comments" button toggles a shared modal.
-  const [showSubjectCommentsModal, setShowSubjectCommentsModal] = useState(false);
+  const [showSubjectCommentsModal, setShowSubjectCommentsModal] =
+    useState(false);
   const [newSubject, setNewSubject] = useState(emptySubjectForm);
   const [editingSubjectId, setEditingSubjectId] = useState(null);
   const [subjectModalError, setSubjectModalError] = useState("");
@@ -229,7 +227,7 @@ function StudySubjects({
     dialog, other tabs). Refreshed on `studies-updated`.
   */
   const [currentStudy, setCurrentStudy] = useState(() =>
-    studyId ? getStudyByCode(studyId) : null
+    studyId ? getStudyByCode(studyId) : null,
   );
 
   useEffect(() => {
@@ -248,8 +246,7 @@ function StudySubjects({
     };
   }, [studyId]);
 
-  const isStudyCompleted =
-    currentStudy?.status === STUDY_STATUS_COMPLETED;
+  const isStudyCompleted = currentStudy?.status === STUDY_STATUS_COMPLETED;
 
   const inheritedSubjectFields = getSubjectStudyDefaults(studyId);
 
@@ -277,29 +274,29 @@ function StudySubjects({
   }, []);
 
   useEffect(() => {
-  const loadSelectedSubject = () => {
-    const savedSubject = readStorage(SELECTED_SUBJECT_STORAGE_KEY, null);
+    const loadSelectedSubject = () => {
+      const savedSubject = readStorage(SELECTED_SUBJECT_STORAGE_KEY, null);
 
-    if (
-      savedSubject?.id &&
-      normalizeValue(savedSubject.studyId) === normalizeValue(studyId)
-    ) {
-      setSelectedSubjectId(savedSubject.id);
-    } else {
-      setSelectedSubjectId(null);
-    }
-  };
+      if (
+        savedSubject?.id &&
+        normalizeValue(savedSubject.studyId) === normalizeValue(studyId)
+      ) {
+        setSelectedSubjectId(savedSubject.id);
+      } else {
+        setSelectedSubjectId(null);
+      }
+    };
 
-  // Load on first render
-  loadSelectedSubject();
+    // Load on first render
+    loadSelectedSubject();
 
-  // Update whenever the sidebar selects a subject
-  window.addEventListener("subject-selected", loadSelectedSubject);
+    // Update whenever the sidebar selects a subject
+    window.addEventListener("subject-selected", loadSelectedSubject);
 
-  return () => {
-    window.removeEventListener("subject-selected", loadSelectedSubject);
-  };
-}, [studyId]);
+    return () => {
+      window.removeEventListener("subject-selected", loadSelectedSubject);
+    };
+  }, [studyId]);
 
   const subjectsData = useMemo(() => {
     return getSubjectsForStudy(subjectsByStudy, studyId);
@@ -319,10 +316,7 @@ function StudySubjects({
     });
   }, [searchTerm, subjectsData]);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredSubjects.length / pageSize)
-  );
+  const totalPages = Math.max(1, Math.ceil(filteredSubjects.length / pageSize));
 
   useEffect(() => {
     setCurrentPage(1);
@@ -341,10 +335,7 @@ function StudySubjects({
 
   const pageStart =
     filteredSubjects.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-  const pageEnd = Math.min(
-    currentPage * pageSize,
-    filteredSubjects.length
-  );
+  const pageEnd = Math.min(currentPage * pageSize, filteredSubjects.length);
 
   const selectedSubject = useMemo(() => {
     if (!selectedSubjectId) {
@@ -354,7 +345,7 @@ function StudySubjects({
     return (
       subjectsData.find(
         (subject) =>
-          normalizeValue(subject.id) === normalizeValue(selectedSubjectId)
+          normalizeValue(subject.id) === normalizeValue(selectedSubjectId),
       ) || null
     );
   }, [selectedSubjectId, subjectsData]);
@@ -365,7 +356,7 @@ function StudySubjects({
     writeStorage(
       SUBJECTS_STORAGE_KEY,
       updatedSubjectsByStudy,
-      "subjects-updated"
+      "subjects-updated",
     );
   };
 
@@ -414,7 +405,7 @@ function StudySubjects({
     const duplicateExists = subjectsData.some(
       (subject) =>
         normalizeValue(subject.id) === normalizeValue(subjectId) &&
-        normalizeValue(subject.id) !== normalizeValue(editingSubjectId || "")
+        normalizeValue(subject.id) !== normalizeValue(editingSubjectId || ""),
     );
 
     if (duplicateExists) {
@@ -436,7 +427,7 @@ function StudySubjects({
         if (normalizeValue(subject.id) !== normalizeValue(editingSubjectId)) {
           return subject;
         }
-      const latestDefaults = getSubjectStudyDefaults(studyId);
+        const latestDefaults = getSubjectStudyDefaults(studyId);
         const merged = {
           ...subject,
           ...newSubject,
@@ -453,15 +444,14 @@ function StudySubjects({
           status: manualStatus,
         };
       });
-      
+
       saveSubjects({
         ...subjectsByStudy,
         [studyId]: updatedSubjectsForStudy,
-
       });
 
       const editedSubject = updatedSubjectsForStudy.find(
-        (subject) => normalizeValue(subject.id) === normalizeValue(subjectId)
+        (subject) => normalizeValue(subject.id) === normalizeValue(subjectId),
       );
 
       /*
@@ -474,7 +464,7 @@ function StudySubjects({
         updateSubject(studyId, editingSubjectId, editedSubject);
       } catch (error) {
         setSubjectModalError(
-          (error && error.message) || COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE
+          (error && error.message) || COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE,
         );
         return;
       }
@@ -518,8 +508,7 @@ function StudySubjects({
         createdSubject = createSubject(studyId, subjectToAdd);
       } catch (error) {
         setSubjectModalError(
-          (error && error.message) ||
-            COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE
+          (error && error.message) || COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE,
         );
         return;
       }
@@ -634,7 +623,7 @@ function StudySubjects({
     const subject = subjectToDelete;
 
     const updatedSubjectsForStudy = subjectsData.filter(
-      (item) => normalizeValue(item.id) !== normalizeValue(subject.id)
+      (item) => normalizeValue(item.id) !== normalizeValue(subject.id),
     );
 
     saveSubjects({
@@ -659,7 +648,7 @@ function StudySubjects({
       JSON.stringify({
         ...subject,
         studyId,
-      })
+      }),
     );
 
     setSelectedSubjectId(subject.id);
@@ -667,8 +656,8 @@ function StudySubjects({
     if (shouldNavigate && studyId) {
       navigate(
         `/study-dashboard/${encodeURIComponent(
-          studyId
-        )}?tab=Subjects&subject=${encodeURIComponent(subject.id)}`
+          studyId,
+        )}?tab=Subjects&subject=${encodeURIComponent(subject.id)}`,
       );
     }
   };
@@ -680,14 +669,11 @@ function StudySubjects({
   };
 
   if (selectedSubject) {
-    const subjectContextKey = getSubjectContextKey(
-      studyId,
-      selectedSubject.id
-    );
+    const subjectContextKey = getSubjectContextKey(studyId, selectedSubject.id);
 
     const subjectDetailCards = getSubjectDetailCards(
       selectedSubject,
-      getStudies()
+      getStudies(),
     );
 
     return (
@@ -719,10 +705,7 @@ function StudySubjects({
 
           <div className="subject-details-grid">
             {subjectDetailCards.map((detail) => (
-              <div
-                key={detail.label}
-                className="subject-details-card"
-              >
+              <div key={detail.label} className="subject-details-card">
                 <span>{detail.label}</span>
                 <strong>{detail.value}</strong>
               </div>
@@ -833,21 +816,21 @@ function StudySubjects({
                     <td>{subject.id || "—"}</td>
                     <td>{subject.initials || "—"}</td>
                     <td>{subject.status || "—"}</td>
-                    <td>{getSubjectStudyDefaults(studyId).pi || subject.pi || "—"}</td>
                     <td>
-                     {
-  (() => {
-    const latestSite =
-      getSubjectStudyDefaults(studyId).site || subject.site;
+                      {getSubjectStudyDefaults(studyId).pi || subject.pi || "—"}
+                    </td>
+                    <td>
+                      {(() => {
+                        const latestSite =
+                          getSubjectStudyDefaults(studyId).site || subject.site;
 
-    return latestSite
-      ? resolveSiteDisplay(latestSite, {
-          sources: getStudies(),
-          fallback: latestSite,
-        })
-      : "—";
-  })()
-}
+                        return latestSite
+                          ? resolveSiteDisplay(latestSite, {
+                              sources: getStudies(),
+                              fallback: latestSite,
+                            })
+                          : "—";
+                      })()}
                     </td>
                     <td>{subject.screeningDate || "—"}</td>
                     <td>{subject.enrollmentDate || "—"}</td>
@@ -999,9 +982,7 @@ function StudySubjects({
             <button
               type="button"
               className="subjects-pagination-btn"
-              onClick={() =>
-                setCurrentPage((page) => Math.max(1, page - 1))
-              }
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
               disabled={currentPage === 1}
               aria-label="Previous page"
             >
@@ -1020,7 +1001,7 @@ function StudySubjects({
                 >
                   {pageNumber}
                 </button>
-              )
+              ),
             )}
 
             <button

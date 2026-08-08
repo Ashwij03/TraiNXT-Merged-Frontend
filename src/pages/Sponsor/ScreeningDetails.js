@@ -4,9 +4,8 @@ import AppLayout from "./AppLayout";
 import { resolveSiteDisplay } from "../../utils/siteDisplay";
 import { getStudies } from "../../services/studyService";
 
-
 function ScreeningDetails() {
-	const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const { id } = useParams();
 
@@ -15,7 +14,7 @@ function ScreeningDetails() {
     value
       ? resolveSiteDisplay(value, {
           sources: siteSources,
-          fallback: value
+          fallback: value,
         })
       : "—";
 
@@ -37,78 +36,109 @@ function ScreeningDetails() {
     comments: "Subject meets all inclusion criteria.",
 
     reviewedBy: "Dr Rao",
-    reviewedOn: "11-May-2026"
+    reviewedOn: "11-May-2026",
   };
 
   return (
     <AppLayout>
-
       <div className="screening-details-page">
-	  
-	  <button
-	    className="back-btn"
-	    onClick={() => navigate("/screening")}
-	  >
-	    ← Back to Screening
-	  </button>
+        <button className="back-btn" onClick={() => navigate("/screening")}>
+          ← Back to Screening
+        </button>
 
         <h1>Screening Details</h1>
 
         <div className="details-card">
-		<div className="details-grid">
+          <div className="details-grid">
+            <div>
+              <p>
+                <strong>Screening ID:</strong> {screeningData.id}
+              </p>
+              <p>
+                <strong>Subject ID:</strong> {screeningData.subjectId}
+              </p>
+              <p>
+                <strong>Study:</strong> {screeningData.study}
+              </p>
+              <p>
+                <strong>Site:</strong> {displaySite(screeningData.site)}
+              </p>
+            </div>
 
-		  <div>
-		    <p><strong>Screening ID:</strong> {screeningData.id}</p>
-		    <p><strong>Subject ID:</strong> {screeningData.subjectId}</p>
-		    <p><strong>Study:</strong> {screeningData.study}</p>
-		    <p><strong>Site:</strong> {displaySite(screeningData.site)}</p>
-		  </div>
-
-		  <div>
-		    <p><strong>PI:</strong> {screeningData.pi}</p>
-		    <p><strong>Status:</strong> {screeningData.status}</p>
-		    <p><strong>Date:</strong> {screeningData.screeningDate}</p>
-		    <p><strong>Eligibility:</strong> {screeningData.eligibility}</p>
-		  </div>
-
-		</div>
+            <div>
+              <p>
+                <strong>PI:</strong> {screeningData.pi}
+              </p>
+              <p>
+                <strong>Status:</strong> {screeningData.status}
+              </p>
+              <p>
+                <strong>Date:</strong> {screeningData.screeningDate}
+              </p>
+              <p>
+                <strong>Eligibility:</strong> {screeningData.eligibility}
+              </p>
+            </div>
+          </div>
 
           <h3>General Information</h3>
 
-          <p><strong>Screening ID:</strong> {screeningData.id}</p>
-          <p><strong>Subject ID:</strong> {screeningData.subjectId}</p>
-          <p><strong>Study:</strong> {screeningData.study}</p>
-          <p><strong>Site:</strong> {displaySite(screeningData.site)}</p>
-          <p><strong>PI:</strong> {screeningData.pi}</p>
-		  <p>
-		    <strong>Status:</strong>
+          <p>
+            <strong>Screening ID:</strong> {screeningData.id}
+          </p>
+          <p>
+            <strong>Subject ID:</strong> {screeningData.subjectId}
+          </p>
+          <p>
+            <strong>Study:</strong> {screeningData.study}
+          </p>
+          <p>
+            <strong>Site:</strong> {displaySite(screeningData.site)}
+          </p>
+          <p>
+            <strong>PI:</strong> {screeningData.pi}
+          </p>
+          <p>
+            <strong>Status:</strong>
 
-		    <span
-		      className={`status-badge ${screeningData.status.toLowerCase()}`}
-		    >
-		      {screeningData.status}
-		    </span>
-		  </p>
-          <p><strong>Screening Date:</strong> {screeningData.screeningDate}</p>
-          <p><strong>Eligibility:</strong> {screeningData.eligibility}</p>
+            <span
+              className={`status-badge ${screeningData.status.toLowerCase()}`}
+            >
+              {screeningData.status}
+            </span>
+          </p>
+          <p>
+            <strong>Screening Date:</strong> {screeningData.screeningDate}
+          </p>
+          <p>
+            <strong>Eligibility:</strong> {screeningData.eligibility}
+          </p>
 
           <hr />
 
           <h3>Eligibility Review</h3>
-		  {screeningData.failureReason && (
-		    <>
-		      <hr />
+          {screeningData.failureReason && (
+            <>
+              <hr />
 
-		      <h3>Failure Reason</h3>
+              <h3>Failure Reason</h3>
 
-		      <p>{screeningData.failureReason}</p>
-		    </>
-		  )}
+              <p>{screeningData.failureReason}</p>
+            </>
+          )}
 
-          <p><strong>Age Criteria:</strong> {screeningData.ageCriteria}</p>
-          <p><strong>Consent:</strong> {screeningData.consent}</p>
-          <p><strong>Medical History:</strong> {screeningData.medicalHistory}</p>
-          <p><strong>Lab Results:</strong> {screeningData.labResults}</p>
+          <p>
+            <strong>Age Criteria:</strong> {screeningData.ageCriteria}
+          </p>
+          <p>
+            <strong>Consent:</strong> {screeningData.consent}
+          </p>
+          <p>
+            <strong>Medical History:</strong> {screeningData.medicalHistory}
+          </p>
+          <p>
+            <strong>Lab Results:</strong> {screeningData.labResults}
+          </p>
 
           <hr />
 
@@ -120,13 +150,14 @@ function ScreeningDetails() {
 
           <h3>Audit Information</h3>
 
-          <p><strong>Reviewed By:</strong> {screeningData.reviewedBy}</p>
-          <p><strong>Reviewed On:</strong> {screeningData.reviewedOn}</p>
-
+          <p>
+            <strong>Reviewed By:</strong> {screeningData.reviewedBy}
+          </p>
+          <p>
+            <strong>Reviewed On:</strong> {screeningData.reviewedOn}
+          </p>
         </div>
-
       </div>
-
     </AppLayout>
   );
 }

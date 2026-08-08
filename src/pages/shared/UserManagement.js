@@ -22,7 +22,7 @@ function UserManagement() {
 
   const roles = useMemo(() => {
     const unique = Array.from(
-      new Set(allUsers.map((user) => user.role).filter(Boolean))
+      new Set(allUsers.map((user) => user.role).filter(Boolean)),
     );
     return ["All", ...unique];
   }, [allUsers]);
@@ -34,25 +34,31 @@ function UserManagement() {
       const matchesRole = roleFilter === "All" || user.role === roleFilter;
       const matchesQuery =
         !query ||
-        String(user.name || "").toLowerCase().includes(query) ||
-        String(user.email || "").toLowerCase().includes(query) ||
-        String(user.assignedSite || "").toLowerCase().includes(query);
+        String(user.name || "")
+          .toLowerCase()
+          .includes(query) ||
+        String(user.email || "")
+          .toLowerCase()
+          .includes(query) ||
+        String(user.assignedSite || "")
+          .toLowerCase()
+          .includes(query);
 
       return matchesRole && matchesQuery;
     });
   }, [allUsers, roleFilter, searchTerm]);
 
   const approvedCount = allUsers.filter(
-    (user) => user.approvalStatus === "Approved"
+    (user) => user.approvalStatus === "Approved",
   ).length;
   const pendingCount = allUsers.filter(
-    (user) => user.approvalStatus === "Pending"
+    (user) => user.approvalStatus === "Pending",
   ).length;
 
   const handleRemovePermission = (userEmail) => {
     if (
       !window.confirm(
-        "Remove all permissions for this user? They will need to request access again."
+        "Remove all permissions for this user? They will need to request access again.",
       )
     ) {
       return;
@@ -125,7 +131,7 @@ function UserManagement() {
               { key: "assignedSite", label: "Institution" },
               { key: "approvalStatus", label: "Approval" },
               { key: "accountStatus", label: "Account Status" },
-              { key: "removePermission", label: "Remove Permission" }
+              { key: "removePermission", label: "Remove Permission" },
             ]}
             data={filteredUsers.map((user) => ({
               name: user.name || "N/A",
@@ -142,7 +148,7 @@ function UserManagement() {
                 >
                   Remove
                 </button>
-              )
+              ),
             }))}
             emptyMessage="No users match the current search/filter"
             pagination

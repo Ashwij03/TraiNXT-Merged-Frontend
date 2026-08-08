@@ -26,13 +26,7 @@ const modifiedDates = [
   "27-Feb-2026",
 ];
 
-const expiryDates = [
-  "-",
-  "30-Dec-2026",
-  "15-Jan-2027",
-  "01-Jun-2026",
-  "-",
-];
+const expiryDates = ["-", "30-Dec-2026", "15-Jan-2027", "01-Jun-2026", "-"];
 
 function fileNameFromDocumentName(documentName = "Document") {
   return `${documentName.replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "")}.pdf`;
@@ -74,55 +68,72 @@ function buildAuditTrail(document) {
   ];
 }
 
-const eisfModuleDocuments = Object.values(EISF_ASSIGNED_MODULES).flatMap((module) =>
-  module.sections.flatMap((section, sectionIndex) =>
-    (section.documents || []).map((sourceDocument, documentIndex) => {
-      const sequence = sectionIndex + documentIndex;
-      const documentName =
-        sourceDocument.documentName || sourceDocument.name || section.title;
-      const status = statusCycle[sequence % statusCycle.length] || sourceDocument.status;
-      const uploadedBy = sourceDocument.uploadedBy || owners[sequence % owners.length];
-      const modifiedDate =
-        sourceDocument.modifiedDate || modifiedDates[sequence % modifiedDates.length];
-      const expiryDate =
-        sourceDocument.expiryDate && sourceDocument.expiryDate !== "-"
-          ? sourceDocument.expiryDate
-          : expiryDates[sequence % expiryDates.length];
+const eisfModuleDocuments = Object.values(EISF_ASSIGNED_MODULES).flatMap(
+  (module) =>
+    module.sections.flatMap((section, sectionIndex) =>
+      (section.documents || []).map((sourceDocument, documentIndex) => {
+        const sequence = sectionIndex + documentIndex;
+        const documentName =
+          sourceDocument.documentName || sourceDocument.name || section.title;
+        const status =
+          statusCycle[sequence % statusCycle.length] || sourceDocument.status;
+        const uploadedBy =
+          sourceDocument.uploadedBy || owners[sequence % owners.length];
+        const modifiedDate =
+          sourceDocument.modifiedDate ||
+          modifiedDates[sequence % modifiedDates.length];
+        const expiryDate =
+          sourceDocument.expiryDate && sourceDocument.expiryDate !== "-"
+            ? sourceDocument.expiryDate
+            : expiryDates[sequence % expiryDates.length];
 
-      const document = {
-        id: `${module.id}-${section.id}-${documentIndex + 1}`,
-        moduleId: module.id,
-        moduleTitle: module.title,
-        section: section.id,
-        sectionId: section.id,
-        folderId: section.id,
-        folderTitle: section.title,
-        documentName,
-        name: documentName,
-        description: section.description,
-        category: sourceDocument.category || sourceDocument.documentType || section.title,
-        documentType: sourceDocument.documentType || sourceDocument.category || section.title,
-        version: sourceDocument.version || (documentIndex === 0 ? "1.0" : `1.${documentIndex}`),
-        status,
-        uploadedBy,
-        createdBy: uploadedBy,
-        approvedBy:
-          sourceDocument.approvedBy ||
-          (status === DOCUMENT_STATUS.APPROVED ? "Principal Investigator" : "-"),
-        modifiedDate,
-        expiryDate,
-        fileName: sourceDocument.fileName || fileNameFromDocumentName(documentName),
-        fileSize: sourceDocument.fileSize || `${(0.8 + documentIndex * 0.3).toFixed(1)} MB`,
-      };
+        const document = {
+          id: `${module.id}-${section.id}-${documentIndex + 1}`,
+          moduleId: module.id,
+          moduleTitle: module.title,
+          section: section.id,
+          sectionId: section.id,
+          folderId: section.id,
+          folderTitle: section.title,
+          documentName,
+          name: documentName,
+          description: section.description,
+          category:
+            sourceDocument.category ||
+            sourceDocument.documentType ||
+            section.title,
+          documentType:
+            sourceDocument.documentType ||
+            sourceDocument.category ||
+            section.title,
+          version:
+            sourceDocument.version ||
+            (documentIndex === 0 ? "1.0" : `1.${documentIndex}`),
+          status,
+          uploadedBy,
+          createdBy: uploadedBy,
+          approvedBy:
+            sourceDocument.approvedBy ||
+            (status === DOCUMENT_STATUS.APPROVED
+              ? "Principal Investigator"
+              : "-"),
+          modifiedDate,
+          expiryDate,
+          fileName:
+            sourceDocument.fileName || fileNameFromDocumentName(documentName),
+          fileSize:
+            sourceDocument.fileSize ||
+            `${(0.8 + documentIndex * 0.3).toFixed(1)} MB`,
+        };
 
-      return {
-        ...document,
-        history: sourceDocument.history || buildHistory(document),
-        versions: sourceDocument.versions || buildHistory(document),
-        auditTrail: sourceDocument.auditTrail || buildAuditTrail(document),
-      };
-    })
-  )
+        return {
+          ...document,
+          history: sourceDocument.history || buildHistory(document),
+          versions: sourceDocument.versions || buildHistory(document),
+          auditTrail: sourceDocument.auditTrail || buildAuditTrail(document),
+        };
+      }),
+    ),
 );
 
 export default eisfModuleDocuments;

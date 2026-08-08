@@ -22,14 +22,14 @@ export default function UploadDocumentModal({
   onClose,
   onUpload,
   categoryOptions = [],
-  defaultCategory = ""
+  defaultCategory = "",
 }) {
   const [form, setForm] = useState({
     documentName: "",
     category: defaultCategory || "",
     version: "",
     comments: "",
-    file: null
+    file: null,
   });
   const [error, setError] = useState("");
   const [queue, setQueue] = useState([]); // [{ id, file, relativePath, progress, status }]
@@ -49,7 +49,7 @@ export default function UploadDocumentModal({
     if (open) {
       setForm((prev) => ({
         ...prev,
-        category: defaultCategory || prev.category
+        category: defaultCategory || prev.category,
       }));
       setError("");
     } else {
@@ -89,7 +89,7 @@ export default function UploadDocumentModal({
       file,
       relativePath: file.webkitRelativePath || file.name,
       progress: 0,
-      status: "pending"
+      status: "pending",
     }));
 
     setQueue((prev) => [...prev, ...items]);
@@ -103,7 +103,7 @@ export default function UploadDocumentModal({
       return {
         ...prev,
         file: only,
-        documentName: prev.documentName || only.name
+        documentName: prev.documentName || only.name,
       };
     });
   };
@@ -124,7 +124,7 @@ export default function UploadDocumentModal({
     setForm((prev) => ({
       ...prev,
       file: only || null,
-      documentName: prev.documentName || (only ? only.name : "")
+      documentName: prev.documentName || (only ? only.name : ""),
     }));
   };
 
@@ -164,7 +164,7 @@ export default function UploadDocumentModal({
       category: defaultCategory || "",
       version: "",
       comments: "",
-      file: null
+      file: null,
     });
     setQueue([]);
     setIsUploading(false);
@@ -195,8 +195,10 @@ export default function UploadDocumentModal({
 
         setQueue((prev) =>
           prev.map((row) =>
-            row.id === item.id ? { ...row, status: "uploading", progress: 25 } : row
-          )
+            row.id === item.id
+              ? { ...row, status: "uploading", progress: 25 }
+              : row,
+          ),
         );
 
         // Yield to the event loop so progress can render.
@@ -210,19 +212,23 @@ export default function UploadDocumentModal({
             version: form.version,
             comments: form.comments,
             file: item.file,
-            relativePath: item.relativePath
+            relativePath: item.relativePath,
           });
 
           setQueue((prev) =>
             prev.map((row) =>
-              row.id === item.id ? { ...row, status: "done", progress: 100 } : row
-            )
+              row.id === item.id
+                ? { ...row, status: "done", progress: 100 }
+                : row,
+            ),
           );
         } catch (uploadError) {
           setQueue((prev) =>
             prev.map((row) =>
-              row.id === item.id ? { ...row, status: "error", progress: 100 } : row
-            )
+              row.id === item.id
+                ? { ...row, status: "error", progress: 100 }
+                : row,
+            ),
           );
         }
 
@@ -253,7 +259,7 @@ export default function UploadDocumentModal({
       category: defaultCategory || "",
       version: "",
       comments: "",
-      file: null
+      file: null,
     });
 
     onClose();
@@ -363,7 +369,9 @@ export default function UploadDocumentModal({
           {isMultiMode && (
             <div className="upload-queue">
               <div className="upload-queue-header">
-                <span>{queue.length} file{queue.length === 1 ? "" : "s"} queued</span>
+                <span>
+                  {queue.length} file{queue.length === 1 ? "" : "s"} queued
+                </span>
                 {isUploading && (
                   <span className="upload-batch-progress">
                     Batch: {batchProgress}%
@@ -372,7 +380,10 @@ export default function UploadDocumentModal({
               </div>
 
               {isUploading && (
-                <div className="upload-progress-track" aria-label="Batch progress">
+                <div
+                  className="upload-progress-track"
+                  aria-label="Batch progress"
+                >
                   <div
                     className="upload-progress-fill batch"
                     style={{ width: `${batchProgress}%` }}
@@ -384,10 +395,15 @@ export default function UploadDocumentModal({
                 {queue.map((item) => (
                   <li key={item.id} className="upload-queue-item">
                     <div className="upload-queue-item-row">
-                      <span className="upload-queue-name" title={item.relativePath}>
+                      <span
+                        className="upload-queue-name"
+                        title={item.relativePath}
+                      >
                         {item.relativePath}
                       </span>
-                      <span className={`upload-queue-status status-${item.status}`}>
+                      <span
+                        className={`upload-queue-status status-${item.status}`}
+                      >
                         {item.status === "pending" && "Pending"}
                         {item.status === "uploading" && "Uploading…"}
                         {item.status === "done" && "Done"}
@@ -442,8 +458,8 @@ export default function UploadDocumentModal({
             {isUploading
               ? "Uploading…"
               : isMultiMode
-              ? `Upload ${queue.length} File${queue.length === 1 ? "" : "s"}`
-              : "Upload"}
+                ? `Upload ${queue.length} File${queue.length === 1 ? "" : "s"}`
+                : "Upload"}
           </button>
         </div>
       </div>

@@ -63,14 +63,21 @@ export default function DocumentTable({
     const rect = button.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
-    const hasRoomBelow = viewportHeight - rect.bottom >= ACTION_MENU_ESTIMATED_HEIGHT + ACTION_MENU_GAP;
-    const hasRoomAbove = rect.top >= ACTION_MENU_ESTIMATED_HEIGHT + ACTION_MENU_GAP;
-    const top = hasRoomBelow || !hasRoomAbove
-      ? Math.min(rect.bottom + ACTION_MENU_GAP, viewportHeight - ACTION_MENU_ESTIMATED_HEIGHT - ACTION_MENU_GAP)
-      : rect.top - ACTION_MENU_ESTIMATED_HEIGHT - ACTION_MENU_GAP;
+    const hasRoomBelow =
+      viewportHeight - rect.bottom >=
+      ACTION_MENU_ESTIMATED_HEIGHT + ACTION_MENU_GAP;
+    const hasRoomAbove =
+      rect.top >= ACTION_MENU_ESTIMATED_HEIGHT + ACTION_MENU_GAP;
+    const top =
+      hasRoomBelow || !hasRoomAbove
+        ? Math.min(
+            rect.bottom + ACTION_MENU_GAP,
+            viewportHeight - ACTION_MENU_ESTIMATED_HEIGHT - ACTION_MENU_GAP,
+          )
+        : rect.top - ACTION_MENU_ESTIMATED_HEIGHT - ACTION_MENU_GAP;
     const left = Math.min(
       Math.max(ACTION_MENU_GAP, rect.right - ACTION_MENU_WIDTH),
-      viewportWidth - ACTION_MENU_WIDTH - ACTION_MENU_GAP
+      viewportWidth - ACTION_MENU_WIDTH - ACTION_MENU_GAP,
     );
 
     setMenuPosition({
@@ -94,7 +101,8 @@ export default function DocumentTable({
 
     const reposition = () => updateMenuPosition(openMenuId);
     const closeOnOutsideClick = (event) => {
-      if (event.target.closest(".document-action-menu, .icon-action-btn.menu")) return;
+      if (event.target.closest(".document-action-menu, .icon-action-btn.menu"))
+        return;
       setOpenMenuId(null);
     };
 
@@ -127,11 +135,17 @@ export default function DocumentTable({
   };
 
   return (
-    <div className={`document-table-card tnxt-compact ${isReferenceView ? "reference-table-card" : ""}`}>
+    <div
+      className={`document-table-card tnxt-compact ${isReferenceView ? "reference-table-card" : ""}`}
+    >
       <table className="document-table ctms-standard-table">
         <thead>
           <tr>
-            {isReferenceView && <th className="select-col"><input type="checkbox" aria-label="Select all documents" /></th>}
+            {isReferenceView && (
+              <th className="select-col">
+                <input type="checkbox" aria-label="Select all documents" />
+              </th>
+            )}
             {isReferenceView ? (
               REFERENCE_COLUMNS.map((column) => (
                 <th key={column.key}>{renderSortLabel(column)}</th>
@@ -166,8 +180,14 @@ export default function DocumentTable({
                 aria-selected={selectedDocumentId === doc.id}
               >
                 {isReferenceView && (
-                  <td className="select-col" onClick={(event) => event.stopPropagation()}>
-                    <input type="checkbox" aria-label={`Select ${doc.documentName}`} />
+                  <td
+                    className="select-col"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <input
+                      type="checkbox"
+                      aria-label={`Select ${doc.documentName}`}
+                    />
                   </td>
                 )}
 
@@ -193,7 +213,9 @@ export default function DocumentTable({
                   {isReferenceView ? (
                     <span className="modified-cell">
                       <span>{doc.modifiedDate}</span>
-                      <small>by {doc.uploadedBy || doc.owner || "Study Staff"}</small>
+                      <small>
+                        by {doc.uploadedBy || doc.owner || "Study Staff"}
+                      </small>
                     </span>
                   ) : (
                     doc.modifiedDate
@@ -246,25 +268,50 @@ export default function DocumentTable({
                             role="menu"
                             style={menuPosition}
                           >
-                            <button type="button" role="menuitem" onClick={() => runAction(onView, doc)}>
+                            <button
+                              type="button"
+                              role="menuitem"
+                              onClick={() => runAction(onView, doc)}
+                            >
                               <FiEye /> View
                             </button>
-                            <button type="button" role="menuitem" onClick={() => runAction(onDownload, doc)}>
+                            <button
+                              type="button"
+                              role="menuitem"
+                              onClick={() => runAction(onDownload, doc)}
+                            >
                               <FiDownload /> Download
                             </button>
-                            <button type="button" role="menuitem" onClick={() => runAction(onHistory, doc)}>
+                            <button
+                              type="button"
+                              role="menuitem"
+                              onClick={() => runAction(onHistory, doc)}
+                            >
                               <FiList /> Version History
                             </button>
-                            <button type="button" role="menuitem" onClick={() => runAction(onAudit, doc)}>
+                            <button
+                              type="button"
+                              role="menuitem"
+                              onClick={() => runAction(onAudit, doc)}
+                            >
                               <FiEye /> Audit Trail
                             </button>
                             {canEdit && (
-                              <button type="button" role="menuitem" onClick={() => runAction(onEdit, doc)}>
+                              <button
+                                type="button"
+                                role="menuitem"
+                                onClick={() => runAction(onEdit, doc)}
+                              >
                                 <FiEdit2 /> Edit
                               </button>
                             )}
                             {canDelete && (
-                              <button type="button" role="menuitem" className="danger" onClick={() => runAction(onDelete, doc)}>
+                              <button
+                                type="button"
+                                role="menuitem"
+                                className="danger"
+                                onClick={() => runAction(onDelete, doc)}
+                              >
                                 <FiTrash2 /> Delete
                               </button>
                             )}
@@ -274,15 +321,45 @@ export default function DocumentTable({
                     </div>
                   ) : (
                     <>
-                      <button className="action-btn view-btn" onClick={() => onView(doc)}>View</button>
-                      <button className="action-btn history-btn" onClick={() => onHistory(doc)}>History</button>
-                      <button className="action-btn audit-btn" onClick={() => onAudit(doc)}>Audit</button>
-                      <button className="action-btn download-btn" onClick={() => onDownload(doc)}>Download</button>
+                      <button
+                        className="action-btn view-btn"
+                        onClick={() => onView(doc)}
+                      >
+                        View
+                      </button>
+                      <button
+                        className="action-btn history-btn"
+                        onClick={() => onHistory(doc)}
+                      >
+                        History
+                      </button>
+                      <button
+                        className="action-btn audit-btn"
+                        onClick={() => onAudit(doc)}
+                      >
+                        Audit
+                      </button>
+                      <button
+                        className="action-btn download-btn"
+                        onClick={() => onDownload(doc)}
+                      >
+                        Download
+                      </button>
                       {canEdit && (
-                        <button className="action-btn edit-btn" onClick={() => onEdit(doc)}>Edit</button>
+                        <button
+                          className="action-btn edit-btn"
+                          onClick={() => onEdit(doc)}
+                        >
+                          Edit
+                        </button>
                       )}
                       {canDelete && (
-                        <button className="action-btn delete-btn" onClick={() => onDelete(doc)}>Delete</button>
+                        <button
+                          className="action-btn delete-btn"
+                          onClick={() => onDelete(doc)}
+                        >
+                          Delete
+                        </button>
                       )}
                     </>
                   )}

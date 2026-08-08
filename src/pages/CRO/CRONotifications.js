@@ -62,15 +62,15 @@ function CRONotifications() {
         status: notification.read ? "Read" : "Unread",
         displayDate: formatNotificationDate(notification.createdAt),
       })),
-    [notifications]
+    [notifications],
   );
 
   const filteredNotifications = items.filter((item) =>
-    item.message.toLowerCase().includes(searchTerm.toLowerCase())
+    item.message.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const criticalCount = items.filter(
-    (item) => CRITICAL_TITLES.has(item.title) && item.status === "Unread"
+    (item) => CRITICAL_TITLES.has(item.title) && item.status === "Unread",
   ).length;
 
   const handleMarkRead = (notificationId) => {
@@ -89,16 +89,12 @@ function CRONotifications() {
 
         <div className="dashboard-card">
           <h3>Unread</h3>
-          <h1>
-            {items.filter((item) => item.status === "Unread").length}
-          </h1>
+          <h1>{items.filter((item) => item.status === "Unread").length}</h1>
         </div>
 
         <div className="dashboard-card">
           <h3>Read</h3>
-          <h1>
-            {items.filter((item) => item.status === "Read").length}
-          </h1>
+          <h1>{items.filter((item) => item.status === "Read").length}</h1>
         </div>
 
         <div className="dashboard-card">

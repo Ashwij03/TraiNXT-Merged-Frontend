@@ -38,10 +38,7 @@ function AlertsPanel({ title = "Alerts", alerts = [] }) {
   }, [safeAlerts]);
 
   return (
-    <section
-      className="alerts-card alerts-card--enterprise"
-      aria-label={title}
-    >
+    <section className="alerts-card alerts-card--enterprise" aria-label={title}>
       <header className="alerts-header">
         <div className="alerts-header__titles">
           <h3>{title}</h3>
@@ -53,15 +50,24 @@ function AlertsPanel({ title = "Alerts", alerts = [] }) {
         </div>
 
         <div className="alerts-summary" role="list">
-          <span className="alerts-summary__chip alerts-summary__chip--danger" role="listitem">
+          <span
+            className="alerts-summary__chip alerts-summary__chip--danger"
+            role="listitem"
+          >
             <span className="alerts-summary__dot" aria-hidden="true" />
             {summary.danger} Critical
           </span>
-          <span className="alerts-summary__chip alerts-summary__chip--warning" role="listitem">
+          <span
+            className="alerts-summary__chip alerts-summary__chip--warning"
+            role="listitem"
+          >
             <span className="alerts-summary__dot" aria-hidden="true" />
             {summary.warning} Warning
           </span>
-          <span className="alerts-summary__chip alerts-summary__chip--info" role="listitem">
+          <span
+            className="alerts-summary__chip alerts-summary__chip--info"
+            role="listitem"
+          >
             <span className="alerts-summary__dot" aria-hidden="true" />
             {summary.info} Info
           </span>

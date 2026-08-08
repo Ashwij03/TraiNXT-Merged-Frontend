@@ -1,29 +1,49 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import AppLayout from './AppLayout';
-import './SponsorShared.css';
-import KpiCard from './KpiCard';
-import EnterpriseModal from './EnterpriseModal';
-import { FiUsers, FiTarget, FiTrendingUp, FiAlertTriangle } from 'react-icons/fi';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { getRecruitment, getRecruitmentKPIs } from './data/sponsorDataStore';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import AppLayout from "./AppLayout";
+import "./SponsorShared.css";
+import KpiCard from "./KpiCard";
+import EnterpriseModal from "./EnterpriseModal";
+import {
+  FiUsers,
+  FiTarget,
+  FiTrendingUp,
+  FiAlertTriangle,
+} from "react-icons/fi";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
+import { getRecruitment, getRecruitmentKPIs } from "./data/sponsorDataStore";
 
 const Recruitment = () => {
   const navigate = useNavigate();
   const [data, setData] = useState(getRecruitment());
   const [kpis, setKpis] = useState(getRecruitmentKPIs());
-  const [statusFilter, setStatusFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState("All");
   const [viewItem, setViewItem] = useState(null);
 
   useEffect(() => {
-    const refresh = () => { setData(getRecruitment()); setKpis(getRecruitmentKPIs()); };
-    window.addEventListener('sponsor-data-updated', refresh);
-    return () => window.removeEventListener('sponsor-data-updated', refresh);
+    const refresh = () => {
+      setData(getRecruitment());
+      setKpis(getRecruitmentKPIs());
+    };
+    window.addEventListener("sponsor-data-updated", refresh);
+    return () => window.removeEventListener("sponsor-data-updated", refresh);
   }, []);
 
-  const chartData = data.map(d => ({ study: d.study, rate: d.rate }));
-  const filteredData = data.filter((item) =>
-    statusFilter === 'All' || (statusFilter === 'Below Target' ? item.status === 'Below Target' : item.status === 'On Track')
+  const chartData = data.map((d) => ({ study: d.study, rate: d.rate }));
+  const filteredData = data.filter(
+    (item) =>
+      statusFilter === "All" ||
+      (statusFilter === "Below Target"
+        ? item.status === "Below Target"
+        : item.status === "On Track"),
   );
 
   return (
@@ -35,10 +55,42 @@ const Recruitment = () => {
         </div>
 
         <div className="sponsor-kpi-grid">
-          <KpiCard title="Target Subjects" value={kpis.target.toLocaleString()} subtitle="Total enrollment goal" icon={<FiTarget size={24} />} iconBg="#eff6ff" iconColor="#2563eb" onClick={() => setStatusFilter('All')} />
-          <KpiCard title="Recruited" value={kpis.enrolled.toLocaleString()} subtitle="Currently enrolled" icon={<FiUsers size={24} />} iconBg="#ecfdf5" iconColor="#16a34a" onClick={() => setStatusFilter('All')} />
-          <KpiCard title="Recruitment Rate" value={`${kpis.rate}%`} subtitle="Overall progress" icon={<FiTrendingUp size={24} />} iconBg="#fef3c7" iconColor="#d97706" onClick={() => setStatusFilter('On Track')} />
-          <KpiCard title="Below Target" value={kpis.belowTarget} subtitle="Studies needing attention" icon={<FiAlertTriangle size={24} />} iconBg="#fee2e2" iconColor="#dc2626" onClick={() => setStatusFilter('Below Target')} />
+          <KpiCard
+            title="Target Subjects"
+            value={kpis.target.toLocaleString()}
+            subtitle="Total enrollment goal"
+            icon={<FiTarget size={24} />}
+            iconBg="#eff6ff"
+            iconColor="#2563eb"
+            onClick={() => setStatusFilter("All")}
+          />
+          <KpiCard
+            title="Recruited"
+            value={kpis.enrolled.toLocaleString()}
+            subtitle="Currently enrolled"
+            icon={<FiUsers size={24} />}
+            iconBg="#ecfdf5"
+            iconColor="#16a34a"
+            onClick={() => setStatusFilter("All")}
+          />
+          <KpiCard
+            title="Recruitment Rate"
+            value={`${kpis.rate}%`}
+            subtitle="Overall progress"
+            icon={<FiTrendingUp size={24} />}
+            iconBg="#fef3c7"
+            iconColor="#d97706"
+            onClick={() => setStatusFilter("On Track")}
+          />
+          <KpiCard
+            title="Below Target"
+            value={kpis.belowTarget}
+            subtitle="Studies needing attention"
+            icon={<FiAlertTriangle size={24} />}
+            iconBg="#fee2e2"
+            iconColor="#dc2626"
+            onClick={() => setStatusFilter("Below Target")}
+          />
         </div>
 
         <div className="sponsor-chart-grid">
@@ -80,9 +132,23 @@ const Recruitment = () => {
                   <td>{item.enrolled}</td>
                   <td>{item.target - item.enrolled}</td>
                   <td>{item.rate}%</td>
-                  <td><span className={`status-badge ${item.status === 'Below Target' ? 'open' : 'active'}`}>{item.status}</span></td>
+                  <td>
+                    <span
+                      className={`status-badge ${item.status === "Below Target" ? "open" : "active"}`}
+                    >
+                      {item.status}
+                    </span>
+                  </td>
                   <td onClick={(e) => e.stopPropagation()}>
-                    <button type="button" className="view-btn" onClick={() => navigate('/recruitment-details', { state: item })}>View</button>
+                    <button
+                      type="button"
+                      className="view-btn"
+                      onClick={() =>
+                        navigate("/recruitment-details", { state: item })
+                      }
+                    >
+                      View
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -92,11 +158,22 @@ const Recruitment = () => {
       </div>
 
       {viewItem && (
-        <EnterpriseModal title={`Recruitment: ${viewItem.study}`} onClose={() => setViewItem(null)}>
-          <p><strong>Screened:</strong> {viewItem.screened}</p>
-          <p><strong>Enrolled:</strong> {viewItem.enrolled} / {viewItem.target}</p>
-          <p><strong>Rate:</strong> {viewItem.rate}%</p>
-          <p><strong>Status:</strong> {viewItem.status}</p>
+        <EnterpriseModal
+          title={`Recruitment: ${viewItem.study}`}
+          onClose={() => setViewItem(null)}
+        >
+          <p>
+            <strong>Screened:</strong> {viewItem.screened}
+          </p>
+          <p>
+            <strong>Enrolled:</strong> {viewItem.enrolled} / {viewItem.target}
+          </p>
+          <p>
+            <strong>Rate:</strong> {viewItem.rate}%
+          </p>
+          <p>
+            <strong>Status:</strong> {viewItem.status}
+          </p>
         </EnterpriseModal>
       )}
     </AppLayout>

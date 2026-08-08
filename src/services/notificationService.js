@@ -1,5 +1,9 @@
 import ROLES from "../constants/roles";
-import { getCurrentUser, getEffectiveRole, getAccessibleStudies } from "./roleService";
+import {
+  getCurrentUser,
+  getEffectiveRole,
+  getAccessibleStudies,
+} from "./roleService";
 
 const NOTIFICATIONS_KEY = "notifications";
 const NOTIFICATIONS_UPDATED_EVENT = "notifications-updated";
@@ -85,10 +89,7 @@ function resolveActorDisplay({ actorName, actorRole } = {}) {
     currentUser?.username ||
     "System";
 
-  const resolvedRole =
-    actorRole ||
-    getEffectiveRole(currentUser) ||
-    "System";
+  const resolvedRole = actorRole || getEffectiveRole(currentUser) || "System";
 
   return `${resolvedName} (${resolvedRole})`;
 }
@@ -122,9 +123,7 @@ export function createNotification({
     "System";
 
   const resolvedActorRole =
-    actorRole ||
-    getEffectiveRole(currentUser) ||
-    "System";
+    actorRole || getEffectiveRole(currentUser) || "System";
 
   if (!cleanTitle || !cleanMessage) {
     return null;
@@ -257,10 +256,12 @@ const OPERATIONAL_ROLES = [ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.PI];
 export function notifySubjectCreated(subject) {
   return createNotification({
     title: "Subject added",
-    message: `Subject ${subject?.subjectId || subject?.id || ""} was added to ${subject?.studyCode || "the study"} by ${resolveActorDisplay({
-      actorName: subject?.addedByName,
-      actorRole: subject?.addedByRole,
-    })}.`,
+    message: `Subject ${subject?.subjectId || subject?.id || ""} was added to ${subject?.studyCode || "the study"} by ${resolveActorDisplay(
+      {
+        actorName: subject?.addedByName,
+        actorRole: subject?.addedByRole,
+      },
+    )}.`,
     studyCode: subject?.studyCode,
     targetRoles: OPERATIONAL_ROLES,
   });
@@ -300,10 +301,12 @@ export function notifyDocumentAdded(document) {
 
   return createNotification({
     title: "Document added",
-    message: `${document?.name || "A document"} was added to ${document?.studyCode || "the study"} by ${resolveActorDisplay({
-      actorName: document?.addedByName,
-      actorRole: document?.addedByRole,
-    })}${sectionClause}.`,
+    message: `${document?.name || "A document"} was added to ${document?.studyCode || "the study"} by ${resolveActorDisplay(
+      {
+        actorName: document?.addedByName,
+        actorRole: document?.addedByRole,
+      },
+    )}${sectionClause}.`,
     studyCode: document?.studyCode,
     targetRoles: OPERATIONAL_ROLES,
   });
@@ -442,7 +445,9 @@ export function notifyUpcomingVisitReminder({
   const resolvedOccurrenceDate = occurrenceDate || scheduledDate;
   const resolvedRecipientKey =
     recipientKey ||
-    (Array.isArray(targetRoles) ? targetRoles.join("+") : String(targetRoles || ""));
+    (Array.isArray(targetRoles)
+      ? targetRoles.join("+")
+      : String(targetRoles || ""));
   const eventId = [
     "upcoming_visit_reminder",
     visitId,
@@ -453,7 +458,12 @@ export function notifyUpcomingVisitReminder({
     .map((part) => String(part || "").trim())
     .join(":");
 
-  if (!visitId || !scheduledDate || !resolvedStudyCode || !resolvedRecipientKey) {
+  if (
+    !visitId ||
+    !scheduledDate ||
+    !resolvedStudyCode ||
+    !resolvedRecipientKey
+  ) {
     return null;
   }
 

@@ -4,7 +4,7 @@ import {
   getCurrentUser,
   getEffectiveRole,
   hasPermission,
-  getAccessibleStudies
+  getAccessibleStudies,
 } from "./roleService";
 import PERMISSIONS from "../constants/permissions";
 import { notifyCommentAdded } from "./notificationService";
@@ -83,7 +83,7 @@ function accessibleStudyCodeSet(user) {
   return new Set(
     getAccessibleStudies(user)
       .map((study) => String(study?.code || ""))
-      .filter(Boolean)
+      .filter(Boolean),
   );
 }
 
@@ -154,13 +154,13 @@ export function getVisibleComments(options = {}, user = getCurrentUser()) {
 
   if (studyCode) {
     comments = comments.filter(
-      (item) => String(item.study) === String(studyCode)
+      (item) => String(item.study) === String(studyCode),
     );
   }
 
   if (subjectId) {
     comments = comments.filter(
-      (item) => String(item.subjectId) === String(subjectId)
+      (item) => String(item.subjectId) === String(subjectId),
     );
   }
 
@@ -168,12 +168,12 @@ export function getVisibleComments(options = {}, user = getCurrentUser()) {
     comments = comments.filter(
       (item) =>
         String(item.documentId) === String(documentId) ||
-        String(item.document) === String(documentId)
+        String(item.document) === String(documentId),
     );
   }
 
   return comments.filter((comment) =>
-    canViewComment(comment, user, studyStage)
+    canViewComment(comment, user, studyStage),
   );
 }
 
@@ -225,7 +225,7 @@ export function addCommentRecord(payload, user = getCurrentUser()) {
     createdAt: new Date().toISOString().slice(0, 10),
     createdBy: user?.name || "Unknown",
     description: payload.description || payload.text || "",
-    createdRole: role
+    createdRole: role,
   };
 
   saveComments([newComment, ...comments]);
@@ -234,7 +234,8 @@ export function addCommentRecord(payload, user = getCurrentUser()) {
   // record's own schema (shared with the document-scoped QC comment
   // feature above) uses { study, createdRole } — adapt the field names
   // here rather than renaming the stored record shape everywhere else.
-  notifyCommentAdded({module: payload.module || "",
+  notifyCommentAdded({
+    module: payload.module || "",
     sourceView: payload.sourceView || "",
     studyCode: newComment.study,
     authorRole: newComment.createdRole,
@@ -253,9 +254,9 @@ export function resolveCommentRecord(commentId, user = getCurrentUser()) {
           ...item,
           status: "Resolved",
           resolvedAt: new Date().toISOString(),
-          resolvedBy: user?.name || "Unknown"
+          resolvedBy: user?.name || "Unknown",
         }
-      : item
+      : item,
   );
 
   saveComments(comments);
@@ -287,7 +288,7 @@ export function reopenCommentRecord(commentId, user = getCurrentUser()) {
     void resolvedBy;
     return {
       ...rest,
-      status: "Open"
+      status: "Open",
     };
   });
 
@@ -301,7 +302,11 @@ export function reopenCommentRecord(commentId, user = getCurrentUser()) {
 // without going through the resolve/reopen path. Fires the shared
 // comments-updated events so every subscriber (Subject Comments modal,
 // dashboard widgets, RoleCommentsView) refreshes automatically.
-export function updateCommentRecord(commentId, updates = {}, user = getCurrentUser()) {
+export function updateCommentRecord(
+  commentId,
+  updates = {},
+  user = getCurrentUser(),
+) {
   if (!commentId || !updates || typeof updates !== "object") {
     return null;
   }
@@ -315,7 +320,8 @@ export function updateCommentRecord(commentId, updates = {}, user = getCurrentUs
 
   // Only the original author or a resolver-capable role may edit the text.
   const role = getEffectiveRole(user);
-  const isAuthor = target.createdBy && user?.name && target.createdBy === user.name;
+  const isAuthor =
+    target.createdBy && user?.name && target.createdBy === user.name;
   const isResolver =
     hasPermission(PERMISSIONS.RESOLVE_COMMENT, user) &&
     [ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.PI].includes(role);
@@ -332,12 +338,12 @@ export function updateCommentRecord(commentId, updates = {}, user = getCurrentUs
             typeof updates.description === "string"
               ? updates.description
               : typeof updates.text === "string"
-              ? updates.text
-              : item.description,
+                ? updates.text
+                : item.description,
           updatedAt: new Date().toISOString(),
           updatedBy: user?.name || item.createdBy,
         }
-      : item
+      : item,
   );
 
   saveComments(nextComments);
@@ -362,7 +368,8 @@ export function deleteCommentRecord(commentId, user = getCurrentUser()) {
   }
 
   const role = getEffectiveRole(user);
-  const isAuthor = target.createdBy && user?.name && target.createdBy === user.name;
+  const isAuthor =
+    target.createdBy && user?.name && target.createdBy === user.name;
   const isResolver =
     hasPermission(PERMISSIONS.RESOLVE_COMMENT, user) &&
     [ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.PI].includes(role);
@@ -383,7 +390,11 @@ export function deleteCommentRecord(commentId, user = getCurrentUser()) {
 // fire and every subscribed view (Study/Subject/Activity/Open/Pending,
 // dashboard widgets, counters) refreshes off the shared store — no
 // duplicate localStorage writes, no per-view state to keep in sync.
-export function editCommentRecord(commentId, updates = {}, user = getCurrentUser()) {
+export function editCommentRecord(
+  commentId,
+  updates = {},
+  user = getCurrentUser(),
+) {
   const existing = getComments(user).find((item) => item.id === commentId);
 
   if (!existing || !canEditComment(existing, user)) {
@@ -434,14 +445,22 @@ export function editCommentRecord(commentId, updates = {}, user = getCurrentUser
 // wrote `{ status: "resolved" }` via ad-hoc saveComments calls (PI
 // dashboard service, CRO context) must go through here so the single
 // source of truth (CommentsContext) refreshes across every view.
-export function updateCommentStatusRecord(commentId, nextStatus, user = getCurrentUser()) {
+export function updateCommentStatusRecord(
+  commentId,
+  nextStatus,
+  user = getCurrentUser(),
+) {
   const normalized = String(nextStatus || "").toLowerCase();
 
   if (normalized === "resolved") {
     return resolveCommentRecord(commentId, user);
   }
 
-  if (normalized === "open" || normalized === "unresolved" || normalized === "reopen") {
+  if (
+    normalized === "open" ||
+    normalized === "unresolved" ||
+    normalized === "reopen"
+  ) {
     return reopenCommentRecord(commentId, user);
   }
 
@@ -461,7 +480,7 @@ export function updateCommentStatusRecord(commentId, nextStatus, user = getCurre
           updatedAt: new Date().toISOString(),
           updatedBy: user?.name || "Unknown",
         }
-      : item
+      : item,
   );
 
   saveComments(comments);
@@ -482,7 +501,7 @@ export function markCommentsDocumentDeleted(documentId, documentName) {
     return {
       ...item,
       documentDeleted: true,
-      document: documentName || item.document
+      document: documentName || item.document,
     };
   });
 

@@ -4,7 +4,7 @@ import DOCUMENT_STATUS from "../Constants/documentStatus";
 export default function useDocuments(documents = []) {
   const safeDocuments = useMemo(
     () => (Array.isArray(documents) ? documents : []),
-    [documents]
+    [documents],
   );
 
   const totalDocuments = safeDocuments.length;
@@ -12,9 +12,9 @@ export default function useDocuments(documents = []) {
   const approvedDocuments = useMemo(
     () =>
       safeDocuments.filter(
-        (document) => document.status === DOCUMENT_STATUS.APPROVED
+        (document) => document.status === DOCUMENT_STATUS.APPROVED,
       ),
-    [safeDocuments]
+    [safeDocuments],
   );
 
   const pendingDocuments = useMemo(
@@ -24,41 +24,39 @@ export default function useDocuments(documents = []) {
           DOCUMENT_STATUS.PENDING,
           DOCUMENT_STATUS.UNDER_REVIEW,
           DOCUMENT_STATUS.UNDER_APPROVAL,
-        ].includes(document.status)
+        ].includes(document.status),
       ),
-    [safeDocuments]
+    [safeDocuments],
   );
 
   const draftDocuments = useMemo(
     () =>
       safeDocuments.filter(
-        (document) => document.status === DOCUMENT_STATUS.DRAFT
+        (document) => document.status === DOCUMENT_STATUS.DRAFT,
       ),
-    [safeDocuments]
+    [safeDocuments],
   );
 
   const expiredDocuments = useMemo(
     () =>
       safeDocuments.filter(
-        (document) => document.status === DOCUMENT_STATUS.EXPIRED
+        (document) => document.status === DOCUMENT_STATUS.EXPIRED,
       ),
-    [safeDocuments]
+    [safeDocuments],
   );
 
   const missingDocuments = useMemo(
     () =>
       safeDocuments.filter(
-        (document) => document.status === DOCUMENT_STATUS.MISSING
+        (document) => document.status === DOCUMENT_STATUS.MISSING,
       ),
-    [safeDocuments]
+    [safeDocuments],
   );
 
   const completionPercentage = useMemo(() => {
     if (!totalDocuments) return 0;
 
-    return Math.round(
-      (approvedDocuments.length / totalDocuments) * 100
-    );
+    return Math.round((approvedDocuments.length / totalDocuments) * 100);
   }, [approvedDocuments.length, totalDocuments]);
 
   const hasDocuments = totalDocuments > 0;

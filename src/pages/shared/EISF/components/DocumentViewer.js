@@ -35,7 +35,6 @@ export default function DocumentViewer({
   onHistory,
   onAudit,
 }) {
-
   if (inline) {
     if (!document) {
       return (
@@ -51,9 +50,7 @@ export default function DocumentViewer({
 
     return (
       <div className="viewer-panel">
-
         <div className="viewer-panel-meta">
-
           <div className="viewer-panel-title">
             <span className="pdf-file-icon">PDF</span>
 
@@ -108,12 +105,16 @@ export default function DocumentViewer({
           <div className="viewer-panel-grid">
             <div>
               <label>Document Name</label>
-              <span title={document.documentName}>{displayValue(document.documentName)}</span>
+              <span title={document.documentName}>
+                {displayValue(document.documentName)}
+              </span>
             </div>
 
             <div>
               <label>Document Type</label>
-              <span>{displayValue(document.documentType || document.category)}</span>
+              <span>
+                {displayValue(document.documentType || document.category)}
+              </span>
             </div>
 
             <div>
@@ -145,7 +146,6 @@ export default function DocumentViewer({
               </div>
             )}
           </div>
-
         </div>
 
         <div className="viewer-panel-preview">
@@ -159,11 +159,13 @@ export default function DocumentViewer({
             <div className="pdf-placeholder">
               <span className="pdf-placeholder-icon">PDF</span>
               <h3>PDF Preview</h3>
-              <p>Mock preview is shown because backend file storage is not connected.</p>
+              <p>
+                Mock preview is shown because backend file storage is not
+                connected.
+              </p>
             </div>
           )}
         </div>
-
       </div>
     );
   }
@@ -172,28 +174,19 @@ export default function DocumentViewer({
 
   return (
     <div className="viewer-overlay">
-
       <div className="viewer-modal">
-
         <div className="viewer-header">
-
           <div>
             <h3>{document.documentName}</h3>
             <span>{document.fileName}</span>
           </div>
 
-          <button
-            type="button"
-            className="viewer-close"
-            onClick={onClose}
-          >
+          <button type="button" className="viewer-close" onClick={onClose}>
             ✕
           </button>
-
         </div>
 
         <div className="viewer-info">
-
           <div>
             <label>Category</label>
             <span>{document.category}</span>
@@ -228,29 +221,22 @@ export default function DocumentViewer({
             <label>Comments</label>
             <span>{document.comments ? document.comments : "-"}</span>
           </div>
-
         </div>
 
         <div className="viewer-preview">
-
           <div className="pdf-placeholder">
+            <span className="pdf-placeholder-icon">PDF</span>
 
-              <span className="pdf-placeholder-icon">PDF</span>
+            <h3>PDF Preview</h3>
 
-              <h3>
-                  PDF Preview
-              </h3>
-
-              <p>
-                  Mock preview is shown because backend file storage is not connected.
-              </p>
-
+            <p>
+              Mock preview is shown because backend file storage is not
+              connected.
+            </p>
           </div>
-
         </div>
 
         <div className="viewer-footer">
-
           <button
             type="button"
             className="secondary-btn"
@@ -259,18 +245,11 @@ export default function DocumentViewer({
             Download
           </button>
 
-          <button
-            type="button"
-            className="primary-btn"
-            onClick={onClose}
-          >
+          <button type="button" className="primary-btn" onClick={onClose}>
             Close
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 }

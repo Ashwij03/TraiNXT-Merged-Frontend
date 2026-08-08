@@ -5,7 +5,7 @@ export default function useSearch(documents = []) {
 
   const safeDocuments = useMemo(
     () => (Array.isArray(documents) ? documents : []),
-    [documents]
+    [documents],
   );
 
   const filteredDocuments = useMemo(() => {
@@ -29,9 +29,7 @@ export default function useSearch(documents = []) {
         document.version?.toString(),
       ]
         .filter(Boolean)
-        .some((value) =>
-          value.toString().toLowerCase().includes(query)
-        )
+        .some((value) => value.toString().toLowerCase().includes(query)),
     );
   }, [safeDocuments, searchTerm]);
 

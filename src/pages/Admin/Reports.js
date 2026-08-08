@@ -8,7 +8,10 @@ import {
   deleteReport,
   getReportsForStudy,
 } from "../../services/reportService";
-import { getCurrentUser, getAccessibleStudies } from "../../services/roleService";
+import {
+  getCurrentUser,
+  getAccessibleStudies,
+} from "../../services/roleService";
 import "./AdminPage.css";
 
 const REPORT_TYPE_OPTIONS = [
@@ -123,9 +126,24 @@ function Reports() {
         </div>
 
         <div className="admin-kpi-grid">
-          <KPICard title="Total" value={reports.length} subtitle="Reports" icon="📈" />
-          <KPICard title="Generated" value={readyReports} subtitle="Available Now" icon="✅" />
-          <KPICard title="Pending" value={pendingReports} subtitle="In Progress" icon="⏳" />
+          <KPICard
+            title="Total"
+            value={reports.length}
+            subtitle="Reports"
+            icon="📈"
+          />
+          <KPICard
+            title="Generated"
+            value={readyReports}
+            subtitle="Available Now"
+            icon="✅"
+          />
+          <KPICard
+            title="Pending"
+            value={pendingReports}
+            subtitle="In Progress"
+            icon="⏳"
+          />
         </div>
 
         {canManage && (

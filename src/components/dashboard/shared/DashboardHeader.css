@@ -116,7 +116,9 @@
   justify-content: center;
   min-width: 40px;
   padding: 0 12px;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .header-menu-toggle:hover,
@@ -381,7 +383,10 @@
   gap: 6px;
   height: 36px;
   padding: 0 12px;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
   white-space: nowrap;
 }
 
@@ -419,7 +424,9 @@
   justify-content: center;
   min-width: 36px;
   padding: 0;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .header-icon-btn:hover {
@@ -575,7 +582,9 @@
   padding: 10px 12px;
   position: relative;
   text-align: left;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
   width: 100%;
 }
 

@@ -73,9 +73,13 @@ function GlobalSearch() {
                   aria-selected="false"
                 >
                   <span className="cro-global-search-type">{result.type}</span>
-                  <span className="cro-global-search-label">{result.label}</span>
+                  <span className="cro-global-search-label">
+                    {result.label}
+                  </span>
                   {result.sublabel && (
-                    <span className="cro-global-search-sublabel">{result.sublabel}</span>
+                    <span className="cro-global-search-sublabel">
+                      {result.sublabel}
+                    </span>
                   )}
                 </button>
               </li>

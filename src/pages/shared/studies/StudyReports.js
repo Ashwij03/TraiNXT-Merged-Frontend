@@ -18,7 +18,7 @@ function StudyReports() {
     value
       ? resolveSiteDisplay(value, {
           sources: siteSources,
-          fallback: value
+          fallback: value,
         })
       : "—";
 
@@ -35,7 +35,7 @@ function StudyReports() {
 
   const statusAnalytics = useMemo(
     () => getSubjectStatusAnalytics(studySubjects),
-    [studySubjects]
+    [studySubjects],
   );
 
   const generateReport = () => {
@@ -44,7 +44,7 @@ function StudyReports() {
       studyName: study?.name,
       generatedAt: new Date().toISOString(),
       subjects: studySubjects,
-      statusBreakdown: statusAnalytics
+      statusBreakdown: statusAnalytics,
     };
 
     localStorage.setItem(`studyReport_${id}`, JSON.stringify(payload));
@@ -73,8 +73,8 @@ function StudyReports() {
         subject.id || subject.subjectId,
         subject.status,
         displaySite(subject.site),
-        subject.pi
-      ])
+        subject.pi,
+      ]),
     ];
 
     downloadCsvReport(`study-report-${id}-${Date.now()}.csv`, rows);

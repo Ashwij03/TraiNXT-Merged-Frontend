@@ -7,12 +7,7 @@ import {
 } from "../../services/studyOverviewService";
 import RequestPermissionButton from "../common/RequestPermissionButton";
 
-function StudyMilestoneTimeline({
-  studyCode,
-  milestones,
-  canEdit,
-  onUpdated,
-}) {
+function StudyMilestoneTimeline({ studyCode, milestones, canEdit, onUpdated }) {
   const [form, setForm] = useState({
     title: "",
     targetDate: "",
@@ -98,7 +93,13 @@ function StudyMilestoneTimeline({
                   </button>
                 </div>
               ) : (
-                <span className={`milestone-status status-${String(milestone.status || "pending").toLowerCase().replace(/\s+/g, "-")}`}>
+                <span
+                  className={`milestone-status status-${String(
+                    milestone.status || "pending",
+                  )
+                    .toLowerCase()
+                    .replace(/\s+/g, "-")}`}
+                >
                   {milestone.status || "Pending"}
                 </span>
               )}

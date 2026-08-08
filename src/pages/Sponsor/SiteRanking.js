@@ -3,14 +3,14 @@ import AppLayout from "./AppLayout";
 import { useNavigate } from "react-router-dom";
 
 const SiteRanking = () => {
-
   const navigate = useNavigate();
 
   return (
     <AppLayout>
-
-      <div style={{ padding: "24px" }} className="site-ranking-page tnxt-compact">
-
+      <div
+        style={{ padding: "24px" }}
+        className="site-ranking-page tnxt-compact"
+      >
         <button
           onClick={() => navigate(-1)}
           style={{
@@ -20,16 +20,15 @@ const SiteRanking = () => {
             padding: "10px 18px",
             borderRadius: "8px",
             cursor: "pointer",
-            marginBottom: "20px"
+            marginBottom: "20px",
           }}
         >
-           Back
+          Back
         </button>
 
         <h1>Site Ranking</h1>
 
         <table className="site-table">
-
           <thead>
             <tr>
               <th>Rank</th>
@@ -40,7 +39,6 @@ const SiteRanking = () => {
           </thead>
 
           <tbody>
-
             <tr>
               <td>1</td>
               <td>SITE-001</td>
@@ -61,13 +59,9 @@ const SiteRanking = () => {
               <td>90</td>
               <td>85%</td>
             </tr>
-
           </tbody>
-
         </table>
-
       </div>
-
     </AppLayout>
   );
 };

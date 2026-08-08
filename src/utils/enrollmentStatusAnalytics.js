@@ -6,7 +6,7 @@ export const ENROLLMENT_BAR_ORDER = [
   "Enrolled",
   "Ongoing",
   "Completed",
-  "Discontinued"
+  "Discontinued",
 ];
 
 function toEnrollmentBarCategory(status) {
@@ -34,7 +34,7 @@ export function getEnrollmentStatusAnalytics(subjects = [], options = {}) {
     });
 
     const counts = Object.fromEntries(
-      ENROLLMENT_BAR_ORDER.map((name) => [name, 0])
+      ENROLLMENT_BAR_ORDER.map((name) => [name, 0]),
     );
 
     studySubjects.forEach((subject) => {
@@ -47,7 +47,7 @@ export function getEnrollmentStatusAnalytics(subjects = [], options = {}) {
 
     return ENROLLMENT_BAR_ORDER.map((name) => ({
       name,
-      value: counts[name]
+      value: counts[name],
     }));
   }
 
@@ -67,7 +67,7 @@ export function getEnrollmentStatusAnalytics(subjects = [], options = {}) {
         subject.studyKey ||
         subject.study ||
         subject.studyCode ||
-        ""
+        "",
     );
 
     if (!key) {

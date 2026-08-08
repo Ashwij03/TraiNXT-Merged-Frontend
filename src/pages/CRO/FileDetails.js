@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import CROSidebar from "./CROSidebar";
 import CRONavbar from "./CRONavbar";
 import RequestPermissionButton from "../../components/common/RequestPermissionButton";
-import { getAccessibleStudies, getCurrentUser } from "../../services/roleService";
+import {
+  getAccessibleStudies,
+  getCurrentUser,
+} from "../../services/roleService";
 
 function readSharedFiles() {
   try {
@@ -14,7 +17,9 @@ function readSharedFiles() {
 
 function FileDetails() {
   const [files, setFiles] = useState(readSharedFiles);
-  const [studies, setStudies] = useState(() => getAccessibleStudies(getCurrentUser()));
+  const [studies, setStudies] = useState(() =>
+    getAccessibleStudies(getCurrentUser()),
+  );
   const [uploadStudyCode, setUploadStudyCode] = useState("");
 
   useEffect(() => {
@@ -24,7 +29,8 @@ function FileDetails() {
   }, []);
 
   useEffect(() => {
-    const refreshStudies = () => setStudies(getAccessibleStudies(getCurrentUser()));
+    const refreshStudies = () =>
+      setStudies(getAccessibleStudies(getCurrentUser()));
     window.addEventListener("studies-updated", refreshStudies);
     return () => window.removeEventListener("studies-updated", refreshStudies);
   }, []);

@@ -6,7 +6,8 @@ import { getLiveChatData, saveLiveChatData } from "./piDashboardService";
 import useLiveChatNavigation from "../../hooks/useLiveChatNavigation";
 
 function PILiveChat({ setSelectedPage }) {
-  const { returnFromLiveChat, backLabel } = useLiveChatNavigation("/pi-livechat");
+  const { returnFromLiveChat, backLabel } =
+    useLiveChatNavigation("/pi-livechat");
   const [selectedUser, setSelectedUser] = useState(0);
   const [searchUser, setSearchUser] = useState("");
   const [activeTab, setActiveTab] = useState("all");
@@ -169,7 +170,11 @@ function PILiveChat({ setSelectedPage }) {
             </div>
 
             <div className="header-actions">
-              <button type="button" className="end-chat-btn" onClick={handleEndChat}>
+              <button
+                type="button"
+                className="end-chat-btn"
+                onClick={handleEndChat}
+              >
                 End Chat
               </button>
             </div>

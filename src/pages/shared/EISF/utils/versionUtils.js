@@ -5,7 +5,7 @@ export const getCurrentVersion = (versions = []) => {
   if (!versions.length) return null;
 
   return [...versions].sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
   )[0];
 };
 
@@ -37,7 +37,7 @@ export const isLatestVersion = (versions = [], versionId) => {
  */
 export const sortVersions = (versions = []) => {
   return [...versions].sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
   );
 };
 
@@ -59,7 +59,7 @@ export const getNextVersion = (versions = []) => {
   if (!versions.length) return 1;
 
   const maxVersion = Math.max(
-    ...versions.map((version) => Number(version.version) || 1)
+    ...versions.map((version) => Number(version.version) || 1),
   );
 
   return maxVersion + 1;
@@ -69,18 +69,14 @@ export const getNextVersion = (versions = []) => {
  * Filter superseded versions
  */
 export const getSupersededVersions = (versions = []) => {
-  return versions.filter(
-    (version) => version.status === "Superseded"
-  );
+  return versions.filter((version) => version.status === "Superseded");
 };
 
 /**
  * Filter approved versions
  */
 export const getApprovedVersions = (versions = []) => {
-  return versions.filter(
-    (version) => version.status === "Approved"
-  );
+  return versions.filter((version) => version.status === "Approved");
 };
 
 /**
@@ -112,38 +108,29 @@ export const getVersionCount = (versions = []) => versions.length;
 /**
  * Returns whether document has multiple versions.
  */
-export const hasMultipleVersions = (versions = []) =>
-  versions.length > 1;
+export const hasMultipleVersions = (versions = []) => versions.length > 1;
 
 /**
  * Returns latest approved version.
  */
 export const getLatestApprovedVersion = (versions = []) => {
-  return sortVersions(
-    getApprovedVersions(versions)
-  )[0] || null;
+  return sortVersions(getApprovedVersions(versions))[0] || null;
 };
 
 /**
  * Returns latest superseded version.
  */
 export const getLatestSupersededVersion = (versions = []) => {
-  return sortVersions(
-    getSupersededVersions(versions)
-  )[0] || null;
+  return sortVersions(getSupersededVersions(versions))[0] || null;
 };
 
 /**
  * Returns version by version number.
  */
-export const getVersionByNumber = (
-  versions = [],
-  versionNumber
-) => {
+export const getVersionByNumber = (versions = [], versionNumber) => {
   return (
     versions.find(
-      (version) =>
-        String(version.version) === String(versionNumber)
+      (version) => String(version.version) === String(versionNumber),
     ) || null
   );
 };

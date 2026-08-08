@@ -6,7 +6,10 @@ import EmptyState from "./EmptyState";
 import RequestPermissionButton from "../../components/common/RequestPermissionButton";
 import { downloadCsvReport } from "../../utils/exportReport";
 import { getReportsForStudy } from "../../services/reportService";
-import { getCurrentUser, getAccessibleStudies } from "../../services/roleService";
+import {
+  getCurrentUser,
+  getAccessibleStudies,
+} from "../../services/roleService";
 
 // Reads reports through reportService's own study-scoped, permission-aware
 // getter rather than a raw shared array. getReportsForStudy() already
@@ -51,7 +54,9 @@ function CROReports() {
   }, {});
 
   const filteredReports = reports.filter((report) =>
-    String(report.name || "").toLowerCase().includes(searchTerm.toLowerCase()),
+    String(report.name || "")
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase()),
   );
 
   const handleViewReport = (report) => {
@@ -141,7 +146,10 @@ function CROReports() {
                     <td>{report.id}</td>
                     <td>{report.name}</td>
                     <td>{report.reportType}</td>
-                    <td>{studyNameByCode[String(report.studyCode)] || report.studyCode}</td>
+                    <td>
+                      {studyNameByCode[String(report.studyCode)] ||
+                        report.studyCode}
+                    </td>
                     <td>{report.createdAt}</td>
                     <td>
                       <CROStatusBadge status={report.status} />
