@@ -1,0 +1,1616 @@
+/* ==================================================================
+   SUBJECT FILE MANAGEMENT (Phase 4)
+   Styles for SubjectFileManager, SubjectFileTable, SubjectFileRow,
+   FileUploadButton, DragDropUpload and FileContextMenu.
+
+   The `sf-` prefix keeps these rules independent from the page-level
+   `sw-` styles (Subjects.css), the explorer's `sx-` styles
+   (SubjectExplorer.css) and the modal `sxm-` styles (FolderModals.css).
+
+   Phase 4 modals reuse the `sxm-` shell from FolderModals.css and only add
+   the file-specific pieces at the end of this file.
+================================================================== */
+
+/* ================= PANEL SHELL ================= */
+.sf-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0;
+  background: #fff;
+  border: 1px solid var(--tnxt-border, #e5e7eb);
+  border-radius: var(--tnxt-radius-lg, 12px);
+  box-shadow: var(--tnxt-shadow-card, 0 2px 12px rgba(10, 37, 64, 0.08));
+  font-family: var(--tnxt-font, "Inter", system-ui, sans-serif);
+  overflow: hidden;
+}
+
+/* Local border-box reset: the host app has no global reset, and the panel
+   mixes padded inputs with grid/flex children. */
+.sf-panel,
+.sf-panel *,
+.sf-panel *::before,
+.sf-panel *::after {
+  box-sizing: border-box;
+}
+
+/* Visually hidden native file inputs (upload button + drop zone). */
+.sf-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ================= PANEL HEADER ================= */
+.sf-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--tnxt-border-light, #f0f0f0);
+  background: linear-gradient(180deg, #fbfdff 0%, #ffffff 100%);
+}
+
+.sf-panel-heading {
+  min-width: 0;
+}
+
+.sf-panel-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--tnxt-primary, #2563eb);
+  margin-bottom: 4px;
+}
+
+.sf-panel-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: var(--tnxt-navy, #0a2540);
+  overflow-wrap: anywhere;
+}
+
+/* ---- folder breadcrumb path ---- */
+.sf-path {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 5px;
+  font-size: 11.5px;
+  color: var(--tnxt-text-secondary, #6b7280);
+}
+
+.sf-path-seg {
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sf-path-seg:last-child {
+  font-weight: 600;
+  color: #475569;
+}
+
+.sf-path-sep {
+  color: var(--tnxt-text-muted, #9ca3af);
+}
+
+/* ---- count + size meta row ---- */
+.sf-panel-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.sf-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--tnxt-text-secondary, #6b7280);
+}
+
+.sf-meta-item svg {
+  color: var(--tnxt-text-muted, #9ca3af);
+}
+
+.sf-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+/* ================= BUTTONS ================= */
+.sf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 15px;
+  border: 1px solid transparent;
+  border-radius: var(--tnxt-radius-md, 8px);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease,
+    color 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+}
+
+.sf-btn--primary {
+  background: var(--tnxt-primary, #2563eb);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.24);
+}
+
+.sf-btn--primary:hover:not(:disabled) {
+  background: var(--tnxt-primary-hover, #1d4ed8);
+  transform: translateY(-1px);
+}
+
+.sf-btn--ghost {
+  background: #fff;
+  color: #334155;
+  border-color: var(--tnxt-border, #e5e7eb);
+}
+
+.sf-btn--ghost:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.sf-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.sf-btn:focus-visible {
+  outline: 2px solid var(--tnxt-primary, #2563eb);
+  outline-offset: 2px;
+}
+
+/* ================= ALERTS (upload feedback + validation) ================= */
+.sf-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 0 18px;
+  padding: 10px 12px;
+  border-radius: var(--tnxt-radius-md, 8px);
+  font-size: 12px;
+  line-height: 1.5;
+  animation: sf-alert-in 0.18s ease-out;
+}
+
+@keyframes sf-alert-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sf-alert {
+    animation: none;
+  }
+}
+
+.sf-alert--success {
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+.sf-alert--warning {
+  background: var(--tnxt-warning-bg, #fef3c7);
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
+.sf-alert--error {
+  background: var(--tnxt-danger-bg, #fee2e2);
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.sf-alert-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.sf-alert-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.sf-alert-message {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* Per-file rejection reasons (requirement 8). */
+.sf-alert-list {
+  margin: 7px 0 0;
+  padding-left: 16px;
+  font-weight: 500;
+}
+
+.sf-alert-list li {
+  margin-bottom: 3px;
+  overflow-wrap: anywhere;
+}
+
+.sf-alert-list strong {
+  font-weight: 700;
+}
+
+.sf-alert-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--tnxt-radius-sm, 6px);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.65;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.sf-alert-close:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* ================= TOOLBAR (search + sort) ================= */
+.sf-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 0 18px;
+}
+
+/* ---- search ---- */
+.sf-search {
+  position: relative;
+  flex: 1 1 240px;
+  max-width: 340px;
+}
+
+.sf-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 11px;
+  transform: translateY(-50%);
+  color: var(--tnxt-text-muted, #9ca3af);
+  pointer-events: none;
+}
+
+/* Specificity raised so the global `.tnxt-compact input[type="text"]` rule
+   in ctms-compact.css cannot collapse the icon gutter. */
+.sf-panel .sf-search .sf-search-input,
+.sf-panel .sf-search input[type="text"] {
+  width: 100%;
+  padding: 8px 32px 8px 34px;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--tnxt-text, #111827);
+  background: #f8fafc;
+  border: 1px solid var(--tnxt-border, #e5e7eb);
+  border-radius: var(--tnxt-radius-md, 8px);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.sf-panel .sf-search .sf-search-input:focus {
+  background: #fff;
+  border-color: var(--tnxt-primary, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.sf-search-clear {
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #475569;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.sf-search-clear:hover {
+  background: #cbd5e1;
+}
+
+/* ---- sort controls ---- */
+.sf-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.sf-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sf-sort > span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tnxt-text-muted, #9ca3af);
+}
+
+.sf-panel .sf-sort select {
+  min-width: 96px;
+  padding: 7px 9px;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--tnxt-text, #111827);
+  background: #fff;
+  border: 1px solid var(--tnxt-border, #e5e7eb);
+  border-radius: var(--tnxt-radius-md, 8px);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sf-panel .sf-sort select:focus {
+  border-color: var(--tnxt-primary, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.sf-dir-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 11px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  background: #fff;
+  border: 1px solid var(--tnxt-border, #e5e7eb);
+  border-radius: var(--tnxt-radius-md, 8px);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.sf-dir-btn:hover {
+  border-color: var(--tnxt-primary, #2563eb);
+  color: var(--tnxt-primary, #2563eb);
+}
+
+.sf-result-count {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--tnxt-text-muted, #9ca3af);
+  white-space: nowrap;
+}
+
+/* ================= DROP ZONE ================= */
+.sf-dropzone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 18px;
+  padding: 16px;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: var(--tnxt-radius-md, 8px);
+  background: #f8fafc;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.sf-dropzone--compact {
+  padding: 11px 14px;
+}
+
+.sf-dropzone:hover:not(.is-disabled):not(.is-busy) {
+  border-color: var(--tnxt-primary, #2563eb);
+  background: #f4f8ff;
+}
+
+.sf-dropzone.is-dragging {
+  border-color: var(--tnxt-primary, #2563eb);
+  border-style: solid;
+  background: #eff6ff;
+  box-shadow: inset 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.sf-dropzone.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.sf-dropzone.is-busy {
+  cursor: progress;
+}
+
+.sf-dropzone:focus-visible {
+  outline: 2px solid var(--tnxt-primary, #2563eb);
+  outline-offset: 2px;
+}
+
+.sf-dropzone-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--tnxt-radius-md, 8px);
+  background: var(--tnxt-primary-light, #dbeafe);
+  color: var(--tnxt-primary, #2563eb);
+}
+
+.sf-dropzone--compact .sf-dropzone-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.sf-dropzone.is-dragging .sf-dropzone-icon {
+  background: var(--tnxt-primary, #2563eb);
+  color: #fff;
+}
+
+.sf-dropzone-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sf-dropzone-text strong {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--tnxt-navy, #0a2540);
+}
+
+.sf-dropzone-text span {
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--tnxt-text-secondary, #6b7280);
+  overflow-wrap: anywhere;
+}
+
+/* ================= TABLE =================
+   Header styling matched to the eISF `DocumentTable` "reference" header
+   (`.reference-table-card .document-table thead th` in
+   `pages/shared/EISF/components/DocumentTable.css`): navy background, white
+   bold type, no uppercase, a darker 2px bottom rule plus a 1px inset
+   highlight, and hairline dividers between header cells. Font size and
+   padding are one density step down from eISF's own reference values
+   (15px/18px) because this table carries eight columns beside a 240px rail,
+   where eISF's table has the full page width - the same density mapping
+   already used elsewhere in this stylesheet. */
+.sf-table-scroll {
+  overflow-x: auto;
+  border-top: 1px solid var(--tnxt-border-light, #f0f0f0);
+}
+
+/* `table-layout: fixed` is what actually guarantees the alignment
+   requirement: with the default `auto` algorithm each row's column widths
+   can be nudged by that row's own content, which is how the header and body
+   drift out of step. Fixed layout instead sizes every column strictly from
+   the `<colgroup>` widths declared once in `SubjectFileTable.js` - the same
+   widths for the header row and every body row, every time. `min-width`
+   keeps eight columns from being crushed unreadably on a narrow rail;
+   `.sf-table-scroll` (below) already scrolls horizontally past that point. */
+.sf-panel .sf-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 13px;
+}
+
+.sf-panel .sf-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 12px 14px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: #082b3d;
+  border-bottom: 2px solid #05202e;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #fff;
+}
+
+.sf-panel .sf-table thead th:not(:last-child) {
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Sorted column keeps the same navy family, one step lighter, rather than
+   eISF's light-blue "sorted" tint - white text on the light tint used
+   elsewhere in this file would not have read against a light background,
+   so the active column stays on-brand with the header instead. */
+.sf-panel .sf-table thead th.is-sorted {
+  color: #fff;
+  background: #0d3852;
+}
+
+/* Sortable header button (requirement 6). Inherits white from the header;
+   hover/focus use a light blue rather than `--tnxt-primary` so the state is
+   still visible against the navy header (the accent blue used on light
+   backgrounds elsewhere in this table is too close to the header's own
+   navy to read as a hover cue here). */
+.sf-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.sf-sort-btn:hover {
+  color: #bfe0ff;
+}
+
+.sf-sort-btn:focus-visible {
+  outline: 2px solid #bfe0ff;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.sf-panel .sf-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #edf1f7;
+  color: #334155;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sf-panel .sf-table tbody tr {
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.sf-panel .sf-table tbody tr:hover,
+.sf-panel .sf-table tbody tr.is-menu-open {
+  background: #fbfdff;
+}
+
+.sf-panel .sf-table tbody tr:focus-visible {
+  outline: 2px solid var(--tnxt-primary, #2563eb);
+  outline-offset: -2px;
+}
+
+.sf-panel .sf-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ---- name cell ----
+   The column's width now comes entirely from `<colgroup>` (`.sf-col-name`
+   in `SubjectFileTable.js`); this rule only has to keep the cell's own text
+   from forcing that width open, so `<table>` overflow rather than any
+   min/max-width here is what stops a long name from breaking the layout. */
+.sf-panel .sf-table td.sf-cell-name {
+  overflow: hidden;
+}
+
+/* Icon + name, laid out inside the cell rather than on the cell itself -
+   see the comment in `SubjectFileRow.js` for why the flex layout moved
+   in from `td.sf-cell-name`. */
+.sf-cell-name-inner {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-width: 0;
+}
+
+.sf-file-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--tnxt-navy, #0a2540);
+}
+
+.sf-cell-size {
+  font-variant-numeric: tabular-nums;
+}
+
+.sf-cell-user {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Actions column: right-aligned trigger, kept fully clear of the table's
+   own right edge (and of the scroll container beyond it) with generous
+   left/right padding, plus `overflow: visible` so nothing about this cell
+   itself can clip the trigger button. */
+.sf-panel .sf-table td.sf-cell-actions {
+  text-align: right;
+  padding-left: 10px;
+  padding-right: 16px;
+  overflow: visible;
+}
+
+/* Status column: explicit right padding (beyond the shared 14px every cell
+   already gets) so the badge never crowds the actions column next to it. */
+.sf-panel .sf-table td.sf-cell-status {
+  padding-right: 18px;
+}
+
+/* ================= FILE ICONS + TYPE CHIPS ================= */
+.sf-file-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--tnxt-radius-sm, 6px);
+  /* Per-type colours are set by the modifiers below. */
+  background: var(--sf-icon-bg, #f1f5f9);
+  color: var(--sf-icon-fg, #475569);
+}
+
+.sf-file-icon--lg {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--tnxt-radius-md, 8px);
+}
+
+/* Type palette - shared by the icon tile and the type chip so a row reads
+   as one colour family. */
+.sf-file-icon--pdf,
+.sf-type-chip--pdf {
+  --sf-icon-bg: #fee2e2;
+  --sf-icon-fg: #b91c1c;
+}
+
+.sf-file-icon--doc,
+.sf-type-chip--doc {
+  --sf-icon-bg: #dbeafe;
+  --sf-icon-fg: #1d4ed8;
+}
+
+.sf-file-icon--xls,
+.sf-type-chip--xls {
+  --sf-icon-bg: #dcfce7;
+  --sf-icon-fg: #15803d;
+}
+
+.sf-file-icon--ppt,
+.sf-type-chip--ppt {
+  --sf-icon-bg: #ffedd5;
+  --sf-icon-fg: #c2410c;
+}
+
+.sf-file-icon--image,
+.sf-type-chip--image {
+  --sf-icon-bg: #f3e8ff;
+  --sf-icon-fg: #7e22ce;
+}
+
+.sf-file-icon--zip,
+.sf-type-chip--zip {
+  --sf-icon-bg: #fef3c7;
+  --sf-icon-fg: #a16207;
+}
+
+.sf-file-icon--txt,
+.sf-type-chip--txt {
+  --sf-icon-bg: #e0e7ff;
+  --sf-icon-fg: #4338ca;
+}
+
+.sf-file-icon--default,
+.sf-type-chip--default {
+  --sf-icon-bg: #f1f5f9;
+  --sf-icon-fg: #475569;
+}
+
+.sf-type-chip {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: var(--tnxt-radius-sm, 6px);
+  background: var(--sf-icon-bg, #f1f5f9);
+  color: var(--sf-icon-fg, #475569);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.5;
+}
+
+/* ================= STATUS BADGES (mock) ================= */
+.sf-status {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: var(--tnxt-radius-full, 999px);
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.sf-status--final {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.sf-status--approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.sf-status--pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.sf-status--draft {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.sf-status--superseded {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* ================= ROW ACTION MENU =================
+   Fix: the trigger used to default to `opacity: 0` and only reveal itself
+   on row hover/focus. With no hover in effect (the common state for any
+   screenshot, touch device, or simple mouse-off moment) that read as the
+   control being clipped/missing at the far right of the row, immediately
+   after the Status column. It is now visible at all times - hover/focus
+   only changes its background/color, never its presence - and the touch
+   fallback below is redundant but left in place as a harmless no-op. */
+.sf-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: var(--tnxt-radius-sm, 6px);
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  opacity: 1;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sf-row:hover .sf-menu-trigger,
+.sf-row:focus-within .sf-menu-trigger,
+.sf-menu-trigger.is-open,
+.sf-menu-trigger:focus-visible {
+  opacity: 1;
+}
+
+.sf-menu-trigger:hover,
+.sf-menu-trigger.is-open {
+  background: #e2e8f0;
+  color: var(--tnxt-navy, #0a2540);
+}
+
+@media (hover: none) {
+  .sf-menu-trigger {
+    opacity: 1;
+  }
+}
+
+/* Portalled to <body>, so this is NOT nested under `.sf-panel`. */
+.sf-menu {
+  position: fixed;
+  z-index: 1400; /* below the modal backdrop (1500) */
+  padding: 5px;
+  background: #fff;
+  border: 1px solid var(--tnxt-border, #e5e7eb);
+  border-radius: var(--tnxt-radius-md, 8px);
+  box-shadow: 0 12px 30px rgba(10, 37, 64, 0.18);
+  font-family: var(--tnxt-font, "Inter", system-ui, sans-serif);
+  animation: sf-menu-in 0.14s ease-out;
+}
+
+.sf-menu,
+.sf-menu * {
+  box-sizing: border-box;
+}
+
+@keyframes sf-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sf-menu {
+    animation: none;
+  }
+}
+
+.sf-menu-heading {
+  padding: 5px 8px 7px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--tnxt-border-light, #f0f0f0);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--tnxt-text-muted, #9ca3af);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sf-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 8px;
+  border: none;
+  border-radius: var(--tnxt-radius-sm, 6px);
+  background: transparent;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #334155;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.sf-menu-item svg {
+  flex-shrink: 0;
+  color: #64748b;
+}
+
+.sf-menu-item:hover {
+  background: #f1f5f9;
+  color: var(--tnxt-navy, #0a2540);
+}
+
+.sf-menu-item:hover svg {
+  color: var(--tnxt-primary, #2563eb);
+}
+
+.sf-menu-item.is-danger {
+  color: var(--tnxt-danger, #dc2626);
+}
+
+.sf-menu-item.is-danger svg {
+  color: var(--tnxt-danger, #dc2626);
+}
+
+.sf-menu-item.is-danger:hover {
+  background: var(--tnxt-danger-bg, #fee2e2);
+  color: #991b1b;
+}
+
+.sf-menu-item-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sf-menu-item:focus-visible {
+  outline: 2px solid var(--tnxt-primary, #2563eb);
+  outline-offset: -2px;
+}
+
+/* ================= EMPTY STATES (requirement 7) ================= */
+.sf-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 24px 32px;
+  text-align: center;
+  border-top: 1px solid var(--tnxt-border-light, #f0f0f0);
+}
+
+/* Standalone "no folder selected" card has no table above it. */
+.sf-empty-state--no-folder {
+  border-top: none;
+  padding: 56px 24px;
+}
+
+.sf-empty-state--search {
+  padding: 36px 24px;
+}
+
+.sf-empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--tnxt-primary-light, #dbeafe);
+  color: var(--tnxt-primary, #2563eb);
+}
+
+.sf-empty-state--search .sf-empty-icon,
+.sf-empty-state--no-folder .sf-empty-icon {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+.sf-empty-state h3 {
+  margin: 2px 0 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--tnxt-navy, #0a2540);
+}
+
+.sf-empty-state p {
+  margin: 0;
+  max-width: 400px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--tnxt-text-secondary, #6b7280);
+}
+
+.sf-empty-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+/* The drop zone inside the empty state is centred and width-capped. */
+.sf-empty-state .sf-dropzone {
+  width: 100%;
+  max-width: 420px;
+  margin: 8px 0 0;
+  text-align: left;
+}
+
+/* ==================================================================
+   MODAL EXTRAS
+   The file modals reuse the `sxm-` shell from FolderModals.css; only the
+   file-specific pieces live here. Portalled to <body>, so these selectors
+   are intentionally NOT nested under `.sf-panel`.
+================================================================== */
+
+/* ---- preview modal shell ---- */
+.sf-preview-modal {
+  max-width: 560px;
+}
+
+.sf-preview-heading {
+  min-width: 0;
+}
+
+.sf-preview-modal .sf-preview-heading h3 {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--tnxt-navy, #0a2540);
+  overflow-wrap: anywhere;
+}
+
+.sf-preview-modal .sf-preview-heading p {
+  margin: 3px 0 0;
+  font-size: 11.5px;
+  color: var(--tnxt-text-secondary, #6b7280);
+}
+
+/* ---- preview surface ---- */
+.sf-preview-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 168px;
+  max-height: 300px;
+  padding: 14px;
+  margin-bottom: 14px;
+  overflow: auto;
+  border: 1px solid var(--tnxt-border-light, #f0f0f0);
+  border-radius: var(--tnxt-radius-md, 8px);
+  background: #f8fafc;
+}
+
+.sf-preview-image {
+  max-width: 100%;
+  max-height: 268px;
+  border-radius: var(--tnxt-radius-sm, 6px);
+  box-shadow: 0 2px 10px rgba(10, 37, 64, 0.14);
+}
+
+.sf-preview-text {
+  width: 100%;
+  margin: 0;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: #334155;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.sf-preview-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 10px;
+  text-align: center;
+  color: var(--sf-icon-fg, #475569);
+}
+
+.sf-preview-placeholder strong {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sf-preview-placeholder span {
+  max-width: 320px;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--tnxt-text-secondary, #6b7280);
+}
+
+/* ---- metadata grid (requirement 3) ---- */
+.sf-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+  margin: 0;
+}
+
+.sf-detail-item {
+  min-width: 0;
+}
+
+.sf-detail-item dt {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tnxt-text-muted, #9ca3af);
+}
+
+.sf-detail-item dd {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--tnxt-navy, #0a2540);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sf-detail-item dd.is-wrap {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* ---- "no stored contents" note ---- */
+.sf-preview-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 9px 11px;
+  border-radius: var(--tnxt-radius-md, 8px);
+  background: #f1f5f9;
+  border: 1px solid var(--tnxt-border, #e5e7eb);
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.sf-preview-note svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #64748b;
+}
+
+/* ---- preview footer: delete left, primary actions right ---- */
+.sf-preview-footer {
+  justify-content: space-between;
+}
+
+.sf-preview-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+/* Ghost danger button, only used by the preview footer. */
+.sxm-btn--danger-ghost {
+  background: #fff;
+  border-color: #fecaca;
+  color: var(--tnxt-danger, #dc2626);
+}
+
+.sxm-btn--danger-ghost:hover {
+  background: var(--tnxt-danger-bg, #fee2e2);
+  border-color: #fca5a5;
+}
+
+/* ---- rename modal: fixed extension suffix ---- */
+.sf-rename-input {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--tnxt-border, #e5e7eb);
+  border-radius: var(--tnxt-radius-md, 8px);
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sf-rename-input:focus-within {
+  border-color: var(--tnxt-primary, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.sf-rename-input.has-error {
+  border-color: var(--tnxt-danger, #dc2626);
+}
+
+.sf-rename-input.has-error:focus-within {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+/* Specificity raised to beat both the `.sxm-field input` rule in
+   FolderModals.css and the global `.tnxt-compact` input override. */
+.sxm-modal .sf-rename-input input,
+.sxm-modal .sf-rename-input input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  padding: 9px 10px 9px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--tnxt-text, #111827);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+}
+
+.sf-rename-ext {
+  flex-shrink: 0;
+  padding: 9px 12px 9px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--tnxt-text-secondary, #6b7280);
+  background: #f8fafc;
+  border-left: 1px solid var(--tnxt-border-light, #f0f0f0);
+}
+
+/* ---- delete dialog: target file summary ---- */
+.sf-delete-target {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 10px 11px;
+  border-radius: var(--tnxt-radius-md, 8px);
+  background: #f8fafc;
+  border: 1px solid var(--tnxt-border-light, #f0f0f0);
+}
+
+.sf-delete-target-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sf-delete-target-text strong {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--tnxt-navy, #0a2540);
+  overflow-wrap: anywhere;
+}
+
+.sf-delete-target-text span {
+  font-size: 11px;
+  color: var(--tnxt-text-secondary, #6b7280);
+}
+
+/* =================================================================
+   RESPONSIVE
+   Phase 7: one module-wide ladder - 1200 / 992 / 768 / 480.
+================================================================= */
+@media (max-width: 992px) {
+  .sf-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .sf-panel-header {
+    padding: 14px;
+  }
+
+  .sf-panel-actions {
+    width: 100%;
+  }
+
+  .sf-panel-actions .sf-btn {
+    flex: 1 1 auto;
+  }
+
+  .sf-alert,
+  .sf-toolbar,
+  .sf-dropzone {
+    margin-left: 14px;
+    margin-right: 14px;
+  }
+
+  .sf-toolbar {
+    padding: 0;
+  }
+
+  .sf-search {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .sf-toolbar-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Column widths come from `<colgroup>` now (`table-layout: fixed`), so a
+     per-cell min/max-width here would no longer do anything - narrower than
+     `.sf-panel .sf-table`'s 760px min-width, `.sf-table-scroll` below takes
+     over and the row scrolls horizontally instead of any column being
+     squeezed. */
+
+  /* The horizontal table scroller must not bleed past the panel. */
+  .sf-table-scroll {
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 480px) {
+  .sf-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sf-preview-footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .sf-preview-footer-right {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .sf-preview-footer .sxm-btn {
+    width: 100%;
+  }
+
+  .sf-empty-state {
+    padding: 30px 16px 26px;
+  }
+
+  /* Stack the drop zone so its copy is not squeezed beside the icon. */
+  .sf-dropzone {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 9px;
+  }
+}
+
+/* ==================================================================
+   RIGHT-SIDE FILE DETAILS PANEL (Update 7)
+
+   "View Details" no longer opens the `.sf-preview-modal` popup above -
+   selecting a file now docks a details panel to the right of the table
+   instead (`.sf-body-details`, rendered by `FilePreviewModal.js` as
+   `.sf-details-panel`). The table (`.sf-body-list`) stays visible the
+   whole time.
+
+   Split ratio matches eISF's own split view as closely as possible
+   (`.eisf-module-grid.eisf-split-view` in
+   pages/shared/EISF/EISFModuleWorkspace.css): 45% list / 55% details.
+   Nothing here imports from eISF - only the layout numbers are mirrored.
+================================================================== */
+.sf-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  min-height: 0;
+}
+
+.sf-body-list {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sf-body--split {
+  grid-template-columns: minmax(0, 45fr) minmax(0, 55fr);
+  gap: 14px;
+  padding-right: 14px;
+  padding-bottom: 14px;
+}
+
+.sf-body--split .sf-body-list {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.sf-body-details {
+  min-width: 0;
+  min-height: 480px;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--tnxt-border-light, #f0f0f0);
+  border-radius: var(--tnxt-radius-lg, 12px);
+  box-shadow: var(--sfx-shadow-card, 0 2px 12px rgba(10, 37, 64, 0.08));
+}
+
+/* ---- panel shell ---- */
+.sf-details-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: #fff;
+}
+
+.sf-details-panel--empty {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+  padding: 30px;
+  color: var(--sfx-muted, #64748b);
+}
+
+.sf-details-empty-icon {
+  color: var(--sfx-faint, #9ca3af);
+}
+
+.sf-details-panel--empty h3 {
+  margin: 10px 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--tnxt-navy, #0a2540);
+}
+
+.sf-details-panel--empty p {
+  margin: 0;
+  font-size: 12.5px;
+  max-width: 260px;
+  line-height: 1.5;
+}
+
+/* ---- fixed header: title + actions + metadata (never scrolls) ---- */
+.sf-details-panel-meta {
+  flex: 0 0 auto;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--tnxt-border-light, #e6ecf3);
+  background: linear-gradient(180deg, #fbfdff 0%, #f6f9fc 100%);
+}
+
+.sf-details-panel-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.sf-details-panel-title-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sf-details-panel-title-text h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--tnxt-navy, #0a2540);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sf-details-panel-title-text span {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--sfx-muted, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sf-details-panel-actions {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.sf-details-panel-actions .sf-btn {
+  padding: 6px 11px;
+  min-height: 0;
+  font-size: 12px;
+}
+
+/* Ghost danger variant, used only by the details panel's Delete action. */
+.sf-btn--danger {
+  background: #fff;
+  border-color: #fecaca;
+  color: var(--tnxt-danger, #dc2626);
+}
+
+.sf-btn--danger:hover:not(:disabled) {
+  background: var(--tnxt-danger-bg, #fee2e2);
+  border-color: #fca5a5;
+}
+
+.sf-details-panel-close {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--tnxt-border, #e2e8f0);
+  border-radius: var(--tnxt-radius-sm, 5px);
+  background: #fff;
+  color: var(--sfx-muted, #64748b);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.sf-details-panel-close:hover {
+  background: #f1f5f9;
+  border-color: #c7d2e0;
+  color: #1e293b;
+}
+
+.sf-details-panel-close:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--sfx-ring, 0 0 0 3px rgba(37, 99, 235, 0.18));
+}
+
+/* Overrides `.sf-detail-grid`'s 2-column layout: the panel is narrower
+   than the old 560px modal, so fields wrap by available width instead. */
+.sf-details-panel-grid {
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px 16px;
+  margin-top: 14px;
+  padding-top: 13px;
+  border-top: 1px solid var(--tnxt-border-light, #e9eef4);
+}
+
+/* ---- scrollable preview body ---- */
+.sf-details-panel-preview {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px 18px 18px;
+  background: var(--sfx-surface-alt, #f4f6fa);
+}
+
+/* Overrides `.sf-preview-stage`'s fixed modal sizing so the preview fills
+   the scrollable pane below the metadata header instead. */
+.sf-details-panel-stage {
+  min-height: 220px;
+  max-height: none;
+  height: 100%;
+  margin-bottom: 12px;
+}
+
+.sf-details-panel-preview .sf-preview-note {
+  margin-top: 0;
+}
+
+@media (max-width: 1200px) {
+  .sf-body--split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sf-body-details {
+    min-height: 560px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sf-body--split {
+    padding-right: 0;
+    padding-bottom: 0;
+    margin: 0 14px 14px;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sf-details-panel-actions .sf-btn span {
+    display: none;
+  }
+
+  .sf-details-panel-actions .sf-btn {
+    padding: 6px 8px;
+  }
+
+  .sf-details-panel-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
