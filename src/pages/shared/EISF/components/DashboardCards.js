@@ -34,7 +34,12 @@ export default function DashboardCards({
   return (
     <div className={`dashboard-cards ${variant === "reference" ? "dashboard-cards-reference" : ""}`}>
       {dashboardCards.map((card) => {
-        const CardIcon = CARD_ICONS[card.key] || FiFileText;
+        /* `card.Icon` lets a caller supply its own glyph for a metric that is
+           not one of the eISF document keys below (the Study Workspace ->
+           Subjects tab passes folder/file/storage icons this way). Existing
+           eISF callers pass no `Icon`, so they keep resolving through
+           CARD_ICONS exactly as before. */
+        const CardIcon = card.Icon || CARD_ICONS[card.key] || FiFileText;
 
         return (
         <div

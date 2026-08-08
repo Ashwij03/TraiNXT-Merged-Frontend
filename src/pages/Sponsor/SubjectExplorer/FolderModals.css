@@ -1,0 +1,402 @@
+/* ==================================================================
+   SUBJECT EXPLORER - FOLDER MANAGEMENT MODALS (Phase 3)
+   Shared styles for CreateFolderModal, RenameFolderModal and
+   DeleteFolderDialog. Update 6 reuses every one of these classes as-is
+   for CreateSubjectModal, EditSubjectModal and DeleteSubjectDialog too.
+
+   The `sxm-` prefix keeps these rules independent from the page-level
+   `sw-modal` styles in Subjects.css. The modals are portalled to <body>,
+   so selectors are intentionally NOT nested under `.sx-explorer`.
+================================================================== */
+
+/* Local border-box reset: the host app has no global reset, and these
+   modals are portalled outside any page wrapper that might provide one. */
+.sxm-backdrop,
+.sxm-backdrop *,
+.sxm-backdrop *::before,
+.sxm-backdrop *::after {
+  box-sizing: border-box;
+}
+
+.sxm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1500; /* above the folder context menu (1400) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(10, 37, 64, 0.45);
+  backdrop-filter: blur(2px);
+  font-family: var(--tnxt-font, "Inter", system-ui, sans-serif);
+  animation: sxm-fade-in 0.16s ease-out;
+}
+
+.sxm-modal {
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: var(--tnxt-radius-xl, 16px);
+  box-shadow: 0 20px 50px rgba(10, 37, 64, 0.28);
+  animation: sxm-pop-in 0.18s cubic-bezier(0.34, 1.36, 0.64, 1);
+}
+
+.sxm-modal--sm {
+  max-width: 400px;
+}
+
+@keyframes sxm-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sxm-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sxm-backdrop,
+  .sxm-modal {
+    animation: none;
+  }
+}
+
+/* ================= HEADER ================= */
+.sxm-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--tnxt-border-light, #f0f0f0);
+}
+
+.sxm-header-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  min-width: 0;
+}
+
+.sxm-header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: var(--tnxt-radius-md, 8px);
+  background: var(--tnxt-primary-light, #dbeafe);
+  color: var(--tnxt-primary, #2563eb);
+}
+
+.sxm-header-icon--danger {
+  background: var(--tnxt-danger-bg, #fee2e2);
+  color: var(--tnxt-danger, #dc2626);
+}
+
+.sxm-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--tnxt-navy, #0a2540);
+}
+
+.sxm-header p {
+  margin: 3px 0 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--tnxt-text-secondary, #6b7280);
+}
+
+.sxm-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--tnxt-radius-sm, 6px);
+  background: #f1f5f9;
+  color: #475569;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.sxm-close:hover {
+  background: #e2e8f0;
+}
+
+/* ================= BODY ================= */
+.sxm-body {
+  padding: 16px 18px 18px;
+}
+
+/* ---- read-only context rows (location / current name / parent) ---- */
+.sxm-context {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  border-radius: var(--tnxt-radius-md, 8px);
+  background: #f8fafc;
+  border: 1px solid var(--tnxt-border-light, #f0f0f0);
+  font-size: 12px;
+}
+
+.sxm-context-label {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tnxt-text-muted, #9ca3af);
+}
+
+.sxm-context-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--tnxt-navy, #0a2540);
+}
+
+/* ---- form field ---- */
+.sxm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sxm-field > span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tnxt-text-secondary, #6b7280);
+}
+
+.sxm-field > span em {
+  color: var(--tnxt-danger, #dc2626);
+  font-style: normal;
+}
+
+/* Specificity raised so the global `.tnxt-compact input[type="text"]`
+   rule in ctms-compact.css cannot shrink the field. */
+.sxm-modal .sxm-field input,
+.sxm-modal .sxm-field input[type="text"] {
+  width: 100%;
+  /* Explicit: the host app does not set a global border-box reset, and
+     without this the padding would push the input past the modal. */
+  box-sizing: border-box;
+  padding: 9px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--tnxt-text, #111827);
+  background: #fff;
+  border: 1px solid var(--tnxt-border, #e5e7eb);
+  border-radius: var(--tnxt-radius-md, 8px);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sxm-modal .sxm-field input:focus {
+  border-color: var(--tnxt-primary, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.sxm-modal .sxm-field input.has-error {
+  border-color: var(--tnxt-danger, #dc2626);
+}
+
+.sxm-modal .sxm-field input.has-error:focus {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+/* ---- validation / helper messages ---- */
+.sxm-error,
+.sxm-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 10px;
+  padding: 9px 11px;
+  border-radius: var(--tnxt-radius-md, 8px);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.sxm-error {
+  background: var(--tnxt-danger-bg, #fee2e2);
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.sxm-warning {
+  background: var(--tnxt-warning-bg, #fef3c7);
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
+.sxm-error svg,
+.sxm-warning svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.sxm-hint {
+  margin: 10px 0 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--tnxt-text-muted, #9ca3af);
+}
+
+.sxm-confirm-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #334155;
+  word-break: break-word;
+}
+
+.sxm-confirm-text strong {
+  color: var(--tnxt-navy, #0a2540);
+}
+
+/* ================= FOOTER + BUTTONS ================= */
+.sxm-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--tnxt-border-light, #f0f0f0);
+}
+
+.sxm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 15px;
+  border: 1px solid var(--tnxt-border, #e5e7eb);
+  border-radius: var(--tnxt-radius-md, 8px);
+  background: #fff;
+  color: #334155;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease,
+    color 0.15s ease, opacity 0.15s ease;
+}
+
+.sxm-btn:hover {
+  background: #f1f5f9;
+}
+
+.sxm-btn--primary {
+  background: var(--tnxt-primary, #2563eb);
+  border-color: var(--tnxt-primary, #2563eb);
+  color: #fff;
+}
+
+.sxm-btn--primary:hover {
+  background: var(--tnxt-primary-hover, #1d4ed8);
+  border-color: var(--tnxt-primary-hover, #1d4ed8);
+}
+
+.sxm-btn--danger {
+  background: var(--tnxt-danger, #dc2626);
+  border-color: var(--tnxt-danger, #dc2626);
+  color: #fff;
+}
+
+.sxm-btn--danger:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
+.sxm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sxm-btn:focus-visible {
+  outline: 2px solid var(--tnxt-primary, #2563eb);
+  outline-offset: 2px;
+}
+
+/* ==================================================================
+   SIDEBAR - "ADD SUBJECT" TOOLBAR (Update 6)
+   This lives here (not SubjectExplorer.css) so Subject CRUD styling stays
+   inside the files this update is scoped to. Kept visually consistent
+   with the sidebar's own tokens/spacing rather than the modal look above.
+================================================================== */
+.sx-subject-toolbar {
+  flex-shrink: 0;
+  padding: 10px 12px 0;
+}
+
+.sx-add-subject-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px dashed var(--tnxt-primary, #1c6ed4);
+  border-radius: var(--tnxt-radius-md, 8px);
+  background: #eaf3ff;
+  color: var(--tnxt-primary, #1c6ed4);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.sx-add-subject-btn:hover {
+  background: #dbeafe;
+  border-color: var(--tnxt-primary-hover, #1d4ed8);
+}
+
+.sx-add-subject-btn:focus-visible {
+  outline: 2px solid var(--tnxt-primary, #1c6ed4);
+  outline-offset: 2px;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 480px) {
+  .sxm-backdrop {
+    padding: 12px;
+  }
+
+  .sxm-footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .sxm-btn {
+    width: 100%;
+    padding: 10px 15px;
+  }
+}

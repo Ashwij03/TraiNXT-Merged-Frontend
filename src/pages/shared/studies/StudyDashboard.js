@@ -5,6 +5,9 @@ import DashboardLayout from "../../../components/dashboard/shared/DashboardLayou
 import SubjectAnalyticsSection from "../../../components/dashboard/shared/SubjectAnalyticsSection";
 import VisitCalendarSection from "../../../components/dashboard/shared/VisitCalendarSection";
 import StudySubjects from "./StudySubjects";
+/* Subjects tab: mounts the completed Subject Explorer workspace (Phases 1-7).
+   The Overview section below still renders `StudySubjects`, unchanged. */
+import StudySubjectsWorkspace from "../../Sponsor/SubjectExplorer/StudySubjectsWorkspace";
 import StudyWorkspaceTabs from "./StudyWorkspaceTabs";
 import StudyDocuments from "./StudyDocuments";
 import StudyComments from "./StudyComments";
@@ -783,9 +786,11 @@ window.dispatchEvent(new Event("studies-updated"));
               </>
             )}
 
-            {activeTab === "Subjects" && (
-              <StudySubjects setActiveTab={setActiveTab} />
-            )}
+            {/* Subjects tab -> the completed Subject Explorer workspace.
+                Integration point only: routing, study context and the subject
+                business logic in `StudySubjects` are all left as they were,
+                and that component still backs the Overview section above. */}
+            {activeTab === "Subjects" && <StudySubjectsWorkspace studyId={id} />}
 
             {/* {activeTab === "SubjectProfile" && (
               <SubjectProfile setActiveTab={setActiveTab} />

@@ -1,0 +1,191 @@
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
+import {
+  MdMoreVert,
+  MdVisibility,
+  MdDriveFileRenameOutline,
+  MdDownload,
+  MdDeleteOutline,
+} from "react-icons/md";
+
+/**
+ * Subject Explorer - file row action menu (Phase 4, requirement 4).
+ *
+ * Mirrors FolderContextMenu: presentational, reports the chosen action
+ * upward, and portals the dropdown with fixed positioning so the table's
+ * horizontal scroll container cannot clip it.
+ *
+ * Actions: view (details) · rename · download · delete.
+ *
+ * Props
+ *   file          the file record
+ *   onAction      (actionKey, file) => void
+ *   onOpenChange  (open) => void - lets the row stay visually active
+ */
+
+const MENU_WIDTH = 186;
+const MENU_MARGIN = 8;
+
+const ITEMS = [
+  { key: "view", label: "View Details", Icon: MdVisibility },
+  { key: "rename", label: "Rename", Icon: MdDriveFileRenameOutline },
+  { key: "download", label: "Download", Icon: MdDownload },
+  { key: "delete", label: "Delete", Icon: MdDeleteOutline, danger: true },
+];
+
+function FileContextMenu({ file, onAction, onOpenChange }) {
+  const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const triggerRef = useRef(null);
+  const menuRef = useRef(null);
+
+  const closeMenu = useCallback(() => setOpen(false), []);
+
+  /** Anchor under the trigger, flipping/clamping to stay in the viewport. */
+  const updatePosition = useCallback(() => {
+    const trigger = triggerRef.current?.getBoundingClientRect();
+    if (!trigger) return;
+
+    const menuHeight = menuRef.current?.offsetHeight ?? 0;
+
+    let top = trigger.bottom + 4;
+    if (menuHeight && top + menuHeight > window.innerHeight - MENU_MARGIN) {
+      top = Math.max(MENU_MARGIN, trigger.top - menuHeight - 4);
+    }
+
+    const left = Math.min(
+      Math.max(MENU_MARGIN, trigger.right - MENU_WIDTH),
+      window.innerWidth - MENU_WIDTH - MENU_MARGIN
+    );
+
+    setPosition({ top, left });
+  }, []);
+
+  useEffect(() => {
+    if (typeof onOpenChange === "function") onOpenChange(open);
+  }, [open, onOpenChange]);
+
+  /* Outside click / Escape dismissal; scroll+resize repositioning. */
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const handlePointerDown = (event) => {
+      if (
+        menuRef.current?.contains(event.target) ||
+        triggerRef.current?.contains(event.target)
+      ) {
+        return;
+      }
+      closeMenu();
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key !== "Escape") return;
+
+      event.stopPropagation();
+      closeMenu();
+
+      // Restore focus only when it is still inside the menu, so a dialog
+      // opened from here keeps its own focus.
+      if (menuRef.current?.contains(document.activeElement)) {
+        triggerRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    // `true` = capture, so scrolling the table container is caught too.
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [open, closeMenu, updatePosition]);
+
+  /* Measure once mounted so the flip uses the real menu height. */
+  useLayoutEffect(() => {
+    if (open) updatePosition();
+  }, [open, updatePosition]);
+
+  const runAction = (event, actionKey) => {
+    event.preventDefault();
+    event.stopPropagation();
+    closeMenu();
+    if (typeof onAction === "function") onAction(actionKey, file);
+  };
+
+  return (
+    <>
+      <button
+        type="button"
+        ref={triggerRef}
+        className={`sf-menu-trigger${open ? " is-open" : ""}`}
+        aria-label={`File actions for ${file?.name || "file"}`}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={(event) => {
+          // Stop the row handler so opening the menu never opens details.
+          event.preventDefault();
+          event.stopPropagation();
+          setOpen((prev) => !prev);
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            if (open) {
+              event.stopPropagation();
+              closeMenu();
+            }
+            return;
+          }
+          // Keep the row's Enter/Space handling from firing while the
+          // trigger itself is focused.
+          event.stopPropagation();
+        }}
+      >
+        <MdMoreVert size={15} />
+      </button>
+
+      {open &&
+        createPortal(
+          <div
+            ref={menuRef}
+            className="sf-menu"
+            role="menu"
+            aria-label={`File actions for ${file?.name || "file"}`}
+            style={{ top: position.top, left: position.left, width: MENU_WIDTH }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="sf-menu-heading" title={file?.name}>
+              {file?.name}
+            </div>
+
+            {ITEMS.map(({ key, label, Icon, danger }) => (
+              <button
+                key={key}
+                type="button"
+                role="menuitem"
+                className={`sf-menu-item${danger ? " is-danger" : ""}`}
+                onClick={(event) => runAction(event, key)}
+              >
+                <Icon size={15} aria-hidden="true" />
+                <span className="sf-menu-item-label">{label}</span>
+              </button>
+            ))}
+          </div>,
+          document.body
+        )}
+    </>
+  );
+}
+
+export default FileContextMenu;

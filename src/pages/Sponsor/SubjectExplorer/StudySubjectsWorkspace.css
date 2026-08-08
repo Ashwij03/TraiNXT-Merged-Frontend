@@ -1,0 +1,642 @@
+/**
+ * STUDY WORKSPACE -> SUBJECTS TAB (scoped layout only)
+ * ====================================================
+ *
+ * Layout for the Subject Explorer workspace when it is mounted inside the
+ * Study Workspace's Subjects tab.
+ *
+ * ISOLATION CONTRACT
+ * ------------------
+ * 1. EVERY selector is scoped under `.study-subjects-workspace`. Nothing here
+ *    can reach `pages/shared/studies/StudySubjects.css` or the PI dashboard
+ *    that imports it (`pages/PI/PISubjectsDashboard.js`).
+ * 2. No element/base selectors, no `:root`, no global custom properties, and
+ *    no `!important`. Only additive, class-scoped rules.
+ * 3. The child components keep their own stylesheets - `SubjectExplorer.css`,
+ *    `SubjectFiles.css`, `DocumentExperience.css` etc. are imported by those
+ *    components and are NOT duplicated or overridden here. This file only
+ *    positions them.
+ *
+ * DESIGN SYSTEM
+ * -------------
+ * Uses `--tnxt-*` tokens from `src/styles/design-system.css`, each with a
+ * literal fallback so the tab degrades gracefully if the sheet is absent.
+ *
+ * BREAKPOINTS
+ * -----------
+ * The Phase 7 ladder only - 1200 / 992 / 768 / 480. No new values.
+ */
+
+.study-subjects-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  /* The dashboard's tab panel is the scroll owner; this must not add a
+     second horizontal scroll chain of its own. */
+  min-width: 0;
+  max-width: 100%;
+  /* `.eisf-module-workspace` does exactly this. Without it the tab is only as
+     tall as its content, so a subject with two files left a large band of empty
+     page below the panel while eISF filled the same area. `100%` (not `100vh`)
+     keeps the dashboard header and tab strip out of the calculation. */
+  min-height: 100%;
+}
+
+/* ==================================================================
+   TAB HEADING
+
+   Two columns on one row:
+     LEFT  `.ssw-crumb`        "SUBJECTS / <selected section>", stacked.
+     RIGHT `.ssw-header-right` panel title + KPI cards, side by side.
+   Both columns share the same 84px min-height so the wayfinder, the title
+   block and the KPI cards all vertically centre against each other -
+   the same rhythm `.eisf-module-title-row` uses for its heading + cards.
+================================================================== */
+
+.study-subjects-workspace .ssw-header {
+  display: flex;
+  align-items: stretch;
+  gap: 24px;
+  min-width: 0;
+}
+
+/* LEFT: "SUBJECTS / selected section" wayfinder. Stacked two lines rather
+   than eISF's inline breadcrumb, since here it is a standalone column next
+   to the title row rather than a strip above it. The divider matches the
+   vertical rule in the layout spec (a column boundary, not just a gap). */
+.study-subjects-workspace .ssw-crumb {
+  flex: 0 0 auto;
+  min-width: 150px;
+  max-width: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 84px;
+  padding-right: 20px;
+  border-right: 1px solid #e2e8f0;
+}
+
+.study-subjects-workspace .ssw-crumb-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.study-subjects-workspace .ssw-crumb-section {
+  margin-top: 4px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
+/* RIGHT: title block + KPI cards, always on the same row - this element is
+   never given `flex-direction: column` outside the narrow-screen breakpoint
+   below, so the cards can never drop to a row beneath the title. */
+.study-subjects-workspace .ssw-header-right {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+/* `.eisf-module-heading`: a fixed minimum so the KPI grid starts at the same
+   x-position it does in eISF, and the same 84px min-height so the heading
+   block and the cards are vertically centred against each other. */
+.study-subjects-workspace .ssw-header-text {
+  flex: 0 1 auto;
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 84px;
+}
+
+.study-subjects-workspace .ssw-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+/* Type scale copied from `.eisf-module-header h2` (24px / 700 / -0.02em). */
+.study-subjects-workspace .ssw-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+/* Count badge beside the title - the eISF `.section-count` pill. */
+.study-subjects-workspace .ssw-title-count {
+  min-width: 22px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #dcecff;
+  color: #1f7ae0;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: center;
+}
+
+/* `.eisf-module-header p`: 14px, #475569, 7px above. */
+.study-subjects-workspace .ssw-subtitle {
+  margin: 7px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #475569;
+  /* Long study codes must not push the tab panel wider. */
+  overflow-wrap: anywhere;
+}
+
+/* ==================================================================
+   KPI CARDS - Subjects' own implementation (`.ssw-kpi-card*`)
+
+   No eISF component or class is used here. The box model, spacing and type
+   scale are matched to `.eisf-module-title-row .dashboard-cards-reference`
+   by eye (4 columns, 10px gap, 84px card min-height, 38px icon, 12/22/11px
+   title/value/detail) so the two workspaces read as one visual language,
+   but every rule below is scoped to and owned by this file.
+================================================================== */
+
+.study-subjects-workspace .ssw-kpi-cards {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.study-subjects-workspace .ssw-kpi-card {
+  display: flex;
+  min-height: 84px;
+  height: 100%;
+  background: #fff;
+  border: 1px solid #edf1f7;
+  border-radius: 7px;
+  box-shadow: 0 7px 20px rgba(15, 23, 42, 0.055);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.study-subjects-workspace .ssw-kpi-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.study-subjects-workspace .ssw-kpi-card-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+}
+
+.study-subjects-workspace .ssw-kpi-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--card-color) 12%, white);
+  color: var(--card-color);
+  font-size: 18px;
+  line-height: 0;
+}
+
+.study-subjects-workspace .ssw-kpi-card-icon svg {
+  width: 1em;
+  height: 1em;
+  display: block;
+  stroke-width: 2;
+}
+
+.study-subjects-workspace .ssw-kpi-card-text {
+  min-width: 0;
+}
+
+.study-subjects-workspace .ssw-kpi-card-title {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #0f172a;
+}
+
+.study-subjects-workspace .ssw-kpi-card-value {
+  margin-top: 4px;
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.study-subjects-workspace .ssw-kpi-card-detail {
+  margin-top: 3px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* ==================================================================
+   TWO-PANE BODY
+
+   Mirrors the standalone page's proportions (240px explorer + fluid main)
+   so the workspace feels identical in both places, but the rules are
+   scoped here rather than shared with `.sw-body`.
+================================================================== */
+
+/* `align-items: stretch` + `flex: 1 1 auto` + `min-height: 0` is the same
+   height chain `.eisf-module-grid` uses. The previous `align-items: start`
+   sized both columns to their content, which is what left the empty band under
+   the panel; `min-height: 0` is required or a flex item refuses to shrink below
+   its content and the panel's own scroll container never engages. */
+.study-subjects-workspace .ssw-body {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+  min-width: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.study-subjects-workspace .ssw-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* `minmax(0, 1fr)` above plus this is what stops a wide file table from
+     stretching the grid column instead of scrolling inside its own wrapper. */
+  min-width: 0;
+  min-height: 0;
+}
+
+/* The file panel is the element that should absorb the leftover height, so the
+   card's bottom edge lands at the bottom of the tab exactly as the eISF
+   documents card does, instead of floating above a gap. */
+.study-subjects-workspace .ssw-main .sf-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* With the panel now full-height, its table area becomes the scroll owner -
+   otherwise a long file list would grow the panel past the viewport and hand
+   the scroll back to the page, which is the behaviour eISF does not have. */
+.study-subjects-workspace .ssw-main .sf-panel .sf-table-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* The empty states render *instead of* `.sf-table-scroll`, so they have to
+   absorb the same leftover height - otherwise an empty folder would show a
+   full-height card with its message pinned to the top and the gap simply moved
+   inside the panel. Centring is what eISF does with its own empty section. */
+.study-subjects-workspace .ssw-main .sf-panel .sf-empty-state {
+  flex: 1 1 auto;
+  min-height: 0;
+  justify-content: center;
+}
+
+/* The explorer is a fixed-width rail on desktop; it manages its own internal
+   scrolling, so only the column width is set here. */
+.study-subjects-workspace .sx-explorer {
+  min-width: 0;
+}
+
+/* `SubjectExplorer.css` caps the rail at `calc(100vh - 120px)` and sticks it to
+   the viewport - correct on the standalone page, where the rail is the tallest
+   thing on screen. Inside a tab the dashboard header and tab strip sit above
+   it, so a viewport-relative cap made the rail taller than its own column and
+   pushed the page into a second scrollbar. Stretching to the grid row instead
+   ties it to the file panel, and the tree keeps its internal scroll. */
+.study-subjects-workspace .ssw-body .sx-explorer {
+  position: static;
+  top: auto;
+  max-height: none;
+  height: 100%;
+}
+
+/* ==================================================================
+   TYPOGRAPHY - MATCHED TO THE eISF WORKSPACE
+
+   The Subject Explorer's own stylesheets (`SubjectFiles.css`,
+   `SubjectExplorer.css`, `DocumentExperience.css`) were built on a denser
+   half-pixel scale (10 / 10.5 / 11.5 / 12.5px) than eISF, which uses whole
+   steps (11 / 12 / 13 / 15 / 16px) with heavier weights.
+
+   These rules re-map the tab onto the eISF steps. They are scoped under
+   `.study-subjects-workspace`, so the standalone `/subjects` page and the
+   PI dashboard - which import the same child stylesheets - are untouched.
+   Sizes only: no colours, borders or spacing are redefined here.
+
+   eISF reference values, for anyone changing these later:
+     panel heading   `.eisf-module-documents-card h3`      22px / 700
+     count pill      `.eisf-documents-header span`         16px / 700
+     table header    `.reference-table-card thead th`      15px / 700
+     table cell      `.reference-table-card td`            16px
+     controls        `.eisf-documents-toolbar input`       16px
+     footer / meta   `.eisf-table-footer`                  15px
+     small caption   `.eisf-folder-summary`                12px
+================================================================== */
+
+/* ---------- file panel header ---------- */
+
+/* `.eisf-module-documents-card h3` - 22px, but the panel title here is a
+   folder name inside a 2-column tab, so it takes the 18px step to stay on
+   one line at the rail width while keeping eISF's weight and colour. */
+.study-subjects-workspace .sf-panel-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.study-subjects-workspace .sf-panel-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+}
+
+.study-subjects-workspace .sf-path,
+.study-subjects-workspace .sf-meta-item {
+  font-size: 12px;
+}
+
+/* ---------- controls: buttons, search, sort ---------- */
+
+/* eISF sets every toolbar control to one step (`.eisf-documents-actions
+   button`, `.eisf-documents-toolbar input/select`), so they are grouped. */
+.study-subjects-workspace .sf-btn,
+.study-subjects-workspace .sf-panel .sf-search .sf-search-input,
+.study-subjects-workspace .sf-panel .sf-search input[type="text"],
+.study-subjects-workspace .sf-panel .sf-sort select,
+.study-subjects-workspace .sf-dir-btn {
+  font-size: 13px;
+}
+
+.study-subjects-workspace .sf-btn,
+.study-subjects-workspace .sf-dir-btn {
+  font-weight: 700;
+}
+
+.study-subjects-workspace .sf-sort > span {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+.study-subjects-workspace .sf-result-count {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ---------- table ---------- */
+
+/* eISF: 15px/700 uppercase-free headers over 16px cells. Scaled one step down
+   because this table carries eight columns beside a 240px rail, where the eISF
+   table has the full page width. */
+.study-subjects-workspace .sf-panel .sf-table {
+  font-size: 13px;
+}
+
+.study-subjects-workspace .sf-panel .sf-table thead th {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.study-subjects-workspace .sf-file-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ---------- per-folder stats strip ---------- */
+
+/* `SubjectFileManager` renders a second, folder-scoped `FolderStatsBar` inside
+   the file panel. The workspace strip above it is now the eISF card, so these
+   tiles are put on the same numbers - 12px/700 title, 22px value, 11px caption,
+   38px icon - and the two strips read as one type scale. Sizes and box metrics
+   only; the tile's colours and accents stay as `DocumentExperience.css` sets
+   them, and the rules are scoped, so `pages/Sponsor/Subjects.js` keeps the
+   original strip. */
+.study-subjects-workspace .sf-panel .sf-stats {
+  gap: 10px;
+}
+
+.study-subjects-workspace .sf-panel .sf-stat-tile {
+  min-height: 84px;
+  box-sizing: border-box;
+}
+
+.study-subjects-workspace .sf-stat-icon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  font-size: 18px;
+}
+
+/* `FolderStatsBar` passes `size={17}` to the glyph, which react-icons writes as
+   width/height attributes on the `<svg>`. eISF sizes its card glyph from the
+   wrapper's font-size (`.dashboard-card-icon svg { width: 1em }`), so the same
+   rule is applied here - otherwise the 38px tile would keep a 17px glyph while
+   the eISF card above it shows an 18px one. */
+.study-subjects-workspace .sf-stat-icon svg {
+  width: 1em;
+  height: 1em;
+  display: block;
+}
+
+.study-subjects-workspace .sf-stat-value {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.study-subjects-workspace .sf-stat-label {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.study-subjects-workspace .sf-stat-caption {
+  margin-top: 3px;
+  font-size: 11px;
+}
+
+/* ---------- explorer rail ---------- */
+
+.study-subjects-workspace .sx-header-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.study-subjects-workspace .sx-node-label {
+  font-size: 13px;
+}
+
+.study-subjects-workspace .sx-search-input {
+  font-size: 13px;
+}
+
+/* ---------- selected-folder strip + stat captions ---------- */
+
+.study-subjects-workspace .sw-folderbar-title strong {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.study-subjects-workspace .sw-folderbar-path,
+.study-subjects-workspace .sw-folderbar-stat {
+  font-size: 12px;
+}
+
+/* `.eisf-folder-summary` - the 12px small-caption step. */
+.study-subjects-workspace .sf-filterbar-lead,
+.study-subjects-workspace .sf-filter-label,
+.study-subjects-workspace .sf-filter-count,
+.study-subjects-workspace .sf-filter-clear {
+  font-size: 12px;
+}
+
+.study-subjects-workspace .sf-filter-select {
+  font-size: 13px;
+}
+
+/* ==================================================================
+   RESPONSIVE - Phase 7 ladder (1200 / 992 / 768 / 480)
+================================================================== */
+
+/* eISF stacks its heading above the KPI grid at 1280px; matched here so the
+   two workspaces reflow at the same width. The crumb column drops its right
+   border/padding and moves above the title+KPI block; the title block and
+   the KPI grid then stack the same way inside `.ssw-header-right`. */
+@media (max-width: 1280px) {
+  .study-subjects-workspace .ssw-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .study-subjects-workspace .ssw-crumb {
+    min-height: 0;
+    max-width: none;
+    padding-right: 0;
+    padding-bottom: 10px;
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .study-subjects-workspace .ssw-header-right {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .study-subjects-workspace .ssw-header-text {
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .study-subjects-workspace .ssw-kpi-cards {
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  }
+}
+
+/* Narrower rail so the file table keeps a usable width. */
+@media (max-width: 1200px) {
+  .study-subjects-workspace .ssw-body {
+    grid-template-columns: 210px minmax(0, 1fr);
+    gap: 14px;
+  }
+}
+
+/* Explorer stacks above the file manager. Matches the standalone page's
+   behaviour at this breakpoint. */
+@media (max-width: 992px) {
+  .study-subjects-workspace .ssw-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    /* Stacked, the two panes need their natural heights back - stretching a
+       single column would size the rail to the whole tab. */
+    align-items: start;
+    flex: 0 0 auto;
+  }
+
+  /* Cap the stacked tree so it cannot push the file manager off-screen; the
+     explorer's own scroll container handles the overflow. Written at the same
+     depth as the full-height desktop rule above, which is more specific than
+     `.study-subjects-workspace .sx-explorer` and would otherwise win here
+     regardless of source order. */
+  .study-subjects-workspace .ssw-body .sx-explorer {
+    height: auto;
+    max-height: 320px;
+  }
+
+  .study-subjects-workspace .ssw-main .sf-panel {
+    flex: 0 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .study-subjects-workspace {
+    gap: 12px;
+  }
+
+  /* Kept proportional to the 24px desktop heading rather than dropping to a
+     different type scale than eISF uses. */
+  .study-subjects-workspace .ssw-title {
+    font-size: 21px;
+  }
+
+  .study-subjects-workspace .ssw-body .sx-explorer {
+    max-height: 280px;
+  }
+}
+
+@media (max-width: 480px) {
+  .study-subjects-workspace {
+    gap: 10px;
+  }
+
+  .study-subjects-workspace .ssw-header {
+    gap: 12px;
+  }
+
+  .study-subjects-workspace .ssw-title {
+    font-size: 19px;
+  }
+
+  .study-subjects-workspace .ssw-subtitle {
+    font-size: 13px;
+  }
+
+  .study-subjects-workspace .ssw-body .sx-explorer {
+    max-height: 240px;
+  }
+}
+
+/* ==================================================================
+   MOTION
+
+   The child components define their own transitions; this only ensures the
+   scoped container adds none of its own when motion is reduced.
+================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .study-subjects-workspace * {
+    animation-duration: 0.001ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.001ms;
+  }
+}
