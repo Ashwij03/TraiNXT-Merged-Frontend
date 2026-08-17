@@ -41,7 +41,10 @@ const STORAGE_KEYS = {
   delegationLogs: "delegationLogs",
   siteVisitLogs: "siteVisitLogs",
   ntfLogs: "ntfLogs",
-  miscellaneousLogs: "miscellaneousLogs"
+  miscellaneousLogs: "miscellaneousLogs",
+  aeLogs: "aeLogs",
+  pdLogs: "pdLogs",
+  tempLogs: "tempLogs"
 };
 
 function writeJson(key, value) {
@@ -583,6 +586,42 @@ export function getMiscellaneousLogs(user = getCurrentUser()) {
 
 export function saveMiscellaneousLogs(logs) {
   writeJson(STORAGE_KEYS.miscellaneousLogs, logs);
+}
+
+// ---- Task 2A (Ramya): AE/SE, PD and Temperature logs. These follow the
+// exact same localStorage-backed pattern as getTrainingLogs /
+// getDelegationLogs above: read from the storage key, then scope to the
+// viewer's assigned site. The save functions persist the full array (add /
+// edit / delete all go through the StudyLogsTab handlers, which write the
+// updated array back here so changes survive refresh/remount). ----
+export function getAELogs(user = getCurrentUser()) {
+  initializeAdminData();
+  const logs = readJson(STORAGE_KEYS.aeLogs, []);
+  return filterBySite(logs, "site", user);
+}
+
+export function saveAELogs(logs) {
+  writeJson(STORAGE_KEYS.aeLogs, logs);
+}
+
+export function getPDLogs(user = getCurrentUser()) {
+  initializeAdminData();
+  const logs = readJson(STORAGE_KEYS.pdLogs, []);
+  return filterBySite(logs, "site", user);
+}
+
+export function savePDLogs(logs) {
+  writeJson(STORAGE_KEYS.pdLogs, logs);
+}
+
+export function getTempLogs(user = getCurrentUser()) {
+  initializeAdminData();
+  const logs = readJson(STORAGE_KEYS.tempLogs, []);
+  return filterBySite(logs, "site", user);
+}
+
+export function saveTempLogs(logs) {
+  writeJson(STORAGE_KEYS.tempLogs, logs);
 }
 
 export function getStudyLogs(studyCode, user = getCurrentUser()) {
