@@ -35,7 +35,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 15px 18px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--tnxt-border, #e5eaf2);
   background: #fff;
   flex-shrink: 0;
@@ -71,6 +71,24 @@
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0;
+}
+
+/* Update 4: "Subjects" title acting as a button back to All Subjects.
+   Same look as the static heading, just interactive. */
+.sx-explorer .sx-header-title--link {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.sx-explorer .sx-header-title--link:hover {
+  color: #1c6ed4;
+}
+
+.sx-explorer .sx-header-title--link:hover .sx-header-icon {
+  color: #1c6ed4;
 }
 
 .sx-explorer .sx-header-action {
@@ -211,8 +229,8 @@
   align-items: center;
   gap: 8px;
   width: 100%;
-  min-height: 40px;
-  padding: 9px 12px 9px 18px;
+  min-height: 34px;
+  padding: 7px 12px 7px 18px;
   border-bottom: 1px solid #f1f4f8;
   font-size: 12.5px;
   line-height: 1.35;
@@ -331,6 +349,33 @@
 .sx-explorer .sx-row.is-selected .sx-node-badge {
   background: #cfe3fd;
   color: #1c6ed4;
+}
+
+/* Update 2/5: lock indicator on the ICF system folder row. */
+.sx-explorer .sx-lock-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+}
+
+.sx-explorer .sx-row.is-selected .sx-lock-badge {
+  color: #dbe9ff;
+}
+
+.sx-explorer .sx-row--folder.is-locked .sx-node-label {
+  color: #475569;
+}
+
+/* Fix (this update): trailing actions cluster - stops its own clicks (see
+   SubjectTreeNode.js) so nothing in this zone, empty space included, can
+   ever bubble up and trigger the row's own navigate/select handler. */
+.sx-explorer .sx-row-actions {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* ================= EXPAND / COLLAPSE ANIMATION ================= */

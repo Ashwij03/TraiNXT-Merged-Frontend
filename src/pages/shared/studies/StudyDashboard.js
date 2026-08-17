@@ -9,6 +9,7 @@ import StudySubjects from "./StudySubjects";
    The Overview section below still renders `StudySubjects`, unchanged. */
 import StudySubjectsWorkspace from "../../Sponsor/SubjectExplorer/StudySubjectsWorkspace";
 import StudyWorkspaceTabs from "./StudyWorkspaceTabs";
+import { canViewFinancials } from "./StudyWorkspaceTabsConfig";
 import StudyDocuments from "./StudyDocuments";
 import StudyComments from "./StudyComments";
 import StudyLogsTab from "./StudyLogsTab";
@@ -22,7 +23,7 @@ import SiteActivationStatus from "../../../components/studies/SiteActivationStat
 import StudyHealthSummary from "../../../components/studies/StudyHealthSummary";
 import StudyModal from "../../../components/studies/StudyModal";
 import useStudyOverview from "../../../hooks/useStudyOverview";
-import StudyFinancials from "../../Sponsor/Financials/StudyFinancials";
+import StudyFinancials from "../Financials/StudyFinancials";
 import AlertsPanel from "../../../components/dashboard/shared/AlertsPanel";
 import useStudiesDashboard from "../../../hooks/useStudiesDashboard";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
@@ -74,7 +75,20 @@ function StudyDashboard() {
   // ===== START ITEM 16: Regulatory tab removed - fallback to Overview =====
   const [activeTab, setActiveTab] = useState(() => {
     const initialTab = searchParams.get("tab") || "Overview";
-    return initialTab === "Regulatory" ? "Overview" : initialTab;
+
+    if (initialTab === "Regulatory") {
+      return "Overview";
+    }
+
+    // ===== START TASK 3 (Financials access): Admin + PI only =====
+    // canViewFinancials() falls back to getCurrentUser() internally, which
+    // matters here because `currentUser` is not defined until later.
+    if (initialTab === "Financials" && !canViewFinancials()) {
+      return "Overview";
+    }
+    // ===== END TASK 3 (Financials access) =====
+
+    return initialTab;
   });
   // ===== END ITEM 16 =====
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -110,6 +124,13 @@ function StudyDashboard() {
         resolvedTab = "Overview";
       }
       // ===== END D2 PART 1 CHANGES =====
+
+      // ===== START TASK 3 (Financials access): Admin + PI only =====
+      // Blocks a direct ?tab=Financials URL for roles without access.
+      if (resolvedTab === "Financials" && !canViewFinancials()) {
+        resolvedTab = "Overview";
+      }
+      // ===== END TASK 3 (Financials access) =====
 
       setActiveTab((currentTab) =>
         currentTab === resolvedTab ? currentTab : resolvedTab,
@@ -816,7 +837,7 @@ window.dispatchEvent(new Event("studies-updated"));
               <ClinicalSitesDashboard study={currentStudy} />
             )}
 
-            {activeTab === "Financials" && (
+            {activeTab === "Financials" && canViewFinancials(currentUser) && (
               <div className="study-financials-tab">
                 <StudyFinancials
                   studyCode={id}

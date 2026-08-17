@@ -27,19 +27,20 @@ import {
   FiLayers,
 } from "react-icons/fi";
 import { getRoleExtraMenuItems } from "../../../constants/roleMenus";
+import { canViewFinancials } from "../../../pages/shared/studies/StudyWorkspaceTabsConfig";
 
 const STUDY_SECTIONS = [
   { key: "overview", label: "Overview" },
   { key: "subjects", label: "Subjects", expandable: true },
+  { key: "eisf", label: "eISF" },
+  { key: "logs", label: "Logs" },
   { key: "planning", label: "Planning" },
   { key: "visitPlan", label: "Visit Plan" },
   { key: "clinicalSites", label: "Clinical Sites" },
-  { key: "eisf", label: "eISF" },
   // ===== ITEM 16: Regulatory removed from Studies sidebar sections =====
   // { key: "regulatory", label: "Regulatory" },
   { key: "reports", label: "Reports" },
   { key: "studyFiles", label: "Study Files" },
-  { key: "logs", label: "Logs" },
   { key: "financials", label: "Financials" },
   { key: "others", label: "Others" },
 ];
@@ -158,12 +159,21 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     effectiveUser?.role === "CRO" || effectiveUser?.role === "Sponsor";
 
   const roleExtraMenuItems = getRoleExtraMenuItems(effectiveUser?.role);
-  const visibleStudySections = STUDY_SECTIONS.filter(
-    (section) =>
-      section.key !== "clinicalSites" ||
-      effectiveUser?.role === "Sponsor" ||
-      effectiveUser?.role === "Admin",
-  );
+  const visibleStudySections = STUDY_SECTIONS.filter((section) => {
+    if (section.key === "clinicalSites") {
+      return (
+        effectiveUser?.role === "Sponsor" || effectiveUser?.role === "Admin"
+      );
+    }
+
+    // ===== START TASK 3 (Financials access): Admin + PI only =====
+    if (section.key === "financials") {
+      return canViewFinancials(currentUser);
+    }
+    // ===== END TASK 3 (Financials access) =====
+
+    return true;
+  });
 
   const sidebarClassName = [
     "enterprise-sidebar",
@@ -362,7 +372,13 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       others: "Others",
     };
 
-    const tab = tabMap[section] || "Overview";
+    let tab = tabMap[section] || "Overview";
+
+    // ===== START TASK 3 (Financials access): Admin + PI only =====
+    if (tab === "Financials" && !canViewFinancials(currentUser)) {
+      tab = "Overview";
+    }
+    // ===== END TASK 3 (Financials access) =====
 
     handleNav(
       `/study-dashboard/${encodeURIComponent(

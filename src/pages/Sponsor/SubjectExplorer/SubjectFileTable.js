@@ -53,19 +53,40 @@ import FolderEmptyState from "./FolderEmptyState";
  * guaranteed to share the exact same grid instead of drifting apart when a
  * cell's content is unusually long or short. Percentages sum to 100.
  */
-/* Fix: "status" and "actions" nudged (11% -> 10%, 9% -> 11%) so the action
-   menu trigger gets enough room next to the status badge instead of being
-   squeezed against the table's right edge; "modified" gives up the 1%
-   difference. Columns still sum to 100% - no columns added or removed. */
+/* Fix (this update): back to percentage widths that fill the table's own
+   100% width (see `.sf-panel .sf-table` in SubjectFiles.css) - the
+   previous fixed-px version kept the table from stretching, but left it
+   noticeably narrower than the card around it. These percentages instead
+   distribute the full width evenly across all 8 columns: File Name gets a
+   little extra room since it is the column people scan first and its
+   values are the longest, Actions stays the narrowest since it only ever
+   holds one icon-sized trigger. */
+/* Fix (this update): Actions widened (10% -> 14%) now that it holds
+   View + Download as visible icon buttons plus the "more" trigger instead
+   of a single icon - three 26px buttons need more than 10% comfortably
+   gave them. Last Modified and Uploaded By each give up 2% to cover it;
+   File Name is untouched. Percentages still sum to 100. */
+/**
+ * Fix (this update): Actions widened again (17% -> 20%) so the
+ * View + Download + "more" button group always fits entirely inside its own
+ * column - including at the table's reduced 560px min-width floor, where
+ * 17% (~95px) left only ~70px of content width once this cell's padding
+ * was subtracted, a few px short of the ~82px the three 26px buttons
+ * need. Because `.sf-cell-actions` uses `overflow: visible` (so the
+ * dropdown menu isn't clipped), any shortfall would spill left into the
+ * Status column and make the buttons look like they live there. 20%
+ * (~112px at the floor) gives the button group comfortable room. Last
+ * Modified and Uploaded By each give up the difference; File Name is
+ * untouched. Percentages still sum to 100. */
 const COLUMNS = [
-  { key: "name", label: "File Name", sortKey: "name", width: "24%" },
-  { key: "type", label: "Type", sortKey: "type", width: "10%" },
+  { key: "name", label: "File Name", sortKey: "name", width: "22%" },
+  { key: "type", label: "Type", sortKey: "type", width: "9%" },
   { key: "size", label: "Size", sortKey: "size", width: "9%" },
   { key: "uploaded", label: "Uploaded", sortKey: "date", width: "12%" },
-  { key: "modified", label: "Last Modified", sortKey: null, width: "11%" },
-  { key: "uploadedBy", label: "Uploaded By", sortKey: null, width: "13%" },
-  { key: "status", label: "Status", sortKey: null, width: "10%" },
-  { key: "actions", label: "", sortKey: null, width: "11%" },
+  { key: "modified", label: "Last Modified", sortKey: null, width: "7%" },
+  { key: "uploadedBy", label: "Uploaded By", sortKey: null, width: "9%" },
+  { key: "status", label: "Status", sortKey: null, width: "12%" },
+  { key: "actions", label: "Actions", sortKey: null, width: "20%" },
 ];
 
 /** Shared column grid for both the skeleton table and the populated one, so
@@ -101,6 +122,7 @@ function SubjectFileTable({
   hasFilters = false,
   uploading = false,
   canUpload = true,
+  locked = false,
 }) {
   const isFolderEmpty = totalInFolder === 0;
   const isNarrowedEmpty = totalInFolder > 0 && files.length === 0;
@@ -240,6 +262,7 @@ function SubjectFileTable({
               file={file}
               isActive={file.id === activeFileId}
               onAction={onAction}
+              locked={locked}
             />
           ))}
         </tbody>

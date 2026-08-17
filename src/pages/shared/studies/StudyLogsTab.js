@@ -5,11 +5,20 @@ import DataTable from "../../../components/dashboard/shared/DataTable";
 import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
 import DelegationLog from "../../../components/DelegationLog";
 import TrainingLog from "../../../components/TrainingLog";
+import AELog from "../../../components/AELog";
+import PDLog from "../../../components/PDLog";
+import TempLog from "../../../components/TempLog";
 
 import {
   getStudyLogs,
   getDelegationLogs,
-  getTrainingLogs
+  getTrainingLogs,
+  getAELogs,
+  getPDLogs,
+  getTempLogs,
+  saveAELogs,
+  savePDLogs,
+  saveTempLogs
 } from "../../../services/adminService";
 import { getStudyByCode } from "../../../services/studyService";
 import "./StudyLogsTab.css";
@@ -168,6 +177,20 @@ const RESPONSIBILITY_MAP = {
     setTrainingRecords(getTrainingLogs());
   }, []);
 
+  // ---- Task 2A (Ramya): AE/SE, PD and Temperature log records are also
+  // owned here (single source of truth) and passed down to AELog / PDLog /
+  // TempLog as props. Loaded from the adminService localStorage keys, the
+  // same persistence pattern the Training/Delegation logs use. ----
+  const [aeRecords, setAeRecords] = useState([]);
+  const [pdRecords, setPdRecords] = useState([]);
+  const [tempRecords, setTempRecords] = useState([]);
+
+  useEffect(() => {
+    setAeRecords(getAELogs());
+    setPdRecords(getPDLogs());
+    setTempRecords(getTempLogs());
+  }, []);
+
   // ---- NEW: shared helpers to append a Study Log row and a History row.
   // Every delegation action (add/edit/delete/status change) goes through
   // these so Study Logs and Delegation History stay in sync automatically. ----
@@ -275,8 +298,40 @@ const RESPONSIBILITY_MAP = {
     }
   };
 
+  // ---- Task 2A (Ramya): shared save/delete handlers for the AE/SE, PD and
+  // Temperature logs. Each updates the in-memory array and immediately
+  // persists the full array back through the adminService, so changes
+  // survive refresh/remount — mirroring the existing Logs persistence
+  // pattern (localStorage-backed service + parent-owned state). ----
+  const persistLogRecords = (setter, persister, record) => {
+    setter((prev) => {
+      const exists = prev.some((item) => item.id === record.id);
+      const next = exists
+        ? prev.map((item) => (item.id === record.id ? record : item))
+        : [...prev, record];
+      persister(next);
+      return next;
+    });
+  };
+
+  const handleSaveAELog = (record) => persistLogRecords(setAeRecords, saveAELogs, record);
+  const handleSavePDLog = (record) => persistLogRecords(setPdRecords, savePDLogs, record);
+  const handleSaveTempLog = (record) => persistLogRecords(setTempRecords, saveTempLogs, record);
+
+  const deleteLogRecord = (setter, persister, id) => {
+    setter((prev) => {
+      const next = prev.filter((item) => item.id !== id);
+      persister(next);
+      return next;
+    });
+  };
+
+  const handleDeleteAELog = (id) => deleteLogRecord(setAeRecords, saveAELogs, id);
+  const handleDeletePDLog = (id) => deleteLogRecord(setPdRecords, savePDLogs, id);
+  const handleDeleteTempLog = (id) => deleteLogRecord(setTempRecords, saveTempLogs, id);
+
   return (
-    <div className="module-card">
+    <div className="module-card study-logs-module">
       <DocumentFolderManager
         sectionId="logs"
         contextKey={studyCode || "default"}
@@ -337,6 +392,27 @@ const RESPONSIBILITY_MAP = {
         >
           Training Log
         </button>
+        <button
+          type="button"
+          className={activeLog === "ae" ? "tab active" : "tab"}
+          onClick={() => setActiveLog("ae")}
+        >
+          AE/SE Log
+        </button>
+        <button
+          type="button"
+          className={activeLog === "pd" ? "tab active" : "tab"}
+          onClick={() => setActiveLog("pd")}
+        >
+          PD Log
+        </button>
+        <button
+          type="button"
+          className={activeLog === "temp" ? "tab active" : "tab"}
+          onClick={() => setActiveLog("temp")}
+        >
+          Temperature Log
+        </button>
       </div>
 
       {/* ---- MODIFIED: staff, history, and the edit/delete handlers are now
@@ -356,6 +432,37 @@ const RESPONSIBILITY_MAP = {
       passed as a prop, matching the Delegation Log integration pattern. ---- */}
       {activeLog === "training" && (
         <TrainingLog records={trainingRecords} />
+      )}
+
+      {/* ---- Task 2A (Ramya): AE/SE, PD and Temperature logs. Each reuses
+      the shared DataTable pipeline and modal style of the existing logs,
+      with records owned + persisted by StudyLogsTab and the study's site
+      pre-filled into the Add form. ---- */}
+      {activeLog === "ae" && (
+        <AELog
+          records={aeRecords}
+          defaultSite={study?.site || study?.location || ""}
+          onSave={handleSaveAELog}
+          onDelete={handleDeleteAELog}
+        />
+      )}
+
+      {activeLog === "pd" && (
+        <PDLog
+          records={pdRecords}
+          defaultSite={study?.site || study?.location || ""}
+          onSave={handleSavePDLog}
+          onDelete={handleDeletePDLog}
+        />
+      )}
+
+      {activeLog === "temp" && (
+        <TempLog
+          records={tempRecords}
+          defaultSite={study?.site || study?.location || ""}
+          onSave={handleSaveTempLog}
+          onDelete={handleDeleteTempLog}
+        />
       )}
 
       {showModal && (

@@ -8,9 +8,7 @@ import React, {
 import { createPortal } from "react-dom";
 import {
   MdMoreVert,
-  MdVisibility,
   MdDriveFileRenameOutline,
-  MdDownload,
   MdDeleteOutline,
 } from "react-icons/md";
 
@@ -21,29 +19,39 @@ import {
  * upward, and portals the dropdown with fixed positioning so the table's
  * horizontal scroll container cannot clip it.
  *
- * Actions: view (details) · rename · download · delete.
+ * Actions: rename · delete. View and Download are no longer here - they're
+ * now their own always-visible icon buttons in the row (see
+ * `SubjectFileRow.js`), so this menu only ever holds the two secondary,
+ * less-frequent actions. When `locked` is true (the file's folder is a
+ * system folder like ICF) there is nothing left for this menu to offer, so
+ * it renders nothing at all - `SubjectFileRow.js` does not mount it for a
+ * locked row either, this is defense in depth for any other caller.
+ * `SubjectFileManager.handleAction` refuses rename/delete for a locked
+ * folder regardless of how the action is reached.
  *
  * Props
  *   file          the file record
  *   onAction      (actionKey, file) => void
  *   onOpenChange  (open) => void - lets the row stay visually active
+ *   locked        true to render nothing (view-only folder - no secondary
+ *                 actions apply)
  */
 
-const MENU_WIDTH = 186;
+const MENU_WIDTH = 176;
 const MENU_MARGIN = 8;
 
-const ITEMS = [
-  { key: "view", label: "View Details", Icon: MdVisibility },
+const ALL_ITEMS = [
   { key: "rename", label: "Rename", Icon: MdDriveFileRenameOutline },
-  { key: "download", label: "Download", Icon: MdDownload },
   { key: "delete", label: "Delete", Icon: MdDeleteOutline, danger: true },
 ];
 
-function FileContextMenu({ file, onAction, onOpenChange }) {
+function FileContextMenu({ file, onAction, onOpenChange, locked = false }) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const triggerRef = useRef(null);
   const menuRef = useRef(null);
+
+  const items = locked ? [] : ALL_ITEMS;
 
   const closeMenu = useCallback(() => setOpen(false), []);
 
@@ -124,13 +132,19 @@ function FileContextMenu({ file, onAction, onOpenChange }) {
     if (typeof onAction === "function") onAction(actionKey, file);
   };
 
+  /* No items to offer (locked folder) - render nothing. Placed after every
+     hook call above, not as an early return before them, so hook order
+     never depends on `locked` (see the identical fix in
+     FolderContextMenu.js for why this matters). */
+  if (items.length === 0) return null;
+
   return (
     <>
       <button
         type="button"
         ref={triggerRef}
         className={`sf-menu-trigger${open ? " is-open" : ""}`}
-        aria-label={`File actions for ${file?.name || "file"}`}
+        aria-label={`More actions for ${file?.name || "file"}`}
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={(event) => {
@@ -161,7 +175,7 @@ function FileContextMenu({ file, onAction, onOpenChange }) {
             ref={menuRef}
             className="sf-menu"
             role="menu"
-            aria-label={`File actions for ${file?.name || "file"}`}
+            aria-label={`More actions for ${file?.name || "file"}`}
             style={{ top: position.top, left: position.left, width: MENU_WIDTH }}
             onClick={(event) => event.stopPropagation()}
           >
@@ -169,7 +183,7 @@ function FileContextMenu({ file, onAction, onOpenChange }) {
               {file?.name}
             </div>
 
-            {ITEMS.map(({ key, label, Icon, danger }) => (
+            {items.map(({ key, label, Icon, danger }) => (
               <button
                 key={key}
                 type="button"
