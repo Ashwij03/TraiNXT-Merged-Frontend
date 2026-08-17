@@ -73,9 +73,12 @@
   margin: 0 0 12px;
 }
 
-/* Inside the file panel the strip sits flush under the header. */
+/* Fix (this update): brought down to match `.sf-panel-header`/`.sf-toolbar`
+   (both 12px) - this strip had been left at its original 14px through the
+   earlier header/toolbar reductions, so the stat tiles sat visibly further
+   in from the edges than the search bar and table below them. */
 .sf-panel .sf-stats {
-  padding: 0 14px;
+  padding: 0 12px;
 }
 
 .sf-stat-tile {

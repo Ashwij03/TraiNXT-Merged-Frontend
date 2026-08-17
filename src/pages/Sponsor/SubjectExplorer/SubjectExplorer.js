@@ -7,9 +7,9 @@ import SubjectTreeNode from "./SubjectTreeNode";
 import CreateFolderModal from "./CreateFolderModal";
 import RenameFolderModal from "./RenameFolderModal";
 import DeleteFolderDialog from "./DeleteFolderDialog";
-import CreateSubjectModal from "./CreateSubjectModal";
-import EditSubjectModal from "./EditSubjectModal";
+import SubjectFormModal from "./SubjectFormModal";
 import DeleteSubjectDialog from "./DeleteSubjectDialog";
+import SubjectRecordsService from "./subjectRecordsService";
 import { SUBJECT_EXPLORER_TREE } from "./subjectExplorerMockData";
 import {
   filterTree,
@@ -97,6 +97,13 @@ function SubjectExplorer({
   tree: seedTree = SUBJECT_EXPLORER_TREE,
   selectedId: controlledSelectedId,
   onSelect,
+  onNavigateToAllSubjects,
+  /* Study context for the Add/Edit Subject form modal: drives the read-only
+     PI/Site fields and writes the clinical metadata through
+     `SubjectRecordsService`. Optional - the standalone Subjects page renders
+     this explorer without a study, in which case the modal creates/renames
+     the tree node but skips metadata (matching its previous behaviour). */
+  studyId = "",
 }) {
   /* ---------- folder tree (persisted) ---------- */
   const [tree, setTree] = useState(() =>
@@ -249,6 +256,14 @@ function SubjectExplorer({
   const handleNodeAction = useCallback(
     (action, node) => {
       setSubmitError("");
+
+      // Update 7: defense in depth - the ICF row never renders these menu
+      // items in the first place (SubjectTreeNode skips the context menu
+      // entirely for a locked node), but guard here too in case anything
+      // else ever dispatches these actions directly.
+      if (node?.locked && (action === "rename" || action === "delete")) {
+        return;
+      }
 
       if (action === "create-folder") {
         const parentId =
@@ -426,8 +441,13 @@ function SubjectExplorer({
   };
 
   /* ---------- CRUD: create subject (Update 6) ---------- */
-  const submitCreateSubject = (name) => {
-    const result = FolderTreeService.createSubject(tree, name);
+  /* `fields` come from the shared SubjectFormModal (mode "create"):
+     { id, initials, screeningDate, enrollmentDate, status, currentVisit }.
+     The typed Subject ID becomes the tree node's name; the node's generated
+     id (SUB-NNN) keys the metadata record, exactly like the existing
+     `ensureSubjectRecord` bridge - no second subject store. */
+  const submitCreateSubject = (fields) => {
+    const result = FolderTreeService.createSubject(tree, fields.id);
 
     if (!result.ok) {
       setSubmitError(result.error);
@@ -440,31 +460,68 @@ function SubjectExplorer({
     setSelectedNode(result.node);
     if (typeof onSelect === "function") onSelect(result.node);
 
+    // Persist the clinical fields through the existing metadata bridge so
+    // the KPI cards / All Subjects table show them immediately. Skipped on
+    // the standalone Subjects page, which has no study context.
+    if (studyId) {
+      SubjectRecordsService.updateSubjectRecord(studyId, result.node.id, {
+        initials: fields.initials || "",
+        status: fields.status || "",
+        screeningDate: fields.screeningDate || "",
+        enrollmentDate: fields.enrollmentDate || "",
+        currentVisit: fields.currentVisit || "",
+      });
+    }
+
     setToast({ tone: "success", message: `"${result.node.name}" created.` });
     closeDialog();
   };
 
   /* ---------- CRUD: edit subject (Update 6) ---------- */
-  const submitEditSubject = (name) => {
-    const result = FolderTreeService.renameSubject(tree, dialog.node.id, name);
+  /* `fields` come from the shared SubjectFormModal (mode "edit"): the
+     Subject ID text renames the tree node when it changed; the clinical
+     fields always go through the metadata bridge. */
+  const submitEditSubject = (fields) => {
+    const nodeId = dialog.node.id;
+    const nameChanged =
+      fields.id.trim() !== (dialog.node.name || "").trim();
 
-    if (!result.ok) {
-      setSubmitError(result.error);
-      return;
+    let node = dialog.node;
+    if (nameChanged) {
+      const result = FolderTreeService.renameSubject(tree, nodeId, fields.id);
+
+      if (!result.ok) {
+        setSubmitError(result.error);
+        return;
+      }
+
+      setTree(result.tree);
+      node = result.node;
     }
 
-    setTree(result.tree);
+    if (studyId) {
+      SubjectRecordsService.updateSubjectRecord(studyId, nodeId, {
+        initials: fields.initials || "",
+        status: fields.status || "",
+        screeningDate: fields.screeningDate || "",
+        enrollmentDate: fields.enrollmentDate || "",
+        currentVisit: fields.currentVisit || "",
+      });
+    }
 
     // Keep the selection - and therefore the open workspace, which resolves
     // the node from this live tree - pointing at the subject's new name.
-    setSelectedNode((prev) =>
-      prev?.id === result.node.id ? result.node : prev
-    );
-    if (typeof onSelect === "function" && selectedNode?.id === result.node.id) {
-      onSelect(result.node);
+    setSelectedNode((prev) => (prev?.id === nodeId ? node : prev));
+    if (typeof onSelect === "function" && selectedNode?.id === nodeId) {
+      onSelect(node);
     }
 
-    setToast({ tone: "success", message: `Renamed to "${result.node.name}".` });
+    setToast({
+      tone: "success",
+      message: nameChanged
+        ? `Renamed to "${node.name}".`
+        : `Details for "${node.name}" updated.`,
+    });
     closeDialog();
   };
 
@@ -506,6 +563,7 @@ function SubjectExplorer({
         allExpanded={allExpanded}
         onExpandAll={handleExpandAll}
         onCollapseAll={handleCollapseAll}
+        onTitleClick={onNavigateToAllSubjects}
       />
 
       {/* Update 6: root-level "Add Subject" action - not tied to any node,
@@ -619,9 +677,15 @@ function SubjectExplorer({
         />
       )}
 
-      {/* ================= SUBJECT CRUD DIALOGS (Update 6) ================= */}
+      {/* ================= SUBJECT CRUD DIALOGS (Update 6) =================
+          One shared form modal serves both flows: create pre-fills only the
+          suggested Subject ID, edit pre-fills every field from the subject's
+          metadata record (read through the same `subjectsByStudy` storage
+          the rest of the tab uses). */}
       {dialog?.mode === "create-subject" && (
-        <CreateSubjectModal
+        <SubjectFormModal
+          mode="create"
+          studyId={studyId}
           suggestedName={FolderTreeService.generateSubjectId(tree)}
           validate={validateCreateSubject}
           submitError={submitError}
@@ -631,8 +695,15 @@ function SubjectExplorer({
       )}
 
       {dialog?.mode === "edit-subject" && (
-        <EditSubjectModal
+        <SubjectFormModal
+          mode="edit"
+          studyId={studyId}
           subject={dialog.node}
+          record={
+            studyId
+              ? SubjectRecordsService.findSubjectRecord(studyId, dialog.node.id)
+              : null
+          }
           validate={validateEditSubject}
           submitError={submitError}
           onSubmit={submitEditSubject}

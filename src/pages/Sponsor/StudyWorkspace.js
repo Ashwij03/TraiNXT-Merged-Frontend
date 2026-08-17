@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import AppLayout from "./AppLayout";
 import "./StudyWorkspace.css";
 import "./SponsorShared.css";
-import StudyFinancials from "./Financials/StudyFinancials";
+import StudyFinancials from "../shared/Financials/StudyFinancials";
 import { getPortfolioStudies, getRisks } from "./data/sponsorDataStore";
 
 

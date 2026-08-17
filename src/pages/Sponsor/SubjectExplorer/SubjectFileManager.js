@@ -7,9 +7,8 @@ import {
   MdErrorOutline,
   MdWarningAmber,
   MdSwapVert,
-  MdInsertDriveFile,
-  MdStorage,
   MdTune,
+  MdFileDownload,
 } from "react-icons/md";
 
 import FileUploadButton from "./FileUploadButton";
@@ -21,11 +20,14 @@ import DeleteFileDialog from "./DeleteFileDialog";
 import CreateFolderModal from "./CreateFolderModal";
 import FolderStatsBar from "./FolderStatsBar";
 import FileFilterBar from "./FileFilterBar";
+import PaginationFooter from "./PaginationFooter";
 import FileService from "./fileService";
 import FolderTreeService from "./folderTreeService";
 import FolderStatsService from "./folderStatsService";
 import FileFilterService, { DEFAULT_FILTERS } from "./fileFilterService";
-import { formatFileSize } from "./fileService";
+import { formatFileSize, formatDate } from "./fileService";
+import { getExtension } from "./fileTypes";
+import { downloadCsvReport } from "../../../utils/exportReport";
 import "./SubjectFiles.css";
 import "./DocumentExperience.css";
 
@@ -76,6 +78,12 @@ function SubjectFileManager({ selectedFolder }) {
   /* Phase 6: advanced filters (type / uploaded date / size). */
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [showFilters, setShowFilters] = useState(false);
+
+  /* Task 1.7/1.9: pagination footer for the file table (rows per page,
+     current page, previous/next, "Showing X to Y of Z"). Reset alongside
+     the rest of the per-folder view state below. */
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   /* ---------- interaction state ---------- */
   const [uploading, setUploading] = useState(false);
@@ -173,6 +181,7 @@ function SubjectFileManager({ selectedFolder }) {
     setFilters(DEFAULT_FILTERS);
     setShowFilters(false);
     setCreatingFolder(false);
+    setPage(1);
   }, [folderId]);
 
   /**
@@ -291,7 +300,16 @@ function SubjectFileManager({ selectedFolder }) {
     [filteredFiles, search, sortKey, sortDir]
   );
 
-  const folderSize = useMemo(() => FileService.totalSize(folderFiles), [folderFiles]);
+  /* Task 1.7: paginate the already filtered/searched/sorted rows. Reset to
+     page 1 whenever the visible set shrinks below the current page (e.g. a
+     filter narrows the result set) so the table never renders an empty
+     page while later pages still have rows. */
+  const totalPages = Math.max(1, Math.ceil(visibleFiles.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const pagedFiles = useMemo(
+    () => visibleFiles.slice((safePage - 1) * pageSize, safePage * pageSize),
+    [visibleFiles, safePage, pageSize]
+  );
 
   const activeFilterCount = useMemo(
     () => FileFilterService.countActiveFilters(filters),
@@ -401,6 +419,21 @@ function SubjectFileManager({ selectedFolder }) {
     setFilters((prev) => FileFilterService.reconcileFilters(prev, folderFiles));
   }, [folderFiles]);
 
+  /* Task 1.7: CSV export of the currently visible (filtered/searched) rows -
+     no existing export utility was tied to file tables, so this reuses the
+     app's shared `utils/exportReport.js` CSV helper (already used by
+     Reports/Logs elsewhere) rather than inventing a new one. */
+  const handleExportFiles = useCallback(() => {
+    const header = ["Name", "Type", "Size", "Uploaded"];
+    const rows = visibleFiles.map((file) => [
+      file.name,
+      getExtension(file.name).toUpperCase(),
+      formatFileSize(file.size || 0),
+      formatDate(file.uploadedAt || ""),
+    ]);
+    downloadCsvReport(`${folderName || "files"}-files`, [header, ...rows]);
+  }, [visibleFiles, folderName]);
+
   /* Stable callbacks handed to the memoised table (Phase 7). */
   const clearSearch = useCallback(() => setSearch(""), []);
   const openCreateFolder = useCallback(() => {
@@ -464,11 +497,18 @@ function SubjectFileManager({ selectedFolder }) {
         return;
       }
 
+      // Root-cause enforcement (not just hiding the menu item): a file
+      // inside a locked system folder (ICF) can never be renamed or
+      // deleted, regardless of how the action reaches this handler.
+      if ((action === "rename" || action === "delete") && folderNode?.locked) {
+        return;
+      }
+
       if (action === "view" || action === "rename" || action === "delete") {
         setDialog({ mode: action === "view" ? "preview" : action, file });
       }
     },
-    [handleDownload]
+    [handleDownload, folderNode]
   );
 
   const closeDialog = useCallback(() => {
@@ -486,6 +526,14 @@ function SubjectFileManager({ selectedFolder }) {
   );
 
   const submitRename = (name) => {
+    // Final root-cause guard: even if a rename dialog were ever opened for
+    // a file in a locked folder (ICF) by some path other than the ones
+    // already refused above, the actual mutation still cannot happen.
+    if (folderNode?.locked) {
+      setSubmitError("This folder is view-only. Files cannot be renamed.");
+      return;
+    }
+
     const result = FileService.renameFile(store, folderId, dialog.file.id, name);
 
     if (!result.ok) {
@@ -499,6 +547,11 @@ function SubjectFileManager({ selectedFolder }) {
   };
 
   const submitDelete = () => {
+    if (folderNode?.locked) {
+      setSubmitError("This folder is view-only. Files cannot be deleted.");
+      return;
+    }
+
     const target = dialog.file;
     const result = FileService.deleteFile(store, folderId, target.id);
 
@@ -543,14 +596,19 @@ function SubjectFileManager({ selectedFolder }) {
 
   return (
     <section className="sf-panel" aria-label={`Files in ${folderName}`}>
-      {/* ================= HEADER ================= */}
+      {/* ================= HEADER =================
+          Clean, single-line title header: the "Subject Files" / "Folder
+          Files" label (plus the breadcrumb path for nested folders) on the
+          left, the 4 KPI tiles beside it, and the Filters / Upload actions
+          on the right. The folder name, "N Files" count and size that used
+          to be repeated here are gone - that information already lives in
+          the folder bar above the panel and in the KPI tiles, so the header
+          no longer duplicates it. */}
       <header className="sf-panel-header">
         <div className="sf-panel-heading">
-          <div className="sf-panel-eyebrow">
+          <h3 className="sf-panel-eyebrow">
             {isSubjectNode ? "Subject Files" : "Folder Files"}
-          </div>
-
-          <h2 title={folderName}>{folderName}</h2>
+          </h3>
 
           {folderPath.length > 1 && (
             <nav className="sf-path" aria-label="Folder path">
@@ -562,18 +620,12 @@ function SubjectFileManager({ selectedFolder }) {
               ))}
             </nav>
           )}
-
-          <div className="sf-panel-meta">
-            <span className="sf-meta-item">
-              <MdInsertDriveFile size={13} aria-hidden="true" />
-              {folderFiles.length} {folderFiles.length === 1 ? "file" : "files"}
-            </span>
-            <span className="sf-meta-item">
-              <MdStorage size={13} aria-hidden="true" />
-              {formatFileSize(folderSize)}
-            </span>
-          </div>
         </div>
+
+        {/* The 4-tile KPI strip sits inside the header, beside the title -
+            same "title + cards on one row" pattern as the Subject Documents
+            header above the explorer. */}
+        <FolderStatsBar stats={stats} scope="folder" label={folderName} />
 
         <div className="sf-panel-actions">
           {/* Requirement 4: filters live behind a toggle so the toolbar stays
@@ -603,9 +655,6 @@ function SubjectFileManager({ selectedFolder }) {
           <FileUploadButton onFiles={handleUpload} busy={uploading} />
         </div>
       </header>
-
-      {/* ================= FOLDER STATISTICS (requirement 2) ================= */}
-      <FolderStatsBar stats={stats} scope="folder" label={folderName} />
 
       {/* ================= FEEDBACK / VALIDATION ================= */}
       {feedback && (
@@ -718,6 +767,19 @@ function SubjectFileManager({ selectedFolder }) {
                 <span className="sf-result-count" role="status" aria-live="polite">
                   {visibleFiles.length} of {folderFiles.length}
                 </span>
+
+                {/* Task 1.7: CSV export of the currently visible rows. No
+                    existing export pattern was wired to file tables, so this
+                    reuses the app's shared CSV helper. */}
+                <button
+                  type="button"
+                  className="sf-btn sf-btn--ghost sf-export-btn"
+                  onClick={handleExportFiles}
+                  title="Export visible files to CSV"
+                >
+                  <MdFileDownload size={16} aria-hidden="true" />
+                  <span>Export</span>
+                </button>
               </div>
             </div>
           )}
@@ -745,9 +807,13 @@ function SubjectFileManager({ selectedFolder }) {
             <DragDropUpload onFiles={handleUpload} busy={uploading} compact />
           )}
 
-          {/* ================= FILE TABLE / EMPTY STATES ================= */}
+          {/* ================= FILE TABLE / EMPTY STATES =================
+              Task 1.7: rows are the paginated slice of `visibleFiles`;
+              `totalInFolder` stays the true unfiltered count so the
+              existing empty-state selection (folder empty vs. narrowed to
+              zero) is unaffected. */}
           <SubjectFileTable
-            files={visibleFiles}
+            files={pagedFiles}
             totalInFolder={folderFiles.length}
             folderName={folderName}
             sortKey={sortKey}
@@ -764,6 +830,20 @@ function SubjectFileManager({ selectedFolder }) {
             hasFilters={activeFilterCount > 0}
             uploading={uploading}
             canUpload={Boolean(folderId)}
+            locked={Boolean(folderNode?.locked)}
+          />
+
+          {/* Task 1.7/1.9: pagination footer - rows per page, prev/next,
+              "Showing X to Y of Z" - scoped to the filtered/searched set. */}
+          <PaginationFooter
+            page={safePage}
+            pageSize={pageSize}
+            total={visibleFiles.length}
+            onPageChange={setPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setPage(1);
+            }}
           />
         </div>
 
@@ -776,9 +856,19 @@ function SubjectFileManager({ selectedFolder }) {
             <FilePreviewModal
               file={dialog.file}
               folderName={folderPath.join(" / ")}
-              onRename={() => setDialog({ mode: "rename", file: dialog.file })}
+              locked={Boolean(folderNode?.locked)}
+              onRename={() => {
+                // Root-cause guard (not just hiding the button): this panel
+                // can no longer render the Rename button when locked, but
+                // refuse the action here too regardless of how it's called.
+                if (folderNode?.locked) return;
+                setDialog({ mode: "rename", file: dialog.file });
+              }}
               onDownload={() => handleDownload(dialog.file)}
-              onDelete={() => setDialog({ mode: "delete", file: dialog.file })}
+              onDelete={() => {
+                if (folderNode?.locked) return;
+                setDialog({ mode: "delete", file: dialog.file });
+              }}
               onClose={closeDialog}
             />
           </div>

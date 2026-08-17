@@ -67,6 +67,111 @@ export const FOLDER_NAME_RULES = {
   invalidCharsLabel: '/ \\ : * ? " < > |',
 };
 
+/**
+ * Update 7 - LOCKED ICF FOLDER
+ * ----------------------------
+ * Every subject automatically gets exactly one system folder, "ICF"
+ * (Informed Consent Form), that cannot be renamed or deleted - view/open
+ * and its own file management continue to work exactly like any other
+ * folder, only the folder's own CRUD is locked. This is expressed as a
+ * `locked: true` flag on the node (checked in `renameFolder`/`deleteFolder`
+ * below, and by the sidebar UI which hides Edit/Rename/Delete for it).
+ */
+export const ICF_FOLDER_NAME = "ICF";
+
+/** Deterministic id so a subject's ICF folder is always found the same way. */
+function icfFolderId(subjectId) {
+  return `${subjectId}/icf`;
+}
+
+function makeIcfFolder(subjectId) {
+  return {
+    id: icfFolderId(subjectId),
+    name: ICF_FOLDER_NAME,
+    type: "folder",
+    locked: true,
+    children: [],
+    createdAt: new Date().toISOString(),
+  };
+}
+
+/** True for any node whose own CRUD (rename/delete) is locked. */
+export function isLockedFolder(node) {
+  return Boolean(node && node.type === "folder" && node.locked);
+}
+
+/**
+ * Update 8 - REMOVE HARDCODED DEFAULT FOLDERS
+ * --------------------------------------------
+ * The original mock seed (`subjectExplorerMockData.js`) hardcoded folders
+ * like "Screening" / "Visit 1" / "Visit 2" / "Additional Documents" etc.
+ * directly onto SUB-001..SUB-006. The seed file itself no longer includes
+ * them, but a tree already persisted in localStorage from an earlier
+ * session would still have them baked in - this is the exact set of ids
+ * the old seed produced, used ONLY to strip those specific legacy nodes on
+ * load. User-created folders get generated ids (`fld-<timestamp>-<rand>`,
+ * see `createId` above) and can never collide with this list, so a
+ * same-named folder a user creates later is never touched.
+ */
+const LEGACY_DEFAULT_FOLDER_IDS = new Set([
+  "SUB-001/screening",
+  "SUB-001/visit-1",
+  "SUB-001/visit-2",
+  "SUB-001/additional-documents",
+  "SUB-002/lab-reports",
+  "SUB-002/x-ray",
+  "SUB-002/insurance",
+  "SUB-004/screening",
+  "SUB-004/consent-forms",
+  "SUB-004/consent-forms/icf-v1",
+  "SUB-004/consent-forms/icf-v2",
+  "SUB-004/visit-1",
+  "SUB-004/adverse-events",
+  "SUB-005/screening",
+  "SUB-005/visit-1",
+  "SUB-005/lab-reports",
+  "SUB-005/imaging",
+  "SUB-005/additional-documents",
+  "SUB-006/screening",
+  "SUB-006/insurance",
+]);
+
+/**
+ * One pass over the tree: strip the legacy default folders above (direct
+ * children of a subject only - never recurses into a user-created folder,
+ * so nothing nested by a user is ever at risk), then guarantee every
+ * subject has its locked ICF folder. Runs on every `loadFolderTree` call
+ * (see below) so a tree persisted before this update is cleaned up the
+ * next time it loads, and idempotent so a tree that is already clean is
+ * returned unchanged (`changed: false`, nothing re-persisted).
+ */
+function migrateLegacyDefaults(nodes) {
+  let changed = false;
+
+  const next = (Array.isArray(nodes) ? nodes : []).map((node) => {
+    if (node.type !== "subject") return node;
+
+    const children = (node.children || []).filter((child) => {
+      if (LEGACY_DEFAULT_FOLDER_IDS.has(child.id)) {
+        changed = true;
+        return false;
+      }
+      return true;
+    });
+
+    const hasIcf = children.some((child) => isLockedFolder(child));
+
+    if (!hasIcf) {
+      changed = true;
+      children.unshift(makeIcfFolder(node.id));
+    }
+
+    return { ...node, children };
+  });
+
+  return { changed, tree: next };
+}
+
 /* ==================================================================
    INTERNAL HELPERS
 ================================================================== */
@@ -136,7 +241,7 @@ function emitTreeUpdate(source) {
  * so older/hand-edited data keeps working.
  */
 export function loadFolderTree(seed = SUBJECT_EXPLORER_TREE) {
-  const fallback = normalizeNodes(seed);
+  const fallback = migrateLegacyDefaults(normalizeNodes(seed)).tree;
 
   if (!hasStorage()) return fallback;
 
@@ -156,7 +261,14 @@ export function loadFolderTree(seed = SUBJECT_EXPLORER_TREE) {
       return fallback;
     }
 
-    return normalizeNodes(stored);
+    const normalized = normalizeNodes(stored);
+    const migrated = migrateLegacyDefaults(normalized);
+
+    // Only re-persist when the migration actually removed/added something,
+    // so a tree that is already clean never gets a spurious extra write.
+    if (migrated.changed) persist(migrated.tree);
+
+    return migrated.tree;
   } catch {
     // Corrupt payload - fall back to the seed rather than breaking the page.
     return fallback;
@@ -408,6 +520,14 @@ export function renameFolder(tree, nodeId, name) {
     return { ok: false, tree, error: "Subjects cannot be renamed here." };
   }
 
+  if (isLockedFolder(node)) {
+    return {
+      ok: false,
+      tree,
+      error: "ICF is a system folder and cannot be renamed.",
+    };
+  }
+
   const parent = findParentOf(working, nodeId);
   const check = validateFolderName(working, parent?.id ?? null, name, {
     excludeId: nodeId,
@@ -437,6 +557,14 @@ export function deleteFolder(tree, nodeId) {
 
   if (target.type === "subject") {
     return { ok: false, tree, error: "Subjects cannot be deleted here." };
+  }
+
+  if (isLockedFolder(target)) {
+    return {
+      ok: false,
+      tree,
+      error: "ICF is a system folder and cannot be deleted.",
+    };
   }
 
   const removedIds = [target.id];
@@ -518,18 +646,21 @@ export function validateSubjectName(tree, name, options = {}) {
   return { valid: true, error: "" };
 }
 
-/** Create a new top-level subject (starts with zero folders, like SUB-003). */
+/** Create a new top-level subject - seeded with only its locked ICF folder
+ *  (Update 7/8: no other default folders; users add the rest themselves via
+ *  the existing Add Folder flow). */
 export function createSubject(tree, name) {
   const working = clone(normalizeNodes(tree));
 
   const check = validateSubjectName(working, name);
   if (!check.valid) return { ok: false, tree, error: check.error };
 
+  const subjectId = nextSubjectId(working);
   const subject = {
-    id: nextSubjectId(working),
+    id: subjectId,
     name: String(name).trim(),
     type: "subject",
-    children: [],
+    children: [makeIcfFolder(subjectId)],
     createdAt: new Date().toISOString(),
   };
 
@@ -618,6 +749,7 @@ const FolderTreeService = {
   createSubject,
   renameSubject,
   deleteSubject,
+  isLockedFolder,
 };
 
 export default FolderTreeService;

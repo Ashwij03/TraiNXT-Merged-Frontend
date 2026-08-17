@@ -9,6 +9,10 @@
  *     id: string          unique node id
  *     name: string        display label
  *     type: "subject" | "folder"
+ *     locked?: boolean    true only for the system ICF folder - its own
+ *                         CRUD (rename/delete) is blocked, everything else
+ *                         (view/open, file upload/management inside it)
+ *                         works like any other folder
  *     children?: node[]   nested folders (optional)
  *   }
  *
@@ -18,10 +22,17 @@
  * localStorage, so the subject roster shown in the explorer is dynamic and
  * grows/shrinks with user actions, never re-read from here after first load.
  *
- * SUB-003 is intentionally seeded with zero folders - it is the reference
- * case for "a subject with nothing in it yet" (empty tree, create-first-
- * folder, and, as of Update 6, edit/delete) and must keep working exactly
- * like every other subject.
+ * Update 7/8 (Subjects - Additional Updates): every subject now seeds with
+ * ONLY its locked ICF folder - the previous hardcoded defaults (Screening,
+ * Visit 1, Visit 2, Additional Documents, Lab Reports, X-Ray, Insurance,
+ * Consent Forms, Adverse Events, Imaging) have been removed. Users add
+ * whatever folders they need through the existing Add Folder flow, which
+ * remains fully editable/deletable - only ICF is locked.
+ *
+ * `FolderTreeService.loadFolderTree` also migrates any tree already
+ * persisted in localStorage from before this update, so the old default
+ * folders and a missing ICF folder are both corrected on next load, not
+ * just for a fresh seed.
  */
 
 export const SUBJECT_EXPLORER_TREE = [
@@ -29,76 +40,37 @@ export const SUBJECT_EXPLORER_TREE = [
     id: "SUB-001",
     name: "SUB-001",
     type: "subject",
-    children: [
-      { id: "SUB-001/screening", name: "Screening", type: "folder" },
-      { id: "SUB-001/visit-1", name: "Visit 1", type: "folder" },
-      { id: "SUB-001/visit-2", name: "Visit 2", type: "folder" },
-      {
-        id: "SUB-001/additional-documents",
-        name: "Additional Documents",
-        type: "folder",
-      },
-    ],
+    children: [{ id: "SUB-001/icf", name: "ICF", type: "folder", locked: true, children: [] }],
   },
   {
     id: "SUB-002",
     name: "SUB-002",
     type: "subject",
-    children: [
-      { id: "SUB-002/lab-reports", name: "Lab Reports", type: "folder" },
-      { id: "SUB-002/x-ray", name: "X-Ray", type: "folder" },
-      { id: "SUB-002/insurance", name: "Insurance", type: "folder" },
-    ],
+    children: [{ id: "SUB-002/icf", name: "ICF", type: "folder", locked: true, children: [] }],
   },
   {
     id: "SUB-003",
     name: "SUB-003",
     type: "subject",
-    children: [],
+    children: [{ id: "SUB-003/icf", name: "ICF", type: "folder", locked: true, children: [] }],
   },
   {
     id: "SUB-004",
     name: "SUB-004",
     type: "subject",
-    children: [
-      { id: "SUB-004/screening", name: "Screening", type: "folder" },
-      {
-        id: "SUB-004/consent-forms",
-        name: "Consent Forms",
-        type: "folder",
-        children: [
-          { id: "SUB-004/consent-forms/icf-v1", name: "ICF v1.0", type: "folder" },
-          { id: "SUB-004/consent-forms/icf-v2", name: "ICF v2.0", type: "folder" },
-        ],
-      },
-      { id: "SUB-004/visit-1", name: "Visit 1", type: "folder" },
-      { id: "SUB-004/adverse-events", name: "Adverse Events", type: "folder" },
-    ],
+    children: [{ id: "SUB-004/icf", name: "ICF", type: "folder", locked: true, children: [] }],
   },
   {
     id: "SUB-005",
     name: "SUB-005",
     type: "subject",
-    children: [
-      { id: "SUB-005/screening", name: "Screening", type: "folder" },
-      { id: "SUB-005/visit-1", name: "Visit 1", type: "folder" },
-      { id: "SUB-005/lab-reports", name: "Lab Reports", type: "folder" },
-      { id: "SUB-005/imaging", name: "Imaging", type: "folder" },
-      {
-        id: "SUB-005/additional-documents",
-        name: "Additional Documents",
-        type: "folder",
-      },
-    ],
+    children: [{ id: "SUB-005/icf", name: "ICF", type: "folder", locked: true, children: [] }],
   },
   {
     id: "SUB-006",
     name: "SUB-006",
     type: "subject",
-    children: [
-      { id: "SUB-006/screening", name: "Screening", type: "folder" },
-      { id: "SUB-006/insurance", name: "Insurance", type: "folder" },
-    ],
+    children: [{ id: "SUB-006/icf", name: "ICF", type: "folder", locked: true, children: [] }],
   },
 ];
 

@@ -1,21 +1,7 @@
-/* ==================================================================
-   SUBJECT FILE MANAGEMENT (Phase 4)
-   Styles for SubjectFileManager, SubjectFileTable, SubjectFileRow,
-   FileUploadButton, DragDropUpload and FileContextMenu.
-
-   The `sf-` prefix keeps these rules independent from the page-level
-   `sw-` styles (Subjects.css), the explorer's `sx-` styles
-   (SubjectExplorer.css) and the modal `sxm-` styles (FolderModals.css).
-
-   Phase 4 modals reuse the `sxm-` shell from FolderModals.css and only add
-   the file-specific pieces at the end of this file.
-================================================================== */
-
-/* ================= PANEL SHELL ================= */
 .sf-panel {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 9px;
   padding: 0;
   background: #fff;
   border: 1px solid var(--tnxt-border, #e5e7eb);
@@ -46,15 +32,13 @@
   white-space: nowrap;
   border: 0;
 }
-
-/* ================= PANEL HEADER ================= */
 .sf-panel-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: 14px;
   flex-wrap: wrap;
-  padding: 16px 18px 14px;
+  padding: 12px 12px 10px;
   border-bottom: 1px solid var(--tnxt-border-light, #f0f0f0);
   background: linear-gradient(180deg, #fbfdff 0%, #ffffff 100%);
 }
@@ -70,6 +54,12 @@
   text-transform: uppercase;
   color: var(--tnxt-primary, #2563eb);
   margin-bottom: 4px;
+}
+
+/* The eyebrow doubles as the panel's heading element; strip the default h3
+   margins so the header stays compact. */
+.sf-panel-header h3.sf-panel-eyebrow {
+  margin: 0 0 4px;
 }
 
 .sf-panel-header h2 {
@@ -107,6 +97,15 @@
 
 .sf-path-sep {
   color: var(--tnxt-text-muted, #9ca3af);
+}
+
+/* Task 1.6: eISF-style "Documents — N Files" section header line, shown
+   between the folder name and its breadcrumb/meta row. */
+.sf-section-header {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
 }
 
 /* ---- count + size meta row ---- */
@@ -290,13 +289,20 @@
 }
 
 /* ================= TOOLBAR (search + sort) ================= */
+/* Fix (this update): matches the ~10% reduction on `.sf-panel-header`
+   above (16px -> 14px) so the toolbar row's search box, filters, and
+   Export button line up with the tightened header instead of sitting 2px
+   further in. */
+/* Fix (this update): matches `.sf-panel-header` above (now 12px on both) so
+   the toolbar row's search box, filters, and Export button line up exactly
+   with the header content instead of sitting a pixel or two further in. */
 .sf-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
-  padding: 0 18px;
+  padding: 0 12px;
 }
 
 /* ---- search ---- */
@@ -430,11 +436,15 @@
 }
 
 /* ================= DROP ZONE ================= */
+/* Fix (this update): margin brought down from 18px to match the header/
+   toolbar/stats row's 12px - this was the widest inset in the panel and
+   the main reason the drag-and-drop zone (and, by visual continuity, the
+   table just below it) read as narrower than it needed to be. */
 .sf-dropzone {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 0 18px;
+  margin: 0 12px;
   padding: 16px;
   border: 1.5px dashed #cbd5e1;
   border-radius: var(--tnxt-radius-md, 8px);
@@ -526,9 +536,15 @@
    (15px/18px) because this table carries eight columns beside a 240px rail,
    where eISF's table has the full page width - the same density mapping
    already used elsewhere in this stylesheet. */
+/* The scroll wrapper doubles as the table's own "card": a subtle light-grey
+   surface so the table boundary stays clearly visible against the white
+   panel, with vertical padding so the table never touches the card edges and
+   leaves breathing room below the last row. */
 .sf-table-scroll {
   overflow-x: auto;
   border-top: 1px solid var(--tnxt-border-light, #f0f0f0);
+  background: #f2f5f9;
+  padding: 12px 0 18px;
 }
 
 /* `table-layout: fixed` is what actually guarantees the alignment
@@ -539,9 +555,40 @@
    widths for the header row and every body row, every time. `min-width`
    keeps eight columns from being crushed unreadably on a narrow rail;
    `.sf-table-scroll` (below) already scrolls horizontally past that point. */
+/* Fix (this update): `width: 100%` is what forced the table to stretch
+   across the full card on wide screens even though its content only needs
+   ~870px - removed so `table-layout: fixed` sizes the table to the sum of
+   the `<colgroup>` widths declared in `SubjectFileTable.js` instead.
+   `min-width` matches that sum so the table (and its horizontal scroll)
+   behave identically to before on narrow screens - only the "stretch to
+   fill a wide card" behaviour is gone. */
+/* Fix (this update): back to `width: 100%` so the table fills its card the
+   way the reference "User Directory" table does - percentages on every
+   `<colgroup>` column (SubjectFileTable.js) then distribute that full
+   width evenly instead of leaving it stretched-but-empty (the earlier
+   `width: auto` version) or narrower than the card (the fixed-px version
+   before that). `min-width` is the same 760px floor as originally, so
+   `.sf-table-scroll` still takes over with horizontal scroll rather than
+   crushing 8 columns unreadably on a narrow viewport. */
+/* Fix (this update): the table no longer stretches to fill the card. It
+   was `width: 100%` of `.sf-table-scroll` (itself full-width inside the
+   card), which is exactly why previous padding-only passes never reduced
+   the table's own occupied width - padding around the table changed, but
+   the table's own CSS width contract never did. Now `width: 90%` with
+   `margin: 0 auto` centers a table that is ~10% narrower than its
+   container, leaving balanced space on both sides. `min-width` stays as a
+   floor: once the container is too narrow for 90% to still fit every
+   column readably, the table stops shrinking there and `.sf-table-scroll`
+   takes over with horizontal scroll instead - unchanged from before. */
+/* Centred at 90% width - ~10% total balanced space split evenly across both
+   sides (~5% each, per the layout brief) - instead of stretching
+   edge-to-edge; `min-width` is a modest floor - once the panel is too
+   narrow for 90% to stay readable, `.sf-table-scroll` takes over with
+   horizontal scroll rather than the table being crushed. */
 .sf-panel .sf-table {
-  width: 100%;
-  min-width: 760px;
+  width: 95%;
+  margin: 0 auto;
+  min-width: 560px;
   border-collapse: collapse;
   table-layout: fixed;
   font-size: 13px;
@@ -551,8 +598,9 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  padding: 12px 14px;
-  text-align: left;
+  padding: 9px 12px;
+  text-align: center;
+  vertical-align: middle;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -566,8 +614,21 @@
   color: #fff;
 }
 
+/* Fix (this update): 0.12 opacity white-on-navy read as almost invisible -
+   raised to 0.28 so the header's own column dividers are clearly visible,
+   not just implied by the (much darker) body borders below. */
 .sf-panel .sf-table thead th:not(:last-child) {
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  border-right: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+/* Fix (this update): every header (Actions included) is centered now, both
+   horizontally and vertically, to read consistently across every Subjects
+   table - the Actions header used to be right-aligned to visually pair
+   with the row's right-aligned buttons below it; it still sits directly
+   above them since the column itself is the same width either way, so
+   centering it costs nothing and matches every other header. */
+.sf-panel .sf-table thead th.sf-th-actions {
+  padding-right: 12px;
 }
 
 /* Sorted column keeps the same navy family, one step lighter, rather than
@@ -609,14 +670,26 @@
   border-radius: 3px;
 }
 
+/* Fix (this update): #edf1f7 was nearly the same lightness as the table's
+   own white background - raised to a clearly visible (but still subtle,
+   not black) enterprise gray. */
 .sf-panel .sf-table td {
-  padding: 12px 14px;
-  border-bottom: 1px solid #edf1f7;
+  padding: 9px 12px;
+  border-bottom: 1px solid #d8dfe8;
   color: #334155;
   vertical-align: middle;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Fix (this update): vertical grid lines between body columns - previously
+   only the header row had column dividers, so the table read as a stack of
+   full-width rows rather than a grid once the header scrolled out of view
+   or on a quick glance at a single row. Same color bump as the horizontal
+   border above, so both grid directions read with equal visibility. */
+.sf-panel .sf-table td:not(:last-child) {
+  border-right: 1px solid #d8dfe8;
 }
 
 .sf-panel .sf-table tbody tr {
@@ -676,20 +749,22 @@
   text-overflow: ellipsis;
 }
 
-/* Actions column: right-aligned trigger, kept fully clear of the table's
-   own right edge (and of the scroll container beyond it) with generous
-   left/right padding, plus `overflow: visible` so nothing about this cell
-   itself can clip the trigger button. */
+/* Actions column: the button group is centred directly under its centred
+   header (so the Actions header and the icons align exactly), with padding
+   sized to the group plus `overflow: visible` so nothing about this cell
+   itself can clip the dropdown trigger. */
 .sf-panel .sf-table td.sf-cell-actions {
-  text-align: right;
-  padding-left: 10px;
-  padding-right: 16px;
+  text-align: center;
+  padding-left: 6px;
+  padding-right: 6px;
   overflow: visible;
 }
 
-/* Status column: explicit right padding (beyond the shared 14px every cell
-   already gets) so the badge never crowds the actions column next to it. */
+/* Status column: contains ONLY the status badge - no icons or clickable
+   areas. Centred under its centred header, with a touch of extra right
+   padding so the badge never crowds the actions column next to it. */
 .sf-panel .sf-table td.sf-cell-status {
+  text-align: center;
   padding-right: 18px;
 }
 
@@ -819,6 +894,43 @@
    after the Status column. It is now visible at all times - hover/focus
    only changes its background/color, never its presence - and the touch
    fallback below is redundant but left in place as a harmless no-op. */
+
+/* Fix (this update): View/Download are now their own visible icon buttons
+   next to the "more" trigger, instead of both living inside the dropdown -
+   this group lays the (up to) three buttons out right-aligned with a small
+   gap, sized to comfortably fit the wider Actions column below. */
+.sf-actions-group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.sf-action-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: var(--tnxt-radius-sm, 6px);
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sf-action-icon-btn:hover {
+  background: #eef4fe;
+  color: #1c6ed4;
+}
+
+.sf-action-icon-btn:focus-visible {
+  outline: 2px solid var(--tnxt-primary, #2563eb);
+  outline-offset: 1px;
+}
+
 .sf-menu-trigger {
   display: inline-flex;
   align-items: center;
@@ -974,19 +1086,19 @@
 /* Standalone "no folder selected" card has no table above it. */
 .sf-empty-state--no-folder {
   border-top: none;
-  padding: 56px 24px;
+  padding: 34px 24px;
 }
 
 .sf-empty-state--search {
-  padding: 36px 24px;
+  padding: 26px 24px;
 }
 
 .sf-empty-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 58px;
-  height: 58px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: var(--tnxt-primary-light, #dbeafe);
   color: var(--tnxt-primary, #2563eb);
@@ -1288,6 +1400,7 @@
   .sf-detail-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
 }
 
 @media (max-width: 768px) {
@@ -1369,6 +1482,62 @@
 }
 
 /* ==================================================================
+   KPI STRIP INSIDE THE PANEL HEADER (Subject Files header clean-up)
+
+   The 4-tile FolderStatsBar now renders inside `.sf-panel-header` (beside
+   the "Subject Files" title) instead of as a separate strip below it, so
+   the tiles are compacted to header height and laid out beside the heading
+   and actions. Scoped to the header so the workspace-scope usage in
+   `pages/Sponsor/Subjects.js` keeps its standalone sizing. Long values
+   (storage sizes, large counts) are handled by the existing ellipsis rules
+   on `.sf-stat-value`/`.sf-stat-caption` - the tiles never grow past their
+   grid cell.
+================================================================== */
+.sf-panel-header .sf-stats {
+  flex: 1 1 380px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  gap: 8px;
+}
+
+.sf-panel-header .sf-stat-tile {
+  min-height: 64px;
+  padding: 10px 12px;
+  gap: 8px;
+}
+
+.sf-panel-header .sf-stat-icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+}
+
+.sf-panel-header .sf-stat-value {
+  font-size: 17px;
+  line-height: 1.1;
+}
+
+.sf-panel-header .sf-stat-label {
+  margin-top: 3px;
+  font-size: 10.5px;
+}
+
+.sf-panel-header .sf-stat-caption {
+  margin-top: 2px;
+  font-size: 10px;
+}
+
+/* Once the heading block + the four tiles + the panel actions no longer
+   fit on one row, the strip drops to its own full-width row inside the
+   header instead of being squeezed between them. */
+@media (max-width: 992px) {
+  .sf-panel-header .sf-stats {
+    flex-basis: 100%;
+  }
+}
+
+/* ==================================================================
    RIGHT-SIDE FILE DETAILS PANEL (Update 7)
 
    "View Details" no longer opens the `.sf-preview-modal` popup above -
@@ -1389,9 +1558,14 @@
   min-height: 0;
 }
 
+/* Fix (this update): no gap at all between this column's children (the
+   drop zone, filter bar, and file table) - the drag-and-drop zone and the
+   table below it were touching directly, with only a 1px border to
+   separate them. */
 .sf-body-list {
   display: flex;
   flex-direction: column;
+  gap: 12px;
   min-width: 0;
 }
 

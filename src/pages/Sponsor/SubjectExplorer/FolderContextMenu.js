@@ -213,6 +213,14 @@ function FolderContextMenu({ node, onAction, onOpenChange }) {
     if (typeof onAction === "function") onAction(actionKey, node);
   };
 
+  /* Update 7: SubjectTreeNode already skips rendering this component for a
+     locked node - this is defense in depth for any other caller/composition
+     path that might still mount it directly. Placed after every hook call
+     (not as an early return above them) so hook order never depends on
+     `node.locked` - returning early before hooks would violate the Rules
+     of Hooks the moment a node's locked state ever changed between renders. */
+  if (node?.locked) return null;
+
   return (
     <>
       {isSubject && (

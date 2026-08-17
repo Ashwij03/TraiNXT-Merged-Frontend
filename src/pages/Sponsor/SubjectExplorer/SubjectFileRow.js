@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from "react";
+import { MdVisibility, MdDownload } from "react-icons/md";
 
 import FileContextMenu from "./FileContextMenu";
 import { getFileTypeMeta } from "./fileTypes";
@@ -22,6 +23,9 @@ import { formatFileSize, formatDate, formatDateTime } from "./fileService";
  *   file      file record
  *   isActive  this file's preview/dialog is currently open
  *   onAction  (actionKey, file) => void
+ *   locked    true when the owning folder is a system folder (ICF) - only
+ *             View/Download are offered, Rename/Delete are hidden here and
+ *             also refused in `SubjectFileManager.handleAction` itself
  */
 
 /** Mock status -> badge modifier. Statuses are display-only in this phase. */
@@ -33,7 +37,7 @@ const STATUS_CLASS = {
   Superseded: "sf-status--superseded",
 };
 
-function SubjectFileRow({ file, isActive = false, onAction }) {
+function SubjectFileRow({ file, isActive = false, onAction, locked = false }) {
   // Keeps the row's action button visible while its menu is open.
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -42,6 +46,22 @@ function SubjectFileRow({ file, isActive = false, onAction }) {
   const openDetails = useCallback(() => {
     onAction?.("view", file);
   }, [onAction, file]);
+
+  const handleView = useCallback(
+    (event) => {
+      event.stopPropagation();
+      onAction?.("view", file);
+    },
+    [onAction, file]
+  );
+
+  const handleDownload = useCallback(
+    (event) => {
+      event.stopPropagation();
+      onAction?.("download", file);
+    },
+    [onAction, file]
+  );
 
   const handleKeyDown = useCallback(
     (event) => {
@@ -118,14 +138,52 @@ function SubjectFileRow({ file, isActive = false, onAction }) {
         </span>
       </td>
 
-      <td className="sf-cell-actions">
-        {/* Stops its own click events so the row never opens details when
-            the menu is used. */}
-        <FileContextMenu
-          file={file}
-          onAction={onAction}
-          onOpenChange={setMenuOpen}
-        />
+      <td
+        className="sf-cell-actions"
+        onClick={(event) => event.stopPropagation()}
+      >
+        {/* Fix (this update): View and Download used to be buried inside the
+            "..." dropdown, so the whole cell showed only one ambiguous
+            trigger and looked empty at a glance. They're now their own
+            always-visible icon buttons - each with its own click target and
+            its own stopPropagation, so no part of this cell (a button, its
+            padding, or the empty space around them) can ever bubble a click
+            up to the row and open details by accident. Rename/Delete stay
+            behind the compact "more" trigger since they're secondary,
+            destructive-adjacent actions - and for a locked folder (ICF)
+            `FileContextMenu` renders nothing at all, so the cell shows
+            exactly View + Download and nothing else, matching the
+            view/download-only permission exactly instead of hiding it
+            behind a menu that would otherwise look identical to a normal
+            file's. */}
+        <span className="sf-actions-group">
+          <button
+            type="button"
+            className="sf-action-icon-btn"
+            title="View details"
+            aria-label={`View details for ${file.name}`}
+            onClick={handleView}
+          >
+            <MdVisibility size={15} />
+          </button>
+
+          <button
+            type="button"
+            className="sf-action-icon-btn"
+            title="Download"
+            aria-label={`Download ${file.name}`}
+            onClick={handleDownload}
+          >
+            <MdDownload size={15} />
+          </button>
+
+          <FileContextMenu
+            file={file}
+            onAction={onAction}
+            onOpenChange={setMenuOpen}
+            locked={locked}
+          />
+        </span>
       </td>
     </tr>
   );

@@ -4,6 +4,7 @@ import {
   MdPerson,
   MdFolder,
   MdFolderOpen,
+  MdLock,
 } from "react-icons/md";
 
 import FolderContextMenu from "./FolderContextMenu";
@@ -94,6 +95,9 @@ function SubjectTreeNode({
   const isSelected = selectedId === node.id;
   const isSubject = node.type === "subject";
   const isOnActivePath = Boolean(activePathIds?.includes(node.id));
+  /* Update 7: the system ICF folder - view/open only, no rename/delete,
+     and no context menu at all (nothing in it would ever be actionable). */
+  const isLocked = Boolean(node.locked);
 
   /**
    * Reveal the active row once, when it becomes selected. Guarded on
@@ -192,6 +196,7 @@ function SubjectTreeNode({
           isOnActivePath ? "is-on-active-path" : "",
           isExpanded ? "is-expanded" : "",
           menuOpen ? "is-menu-open" : "",
+          isLocked ? "is-locked" : "",
         ]
           .filter(Boolean)
           .join(" ")}
@@ -233,14 +238,38 @@ function SubjectTreeNode({
           </span>
         )}
 
-        {/* Three-dot folder actions (Phase 3). Rendered last so it sits at
-            the row's trailing edge; it stops its own click events so the
-            row is never selected/toggled by using the menu. */}
-        <FolderContextMenu
-          node={node}
-          onAction={onNodeAction}
-          onOpenChange={setMenuOpen}
-        />
+        {/* Update (this fix): the lock badge and, for an unlocked folder,
+            the "..." trigger both live inside a dedicated actions cluster
+            that stops its own clicks here - so a click anywhere in this
+            trailing zone (the badge itself, its padding, or the empty
+            space next to it) can never bubble up to the row's own
+            `onClick` and navigate/select the folder. Folder navigation
+            only ever happens through a click on the row's label/icon
+            area, or through `FolderContextMenu`'s own explicit actions. */}
+        <span
+          className="sx-row-actions"
+          onClick={(event) => event.stopPropagation()}
+        >
+          {isLocked && (
+            <span
+              className="sx-lock-badge"
+              title="System folder - view only"
+              aria-label="Locked folder"
+            >
+              <MdLock size={12} />
+            </span>
+          )}
+
+          {/* Update 7: locked folders (ICF) get no context menu - view/open
+              (the row click itself) is the only available action. */}
+          {!isLocked && (
+            <FolderContextMenu
+              node={node}
+              onAction={onNodeAction}
+              onOpenChange={setMenuOpen}
+            />
+          )}
+        </span>
       </div>
 
       {/* Children are kept mounted while collapsed so the max-height

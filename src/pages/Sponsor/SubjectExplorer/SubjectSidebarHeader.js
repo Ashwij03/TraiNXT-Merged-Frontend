@@ -20,14 +20,33 @@ function SubjectSidebarHeader({
   allExpanded = false,
   onExpandAll,
   onCollapseAll,
+  onTitleClick,
 }) {
   return (
     <div className="sx-header">
-      <div className="sx-header-title">
-        <MdFolderOpen size={16} className="sx-header-icon" />
-        <span>Subjects</span>
-        <span className="sx-header-count">{subjectCount}</span>
-      </div>
+      {/* Update 4: clicking "Subjects" returns to the existing All Subjects
+          view (same navigation `StudySubjectsWorkspace`'s own "Back to
+          Subjects" button uses - no duplicate nav path). Only interactive
+          when a handler is supplied, so the standalone `/subjects` page
+          (which does not pass one) keeps today's plain header. */}
+      {onTitleClick ? (
+        <button
+          type="button"
+          className="sx-header-title sx-header-title--link"
+          onClick={onTitleClick}
+          title="Back to All Subjects"
+        >
+          <MdFolderOpen size={16} className="sx-header-icon" />
+          <span>Subjects</span>
+          <span className="sx-header-count">{subjectCount}</span>
+        </button>
+      ) : (
+        <div className="sx-header-title">
+          <MdFolderOpen size={16} className="sx-header-icon" />
+          <span>Subjects</span>
+          <span className="sx-header-count">{subjectCount}</span>
+        </div>
+      )}
 
       <button
         type="button"

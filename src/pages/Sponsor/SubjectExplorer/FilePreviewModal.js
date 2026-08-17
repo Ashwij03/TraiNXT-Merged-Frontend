@@ -37,6 +37,11 @@ import { formatFileSize, formatDateTime } from "./fileService";
  *   onDelete    () => void
  *   onClose     () => void  - closes the panel (hands control back to the
  *                             parent, which unmounts it)
+ *   locked      true when the owning folder is a system folder (ICF) -
+ *               Rename/Delete are not rendered at all (Update: this panel
+ *               used to render them unconditionally, which is exactly the
+ *               "hidden action" a locked file's Rename/Delete could still
+ *               be reached through even with the row-level menu fixed)
  */
 
 /**
@@ -66,6 +71,7 @@ function FilePreviewModal({
   onDownload,
   onDelete,
   onClose,
+  locked = false,
 }) {
   const closeRef = useRef(null);
 
@@ -154,23 +160,32 @@ function FilePreviewModal({
               <span>Download</span>
             </button>
 
-            <button
-              type="button"
-              className="sf-btn sf-btn--ghost"
-              onClick={() => onRename?.()}
-            >
-              <MdDriveFileRenameOutline size={14} aria-hidden="true" />
-              <span>Rename</span>
-            </button>
+            {/* Fix (this update): Rename/Delete used to render unconditionally
+                here regardless of the owning folder's lock state - a locked
+                file's Rename/Delete were still reachable through this panel
+                even after the row-level 3-dot menu correctly hid them. Now
+                gone from the DOM entirely (not just hidden) when locked. */}
+            {!locked && (
+              <>
+                <button
+                  type="button"
+                  className="sf-btn sf-btn--ghost"
+                  onClick={() => onRename?.()}
+                >
+                  <MdDriveFileRenameOutline size={14} aria-hidden="true" />
+                  <span>Rename</span>
+                </button>
 
-            <button
-              type="button"
-              className="sf-btn sf-btn--ghost sf-btn--danger"
-              onClick={() => onDelete?.()}
-            >
-              <MdDeleteOutline size={14} aria-hidden="true" />
-              <span>Delete</span>
-            </button>
+                <button
+                  type="button"
+                  className="sf-btn sf-btn--ghost sf-btn--danger"
+                  onClick={() => onDelete?.()}
+                >
+                  <MdDeleteOutline size={14} aria-hidden="true" />
+                  <span>Delete</span>
+                </button>
+              </>
+            )}
 
             <button
               type="button"
