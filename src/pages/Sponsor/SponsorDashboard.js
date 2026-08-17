@@ -148,135 +148,137 @@ const SponsorDashboard = () => {
         data-analytics-subjects-count={analyticsSubjects.length}
         data-portfolio-studies-count={portfolioStudiesForAnalytics.length}
       >
-        <div className="dashboard-header">
-          <h1>Sponsor Dashboard</h1>
+        <div className="dashboard-header-row">
+          <div className="dashboard-header">
+            <h1>Sponsor Dashboard</h1>
+          </div>
 
-          {subscriptionSuccess && (
-            <div className="subscription-success-banner">
-              <MdCheckCircle size={20} />
-              <span>Subscription updated successfully.</span>
-            </div>
-          )}
+          <div className="kpi-grid dashboard-header-kpis">
+            <KpiCard
+              title="Portfolio Studies"
+              value={kpis.portfolio}
+              subtitle="Total in portfolio"
+              icon={<MdWorkspaces size={28} />}
+              iconBg="#eff6ff"
+              iconColor="#2563eb"
+              onClick={() => navigate('/portfolio')}
+            />
 
-          <div className="subscription-overview-card">
-            <div className="subscription-overview-header">
-              <h3>Subscription Overview</h3>
+            <KpiCard
+              title="Active Studies"
+              value={kpis.studies}
+              subtitle="Currently running"
+              icon={<MdMonitorHeart size={28} />}
+              iconBg="#ecfdf5"
+              iconColor="#16a34a"
+              onClick={() => navigate('/studies')}
+            />
 
-              <button
-                className="subscription-edit-btn"
-                onClick={() => setShowSubscriptionModal(true)}
-              >
-                Edit Subscription
-              </button>
-            </div>
+            <KpiCard
+              title="Active CROs"
+              value={kpis.cros}
+              subtitle="Partner organizations"
+              icon={<MdBusiness size={28} />}
+              iconBg="#fef3c7"
+              iconColor="#d97706"
+              onClick={() => navigate('/cro-oversight')}
+            />
 
-            <div className="subscription-overview-grid">
-              <div className="subscription-overview-item">
-                <p>Current Plan</p>
-                <h4>{subscription?.plan || '-'}</h4>
-              </div>
+            <KpiCard
+              title="Recruitment"
+              value={`${kpis.recruitment}%`}
+              subtitle={`${kpis.recruitmentCount.toLocaleString()} enrolled`}
+              icon={<MdGroups size={28} />}
+              iconBg="#ede9fe"
+              iconColor="#7c3aed"
+              onClick={() => navigate('/recruitment')}
+            />
 
-              <div className="subscription-overview-item">
-                <p>Status</p>
-                <h4>{subscription?.status || '-'}</h4>
-              </div>
+            <KpiCard
+              title="Open Risks"
+              value={kpis.risks}
+              subtitle="Requiring attention"
+              icon={<MdWarning size={28} />}
+              iconBg="#fee2e2"
+              iconColor="#dc2626"
+              onClick={() => navigate('/risk-management')}
+            />
 
-              <div className="subscription-overview-item">
-                <p>Expiry Date</p>
-                <h4>{subscription?.endDate || '-'}</h4>
-              </div>
+            <KpiCard
+              title="Reports Ready"
+              value={kpis.reports}
+              subtitle="Available for download"
+              icon={<MdAssessment size={28} />}
+              iconBg="#fce7f3"
+              iconColor="#db2777"
+              onClick={() => navigate('/reports')}
+            />
 
-              <div className="subscription-overview-item">
-                <p>Maximum Users</p>
-                <h4>{subscription?.maxUsers ?? '-'}</h4>
-              </div>
-
-              <div className="subscription-overview-item">
-                <p>Maximum Studies</p>
-                <h4>{subscription?.maxStudies ?? '-'}</h4>
-              </div>
-
-              <div className="subscription-overview-item">
-                <p>Storage</p>
-                <h4>
-                  {subscription?.storageLimit ?? '-'}
-                  {subscription?.storageLimit !== undefined ? ' GB' : ''}
-                </h4>
-              </div>
-            </div>
+            <KpiCard
+              title="Notifications"
+              value={kpis.notifications}
+              subtitle={`${kpis.totalNotifications} total alerts`}
+              icon={<MdNotifications size={28} />}
+              iconBg="#e0f2fe"
+              iconColor="#0284c7"
+              onClick={() => navigate('/notifications')}
+            />
           </div>
         </div>
 
-        <div className="kpi-grid">
-          <KpiCard
-            title="Portfolio Studies"
-            value={kpis.portfolio}
-            subtitle="Total in portfolio"
-            icon={<MdWorkspaces size={28} />}
-            iconBg="#eff6ff"
-            iconColor="#2563eb"
-            onClick={() => navigate('/portfolio')}
-          />
+        {subscriptionSuccess && (
+          <div className="subscription-success-banner">
+            <MdCheckCircle size={20} />
+            <span>Subscription updated successfully.</span>
+          </div>
+        )}
 
-          <KpiCard
-            title="Active Studies"
-            value={kpis.studies}
-            subtitle="Currently running"
-            icon={<MdMonitorHeart size={28} />}
-            iconBg="#ecfdf5"
-            iconColor="#16a34a"
-            onClick={() => navigate('/studies')}
-          />
+        <div className="subscription-overview-card">
+          <div className="subscription-overview-header">
+            <h3>Subscription Overview</h3>
 
-          <KpiCard
-            title="Active CROs"
-            value={kpis.cros}
-            subtitle="Partner organizations"
-            icon={<MdBusiness size={28} />}
-            iconBg="#fef3c7"
-            iconColor="#d97706"
-            onClick={() => navigate('/cro-oversight')}
-          />
+            <button
+              className="subscription-edit-btn"
+              onClick={() => setShowSubscriptionModal(true)}
+            >
+              Edit Subscription
+            </button>
+          </div>
 
-          <KpiCard
-            title="Recruitment"
-            value={`${kpis.recruitment}%`}
-            subtitle={`${kpis.recruitmentCount.toLocaleString()} enrolled`}
-            icon={<MdGroups size={28} />}
-            iconBg="#ede9fe"
-            iconColor="#7c3aed"
-            onClick={() => navigate('/recruitment')}
-          />
+          <div className="subscription-overview-grid">
+            <div className="subscription-overview-item">
+              <p>Current Plan</p>
+              <h4>{subscription?.plan || '-'}</h4>
+            </div>
 
-          <KpiCard
-            title="Open Risks"
-            value={kpis.risks}
-            subtitle="Requiring attention"
-            icon={<MdWarning size={28} />}
-            iconBg="#fee2e2"
-            iconColor="#dc2626"
-            onClick={() => navigate('/risk-management')}
-          />
+            <div className="subscription-overview-item">
+              <p>Status</p>
+              <h4>{subscription?.status || '-'}</h4>
+            </div>
 
-          <KpiCard
-            title="Reports Ready"
-            value={kpis.reports}
-            subtitle="Available for download"
-            icon={<MdAssessment size={28} />}
-            iconBg="#fce7f3"
-            iconColor="#db2777"
-            onClick={() => navigate('/reports')}
-          />
+            <div className="subscription-overview-item">
+              <p>Expiry Date</p>
+              <h4>{subscription?.endDate || '-'}</h4>
+            </div>
 
-          <KpiCard
-            title="Notifications"
-            value={kpis.notifications}
-            subtitle={`${kpis.totalNotifications} total alerts`}
-            icon={<MdNotifications size={28} />}
-            iconBg="#e0f2fe"
-            iconColor="#0284c7"
-            onClick={() => navigate('/notifications')}
-          />
+            <div className="subscription-overview-item">
+              <p>Maximum Users</p>
+              <h4>{subscription?.maxUsers ?? '-'}</h4>
+            </div>
+
+            <div className="subscription-overview-item">
+              <p>Maximum Studies</p>
+              <h4>{subscription?.maxStudies ?? '-'}</h4>
+            </div>
+
+            <div className="subscription-overview-item">
+              <p>Storage</p>
+              <h4>
+                {subscription?.storageLimit ?? '-'}
+                {subscription?.storageLimit !== undefined ? ' GB' : ''}
+              </h4>
+            </div>
+          </div>
         </div>
 
         <div className="chart-grid">

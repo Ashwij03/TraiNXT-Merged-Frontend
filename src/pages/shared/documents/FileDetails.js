@@ -7,7 +7,7 @@ export default function FileDetails() {
 
   return (
     <DashboardLayout>
-    <div className="file-details-page">
+    <div className="file-details-page tnxt-compact">
 
       {/* TOP CARD */}
       <div className="file-card">
@@ -42,7 +42,7 @@ export default function FileDetails() {
         </div>
 
         {/* TABLE */}
-        <table className="report-table">
+        <table className="report-table ctms-standard-table">
           <thead>
             <tr>
               <th>Result</th>

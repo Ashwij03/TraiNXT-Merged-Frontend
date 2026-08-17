@@ -14,7 +14,12 @@ function Register() {
   const [emailError, setEmailError] = useState("");
 
   const [password, setPassword] = useState("");
-  const [orgType, setOrgType] = useState("");
+
+  // UPDATED: Organization Type dropdown replaced with a free-text
+  // Organization Name field (application can have unlimited orgs).
+  const [organizationName, setOrganizationName] = useState("");
+  const [organizationNameError, setOrganizationNameError] = useState("");
+
   const [role, setRole] = useState("");
 
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -26,6 +31,40 @@ function Register() {
 
   const [acceptedPolicy, setAcceptedPolicy] = useState(false);
   const [showPolicy, setShowPolicy] = useState(false);
+
+  // newly added: field-level required-validation state for every
+  // mandatory field (First Name, Last Name, Username, Role, Policy)
+  const [firstNameError, setFirstNameError] = useState("");
+  const [lastNameError, setLastNameError] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [roleError, setRoleError] = useState("");
+  const [policyError, setPolicyError] = useState("");
+
+  // ROLE OPTIONS //newly added
+  // UPDATED: Organization-based role list replaced with the fixed,
+  // application-wide role list. NOTE: the stored "value" for Principal
+  // Investigator is intentionally kept as "PI" (not "Principal
+  // Investigator") because every other part of the app - Login routing,
+  // roleService, adminService, RBAC/site-matching, dashboards, etc. -
+  // checks user.role === "PI". Only the visible dropdown label is
+  // updated to "Principal Investigator" so existing login/permission
+  // logic is never broken.
+  // Task 7 — Registration Changes: "Admin" removed from the selectable
+  // role list. Admin is never created through self-registration; a
+  // default Admin account is seeded automatically by adminService
+  // (see src/config/defaultAdmin.js), and additional Admins can only be
+  // created by an existing Admin from User Management.
+  const ROLE_OPTIONS = [
+    { value: "SiteStaff", label: "SiteStaff" },
+    { value: "PI", label: "Principal Investigator" },
+    { value: "CRO", label: "CRO" },
+    { value: "Sponsor", label: "Sponsor" }
+  ]; // newly added till here
+
+  // Kept (always false now that "Admin" isn't selectable) so the
+  // Organization Name requirement/validation logic below - which was
+  // already written to key off this flag - doesn't need to change.
+  const isAdminRole = role === "Admin";
 
   const generateUsername = (fname, lname) => {
 
@@ -42,6 +81,46 @@ function Register() {
   const capitalize = (value) =>
     value.charAt(0).toUpperCase() +
     value.slice(1);
+
+  const validateFirstName = (rawValue) => {
+
+    const val = capitalize(rawValue);
+
+    setFirstName(val);
+
+    generateUsername(val, lastName);
+
+    if (!val.trim()) {
+
+      setFirstNameError("First name is required");
+
+    } else {
+
+      setFirstNameError("");
+    }
+
+    setUsernameError("");
+  };
+
+  const validateLastName = (rawValue) => {
+
+    const val = capitalize(rawValue);
+
+    setLastName(val);
+
+    generateUsername(firstName, val);
+
+    if (!val.trim()) {
+
+      setLastNameError("Last name is required");
+
+    } else {
+
+      setLastNameError("");
+    }
+
+    setUsernameError("");
+  };
 
   const validateEmail = (value) => {
 
@@ -73,7 +152,11 @@ function Register() {
     const regex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
 
-    if (!regex.test(pwd)) {
+    if (!pwd.trim()) {
+
+      setPasswordError("Password is required");
+
+    } else if (!regex.test(pwd)) {
 
       setPasswordError(
         "Min 8 chars, upper, lower, number & special char"
@@ -93,7 +176,7 @@ function Register() {
         "Passwords do not match"
       );
 
-    } else {
+    } else if (confirmPassword) {
 
       setConfirmError("");
     }
@@ -103,11 +186,70 @@ function Register() {
 
     setConfirmPassword(value);
 
-    setConfirmError(
-      value !== password
-        ? "Passwords do not match"
-        : ""
-    );
+    if (!value.trim()) {
+
+      setConfirmError("Please confirm your password");
+
+    } else {
+
+      setConfirmError(
+        value !== password
+          ? "Passwords do not match"
+          : ""
+      );
+    }
+  };
+
+  // UPDATED: Organization Name validation - required unless the
+  // selected role is Admin. Reruns automatically whenever Role changes
+  // so the field becomes/stops being mandatory without a page refresh.
+  const validateOrganizationName = (value, currentRole) => {
+
+    setOrganizationName(value);
+
+    if (currentRole === "Admin") {
+
+      setOrganizationNameError("");
+      return;
+    }
+
+    if (!value.trim()) {
+
+      setOrganizationNameError("Organization name is required");
+
+    } else {
+
+      setOrganizationNameError("");
+    }
+  };
+
+  // UPDATED: Role change now dynamically toggles whether Organization
+  // Name is required, with no page refresh.
+  const handleRoleChange = (value) => {
+
+    setRole(value);
+
+    if (!value) {
+
+      setRoleError("Role is required");
+
+    } else {
+
+      setRoleError("");
+    }
+
+    if (value === "Admin") {
+
+      setOrganizationNameError("");
+
+    } else if (!organizationName.trim()) {
+
+      setOrganizationNameError("Organization name is required");
+
+    } else {
+
+      setOrganizationNameError("");
+    }
   };
 
   const handleSignup = (e) => {
@@ -116,13 +258,87 @@ function Register() {
 
     e.preventDefault();
 
+    // newly added: run full mandatory-field validation on submit
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+    const trimmedUsername = username.trim();
+    const trimmedOrganizationName = organizationName.trim();
+
+    const nextFirstNameError = trimmedFirstName
+      ? ""
+      : "First name is required";
+
+    const nextLastNameError = trimmedLastName
+      ? ""
+      : "Last name is required";
+
+    const nextUsernameError = trimmedUsername
+      ? ""
+      : "Username is required. Please enter your first and last name.";
+
+    const nextEmailError = !email.trim()
+      ? "Email is required"
+      : emailError;
+
+    const nextPasswordError = !password.trim()
+      ? "Password is required"
+      : passwordError;
+
+    const nextConfirmError = !confirmPassword.trim()
+      ? "Please confirm your password"
+      : confirmError;
+
+    const nextRoleError = role
+      ? ""
+      : "Role is required";
+
+    const nextOrganizationNameError =
+      role === "Admin"
+        ? ""
+        : (trimmedOrganizationName
+          ? ""
+          : "Organization name is required");
+
+    const nextPolicyError = acceptedPolicy
+      ? ""
+      : "Please accept the Privacy Policy to continue";
+
+    setFirstNameError(nextFirstNameError);
+    setLastNameError(nextLastNameError);
+    setUsernameError(nextUsernameError);
+    setEmailError(nextEmailError);
+    setPasswordError(nextPasswordError);
+    setConfirmError(nextConfirmError);
+    setRoleError(nextRoleError);
+    setOrganizationNameError(nextOrganizationNameError);
+    setPolicyError(nextPolicyError);
+
     if (
-      emailError ||
-      passwordError ||
-      confirmError
+      nextFirstNameError ||
+      nextLastNameError ||
+      nextUsernameError ||
+      nextEmailError ||
+      nextPasswordError ||
+      nextConfirmError ||
+      nextRoleError ||
+      nextOrganizationNameError ||
+      nextPolicyError
     ) {
 
       alert("Please fix errors");
+
+      return;
+    }
+
+    // Task 7 — Registration Changes: defensive guard. Admin is not in
+    // ROLE_OPTIONS so this can't be reached through the UI, but this
+    // stops self-registration as Admin outright even if "role" were
+    // ever set some other way.
+    if (role === "Admin") {
+
+      setRoleError(
+        "Admin accounts cannot be created through registration."
+      );
 
       return;
     }
@@ -156,6 +372,14 @@ function Register() {
       return;
     }
 
+    // UPDATED: Organization Name is saved exactly as entered (trimmed
+    // of leading/trailing whitespace only). Admin accounts are allowed
+    // to register with no organization at all.
+    const savedOrganizationName =
+      role === "Admin"
+        ? ""
+        : trimmedOrganizationName;
+
  // newly added Create new user object
 
     users.push({
@@ -167,12 +391,21 @@ function Register() {
 
       name: firstName + " " + lastName,
 
-      orgType,
+      username: trimmedUsername,
+
+      // UPDATED: organizationName now holds the exact free-text value
+      // the user typed in. orgType/assignedSite are kept in sync with
+      // the same value so existing site-based RBAC/filtering logic
+      // (roleService, adminService, auditService, comments, etc.)
+      // that already reads user.orgType / user.assignedSite keeps
+      // working unchanged.
+      organizationName: savedOrganizationName,
+      orgType: savedOrganizationName,
 
       role,
 
       // UPDATED: persist assigned site for site-scoped RBAC
-      assignedSite: orgType,
+      assignedSite: savedOrganizationName,
 
       approvalStatus:
         role === "Admin"
@@ -210,155 +443,110 @@ function Register() {
     });
   };
 
-  // ROLE OPTIONS //newly added
-  const roleOptions = {
-    "Apollo Hospitals": [
-      "Admin",
-      "PI",
-      "SiteStaff"
-    ],
-  
-    "Fortis Healthcare": [
-      "Admin",
-      "PI",
-      "SiteStaff"
-    ],
-  
-    "Manipal Hospitals": [
-      "Admin",
-      "PI",
-      "SiteStaff"
-    ],
-  
-    "Max Healthcare": [
-      "Admin",
-      "PI",
-      "SiteStaff"
-    ],
-  
-    "Aster Hospitals": [
-      "Admin",
-      "PI",
-      "SiteStaff"
-    ],
-  
-    IQVIA: [
-      "CRO"
-    ],
-  
-    "ICON plc": [
-      "CRO"
-    ],
-  
-    Parexel: [
-      "CRO"
-    ],
-  
-    "Syneos Health": [
-      "CRO"
-    ],
-  
-    Medpace: [
-      "CRO"
-    ],
-
-    "Pfizer Inc.": [
-      "Sponsor"
-    ],
-
-    "Novartis AG": [
-      "Sponsor"
-    ],
-
-    "Roche": [
-      "Sponsor"
-    ],
-
-    "AstraZeneca": [
-      "Sponsor"
-    ],
-
-    "Merck & Co.": [
-      "Sponsor"
-    ]
-  }; // newly added till here
   return (
 
-    <AuthLayout title="Create Account">
+    <AuthLayout title="Create Account" wide>
 
-      <form onSubmit={handleSignup}>
+      <form onSubmit={handleSignup} className="auth-form-compact">
+
+        <div className="form-row">
 
         {/* FIRST NAME */}
         <div className="input-group">
 
-          <label>First Name</label>
+          <label>
+            First Name
+            <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
+          </label>
 
           <input
             value={firstName}
-            onChange={(e) => {
-
-              const val =
-                capitalize(
-                  e.target.value
-                );
-
-              setFirstName(val);
-
-              generateUsername(
-                val,
-                lastName
-              );
-            }}
+            placeholder="Enter your first name"
+            onChange={(e) =>
+              validateFirstName(e.target.value)
+            }
             required
           />
+
+          {
+            firstNameError && (
+
+              <p className="error">
+                {firstNameError}
+              </p>
+            )
+          }
 
         </div>
 
         {/* LAST NAME */}
         <div className="input-group">
 
-          <label>Last Name</label>
+          <label>
+            Last Name
+            <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
+          </label>
 
           <input
             value={lastName}
-            onChange={(e) => {
-
-              const val =
-                capitalize(
-                  e.target.value
-                );
-
-              setLastName(val);
-
-              generateUsername(
-                firstName,
-                val
-              );
-            }}
+            placeholder="Enter your last name"
+            onChange={(e) =>
+              validateLastName(e.target.value)
+            }
             required
           />
 
+          {
+            lastNameError && (
+
+              <p className="error">
+                {lastNameError}
+              </p>
+            )
+          }
+
         </div>
+
+        </div>
+
+        <div className="form-row">
 
         {/* USERNAME */}
         <div className="input-group">
 
-          <label>Username</label>
+          <label>
+            Username
+            <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
+          </label>
 
           <input
             value={username}
+            placeholder="Enter your username"
             readOnly
           />
+
+          {
+            usernameError && (
+
+              <p className="error">
+                {usernameError}
+              </p>
+            )
+          }
 
         </div>
 
         {/* EMAIL */}
         <div className="input-group">
 
-          <label>Email</label>
+          <label>
+            Email
+            <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
+          </label>
 
           <input
             value={email}
+            placeholder="Enter your email"
             onChange={(e) =>
               validateEmail(
                 e.target.value
@@ -384,10 +572,17 @@ function Register() {
 
         </div>
 
+        </div>
+
+        <div className="form-row">
+
         {/* PASSWORD */}
         <div className="input-group">
 
-          <label>Password</label>
+          <label>
+            Password
+            <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
+          </label>
 
           <div className="password-box">
 
@@ -398,6 +593,7 @@ function Register() {
                   : "password"
               }
               value={password}
+              placeholder="Enter your password"
               onChange={(e) =>
                 validatePassword(
                   e.target.value
@@ -437,7 +633,10 @@ function Register() {
         {/* CONFIRM PASSWORD */}
         <div className="input-group">
 
-          <label>Confirm Password</label>
+          <label>
+            Confirm Password
+            <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
+          </label>
 
           <div className="password-box">
 
@@ -448,6 +647,7 @@ function Register() {
                   : "password"
               }
               value={confirmPassword}
+              placeholder="Confirm your password"
               onChange={(e) =>
                 validateConfirmPassword(
                   e.target.value
@@ -484,85 +684,42 @@ function Register() {
 
         </div>
 
-        {/* ORGANIZATION TYPE */}
+        </div>
+
+        <div className="form-row">
+
+        {/* ORGANIZATION NAME */}
+        {/* UPDATED: replaced the Organization Type dropdown with a
+            free-text Organization Name input. Required for every role
+            except Admin. */}
         <div className="input-group">
 
           <label>
-            Organization Type
+            Organization Name
+            {
+              !isAdminRole && (
+                <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
+              )
+            }
           </label>
 
-          <select
-            value={orgType}
-            onChange={(e) => {
-              setOrgType(e.target.value);
-              setRole("");
-            }}
-            required
-          >
-            <option value="">
-              Select Organization
-            </option>
-          
-            <option value="Apollo Hospitals">
-              Apollo Hospitals
-            </option>
-          
-            <option value="Fortis Healthcare">
-              Fortis Healthcare
-            </option>
-          
-            <option value="Manipal Hospitals">
-              Manipal Hospitals
-            </option>
-          
-            <option value="Max Healthcare">
-              Max Healthcare
-            </option>
-          
-            <option value="Aster Hospitals">
-              Aster Hospitals
-            </option>
-          
-            <option value="IQVIA">
-              IQVIA
-            </option>
-          
-            <option value="ICON plc">
-              ICON plc
-            </option>
-          
-            <option value="Parexel">
-              Parexel
-            </option>
-          
-            <option value="Syneos Health">
-              Syneos Health
-            </option>
-          
-            <option value="Medpace">
-              Medpace
-            </option>
+          <input
+            value={organizationName}
+            placeholder="Enter organization name"
+            onChange={(e) =>
+              validateOrganizationName(e.target.value, role)
+            }
+            required={!isAdminRole}
+          />
 
-            <option value="Pfizer Inc.">
-              Pfizer Inc.
-            </option>
+          {
+            organizationNameError && (
 
-            <option value="Novartis AG">
-              Novartis AG
-            </option>
-
-            <option value="Roche">
-              Roche
-            </option>
-
-            <option value="AstraZeneca">
-              AstraZeneca
-            </option>
-
-            <option value="Merck & Co.">
-              Merck & Co.
-            </option>
-          </select>
+              <p className="error">
+                {organizationNameError}
+              </p>
+            )
+          }
 
         </div>
 
@@ -571,14 +728,13 @@ function Register() {
 
           <label>
             Role
+            <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
           </label>
 
           <select
             value={role}
             onChange={(e) =>
-              setRole(
-                e.target.value
-              )
+              handleRoleChange(e.target.value)
             }
             required
           >
@@ -588,31 +744,50 @@ function Register() {
             </option>
 
             {
-              orgType &&
-              roleOptions[
-                orgType
-              ].map((r, index) => (
+              ROLE_OPTIONS.map((option) => (
 
                 <option
-                  key={index}
-                  value={r}
+                  key={option.value}
+                  value={option.value}
                 >
-                  {r}
+                  {option.label}
                 </option>
               ))
             }
 
           </select>
 
+          {
+            roleError && (
+
+              <p className="error">
+                {roleError}
+              </p>
+            )
+          }
+
+        </div>
+
+        </div>
+
+        {/* PRIVACY POLICY — full width, kept as its own row (structural
+            fix only: previously nested inside the Role field's div) */}
         <div className="policy-container">
 
           <input
             type="checkbox"
             id="policy"
             checked={acceptedPolicy}
-            onChange={() =>
-              setAcceptedPolicy(!acceptedPolicy)
-            }
+            onChange={() => {
+
+              setAcceptedPolicy(!acceptedPolicy);
+
+              setPolicyError(
+                !acceptedPolicy
+                  ? ""
+                  : "Please accept the Privacy Policy to continue"
+              );
+            }}
           />
 
           <label htmlFor="policy">
@@ -626,11 +801,19 @@ function Register() {
             >
               Privacy Policy
             </span>
+            <span style={{ color: "#d32f2f", marginLeft: 4 }}>*</span>
           </label>
             
         </div>
 
-        </div>
+        {
+          policyError && (
+
+            <p className="error">
+              {policyError}
+            </p>
+          )
+        }
 
         {/* BUTTON */}
         <button

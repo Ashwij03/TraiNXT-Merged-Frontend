@@ -14,8 +14,10 @@
 .subjects-header h2 {
   margin: 0;
   color: #0f172a;
-  font-size: 22px;
+  font-size: 24px;
+  font-weight: 700;
   line-height: 1.25;
+  letter-spacing: -0.02em;
 }
 
 .subject-details-header {
@@ -31,23 +33,43 @@
 .subject-details-title-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 16px;
+}
+
+/* Phase-7: Subject Details "Comments" button — opens the shared
+   SubjectComments modal. */
+.subject-details-comments-btn {
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.subject-details-comments-btn:hover {
+  background: #1765c1;
 }
 
 .subject-details-title-row h2 {
   margin: 0;
   color: #0f172a;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
   line-height: 1.25;
+  letter-spacing: -0.02em;
 }
 
 .subject-details-subtitle {
   width: 100%;
-  margin: 8px 0 0;
+  margin: 7px 0 0;
   color: #475569;
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.5;
   word-break: break-word;
 }
 
@@ -329,69 +351,170 @@
   transform: translateY(-1px);
 }
 
+/*
+  Standardized Subject Modal (Phase 7 — IMP-MOD-2).
+  Layout, spacing, and action-row conventions align with the shared
+  standardized modal pattern (see NextVisitPromptModal).
+*/
 .subject-modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  background: rgba(15, 23, 42, 0.45);
   display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.45);
+  justify-content: center;
+  z-index: 1200;
+  padding: 1rem;
 }
 
 .subject-modal {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 600px;
-  max-width: 100%;
-  max-height: calc(80vh - 32px);
-  padding: 25px;
+  width: min(100%, 560px);
+  max-height: calc(90vh - 2rem);
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18);
+  padding: 1.5rem;
   overflow-y: auto;
-  background: #ffffff;
-  border-radius: 12px;
 }
 
-.subject-modal h3 {
-  margin: 0 0 6px;
+.subject-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.subject-modal-header > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.subject-modal-header h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.25rem;
   color: #0f172a;
 }
 
-.subject-modal input,
-.subject-modal select {
-  padding: 12px;
-  font-size: 14px;
-  border: 1px solid #dddddd;
-  border-radius: 8px;
+.subject-modal-header p,
+.subject-modal-subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.4;
 }
 
-.subject-modal input:focus,
-.subject-modal select:focus {
-  outline: none;
-  border-color: #0d6efd;
-  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.modal-actions button {
-  padding: 10px 18px;
-  color: #ffffff;
-  cursor: pointer;
-  background: #0b3558;
+.subject-modal-close {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: #64748b;
+  font-size: 1.35rem;
+  line-height: 1;
+  background: transparent;
   border: none;
   border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
-.modal-actions button:last-child {
+.subject-modal-close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.subject-modal-form {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.subject-modal-form .form-group {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.subject-modal-form label {
+  font-size: 0.85rem;
   color: #334155;
+  font-weight: 600;
+}
+
+.subject-modal-form input,
+.subject-modal-form select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+}
+
+.subject-modal-form input:focus,
+.subject-modal-form select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.subject-modal-form input[readonly] {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.subject-status-derived-hint {
+  display: block;
+  margin-top: 0.25rem;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.subject-modal-error {
+  margin: 0;
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.subject-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.subject-modal-actions button {
+  border: none;
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.subject-modal-actions button.secondary {
   background: #e2e8f0;
+  color: #334155;
+}
+
+.subject-modal-actions button[type="submit"] {
+  background: #2563eb;
+  color: #fff;
+}
+
+@media (max-width: 640px) {
+  .subject-modal {
+    padding: 1rem;
+  }
+
+  .subject-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .subject-modal-actions button {
+    width: 100%;
+  }
 }
 
 .form-group {

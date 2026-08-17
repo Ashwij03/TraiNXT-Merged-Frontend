@@ -672,10 +672,6 @@
     height: auto !important;
   }
 
-  body {
-    zoom: 80%;
-  }
-
   button {
     display: none !important;
   }

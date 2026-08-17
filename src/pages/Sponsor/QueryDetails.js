@@ -47,7 +47,7 @@ ${query.status}`;
 };
   return (
     <AppLayout>
-      <div style={{ padding: "24px" }}>
+      <div style={{ padding: "24px" }} className="query-details-page tnxt-compact">
         <h1>Query Details</h1>
         <div className="kpi-grid">
 
@@ -105,7 +105,7 @@ ${query.status}`;
 
   <h2>Resolution Tracking</h2>
 
-  <table className="metrics-table">
+  <table className="metrics-table ctms-standard-table">
 
     <thead>
       <tr>

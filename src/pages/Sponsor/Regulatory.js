@@ -42,7 +42,7 @@ const Regulatory = () => {
 
   return (
     <AppLayout>
-      <div className="regulatory-page">
+      <div className="regulatory-page tnxt-compact">
         <div className="sponsor-page-header">
           <h1>Regulatory</h1>
           <p>Track regulatory submissions, approvals, and compliance documents.</p>
@@ -101,7 +101,7 @@ const Regulatory = () => {
         </div>
 
         <div className="sponsor-table-wrap">
-          <table className="sponsor-table regulatory-table">
+          <table className="sponsor-table regulatory-table ctms-standard-table">
             <thead>
               <tr>
                 <th>ID</th>

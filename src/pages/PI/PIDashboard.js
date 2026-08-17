@@ -596,14 +596,15 @@ function PIDashboard({ embeddedInLayout = false }) {
 
     return (
       <div className="pi-page-content">
-        <div className="dashboard-header">
-          <div>
-            <h2>Principal Investigator Dashboard</h2>
-            <p className="pi-subtitle">Site overview and study progress</p>
+        <div className="dashboard-header-row">
+          <div className="dashboard-header">
+            <div>
+              <h2>Principal Investigator Dashboard</h2>
+              <p className="pi-subtitle">Site overview and study progress</p>
+            </div>
           </div>
-        </div>
 
-        <div className="pi-kpi-grid">
+          <div className="pi-kpi-grid dashboard-header-kpis">
           <div
             className="pi-card pi-kpi-clickable"
             onClick={() => navigateToPage("recruitment")}
@@ -735,15 +736,6 @@ function PIDashboard({ embeddedInLayout = false }) {
             </div>
           </div>
         </div>
-
-        <div className="pi-calendar-visits-section">
-          <VisitCalendarSection
-            studyCode={
-              selectedStudy && selectedStudy !== "All Studies"
-                ? selectedStudy
-                : ""
-            }
-          />
         </div>
 
         <div className="pi-chart-sections">
@@ -873,6 +865,16 @@ function PIDashboard({ embeddedInLayout = false }) {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="pi-calendar-visits-section">
+          <VisitCalendarSection
+            studyCode={
+              selectedStudy && selectedStudy !== "All Studies"
+                ? selectedStudy
+                : ""
+            }
+          />
         </div>
 
         <div className="alerts-actions-grid">

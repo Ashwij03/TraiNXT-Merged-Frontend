@@ -6,7 +6,7 @@ function PIEISFDashboard() {
   const [eisfTab, setEisfTab] = useState("delegation");
 
   return (
-    <div className="pi-page-content">
+    <div className="pi-page-content tnxt-compact">
 
       <h1>eISF Dashboard</h1>
 
@@ -87,7 +87,7 @@ function PIEISFDashboard() {
         <div className="table-container">
           <h2>CV Documents</h2>
 
-          <table>
+          <table className="ctms-standard-table">
             <thead>
               <tr>
                 <th>Name</th>
@@ -117,7 +117,7 @@ function PIEISFDashboard() {
         <div className="table-container">
           <h2>Licenses</h2>
 
-          <table>
+          <table className="ctms-standard-table">
             <thead>
               <tr>
                 <th>License</th>
@@ -147,7 +147,7 @@ function PIEISFDashboard() {
       <div className="table-container">
         <h2>Essential Documents</h2>
 
-        <table>
+        <table className="ctms-standard-table">
           <thead>
             <tr>
               <th>Document</th>

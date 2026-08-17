@@ -1,5 +1,19 @@
 // ===== START F1 CHANGES =====
 
+import ROLES from "../../../constants/roles";
+import { getEffectiveRole } from "../../../services/roleService";
+
+// ===== START TASK 3 (Financials access): Admin + PI only =====
+// Financials is restricted to Admin and PI. getEffectiveRole() already
+// resolves the Admin/PI "preview as role" state, so an Admin previewing
+// as SiteStaff / CRO / Sponsor is correctly treated as that role here.
+export const FINANCIALS_ALLOWED_ROLES = [ROLES.ADMIN, ROLES.PI];
+
+export function canViewFinancials(currentUser) {
+  return FINANCIALS_ALLOWED_ROLES.includes(getEffectiveRole(currentUser));
+}
+// ===== END TASK 3 (Financials access) =====
+
 export const STUDY_WORKSPACE_TABS = [
   {
     id: "overview",
@@ -8,6 +22,14 @@ export const STUDY_WORKSPACE_TABS = [
   {
     id: "subjects",
     label: "Subjects",
+  },
+  {
+    id: "eisf",
+    label: "eISF",
+  },
+  {
+    id: "logs",
+    label: "Logs",
   },
   {
     id: "planning",
@@ -23,10 +45,6 @@ export const STUDY_WORKSPACE_TABS = [
     label: "Clinical Sites",
   },
 // ===== END G1 CHANGES =====
-  {
-    id: "eisf",
-    label: "eISF",
-  },
   // ===== START ITEM 16: Regulatory tab removed from Studies module =====
   // {
   //   id: "regulatory",
@@ -40,10 +58,6 @@ export const STUDY_WORKSPACE_TABS = [
   {
     id: "study-files",
     label: "Study Files",
-  },
-  {
-    id: "logs",
-    label: "Logs",
   },
   {
     id: "financials",

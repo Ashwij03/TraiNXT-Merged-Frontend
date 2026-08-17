@@ -63,7 +63,7 @@ import SiteDocuments from "./pages/Sponsor/SiteDocuments";
 import SponsorCRODetails from "./pages/Sponsor/CRODetails";
 import SponsorCROReport from "./pages/Sponsor/CROReport";
 import SponsorCROContracts from "./pages/Sponsor/CROContracts";
-import SiteDetails from "./pages/Sponsor/SiteDetails";
+import SiteDetailsPage from "./pages/shared/sites/SiteWorkspace/SiteDetailsPage";
 import ReportDetails from "./pages/Sponsor/ReportDetails";
 import RecruitmentDetails from "./pages/Sponsor/RecruitmentDetails";
 import RegulatoryDetails from "./pages/Sponsor/RegulatoryDetails";
@@ -564,7 +564,7 @@ function App() {
         path="/site-details"
         element={
           <ProtectedRoute allowedRoles={SPONSOR_ADMIN_ROLES}>
-            <SiteDetails />
+            <SiteDetailsPage />
           </ProtectedRoute>
         }
       />

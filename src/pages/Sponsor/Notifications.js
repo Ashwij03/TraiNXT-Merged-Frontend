@@ -53,7 +53,7 @@ const Notifications = () => {
 
   return (
     <AppLayout>
-      <div className="notifications-page">
+      <div className="notifications-page tnxt-compact">
         <div className="sponsor-page-header">
           <h1>Notifications</h1>
           <p>Central notification center for all sponsor alerts and updates.</p>
@@ -79,7 +79,7 @@ const Notifications = () => {
 
         <div className="sponsor-table-wrap">
           <h2>Notification Center</h2>
-          <table className="sponsor-table notification-table">
+          <table className="sponsor-table notification-table ctms-standard-table">
             <thead>
               <tr>
                 <th>ID</th>

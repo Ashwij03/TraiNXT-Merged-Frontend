@@ -2,7 +2,7 @@ import React from "react";
 
 function PIICFDashboard() {
   return (
-    <div className="pi-page-content">
+    <div className="pi-page-content tnxt-compact">
 
       <h1>ICF Dashboard</h1>
 
@@ -34,7 +34,7 @@ function PIICFDashboard() {
 
         <h2>Consent Status</h2>
 
-        <table>
+        <table className="ctms-standard-table">
           <thead>
             <tr>
               <th>Subject ID</th>

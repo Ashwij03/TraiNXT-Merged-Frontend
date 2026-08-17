@@ -25,7 +25,7 @@ const SiteDocuments = () => {
 ];
   return (
     <AppLayout>
-      <div className="page-container">
+      <div className="page-container tnxt-compact">
 
         <h1>Site Documents</h1>
         <button onClick={() => downloadPdfReport(documents)}>
@@ -36,7 +36,7 @@ const SiteDocuments = () => {
   Print
 </button>
 
-        <table className="report-table">
+        <table className="report-table ctms-standard-table">
           <thead>
             <tr>
               <th>Document Name</th>

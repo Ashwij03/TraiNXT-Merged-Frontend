@@ -1,5 +1,5 @@
 import {
-  STUDY_SECTIONS,
+  getVisibleStudySections,
   getStudyDisplayName,
   getStudyKey,
   getStudyMeta,
@@ -27,7 +27,7 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
     getSubjectsForStudy,
   } = useRoleStudiesSidebar({ onNavigate });
   const effectiveRole = getEffectiveRole();
-  const visibleStudySections = STUDY_SECTIONS.filter(
+  const visibleStudySections = getVisibleStudySections().filter(
     (section) =>
       section.key !== "clinicalSites" ||
       effectiveRole === ROLES.SPONSOR ||

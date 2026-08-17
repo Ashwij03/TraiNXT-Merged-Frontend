@@ -22,8 +22,10 @@ const TrainingLog = ({ records = [] }) => {
         training: item.training || "",
         linkedDuties: item.linkedDuties || "",
         site: item.site || "",
-        delegateCount: item.delegates?.length || 0,
-        delegateNames: (item.delegates || [])
+        delegateCount: Array.isArray(item.delegates)
+          ? item.delegates.length
+          : 0,
+        delegateNames: (Array.isArray(item.delegates) ? item.delegates : [])
           .map((d) => `${d.name || ""} ${d.role || ""}`.trim())
           .join(" | "),
         _raw: item
@@ -44,7 +46,9 @@ const TrainingLog = ({ records = [] }) => {
         label: "Delegates",
         render: (_value, row) => {
           const item = row._raw || {};
-          const delegates = item.delegates || [];
+          const delegates = Array.isArray(item.delegates)
+            ? item.delegates
+            : [];
           if (delegates.length === 0) {
             return <span style={{ color: "#98a2b3" }}>—</span>;
           }
@@ -93,7 +97,7 @@ const TrainingLog = ({ records = [] }) => {
   );
 
   return (
-    <div className="training-container">
+    <div className="training-container tnxt-compact">
       <h2 className="delegation-title">C. Training Log</h2>
 
       {/* Same canonical DataTable pipeline that Delegation Log uses:

@@ -214,7 +214,7 @@ export default function RoleCommentsView({ embedded = false }) {
 
   return (
     <div
-      className={`pi-page-content comments-content${
+      className={`pi-page-content comments-content tnxt-compact${
         embedded ? " embedded" : ""
       }`}
     >
@@ -360,7 +360,7 @@ export default function RoleCommentsView({ embedded = false }) {
       </div>
 
       <div className="table-container">
-        <table className="pi-table comments-table">
+        <table className="pi-table comments-table ctms-standard-table">
           <thead>
             <tr>
               <th onClick={() => handleSort("id")} className="pi-sortable-th">

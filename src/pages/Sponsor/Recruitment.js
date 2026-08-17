@@ -28,7 +28,7 @@ const Recruitment = () => {
 
   return (
     <AppLayout>
-      <div className="page-container">
+      <div className="page-container tnxt-compact">
         <div className="sponsor-page-header">
           <h1>Recruitment</h1>
           <p>Monitor subject recruitment progress across all active studies.</p>
@@ -58,7 +58,7 @@ const Recruitment = () => {
 
         <div className="sponsor-table-wrap">
           <h2>Recruitment Performance</h2>
-          <table className="sponsor-table data-table">
+          <table className="sponsor-table data-table ctms-standard-table">
             <thead>
               <tr>
                 <th>Study</th>

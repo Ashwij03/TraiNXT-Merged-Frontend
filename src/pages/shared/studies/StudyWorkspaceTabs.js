@@ -1,7 +1,7 @@
 import "./StudyWorkspaceTabs.css";
 
 // ===== START F1 CHANGES =====
-import { STUDY_WORKSPACE_TABS } from "./StudyWorkspaceTabsConfig";
+import { STUDY_WORKSPACE_TABS, canViewFinancials } from "./StudyWorkspaceTabsConfig";
 // ===== END F1 CHANGES =====
 
 import { getEffectiveRole, ROLES, hasPermission, PERMISSIONS } from "../../../services/roleService";
@@ -25,6 +25,12 @@ function StudyWorkspaceTabs({ activeTab, setActiveTab }) {
       return hasPermission(PERMISSIONS.VIEW_SITE_ACTIVITIES);
     }
     // ===== END D2 PART 1 CHANGES =====
+
+    // ===== START TASK 3 (Financials access): Admin + PI only =====
+    if (tab.id === "financials") {
+      return canViewFinancials();
+    }
+    // ===== END TASK 3 (Financials access) =====
 
     return true;
   });

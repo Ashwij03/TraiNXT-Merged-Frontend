@@ -11,7 +11,7 @@ import {
 import {
   approveSignupRequest,
   getPendingSignupRequests,
-  rejectSignupRequest
+  rejectSignupRequest,
 } from "../../services/adminService";
 import { ROLE_LABELS } from "../../services/roleService";
 import "./AccessPermissions.css";
@@ -20,11 +20,18 @@ function StatusPill({ status }) {
   const normalized = String(status || "").toLowerCase();
   let className = "status-pill";
 
-  if (normalized === "active" || normalized === "accepted" || normalized === "approved") {
+  if (
+    normalized === "active" ||
+    normalized === "accepted" ||
+    normalized === "approved"
+  ) {
     className += " active";
   } else if (normalized === "pending") {
     className += " pending";
-  } else if (normalized === "revoked" || normalized === "rejected") {
+  } else if (
+    normalized === "revoked" ||
+    normalized === "rejected"
+  ) {
     className += " revoked";
   } else {
     className += " inactive";
@@ -39,8 +46,11 @@ function AccessPermissions() {
 
   useEffect(() => {
     const refresh = () => setRefreshKey((value) => value + 1);
+
     window.addEventListener(PERMISSION_REQUESTS_UPDATED, refresh);
-    return () => window.removeEventListener(PERMISSION_REQUESTS_UPDATED, refresh);
+
+    return () =>
+      window.removeEventListener(PERMISSION_REQUESTS_UPDATED, refresh);
   }, []);
 
   const pendingRequests = useMemo(() => {
@@ -108,48 +118,62 @@ function AccessPermissions() {
     { key: "role", label: "Role" },
     { key: "organization", label: "Organization" },
     { key: "status", label: "Status" },
-    { key: "actions", label: "Actions" }
+    { key: "actions", label: "Actions" },
   ];
 
   const pendingData = pendingRequests.map((request) => ({
     id: request.id,
-    user: request.userName || request.user,
+    user: request.userName || request.user || "Unknown User",
     role: request.role || "—",
-    action: request.action || request.accessType,
+    action: request.action || request.accessType || "—",
     module: request.module || "General",
-    record: request.recordName || request.recordId || request.studySubject,
+    record:
+      request.recordName ||
+      request.recordId ||
+      request.studySubject ||
+      "—",
     reason: request.reason || "—",
-    requestedOn: request.requestedOn || request.timestamp?.slice(0, 10),
+    requestedOn:
+      request.requestedOn || request.timestamp?.slice(0, 10),
     actions: (
-      <div className="access-actions-cell">
+      <>
         <button
           type="button"
           className="access-action-link"
           onClick={() => handleAccept(request.id)}
         >
-          Accept
+          Approve
         </button>
+
         <button
           type="button"
           className="access-action-link revoke"
           onClick={() => handleRevoke(request.id)}
         >
-          Revoke
+          Reject
         </button>
-      </div>
-    )
+      </>
+    ),
   }));
 
   const historyData = requestHistory.map((request) => ({
     id: request.id,
-    user: request.userName || request.user,
+    user: request.userName || request.user || "Unknown User",
     role: request.role || "—",
-    action: request.action || request.accessType,
+    action: request.action || request.accessType || "—",
     module: request.module || "General",
-    record: request.recordName || request.recordId || request.studySubject,
-    requestedOn: request.requestedOn || request.timestamp?.slice(0, 10),
-    status: <StatusPill status={request.status} />,
-    resolvedOn: request.resolvedOn?.slice?.(0, 10) || request.resolvedOn || "—",
+    record:
+      request.recordName ||
+      request.recordId ||
+      request.studySubject ||
+      "—",
+    requestedOn:
+      request.requestedOn || request.timestamp?.slice(0, 10),
+    status: <StatusPill status={request.status || "Pending"} />,
+    resolvedOn:
+      request.resolvedOn?.slice?.(0, 10) ||
+      request.resolvedOn ||
+      "—",
   }));
 
   const signupData = pendingSignupRequests.map((user) => ({
@@ -159,7 +183,7 @@ function AccessPermissions() {
     organization: user.orgType || user.assignedSite || "—",
     status: <StatusPill status={user.approvalStatus || "Pending"} />,
     actions: (
-      <div className="access-actions-cell">
+      <>
         <button
           type="button"
           className="access-action-link"
@@ -167,6 +191,7 @@ function AccessPermissions() {
         >
           Approve
         </button>
+
         <button
           type="button"
           className="access-action-link revoke"
@@ -174,13 +199,13 @@ function AccessPermissions() {
         >
           Reject
         </button>
-      </div>
-    )
+      </>
+    ),
   }));
 
   return (
     <DashboardLayout>
-      <div className="access-permissions-page">
+      <div className="access-permissions-page tnxt-compact">
         <div className="access-permissions-header">
           <h1>Access Permission</h1>
           <p>Review signup approvals and manage access permission requests</p>
@@ -193,28 +218,37 @@ function AccessPermissions() {
             onClick={() => setActiveTab("signup")}
           >
             Signup Approvals
-            <span className="access-tab-badge">{pendingSignupRequests.length}</span>
+            <span className="access-tab-badge">
+              {pendingSignupRequests.length}
+            </span>
           </button>
+
           <button
             type="button"
             className={`access-tab${activeTab === "pending" ? " active" : ""}`}
             onClick={() => setActiveTab("pending")}
           >
             Pending Requests
-            <span className="access-tab-badge">{pendingRequests.length}</span>
+            <span className="access-tab-badge">
+              {pendingRequests.length}
+            </span>
           </button>
+
           <button
             type="button"
             className={`access-tab${activeTab === "history" ? " active" : ""}`}
             onClick={() => setActiveTab("history")}
           >
             Request History
-            <span className="access-tab-badge">{requestHistory.length}</span>
+            <span className="access-tab-badge">
+              {requestHistory.length}
+            </span>
           </button>
         </div>
 
         {activeTab === "signup" ? (
           <DataTable
+            className="ctms-standard-table"
             title="Pending Signup Approvals"
             columns={signupColumns}
             data={signupData}
@@ -223,6 +257,7 @@ function AccessPermissions() {
           />
         ) : activeTab === "pending" ? (
           <DataTable
+            className="ctms-standard-table"
             title="Pending Requests"
             columns={pendingColumns}
             data={pendingData}
@@ -231,6 +266,7 @@ function AccessPermissions() {
           />
         ) : (
           <DataTable
+            className="ctms-standard-table"
             title="Request History"
             columns={historyColumns}
             data={historyData}

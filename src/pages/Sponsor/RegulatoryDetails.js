@@ -16,7 +16,7 @@ const RegulatoryDetails = () => {
   if (!docData) {
     return (
       <AppLayout>
-        <div style={{ padding: "24px" }}>
+        <div style={{ padding: "24px" }} className="regulatory-details-page tnxt-compact">
           <h2>No Document Selected</h2>
         </div>
       </AppLayout>
@@ -153,7 +153,7 @@ const RegulatoryDetails = () => {
     <div className="details-card">
       <h2>Approved Documents</h2>
 
-      <table className="sponsor-table">
+      <table className="sponsor-table ctms-standard-table">
         <thead>
           <tr>
             <th>Document</th>
@@ -177,7 +177,7 @@ const RegulatoryDetails = () => {
     <div className="details-card">
       <h2>Review Queue</h2>
 
-      <table className="sponsor-table">
+      <table className="sponsor-table ctms-standard-table">
         <thead>
           <tr>
             <th>Document</th>
@@ -201,7 +201,7 @@ const RegulatoryDetails = () => {
     <div className="details-card">
       <h2>Review Queue</h2>
 
-      <table className="sponsor-table">
+      <table className="sponsor-table ctms-standard-table">
         <thead>
           <tr>
             <th>Document</th>
@@ -225,7 +225,7 @@ const RegulatoryDetails = () => {
     <div className="details-card">
       <h2>Overdue Documents</h2>
 
-      <table className="sponsor-table">
+      <table className="sponsor-table ctms-standard-table">
         <thead>
           <tr>
             <th>Document</th>
@@ -248,7 +248,7 @@ const RegulatoryDetails = () => {
 
   <h2>Audit Trail</h2>
 
-  <table className="sponsor-table">
+  <table className="sponsor-table ctms-standard-table">
 
     <thead>
       <tr>
@@ -288,7 +288,7 @@ const RegulatoryDetails = () => {
 
   <h2>Attachments</h2>
 
-  <table className="sponsor-table">
+  <table className="sponsor-table ctms-standard-table">
 
     <thead>
       <tr>
@@ -448,7 +448,7 @@ ${selectedFile.uploadedBy}`;
 
           <h2>Compliance Summary</h2>
 
-          <table className="metrics-table">
+          <table className="metrics-table ctms-standard-table">
 
             <thead>
               <tr>

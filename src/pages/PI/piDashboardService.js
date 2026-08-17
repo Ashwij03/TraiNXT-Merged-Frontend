@@ -1121,9 +1121,3 @@ export const recalculateRecruitmentKpis = (data, dashboard) => {
     },
   };
 };
-
-
-
-
-
-

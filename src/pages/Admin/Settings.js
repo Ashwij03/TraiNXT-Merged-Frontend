@@ -311,7 +311,7 @@ function Settings() {
 
   return (
     <DashboardLayout>
-      <div className="admin-page unified-settings-page">
+      <div className="admin-page unified-settings-page tnxt-compact">
         <div className="admin-page-title">
           <h1>Settings</h1>
           <p>
@@ -634,7 +634,7 @@ function Settings() {
                 </div>
 
                 <div className="active-sessions-table-wrap">
-                  <table className="active-sessions-table">
+                  <table className="active-sessions-table ctms-standard-table">
                     <thead>
                       <tr>
                         <th>Session ID</th>

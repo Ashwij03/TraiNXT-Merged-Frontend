@@ -1,17 +1,82 @@
 import "./Auth.css";
 import TriaNXTLogo from "../components/common/TriaNXTLogo";
 
-export default function AuthLayout({ title, children }) {
+const AUTH_FEATURES = [
+  {
+    icon: "🛡️",
+    title: "Secure & Compliant",
+    text: "Role-based access with enterprise-grade security.",
+  },
+  {
+    icon: "📊",
+    title: "Real-time Insights",
+    text: "Dashboards and reporting for smarter decisions.",
+  },
+  {
+    icon: "⚡",
+    title: "Streamlined Operations",
+    text: "Manage trials and sites efficiently.",
+  },
+  {
+    icon: "🤝",
+    title: "Collaborative by Design",
+    text: "Work seamlessly across sponsors, sites and study teams.",
+  },
+];
+
+export default function AuthLayout({ title, children, wide }) {
   return (
     <div className="auth-page">
-      <div className="overlay"></div>
+      {/* LEFT PANEL — enterprise intro panel (right panel/form untouched) */}
+      <div className="auth-left-panel">
+        <div className="auth-left-content">
+          <div className="auth-left-top">
+            <div className="auth-left-logo">
+              <TriaNXTLogo size="auth" />
+              <span className="auth-left-logo-sub">
+                Clinical Trial Management System
+              </span>
+            </div>
 
-      <div className="auth-card">
-        <TriaNXTLogo size="auth" />
+            <span className="auth-left-divider"></span>
 
-        <h2 className="auth-title">{title}</h2>
+            <h1 className="auth-left-headline">
+              Empowering Clinical Research.
+              <br />
+              Ensuring Compliance.
+            </h1>
 
-        {children}
+            <p className="auth-left-description">
+              A unified platform to manage clinical trials, sites, documents
+              and compliance with confidence.
+            </p>
+
+            <ul className="auth-left-features">
+              {AUTH_FEATURES.map((feature) => (
+                <li key={feature.title}>
+                  <span className="auth-feature-icon">{feature.icon}</span>
+                  <div>
+                    <h4>{feature.title}</h4>
+                    <p>{feature.text}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT PANEL — existing form, unchanged */}
+      <div className="auth-right-panel">
+        <div className="overlay"></div>
+
+        <div className={wide ? "auth-card auth-card--wide" : "auth-card"}>
+          <TriaNXTLogo size="auth" />
+
+          <h2 className="auth-title">{title}</h2>
+
+          {children}
+        </div>
       </div>
     </div>
   );

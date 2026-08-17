@@ -36,6 +36,7 @@ import {
 import {
   ADMIN_PREVIEW_ROLE_EVENT,
   clearDependentFilters,
+  getDependentFilterKeys,
   HEADER_FILTERS_EVENT,
   SELECTED_CRO_KEY,
   SELECTED_INDICATION_KEY,
@@ -63,14 +64,28 @@ import {
   getCROOptions,
   getDefaultInstitution,
   getIndicationOptions,
+  getInstitutionForSiteNumber,
   getInstitutionOptions,
   getRecruitedCROOptions,
+  getSiteNumberForInstitution,
   getSiteNumberOptions,
   getSponsorOptions,
   getStudyOptions,
   getSubjectOptions,
 } from "../../../services/filterService";
 import useLiveChatNavigation from "../../../hooks/useLiveChatNavigation";
+
+// Task 8 (Dashboard Data Reset Bug) + Task 15 (Dashboard Must Show All
+// Sites): every per-role Dashboard route. Used to detect "the Dashboard
+// just opened" so leftover Study-page and Site-scoping filter context can
+// be cleared (see the reset effect below).
+const DASHBOARD_ROUTE_PATHS = [
+  "/admin-dashboard",
+  "/site-staff-dashboard",
+  "/pi-dashboard",
+  "/cro-dashboard",
+  "/sponsor-dashboard",
+];
 
 function EnterpriseNavbarBase({
   onToggleSidebar,
@@ -210,6 +225,73 @@ function EnterpriseNavbarBase({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routeStudyCode]);
+
+  // Task 8 (Dashboard Data Reset Bug): opening a Study Details page (the
+  // effect above) sets a persistent "selectedStudyFilter" that every
+  // per-role Dashboard reads to scope its data. Nothing was clearing that
+  // filter again on the way back out, so a Dashboard opened right after
+  // viewing "Study A" stayed silently narrowed to Study A's single site
+  // instead of showing all studies/sites. A Dashboard route must always
+  // start fresh, so clear the leftover Study (and dependent Subject)
+  // context every time one of the Dashboard routes is opened.
+  //
+  // Task 15 (Dashboard Must Show All Sites): the same leak applied to the
+  // Institution / Site Number filters — picking a Site Name/Number on the
+  // Studies page (or via the header itself) left that value stored, and
+  // every per-role Dashboard reads it to scope its "Sites"/data widgets
+  // (see getAdminDashboardData). Opening a Dashboard route must always
+  // show every site the user has access to, not whatever single site was
+  // last selected elsewhere, so clear Institution and Site Number here too.
+  //
+  // Task 18 (Dashboard Opens Filter-Free): every remaining header filter —
+  // Indication, Sponsor, and CRO — is cleared here as well. The Dashboard
+  // is meant to open showing the complete, unfiltered picture every time;
+  // any narrowing (by indication, a specific site, a specific study, etc.)
+  // should be something the user opts back into deliberately from the
+  // header, not something left over from wherever they were before.
+  useEffect(() => {
+    if (!DASHBOARD_ROUTE_PATHS.includes(location.pathname)) {
+      return;
+    }
+
+    if (getStoredStudyFilter()) {
+      setSelectedStudyCode("");
+      setStoredStudyFilter("");
+    }
+
+    if (getStoredSubjectFilter()) {
+      setSelectedSubject("");
+      setStoredSubjectFilter("");
+    }
+
+    if (getStoredInstitutionFilter()) {
+      setSelectedInstitution("");
+      setStoredInstitutionFilter("");
+    }
+
+    if (getStoredSiteNumberFilter()) {
+      setSelectedSiteNumber("");
+      setStoredSiteNumberFilter("");
+    }
+
+    if (getStoredIndicationFilter()) {
+      setSelectedIndication("");
+      setStoredIndicationFilter("");
+    }
+
+    if (getStoredSponsorFilter()) {
+      setSelectedSponsor("");
+      setStoredSponsorFilter("");
+    }
+
+    if (getStoredCROFilter()) {
+      setSelectedCRO("");
+      setStoredCROFilter("");
+    }
+
+    setFilterVersion((current) => current + 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   // Resolve the full Study record for whatever code the header currently
   // holds (from its dropdown, the route, or a refreshed page). filterVersion
@@ -435,6 +517,19 @@ function EnterpriseNavbarBase({
     );
   };
 
+  // Task: Filter Cascade Consistency — maps each cascade-clearable storage
+  // key to the React state setter that drives its dropdown, so clearing a
+  // parent filter (e.g. Indication) can also reset every dependent
+  // dropdown's *displayed* value, not just what's in storage.
+  const dependentFilterSetters = {
+    [SELECTED_SPONSOR_KEY]: setSelectedSponsor,
+    [SELECTED_CRO_KEY]: setSelectedCRO,
+    [SELECTED_INSTITUTION_KEY]: setSelectedInstitution,
+    [SELECTED_SITE_NUMBER_KEY]: setSelectedSiteNumber,
+    [SELECTED_STUDY_FILTER_KEY]: setSelectedStudyCode,
+    [SELECTED_SUBJECT_KEY]: setSelectedSubject,
+  };
+
   const updateFilter = (key, value, setter) => {
     setter(value);
 
@@ -449,25 +544,66 @@ function EnterpriseNavbarBase({
     const entry = storageMap[key];
 
     if (entry) {
-      entry[1](value);
+      // Clear every dependent filter — in storage AND in this header's own
+      // dropdown state — *before* writing/dispatching the changed filter
+      // itself. Dispatching first (the old order) meant any page listening
+      // for HEADER_FILTERS_EVENT (e.g. the Admin Dashboard) would read the
+      // still-stale downstream values, since the cascade clear happened a
+      // moment later with no event of its own to announce it.
+      const dependentKeys = getDependentFilterKeys(entry[0]);
       clearDependentFilters(entry[0]);
+      dependentKeys.forEach((dependentKey) => {
+        dependentFilterSetters[dependentKey]?.("");
+      });
+
+      entry[1](value);
       setFilterVersion((current) => current + 1);
     }
 
+    // Note: the generic cascade reset above already clears
+    // selectedSponsor/selectedCRO/selectedInstitution/selectedSiteNumber/
+    // selectedStudyCode/selectedSubject (in storage and in this header's own
+    // dropdown state) for whichever of those are downstream of the filter
+    // that just changed — including Indication resetting *everything*
+    // beneath it. The two blocks below only need to run afterward for
+    // "siteName"/"siteNumber" because they re-populate a *matched* value
+    // (not just clear it) to keep Site Name and Site Number mutually in
+    // sync.
     if (key === "siteName") {
-      setSelectedSiteNumber("");
-      setSelectedStudyCode("");
-      setSelectedSubject("");
+      // Reflect the matching Site Number for the institution just picked
+      // (or leave it cleared if Site Name was reset to "All Institutions").
+      const matchedSiteNumber = value
+        ? getSiteNumberForInstitution(value, currentUser)
+        : "";
+
+      if (matchedSiteNumber) {
+        setSelectedSiteNumber(matchedSiteNumber);
+        setStoredSiteNumberFilter(matchedSiteNumber);
+      }
     }
 
     if (key === "siteNumber") {
-      setSelectedStudyCode("");
-      setSelectedSubject("");
+      // Reflect the matching Site Name for the number just picked (or
+      // leave it cleared if Site Number was reset to "All Site Numbers"),
+      // mirroring what the "siteName" branch above does in reverse so both
+      // filters always stay in sync.
+      const matchedInstitution = value
+        ? getInstitutionForSiteNumber(value, currentUser)
+        : "";
+
+      if (matchedInstitution) {
+        setSelectedInstitution(matchedInstitution);
+        setStoredInstitutionFilter(matchedInstitution);
+      }
     }
 
-    if (key === "indication" || key === "sponsor" || key === "cro") {
-      setSelectedStudyCode("");
-      setSelectedSubject("");
+    // Task: Header Indication Link — picking an Indication from the header
+    // is now a navigation shortcut into the Studies page, which reads the
+    // same stored Indication filter (see Studies.js) and narrows its list
+    // down to studies matching it. Clearing back to "All Indications"
+    // stays wherever the user currently is instead of forcing a redirect.
+    if (key === "indication" && value) {
+      navigate("/studies");
     }
   };
 
@@ -552,7 +688,11 @@ function EnterpriseNavbarBase({
             onChange={handleStudyChange}
             options={studyOptions}
             placeholder={
-              selectedIndication || selectedInstitution
+              // Task: Study Filter Site-Only Gating — the Study dropdown's
+              // options (see getStudyOptions in filterService.js) only
+              // populate once a Site Number or Site Name is selected, so
+              // the placeholder should say so until one is.
+              selectedInstitution || selectedSiteNumber
                 ? "Select Study"
                 : "Select Study"
             }
@@ -596,7 +736,11 @@ function EnterpriseNavbarBase({
             onChange={handleSubjectChange}
             options={subjectOptions}
             placeholder={
-              selectedIndication || selectedInstitution
+              // Task: Subject Filter Site+Study Gating — the Subject
+              // dropdown's options (see getSubjectOptions in
+              // filterService.js) only populate once both a Site
+              // Number/Site Name and a specific Study are selected.
+              (selectedInstitution || selectedSiteNumber) && selectedStudyCode
                 ? "Select Subject"
                 : "Select Subject"
             }

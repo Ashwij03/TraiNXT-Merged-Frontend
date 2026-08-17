@@ -2,11 +2,14 @@ import StudyActivity from "./StudyActivity";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
-import KPICard from "../../../components/dashboard/shared/KPICard";
 import SubjectAnalyticsSection from "../../../components/dashboard/shared/SubjectAnalyticsSection";
 import VisitCalendarSection from "../../../components/dashboard/shared/VisitCalendarSection";
 import StudySubjects from "./StudySubjects";
+/* Subjects tab: mounts the completed Subject Explorer workspace (Phases 1-7).
+   The Overview section below still renders `StudySubjects`, unchanged. */
+import StudySubjectsWorkspace from "../../Sponsor/SubjectExplorer/StudySubjectsWorkspace";
 import StudyWorkspaceTabs from "./StudyWorkspaceTabs";
+import { canViewFinancials } from "./StudyWorkspaceTabsConfig";
 import StudyDocuments from "./StudyDocuments";
 import StudyComments from "./StudyComments";
 import StudyLogsTab from "./StudyLogsTab";
@@ -16,11 +19,11 @@ import StudyVisitPlan from "./StudyVisitPlan";
 import EssentialDocumentsWidget from "../../../components/studies/EssentialDocumentsWidget";
 import StudyProgressSummary from "../../../components/studies/StudyProgressSummary";
 import StudyMilestoneTimeline from "../../../components/studies/StudyMilestoneTimeline";
-import SitePerformanceSummary from "../../../components/studies/SitePerformanceSummary";
 import SiteActivationStatus from "../../../components/studies/SiteActivationStatus";
 import StudyHealthSummary from "../../../components/studies/StudyHealthSummary";
+import StudyModal from "../../../components/studies/StudyModal";
 import useStudyOverview from "../../../hooks/useStudyOverview";
-import StudyFinancials from "../../Sponsor/Financials/StudyFinancials";
+import StudyFinancials from "../Financials/StudyFinancials";
 import AlertsPanel from "../../../components/dashboard/shared/AlertsPanel";
 import useStudiesDashboard from "../../../hooks/useStudiesDashboard";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
@@ -35,15 +38,11 @@ import {
 } from "../../../constants/studyStatus";
 import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
 import RecentSubjectsWidget from "../../../components/dashboard/shared/RecentSubjectsWidget";
-import UpcomingVisitsWidget from "../../../components/dashboard/shared/UpcomingVisitsWidget";
 import PendingCommentsWidget from "../../../components/dashboard/shared/PendingCommentsWidget";
-import QuickActionsWidget from "../../../components/dashboard/shared/QuickActionsWidget";
 import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
 import EISFWorkspace from "../EISF/EISFWorkspace";
+import { EISF_SIDEBAR_COLLAPSE_EVENT } from "../../../constants/headerFilters";
 import {
-  FiUsers,
-  FiClipboard,
-  FiMessageSquare,
   FiTrash2,
   FiArrowLeft,
   FiEdit2,
@@ -51,9 +50,9 @@ import {
 } from "react-icons/fi";
 import {
   canDeleteStudy,
-  canEditStudyContent,
   requiresPermissionRequest,
 } from "../../../utils/contentAccess";
+import useCanEditStudyContent from "../../../hooks/useCanEditStudyContent";
 import { submitAccessRequest } from "../../../services/accessPermissionService";
 import {
   getCurrentUser,
@@ -76,7 +75,20 @@ function StudyDashboard() {
   // ===== START ITEM 16: Regulatory tab removed - fallback to Overview =====
   const [activeTab, setActiveTab] = useState(() => {
     const initialTab = searchParams.get("tab") || "Overview";
-    return initialTab === "Regulatory" ? "Overview" : initialTab;
+
+    if (initialTab === "Regulatory") {
+      return "Overview";
+    }
+
+    // ===== START TASK 3 (Financials access): Admin + PI only =====
+    // canViewFinancials() falls back to getCurrentUser() internally, which
+    // matters here because `currentUser` is not defined until later.
+    if (initialTab === "Financials" && !canViewFinancials()) {
+      return "Overview";
+    }
+    // ===== END TASK 3 (Financials access) =====
+
+    return initialTab;
   });
   // ===== END ITEM 16 =====
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -84,6 +96,17 @@ function StudyDashboard() {
   const [editForm, setEditForm] = useState({});
   const [studyRefreshKey, setStudyRefreshKey] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Task 14 — eISF Sidebar Auto Close: collapse whichever dashboard
+  // sidebar is currently mounted the moment the eISF tab becomes active,
+  // and only then. Every other tab is untouched, and the sidebar stays
+  // wherever the user leaves it after that (it isn't forced back open
+  // when navigating away from eISF).
+  useEffect(() => {
+    if (activeTab === "eISF") {
+      window.dispatchEvent(new Event(EISF_SIDEBAR_COLLAPSE_EVENT));
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     const tabFromUrl = searchParams.get("tab");
@@ -101,6 +124,13 @@ function StudyDashboard() {
         resolvedTab = "Overview";
       }
       // ===== END D2 PART 1 CHANGES =====
+
+      // ===== START TASK 3 (Financials access): Admin + PI only =====
+      // Blocks a direct ?tab=Financials URL for roles without access.
+      if (resolvedTab === "Financials" && !canViewFinancials()) {
+        resolvedTab = "Overview";
+      }
+      // ===== END TASK 3 (Financials access) =====
 
       setActiveTab((currentTab) =>
         currentTab === resolvedTab ? currentTab : resolvedTab,
@@ -144,9 +174,9 @@ const handleStudyUpdated = (event) => {
   const { comments: liveComments } = useComments();
   const currentUser = getCurrentUser();
 
-  const canEditStudy = canEditStudyContent(currentUser);
+  const canEditStudy = useCanEditStudyContent("Study Overview", id);
   const canRemoveStudy = canDeleteStudy(currentUser);
-  const needsPermissionRequest = requiresPermissionRequest(currentUser);
+  const needsPermissionRequest = requiresPermissionRequest(currentUser) && !canEditStudy;
   // ===== START D2 PART 1 CHANGES =====
   // Role-based Activity visibility, backed by the shared rolePermissions
   // map (VIEW_SITE_ACTIVITIES) rather than a hardcoded role check.
@@ -284,10 +314,6 @@ useEffect(() => {
     }));
   }, [studyOpenComments]);
 
-  const filteredAlerts = useMemo(() => {
-    return safeArray(data?.alerts).filter(matchesCurrentStudy);
-  }, [data?.alerts, safeArray, matchesCurrentStudy]);
-
   const filteredRecentSubjects = useMemo(() => {
     if (studySubjectsFromStorage.length > 0) {
       return studySubjectsFromStorage;
@@ -299,6 +325,112 @@ useEffect(() => {
     studySubjectsFromStorage,
     safeArray,
     matchesCurrentStudy,
+  ]);
+
+  // Study-scoped Alerts: build a fully dynamic feed from the same live
+  // data that already powers the KPIs and widgets on this Overview tab
+  // (open comments, upcoming visits, recent subjects, study progress /
+  // health). We reuse the existing AlertsPanel component — this just
+  // gives it real, per-study rows instead of the empty result the old
+  // `data.alerts.filter(matchesCurrentStudy)` produced (dashboard-level
+  // alerts have no study key, so the filter always yielded []).
+  const filteredAlerts = useMemo(() => {
+    const alerts = [];
+    const openCommentCount = studyOpenComments.length;
+    const upcomingVisitCount = filteredUpcomingVisits.length;
+    const subjectCount = filteredRecentSubjects.length;
+    const targetSubjects = Number(currentStudy?.targetSubjects) || 0;
+    const enrolled = Number(currentStudy?.enrolled) || subjectCount;
+    const enrollmentRatio =
+      targetSubjects > 0 ? enrolled / targetSubjects : null;
+    const overdueDocs = Number(overview?.documents?.overdue) || 0;
+    const missingDocs = Number(overview?.documents?.missing) || 0;
+    const healthScore =
+      typeof overview?.health?.score === "number"
+        ? overview.health.score
+        : null;
+
+    if (openCommentCount > 0) {
+      alerts.push({
+        type: openCommentCount >= 5 ? "danger" : "warning",
+        title: "Open Comments",
+        message: `${openCommentCount} comment${openCommentCount === 1 ? "" : "s"} awaiting resolution`,
+      });
+    }
+
+    if (upcomingVisitCount > 0) {
+      alerts.push({
+        type: "info",
+        title: "Upcoming Visits",
+        message: `${upcomingVisitCount} visit${upcomingVisitCount === 1 ? "" : "s"} scheduled in the next window`,
+      });
+    }
+
+    if (overdueDocs > 0) {
+      alerts.push({
+        type: "danger",
+        title: "Overdue Documents",
+        message: `${overdueDocs} essential document${overdueDocs === 1 ? "" : "s"} past due`,
+      });
+    }
+
+    if (missingDocs > 0) {
+      alerts.push({
+        type: "warning",
+        title: "Missing Documents",
+        message: `${missingDocs} essential document${missingDocs === 1 ? "" : "s"} not yet uploaded`,
+      });
+    }
+
+    if (enrollmentRatio !== null) {
+      if (enrollmentRatio >= 1) {
+        alerts.push({
+          type: "success",
+          title: "Enrollment Target Met",
+          message: `${enrolled} of ${targetSubjects} subjects enrolled`,
+        });
+      } else if (enrollmentRatio < 0.5) {
+        alerts.push({
+          type: "warning",
+          title: "Enrollment Behind Target",
+          message: `${enrolled} of ${targetSubjects} subjects enrolled (${Math.round(
+            enrollmentRatio * 100,
+          )}%)`,
+        });
+      }
+    }
+
+    if (healthScore !== null) {
+      if (healthScore < 60) {
+        alerts.push({
+          type: "danger",
+          title: "Study Health Low",
+          message: `Composite health score is ${healthScore}`,
+        });
+      } else if (healthScore >= 85) {
+        alerts.push({
+          type: "success",
+          title: "Study Health Strong",
+          message: `Composite health score is ${healthScore}`,
+        });
+      }
+    }
+
+    if (currentStudy?.status) {
+      alerts.push({
+        type: "info",
+        title: "Study Status",
+        message: `Currently in ${currentStudy.status}`,
+      });
+    }
+
+    return alerts;
+  }, [
+    studyOpenComments,
+    filteredUpcomingVisits,
+    filteredRecentSubjects,
+    currentStudy,
+    overview,
   ]);
 
   const studyKpis = useMemo(() => {
@@ -331,6 +463,8 @@ useEffect(() => {
     submitAccessRequest(
       {
         studySubject: currentStudy?.code || id,
+        studyCode: currentStudy?.code || id,
+        module: "Study Overview",
         accessType: "Edit Access",
         notes: "Study overview edit request",
       },
@@ -373,6 +507,7 @@ useEffect(() => {
       indication: currentStudy.indication || "",
       location: currentStudy.location || currentStudy.site || "",
       site: currentStudy.site || currentStudy.location || "",
+      siteNumber: currentStudy.siteNumber || "",
       country: currentStudy.country || "",
       enrolled: currentStudy.enrolled ?? "",
       targetSubjects: currentStudy.targetSubjects ?? "",
@@ -445,143 +580,163 @@ window.dispatchEvent(new Event("studies-updated"));
         <div className="dashboard-loading">Loading Dashboard...</div>
       ) : (
         <>
-          <div className="study-dashboard-page">
-            <div className="study-dashboard-topbar">
-              <button
-                type="button"
-                className="back-to-studies-btn"
-                onClick={handleBackToStudies}
-              >
-                <FiArrowLeft />
-                <span>Back to Studies</span>
-              </button>
-            </div>
-
+          <div className="study-dashboard-page tnxt-compact">
             <div className="page-header">
-              <div>
-                <h1>{currentStudy?.name || "Study Dashboard"}</h1>
+              {/* Everything sits on one row: title, KPI buttons, and Back
+                  to Studies grouped on the left; Refresh / Edit / Delete
+                  grouped on the right. The row wraps as a whole on narrow
+                  screens instead of the actions floating separately. */}
+              <div className="page-header-title-row">
+                <div className="page-header-title-group">
+                  <h1>{currentStudy?.name || "Study Dashboard"}</h1>
 
-                <p>
-                  {currentUser?.role === "Admin"
-                    ? "All Sites Overview"
-                    : "Assigned Site Overview"}
-                </p>
+                  <div className="study-header-kpi-buttons">
+                    <button
+                      type="button"
+                      className="study-header-kpi-btn"
+                      onClick={() => handleTabChange("Subjects")}
+                    >
+                      <span className="study-header-kpi-btn-label">
+                        Total Subjects
+                      </span>
+                      <span className="study-header-kpi-btn-value">
+                        {studyKpis.subjects}
+                      </span>
+                    </button>
 
-                <div className="study-quick-details">
-                  <span className="study-quick-detail">
-                    <span className="study-quick-detail-label">Study ID</span>
-                    <span className="study-quick-detail-value">
-                      {currentStudy?.code || "-"}
-                    </span>
-                  </span>
-                  <span className="study-quick-detail">
-                    <span className="study-quick-detail-label">Indication</span>
-                    <span className="study-quick-detail-value">
-                      {currentStudy?.indication || "-"}
-                    </span>
-                  </span>
-                  <span className="study-quick-detail">
-                    <span className="study-quick-detail-label">Site</span>
-                    <span className="study-quick-detail-value">
-                      {currentStudy?.site || currentStudy?.location || "-"}
-                    </span>
-                  </span>
-                  <span className="study-quick-detail">
-                    <span className="study-quick-detail-label">
-                      Principal Investigator
-                    </span>
-                    <span className="study-quick-detail-value">
-                      {currentStudy?.principalInvestigator || "-"}
-                    </span>
-                  </span>
-                  <span className="study-quick-detail">
-                    <span className="study-quick-detail-label">Sponsor</span>
-                    <span className="study-quick-detail-value">
-                      {currentStudy?.sponsor || "-"}
-                    </span>
-                  </span>
-                  <span className="study-quick-detail">
-                    <span className="study-quick-detail-label">CRO</span>
-                    <span className="study-quick-detail-value">
-                      {currentStudy?.cro || "-"}
-                    </span>
-                  </span>
+                    <button
+                      type="button"
+                      className="study-header-kpi-btn"
+                      onClick={() => handleTabChange("Comments")}
+                    >
+                      <span className="study-header-kpi-btn-label">
+                        Open Comments
+                      </span>
+                      <span className="study-header-kpi-btn-value">
+                        {studyKpis.comments}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="study-header-kpi-btn"
+                      onClick={() => handleTabChange("Visit Plan")}
+                    >
+                      <span className="study-header-kpi-btn-label">
+                        Site Visits
+                      </span>
+                      <span className="study-header-kpi-btn-value">
+                        {studyKpis.visits}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="back-to-studies-btn"
+                      onClick={handleBackToStudies}
+                    >
+                      <FiArrowLeft />
+                      <span>Back to Studies</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="page-header-actions">
+                  <button
+                    type="button"
+                    className="refresh-study-btn"
+                    onClick={handleRefreshStudy}
+                    disabled={isRefreshing}
+                    title="Refresh study overview"
+                  >
+                    <FiRefreshCw className={isRefreshing ? "spinning" : ""} />
+                    {isRefreshing ? "Refreshing..." : "Refresh"}
+                  </button>
+
+                  {canEditStudy && (
+                    <button
+                      type="button"
+                      className="btn-edit edit-study-btn"
+                      onClick={handleEditStudy}
+                      title="Edit study"
+                      aria-label="Edit study"
+                    >
+                      <FiEdit2 />
+                      Edit Study
+                    </button>
+                  )}
+
+                  {needsPermissionRequest && (
+                    <button
+                      type="button"
+                      className="request-permission-btn"
+                      onClick={handleRequestEditPermission}
+                    >
+                      Request Edit Permission
+                    </button>
+                  )}
+
+                  {canRemoveStudy && (
+                    <button
+                      type="button"
+                      className="delete-study-btn"
+                      onClick={() => setShowDeleteModal(true)}
+                      title="Delete study"
+                      aria-label="Delete study"
+                    >
+                      <FiTrash2 />
+                      Delete Study
+                    </button>
+                  )}
                 </div>
               </div>
 
-              <div className="page-header-actions">
-                <button
-                  type="button"
-                  className="refresh-study-btn"
-                  onClick={handleRefreshStudy}
-                  disabled={isRefreshing}
-                  title="Refresh study overview"
-                >
-                  <FiRefreshCw className={isRefreshing ? "spinning" : ""} />
-                  {isRefreshing ? "Refreshing..." : "Refresh"}
-                </button>
-
-                {canEditStudy && (
-                  <button
-                    type="button"
-                    className="btn-edit edit-study-btn"
-                    onClick={handleEditStudy}
-                    title="Edit study"
-                    aria-label="Edit study"
-                  >
-                    <FiEdit2 />
-                    Edit Study
-                  </button>
-                )}
-
-                {needsPermissionRequest && (
-                  <button
-                    type="button"
-                    className="request-permission-btn"
-                    onClick={handleRequestEditPermission}
-                  >
-                    Request Edit Permission
-                  </button>
-                )}
-
-                {canRemoveStudy && (
-                  <button
-                    type="button"
-                    className="delete-study-btn"
-                    onClick={() => setShowDeleteModal(true)}
-                    title="Delete study"
-                    aria-label="Delete study"
-                  >
-                    <FiTrash2 />
-                    Delete Study
-                  </button>
-                )}
+              <div className="study-quick-details">
+                <span className="study-quick-detail">
+                  <span className="study-quick-detail-label">Study ID</span>
+                  <span className="study-quick-detail-value">
+                    {currentStudy?.code || "-"}
+                  </span>
+                </span>
+                <span className="study-quick-detail">
+                  <span className="study-quick-detail-label">Indication</span>
+                  <span className="study-quick-detail-value">
+                    {currentStudy?.indication || "-"}
+                  </span>
+                </span>
+                <span className="study-quick-detail">
+                  <span className="study-quick-detail-label">Site No</span>
+                  <span className="study-quick-detail-value">
+                    {currentStudy?.siteNumber || currentStudy?.location || "-"}
+                  </span>
+                </span>
+                <span className="study-quick-detail">
+                  <span className="study-quick-detail-label">Site</span>
+                  <span className="study-quick-detail-value">
+                    {currentStudy?.site || currentStudy?.location || "-"}
+                  </span>
+                </span>
+                <span className="study-quick-detail">
+                  <span className="study-quick-detail-label">
+                    Principal Investigator
+                  </span>
+                  <span className="study-quick-detail-value">
+                    {currentStudy?.principalInvestigator || "-"}
+                  </span>
+                </span>
+                <span className="study-quick-detail">
+                  <span className="study-quick-detail-label">Sponsor</span>
+                  <span className="study-quick-detail-value">
+                    {currentStudy?.sponsor || "-"}
+                  </span>
+                </span>
+                <span className="study-quick-detail">
+                  <span className="study-quick-detail-label">CRO</span>
+                  <span className="study-quick-detail-value">
+                    {currentStudy?.cro || "-"}
+                  </span>
+                </span>
               </div>
-            </div>
-
-            {/* KPI cards intentionally stay visible for every study tab,
-                including Subjects and SubjectProfile. */}
-            <div className="studies-kpi-grid">
-              <KPICard
-                title="Total Subjects"
-                value={studyKpis.subjects}
-                subtitle="In This Study"
-                icon={<FiUsers />}
-              />
-
-              <KPICard
-                title="Open Comments"
-                value={studyKpis.comments}
-                subtitle="For This Study"
-                icon={<FiMessageSquare />}
-              />
-
-              <KPICard
-                title="Site Visits"
-                value={studyKpis.visits}
-                subtitle="For This Study"
-                icon={<FiClipboard />}
-              />
             </div>
 
             <StudyWorkspaceTabs
@@ -602,11 +757,37 @@ window.dispatchEvent(new Event("studies-updated"));
                   <StudyHealthSummary health={overview.health} />
 
                   <SiteActivationStatus counts={overview.siteActivation} />
+                </div>
 
-                  {/* Item 14 — GCP Certification Status removed;
-                      the existing Site Performance Summary widget is
-                      reused in its place (single instance, live data). */}
-                  <SitePerformanceSummary records={overview.sitePerformance} />
+                <VisitCalendarSection studyCode={id} />
+
+                <SubjectAnalyticsSection
+                  subjects={filteredRecentSubjects}
+                  studies={currentStudy ? [currentStudy] : []}
+                  studyCode={id}
+                  plannedSubjects={Number(currentStudy?.targetSubjects) || 0}
+                  currentSubjects={studyKpis.subjects}
+                />
+
+                {/* Recent Subjects + Pending Comments now share the same
+                    widget-grid so Pending Comments sits beside Recent
+                    Subjects (replacing the removed Upcoming Visits slot).
+                    widget-grid is already auto-fit responsive, so the
+                    pair collapses to a single column on narrow viewports. */}
+                <div className="widget-grid">
+                  <RecentSubjectsWidget
+                    subjects={filteredRecentSubjects}
+                    studyId={id}
+                  />
+
+                  <PendingCommentsWidget
+                    comments={filteredPendingComments}
+                    total={studyOpenComments.length}
+                  />
+                </div>
+
+                <div className="study-dashboard-alerts">
+                  <AlertsPanel alerts={filteredAlerts} />
                 </div>
 
                 <StudyMilestoneTimeline
@@ -615,44 +796,6 @@ window.dispatchEvent(new Event("studies-updated"));
                   canEdit={canEditStudy}
                   onUpdated={() => setStudyRefreshKey((value) => value + 1)}
                 />
-
-                <VisitCalendarSection studyCode={id} />
-
-                <SubjectAnalyticsSection
-                  subjects={filteredRecentSubjects}
-                  studies={currentStudy ? [currentStudy] : []}
-                  studyCode={id}
-                />
-
-                <div className="widget-grid">
-                  <RecentSubjectsWidget subjects={filteredRecentSubjects} />
-
-                  <UpcomingVisitsWidget
-                    visits={filteredUpcomingVisits}
-                    emptyMessage="No upcoming visits scheduled"
-                  />
-                </div>
-
-                <div className="widget-grid">
-                  <PendingCommentsWidget
-                    comments={filteredPendingComments}
-                    total={studyOpenComments.length}
-                  />
-                  <QuickActionsWidget
-                    study={currentStudy}
-                    studyCode={id}
-                    onAddSubject={() => {
-                      setActiveTab("Subjects");
-                      navigate(
-                        `/study-dashboard/${encodeURIComponent(id)}?tab=Subjects`
-                      );
-                    }}
-                  />
-                </div>
-
-                <div className="study-dashboard-alerts">
-                  <AlertsPanel alerts={filteredAlerts} />
-                </div>
 
                 <div className="study-dashboard-subjects-section">
                   <StudySubjects
@@ -664,9 +807,11 @@ window.dispatchEvent(new Event("studies-updated"));
               </>
             )}
 
-            {activeTab === "Subjects" && (
-              <StudySubjects setActiveTab={setActiveTab} />
-            )}
+            {/* Subjects tab -> the completed Subject Explorer workspace.
+                Integration point only: routing, study context and the subject
+                business logic in `StudySubjects` are all left as they were,
+                and that component still backs the Overview section above. */}
+            {activeTab === "Subjects" && <StudySubjectsWorkspace studyId={id} />}
 
             {/* {activeTab === "SubjectProfile" && (
               <SubjectProfile setActiveTab={setActiveTab} />
@@ -692,7 +837,7 @@ window.dispatchEvent(new Event("studies-updated"));
               <ClinicalSitesDashboard study={currentStudy} />
             )}
 
-            {activeTab === "Financials" && (
+            {activeTab === "Financials" && canViewFinancials(currentUser) && (
               <div className="study-financials-tab">
                 <StudyFinancials
                   studyCode={id}
@@ -717,193 +862,177 @@ window.dispatchEvent(new Event("studies-updated"));
           </div>
 
           {showEditModal && (
-            <div className="study-modal-overlay">
-              <form className="study-modal" onSubmit={handleSaveStudyEdit}>
-                <div className="study-modal-header">
-                  <div>
-                    <h2>Edit Study</h2>
-                    <p>Update all study details and save changes.</p>
-                  </div>
+            <StudyModal
+              mode="edit"
+              onClose={() => setShowEditModal(false)}
+              onSubmit={handleSaveStudyEdit}
+            >
+              <div className="study-form-grid">
+                <label>
+                  Study ID
+                  <input name="code" value={editForm.code || ""} readOnly />
+                </label>
 
-                  <button
-                    type="button"
-                    onClick={() => setShowEditModal(false)}
-                    aria-label="Close edit study modal"
-                  >
-                    ×
-                  </button>
-                </div>
-
-                <div className="study-form-grid">
-                  <label>
-                    Study ID
-                    <input name="code" value={editForm.code || ""} readOnly />
-                  </label>
-
-                  <label>
-                    Study Name
-                    <input
-                      name="name"
-                      value={editForm.name || ""}
-                      onChange={handleEditFormChange}
-                      required
-                    />
-                  </label>
-
-                  <label>
-                    Protocol
-                    <input
-                      name="protocol"
-                      value={editForm.protocol || ""}
-                      onChange={handleEditFormChange}
-                    />
-                  </label>
-
-                  <label>
-                    Indication
-                    <input
-                      name="indication"
-                      value={editForm.indication || ""}
-                      onChange={handleEditFormChange}
-                    />
-                  </label>
-
-                  <label>
-                    Site / Hospital
+                <label>
+                  Study Name
                   <input
-  name="site"
-  value={editForm.site || ""}
-  onChange={handleEditFormChange}
-  required
-/>
-                  </label>
+                    name="name"
+                    value={editForm.name || ""}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </label>
 
-                  <label>
-                    Country
-                    <input
-                      name="country"
-                      value={editForm.country || ""}
-                      onChange={handleEditFormChange}
-                      required
-                    />
-                  </label>
+                <label>
+                  Protocol
+                  <input
+                    name="protocol"
+                    value={editForm.protocol || ""}
+                    onChange={handleEditFormChange}
+                  />
+                </label>
 
-                  <label>
-                    Subjects Enrolled
-                    <input
-                      name="enrolled"
-                      type="number"
-                      min="0"
-                      value={editForm.enrolled ?? ""}
-                      onChange={handleEditFormChange}
-                      required
-                    />
-                  </label>
+                <label>
+                  Indication
+                  <input
+                    name="indication"
+                    value={editForm.indication || ""}
+                    onChange={handleEditFormChange}
+                  />
+                </label>
 
-                  <label>
-                    Target Subjects
-                    <input
-                      name="targetSubjects"
-                      type="number"
-                      min="0"
-                      value={editForm.targetSubjects ?? ""}
-                      onChange={handleEditFormChange}
-                      required
-                    />
-                  </label>
+                <label>
+                  Site Number
+                  <input
+                    name="siteNumber"
+                    value={editForm.siteNumber || ""}
+                    onChange={handleEditFormChange}
+                    required
+                    placeholder="Example: 001"
+                  />
+                </label>
 
-                  <label>
-                    Study Status
-                    <select
-                      name="status"
-                      value={editForm.status || STUDY_STATUS_DEFAULT}
-                      onChange={handleEditFormChange}
-                      required
-                    >
-                      {STUDY_STATUS_OPTIONS.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                <label>
+                  Site / Hospital
+                  <input
+                    name="location"
+                    value={editForm.location || ""}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </label>
 
-                  <label>
-                    Principal Investigator
-                    <input
-                      name="principalInvestigator"
-                      value={editForm.principalInvestigator || ""}
-                      onChange={handleEditFormChange}
-                      required
-                    />
-                  </label>
+                <label>
+                  Country
+                  <input
+                    name="country"
+                    value={editForm.country || ""}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </label>
 
-                  <label>
-                    Sponsor
-                    <input
-                      name="sponsor"
-                      value={editForm.sponsor || ""}
-                      onChange={handleEditFormChange}
-                      required
-                    />
-                  </label>
+                <label>
+                  Subjects Enrolled
+                  <input
+                    name="enrolled"
+                    type="number"
+                    min="0"
+                    value={editForm.enrolled ?? ""}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </label>
 
-                  <label>
-                    CRO
-                    <input
-                      name="cro"
-                      value={editForm.cro || ""}
-                      onChange={handleEditFormChange}
-                    />
-                  </label>
+                <label>
+                  Target Subjects
+                  <input
+                    name="targetSubjects"
+                    type="number"
+                    min="0"
+                    value={editForm.targetSubjects ?? ""}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </label>
 
-                  <label>
-                    Start Date
-                    <input
-                      name="startDate"
-                      type="date"
-                      value={editForm.startDate || ""}
-                      onChange={handleEditFormChange}
-                      required
-                    />
-                  </label>
-
-                  <label>
-                    Completed Date
-                    <input
-                      name="completedDate"
-                      type="date"
-                      value={editForm.completedDate || ""}
-                      onChange={handleEditFormChange}
-                    />
-                  </label>
-
-                  <label className="study-form-wide">
-                    Study Description
-                    <textarea
-                      name="description"
-                      value={editForm.description || ""}
-                      onChange={handleEditFormChange}
-                      rows="3"
-                    />
-                  </label>
-                </div>
-
-                <div className="study-modal-actions">
-                  <button
-                    type="button"
-                    className="secondary-btn"
-                    onClick={() => setShowEditModal(false)}
+                <label>
+                  Study Status
+                  <select
+                    name="status"
+                    value={editForm.status || STUDY_STATUS_DEFAULT}
+                    onChange={handleEditFormChange}
+                    required
                   >
-                    Cancel
-                  </button>
+                    {STUDY_STATUS_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
-                  <button type="submit" className="add-study-btn">
-                    Save Changes
-                  </button>
-                </div>
-              </form>
-            </div>
+                <label>
+                  Principal Investigator
+                  <input
+                    name="principalInvestigator"
+                    value={editForm.principalInvestigator || ""}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </label>
+
+                <label>
+                  Sponsor
+                  <input
+                    name="sponsor"
+                    value={editForm.sponsor || ""}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </label>
+
+                <label>
+                  CRO
+                  <input
+                    name="cro"
+                    value={editForm.cro || ""}
+                    onChange={handleEditFormChange}
+                  />
+                </label>
+
+                <label>
+                  Start Date
+                  <input
+                    name="startDate"
+                    type="date"
+                    value={editForm.startDate || ""}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </label>
+
+                <label>
+                  Completed Date
+                  <input
+                    name="completedDate"
+                    type="date"
+                    value={editForm.completedDate || ""}
+                    onChange={handleEditFormChange}
+                  />
+                </label>
+
+                <label className="study-form-wide">
+                  Study Description
+                  <textarea
+                    name="description"
+                    value={editForm.description || ""}
+                    onChange={handleEditFormChange}
+                    rows="3"
+                  />
+                </label>
+              </div>
+            </StudyModal>
           )}
 
           {showDeleteModal && currentStudy && (

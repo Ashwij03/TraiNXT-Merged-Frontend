@@ -76,61 +76,63 @@ function SiteStaffDashboard() {
 
   return (
     <SiteStaffDashboardLayout>
-      <div className="admin-dashboard site-dashboard">
-        <div className="dashboard-page-title">
-          <h1>Site Staff Dashboard</h1>
-          <p>
-            Site Operations Overview
-            {assignedSite
-              ? ` — ${resolveSiteDisplay(assignedSite, {
-                  sources: portfolioStudies,
-                  fallback: assignedSite,
-                })}`
-              : ""}
-          </p>
+      <div className="admin-dashboard site-dashboard tnxt-compact">
+        <div className="dashboard-header-row">
+          <div className="dashboard-page-title">
+            <h1>Site Staff Dashboard</h1>
+            <p>
+              Site Operations Overview
+              {assignedSite
+                ? ` — ${resolveSiteDisplay(assignedSite, {
+                    sources: portfolioStudies,
+                    fallback: assignedSite,
+                  })}`
+                : ""}
+            </p>
+          </div>
+
+          <div className="dashboard-grid-6 kpi-grid dashboard-header-kpis">
+            <KPICard
+              title="Studies"
+              value={studyCount}
+              subtitle="Active Studies"
+              icon="📁"
+              onClick={() => navigate("/studies")}
+            />
+
+            <KPICard
+              title="Enrollment"
+              value={enrolledCount}
+              subtitle="Active Enrollment"
+              icon="➕"
+              onClick={() => navigate("/subjects")}
+            />
+
+            <KPICard
+              title="Upcoming Visits"
+              value={upcomingVisitsCount}
+              subtitle="Next 7 Days"
+              icon="📅"
+              onClick={() => navigate("/site-performance")}
+            />
+
+            <KPICard
+              title="Open Comments"
+              value={openCommentsCount}
+              subtitle="Pending Resolution"
+              icon="💬"
+              onClick={() => navigate("/comments")}
+            />
+          </div>
         </div>
-
-        <div className="dashboard-grid-6 kpi-grid">
-          <KPICard
-            title="Studies"
-            value={studyCount}
-            subtitle="Active Studies"
-            icon="📁"
-            onClick={() => navigate("/studies")}
-          />
-
-          <KPICard
-            title="Enrollment"
-            value={enrolledCount}
-            subtitle="Active Enrollment"
-            icon="➕"
-            onClick={() => navigate("/subjects")}
-          />
-
-          <KPICard
-            title="Upcoming Visits"
-            value={upcomingVisitsCount}
-            subtitle="Next 7 Days"
-            icon="📅"
-            onClick={() => navigate("/site-performance")}
-          />
-
-          <KPICard
-            title="Open Comments"
-            value={openCommentsCount}
-            subtitle="Pending Resolution"
-            icon="💬"
-            onClick={() => navigate("/comments")}
-          />
-        </div>
-
-        <VisitCalendarSection />
 
         <SubjectAnalyticsSection
           subjects={analyticsSubjects}
           studies={portfolioStudies}
           compactKpis
         />
+
+        <VisitCalendarSection />
 
         <div className="dashboard-grid-2">
           <AlertsPanel title="Site Alerts" alerts={alerts} />
@@ -162,6 +164,7 @@ function SiteStaffDashboard() {
         </div>
 
         <DataTable
+          className="ctms-standard-table"
           title="Subject Activity"
           columns={[
             {

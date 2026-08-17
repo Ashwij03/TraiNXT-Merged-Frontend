@@ -2,22 +2,33 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getAccessibleStudies, getCurrentUser } from "../services/roleService";
 import { FOLDER_TREE_EVENT } from "../services/folderService";
+import { canViewFinancials } from "../pages/shared/studies/StudyWorkspaceTabsConfig";
 
 export const STUDY_SECTIONS = [
   { key: "overview", label: "Overview" },
   { key: "subjects", label: "Subjects", expandable: true },
+  { key: "eisf", label: "eISF" },
+  { key: "logs", label: "Logs" },
   { key: "planning", label: "Planning" },
   { key: "visitPlan", label: "Visit Plan" },
   { key: "clinicalSites", label: "Clinical Sites" },
-  { key: "eisf", label: "eISF" },
   // ===== ITEM 16: Regulatory removed from Studies sidebar =====
   // { key: "regulatory", label: "Regulatory" },
   { key: "reports", label: "Reports" },
   { key: "studyFiles", label: "Study Files" },
-  { key: "logs", label: "Logs" },
   { key: "financials", label: "Financials" },
   { key: "others", label: "Others" },
 ];
+
+// ===== START TASK 3 (Financials access): Admin + PI only =====
+// Same STUDY_SECTIONS list, with `financials` dropped for roles that
+// cannot view it. Order of the remaining sections is preserved.
+export function getVisibleStudySections(currentUser = getCurrentUser()) {
+  return STUDY_SECTIONS.filter(
+    (section) => section.key !== "financials" || canViewFinancials(currentUser),
+  );
+}
+// ===== END TASK 3 (Financials access) =====
 
 function getAllSubjectsByStudy() {
   try {
@@ -259,7 +270,13 @@ export function useRoleStudiesSidebar({ onNavigate } = {}) {
       others: "Others",
     };
 
-    const tab = tabMap[sectionKey] || "Overview";
+    let tab = tabMap[sectionKey] || "Overview";
+
+    // ===== START TASK 3 (Financials access): Admin + PI only =====
+    if (tab === "Financials" && !canViewFinancials()) {
+      tab = "Overview";
+    }
+    // ===== END TASK 3 (Financials access) =====
 
     handleNav(
       `/study-dashboard/${encodeURIComponent(

@@ -13,6 +13,12 @@ export const PI_PREVIEW_ROLE_KEY = "piPreviewRole";
 export const PI_PREVIEW_ROLE_EVENT = "piPreviewRoleChange";
 export const INSTITUTION_FILTER_EVENT = "institutionFilterChange";
 export const HEADER_FILTERS_EVENT = "headerFiltersChange";
+// Task 14 — eISF Sidebar Auto Close: fired once whenever a Study
+// Details page's eISF tab becomes active, so whichever dashboard shell
+// is currently mounted (Admin/SiteStaff/PI/CRO/Sponsor) can collapse its
+// own sidebar. Every other tab/page leaves the sidebar exactly as the
+// user last left it.
+export const EISF_SIDEBAR_COLLAPSE_EVENT = "eisfSidebarAutoCollapse";
 
 function dispatchFilterEvent(detail = {}) {
   if (typeof window === "undefined") {
@@ -185,40 +191,77 @@ export function setStoredPIPreviewRole(role) {
   );
 }
 
-export function clearDependentFilters(fromKey) {
-  const cascade = {
-    [SELECTED_INDICATION_KEY]: [
-      SELECTED_SPONSOR_KEY,
-      SELECTED_CRO_KEY,
-      SELECTED_INSTITUTION_KEY,
-      SELECTED_SITE_NUMBER_KEY,
-      SELECTED_STUDY_FILTER_KEY,
-      SELECTED_SUBJECT_KEY
-    ],
-    [SELECTED_SPONSOR_KEY]: [
-      SELECTED_CRO_KEY,
-      SELECTED_INSTITUTION_KEY,
-      SELECTED_SITE_NUMBER_KEY,
-      SELECTED_STUDY_FILTER_KEY,
-      SELECTED_SUBJECT_KEY
-    ],
-    [SELECTED_CRO_KEY]: [
-      SELECTED_INSTITUTION_KEY,
-      SELECTED_SITE_NUMBER_KEY,
-      SELECTED_STUDY_FILTER_KEY,
-      SELECTED_SUBJECT_KEY
-    ],
-    [SELECTED_INSTITUTION_KEY]: [
-      SELECTED_SITE_NUMBER_KEY,
-      SELECTED_STUDY_FILTER_KEY,
-      SELECTED_SUBJECT_KEY
-    ],
-    [SELECTED_SITE_NUMBER_KEY]: [
-      SELECTED_STUDY_FILTER_KEY,
-      SELECTED_SUBJECT_KEY
-    ],
-    [SELECTED_STUDY_FILTER_KEY]: [SELECTED_SUBJECT_KEY]
-  };
+// Task: Filter Cascade Consistency — shared at module scope (rather than
+// re-built inline inside clearDependentFilters) so callers like
+// EnterpriseNavbarBase can also ask "which filters depend on this one" via
+// getDependentFilterKeys and keep their own local dropdown state in sync
+// with whatever clearDependentFilters just wiped out of storage. Previously
+// the cascade only cleared localStorage; nothing told the header which of
+// its own React state values (selectedSponsor, selectedCRO, etc.) had gone
+// stale, so a dropdown could keep visually showing a value that no longer
+// existed in storage — e.g. picking "All Indications" cleared Sponsor/CRO/
+// Site/Study/Subject in storage but left those dropdowns displaying their
+// old selections.
+const FILTER_CASCADE = {
+  [SELECTED_INDICATION_KEY]: [
+    SELECTED_SPONSOR_KEY,
+    SELECTED_CRO_KEY,
+    SELECTED_INSTITUTION_KEY,
+    SELECTED_SITE_NUMBER_KEY,
+    SELECTED_STUDY_FILTER_KEY,
+    SELECTED_SUBJECT_KEY
+  ],
+  [SELECTED_SPONSOR_KEY]: [
+    SELECTED_CRO_KEY,
+    SELECTED_INSTITUTION_KEY,
+    SELECTED_SITE_NUMBER_KEY,
+    SELECTED_STUDY_FILTER_KEY,
+    SELECTED_SUBJECT_KEY
+  ],
+  [SELECTED_CRO_KEY]: [
+    SELECTED_INSTITUTION_KEY,
+    SELECTED_SITE_NUMBER_KEY,
+    SELECTED_STUDY_FILTER_KEY,
+    SELECTED_SUBJECT_KEY
+  ],
+  [SELECTED_INSTITUTION_KEY]: [
+    SELECTED_SITE_NUMBER_KEY,
+    SELECTED_STUDY_FILTER_KEY,
+    SELECTED_SUBJECT_KEY
+  ],
+  [SELECTED_SITE_NUMBER_KEY]: [
+    SELECTED_STUDY_FILTER_KEY,
+    SELECTED_SUBJECT_KEY
+  ],
+  [SELECTED_STUDY_FILTER_KEY]: [SELECTED_SUBJECT_KEY]
+};
 
-  (cascade[fromKey] || []).forEach((key) => setStoredValue(key, ""));
+export function getDependentFilterKeys(fromKey) {
+  return FILTER_CASCADE[fromKey] || [];
+}
+
+export function clearDependentFilters(fromKey) {
+  getDependentFilterKeys(fromKey).forEach((key) => setStoredValue(key, ""));
+}
+
+// Task 18 (Dashboard Opens Filter-Free): every key a Dashboard route's
+// widgets can be scoped by, in one place, so any Dashboard page can force
+// itself back to the complete/unfiltered view on mount without guessing
+// which keys matter. Clears storage for all of them and fires a single
+// HEADER_FILTERS_EVENT once everything is already cleared, so any listener
+// that reacts to the event reads fully-reset values instead of a partial
+// cascade.
+export const ALL_HEADER_FILTER_KEYS = [
+  SELECTED_INDICATION_KEY,
+  SELECTED_SPONSOR_KEY,
+  SELECTED_CRO_KEY,
+  SELECTED_INSTITUTION_KEY,
+  SELECTED_SITE_NUMBER_KEY,
+  SELECTED_STUDY_FILTER_KEY,
+  SELECTED_SUBJECT_KEY
+];
+
+export function resetAllHeaderFilters() {
+  ALL_HEADER_FILTER_KEYS.forEach((key) => setStoredValue(key, ""));
+  dispatchFilterEvent({ reset: true });
 }

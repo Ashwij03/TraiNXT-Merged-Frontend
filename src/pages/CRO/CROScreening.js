@@ -45,8 +45,8 @@ function CROScreening() {
         {screeningSubjects.length === 0 ? (
           <EmptyState title="No Subjects in Screening" />
         ) : (
-          <div className="cro-table-wrap">
-            <table className="cro-data-table">
+          <div className="cro-table-wrap tnxt-compact">
+            <table className="cro-data-table ctms-standard-table">
               <thead>
                 <tr>
                   <th>Subject ID</th>

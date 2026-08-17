@@ -7,14 +7,12 @@ import EditDocumentModal from "./components/EditDocumentModal";
 import VersionHistoryModal from "./components/VersionHistoryModal";
 import AuditTrailModal from "./components/AuditTrailModal";
 import FilingGuidelineModal from "./components/FilingGuidelineModal";
-import useDashboard from "./hooks/useDashboard";
 import { DOCUMENT_PAGE_SIZE_OPTIONS } from "./Constants/dashboardConstants";
 import {
   createUploadedDocument,
   downloadDocument,
   exportDocuments,
   getFilterOptions,
-  getFolderCounts,
   initializeModuleDocuments,
   paginateDocuments,
   persistModuleDocuments,
@@ -22,10 +20,7 @@ import {
 } from "./services/documentService";
 import { buildReferenceDashboardCards } from "./utils/dashboardUtils";
 import { processDocuments } from "./utils/searchUtils";
-import {
-  getSubModuleEnabledMap,
-  setSubModuleEnabled,
-} from "./utils/subModuleStateUtils";
+import { getSubModuleEnabledMap } from "./utils/subModuleStateUtils";
 import { hasPermission } from "../../../services/roleService";
 import PERMISSIONS from "../../../constants/permissions";
 import "./EISFModuleWorkspace.css";
@@ -38,7 +33,6 @@ export default function EISFModuleWorkspace({
   moduleOptions = [],
   selectedModuleId,
   onModuleChange,
-  onSectionChange,
 }) {
   const [documents, setDocuments] = useState(() =>
     initializeModuleDocuments(moduleConfig, studyCode, initialDocuments)
@@ -68,13 +62,14 @@ export default function EISFModuleWorkspace({
   const [showFilters, setShowFilters] = useState(true);
   const [showUpload, setShowUpload] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
-  const [viewerOpen, setViewerOpen] = useState(false);
+  // Split-view: the document rendered in the right-hand preview panel.
+  // Kept separate from `selectedDocument` (used by the edit/history/audit
+  // modals) so the preview never closes while another action is performed.
+  const [previewDocument, setPreviewDocument] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [auditOpen, setAuditOpen] = useState(false);
   const [guidelineOpen, setGuidelineOpen] = useState(false);
-
-  const dashboard = useDashboard(documents);
 
   useEffect(() => {
     setDocuments(initializeModuleDocuments(moduleConfig, studyCode, initialDocuments));
@@ -85,6 +80,7 @@ export default function EISFModuleWorkspace({
     setSortField("documentName");
     setSortDirection("asc");
     setPage(1);
+    setPreviewDocument(null);
     setEnabledMap(getSubModuleEnabledMap(studyCode));
   }, [moduleConfig, initialDocuments, studyCode]);
 
@@ -95,20 +91,6 @@ export default function EISFModuleWorkspace({
       return enabledMap[sectionId] !== false;
     },
     [enabledMap]
-  );
-
-  const handleToggleSectionEnabled = useCallback(
-    (sectionId, event) => {
-      if (event) {
-        event.stopPropagation();
-      }
-      if (!sectionId) return;
-
-      const nextEnabled = !isSectionEnabled(sectionId);
-      setSubModuleEnabled(studyCode, sectionId, nextEnabled);
-      setEnabledMap((prev) => ({ ...prev, [sectionId]: nextEnabled }));
-    },
-    [isSectionEnabled, studyCode]
   );
 
   useEffect(() => {
@@ -122,7 +104,17 @@ export default function EISFModuleWorkspace({
 
     setSelectedSectionId(requestedSection?.id || moduleConfig.sections[0]?.id);
     setPage(1);
+    setPreviewDocument(null);
   }, [activeSectionId, moduleConfig]);
+
+  // Keep the preview panel in sync after edits/deletes without closing it.
+  useEffect(() => {
+    setPreviewDocument((current) => {
+      if (!current) return current;
+      const latest = documents.find((document) => document.id === current.id);
+      return latest || null;
+    });
+  }, [documents]);
 
   useEffect(() => {
     setPage(1);
@@ -138,11 +130,6 @@ export default function EISFModuleWorkspace({
   const activeSectionEnabled = useMemo(
     () => (activeSection ? isSectionEnabled(activeSection.id) : false),
     [activeSection, isSectionEnabled]
-  );
-
-  const folderCounts = useMemo(
-    () => getFolderCounts(moduleConfig.sections, documents),
-    [moduleConfig.sections, documents]
   );
 
   const processedSectionDocuments = useMemo(() => {
@@ -195,12 +182,6 @@ export default function EISFModuleWorkspace({
     [documents, moduleConfig.sections]
   );
 
-  const selectSection = (sectionId) => {
-    if (!sectionId) return;
-    setSelectedSectionId(sectionId);
-    onSectionChange?.(sectionId);
-  };
-
   const clearFilters = () => {
     setSearch("");
     setStatusFilter("");
@@ -222,24 +203,72 @@ export default function EISFModuleWorkspace({
   };
 
   const handleUpload = (formData) => {
-    // Item 9 guard: disabled sub-modules must not expose upload actions.
     if (!activeSectionEnabled) return;
     // RBAC guard: block upload even if the modal was reachable by some
     // other path — the Upload button itself is also hidden below.
     if (!canUploadDocs) return;
 
+    const incomingName = (
+      formData.documentName ||
+      formData.name ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+    const incomingVersion = String(formData.version || "").trim();
+
+    const duplicate = documents.some((doc) => {
+      const existingName = (
+        doc.documentName ||
+        doc.name ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
+
+      const existingVersion = String(doc.version || "").trim();
+
+      const sameStudy =
+        (doc.studyCode || studyCode) === studyCode;
+
+      const sameModule =
+        (doc.moduleId || moduleConfig.id) === moduleConfig.id;
+
+      const sameSection =
+        (doc.section || doc.sectionId || "") === activeSection.id;
+
+      return (
+        sameStudy &&
+        sameModule &&
+        sameSection &&
+        existingName === incomingName &&
+        existingVersion === incomingVersion
+      );
+    });
+
+    if (duplicate) {
+      window.alert(
+        `Version ${incomingVersion} already exists for "${formData.documentName}". Please upload a higher version.`
+      );
+      return;
+    }
+
     const newDocument = createUploadedDocument(
       formData,
       activeSection,
       moduleConfig,
+      studyCode,
       "Current User"
     );
 
     setDocuments((prev) => [newDocument, ...prev]);
+
+    setShowUpload(false);
   };
 
+
   const handleSaveDocument = (updatedDocument) => {
-    // Item 9 guard: disabled sub-modules must not allow edits.
     if (!activeSectionEnabled) {
       setEditOpen(false);
       setSelectedDocument(null);
@@ -254,6 +283,47 @@ export default function EISFModuleWorkspace({
       return;
     }
 
+    const version = String(updatedDocument.version || "").trim();
+
+    const duplicate = documents.some((doc) => {
+      if (doc.id === updatedDocument.id) {
+        return false;
+      }
+
+      const existingName = (
+        doc.documentName ||
+        doc.name ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
+
+      const updatedName = (
+        updatedDocument.documentName ||
+        updatedDocument.name ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
+
+      return (
+        (doc.studyCode || studyCode) === studyCode &&
+        (doc.moduleId || moduleConfig.id) === moduleConfig.id &&
+        (doc.section || doc.sectionId || "") ===
+        activeSection.id &&
+        existingName === updatedName &&
+        String(doc.version || "").trim() ===
+        String(updatedDocument.version || "").trim()
+      );
+    });
+
+    if (duplicate) {
+      window.alert(
+        `Version ${version} already exists for "${updatedDocument.documentName}".`
+      );
+      return;
+    }
+
     setDocuments((prev) =>
       prev.map((document) =>
         document.id === updatedDocument.id
@@ -261,6 +331,7 @@ export default function EISFModuleWorkspace({
           : document
       )
     );
+
     setEditOpen(false);
     setSelectedDocument(null);
   };
@@ -281,6 +352,12 @@ export default function EISFModuleWorkspace({
     // Item 9 guard: no downloads from disabled sub-modules.
     if (!activeSectionEnabled) return;
     return downloadDocument(document);
+  };
+
+  // Clicking a document renders it in the right-hand preview panel (no popup).
+  const handlePreview = (document) => {
+    if (!activeSectionEnabled) return;
+    setPreviewDocument(document);
   };
 
   const openModal = (document, setter) => {
@@ -309,7 +386,7 @@ export default function EISFModuleWorkspace({
   return (
     <div className="eisf-module-workspace">
       <div className="eisf-module-header">
-        <div>
+        <div className="eisf-module-header-main">
           <div className="eisf-breadcrumb">
             <span>Studies</span>
             <span>›</span>
@@ -319,8 +396,14 @@ export default function EISFModuleWorkspace({
             <span>›</span>
             <strong>{moduleConfig.title}</strong>
           </div>
-          <h2>{moduleConfig.title}</h2>
-          <p>{moduleConfig.description}</p>
+
+          <div className="eisf-module-title-row">
+            <div className="eisf-module-heading">
+              <h2>{moduleConfig.title}</h2>
+            </div>
+
+            <DashboardCards documents={documents} cards={dashboardCards} variant="reference" />
+          </div>
         </div>
 
         {moduleOptions.length > 0 && (
@@ -340,70 +423,8 @@ export default function EISFModuleWorkspace({
         )}
       </div>
 
-      <DashboardCards documents={documents} cards={dashboardCards} variant="reference" />
-
-      <div className="eisf-module-grid">
-        <aside className="eisf-module-sections-card">
-          <h3>Sections</h3>
-          <div className="eisf-folder-summary">
-            <span>{moduleConfig.sections.length} folders</span>
-            <strong>{dashboard.totalDocuments} files</strong>
-          </div>
-
-          <div className="eisf-module-section-list" role="presentation">
-            {moduleConfig.sections.map((section) => {
-              const enabled = isSectionEnabled(section.id);
-              const isActive = activeSection?.id === section.id;
-
-              return (
-                <div
-                  className="eisf-module-section-row"
-                  key={section.id}
-                >
-                  <button
-                    type="button"
-                    className={`eisf-module-section-btn ${isActive ? "active" : ""} ${enabled ? "" : "disabled"}`}
-                    onClick={() => selectSection(section.id)}
-                  >
-                    <span className="eisf-module-section-title">
-                      <span className="folder-icon" aria-hidden="true">▣</span>
-                      {section.id} {section.title}
-                    </span>
-                    <span className="section-count">{folderCounts[section.id] || 0}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`eisf-submodule-toggle ${enabled ? "enabled" : ""}`}
-                    onClick={(event) => handleToggleSectionEnabled(section.id, event)}
-                    aria-pressed={enabled}
-                    aria-label={enabled ? "Disable sub-module" : "Enable sub-module"}
-                    title={enabled ? "Disable sub-module" : "Enable sub-module"}
-                  >
-                    <span className="toggle-track" aria-hidden="true">
-                      <span className="toggle-thumb" />
-                    </span>
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-
-          {activeSection && activeSectionEnabled && (
-            <div className="eisf-section-help">
-              <h4>About this Section</h4>
-              <p>{activeSection.description}</p>
-              <button
-                type="button"
-                className="filing-guideline-btn"
-                onClick={() => setGuidelineOpen(true)}
-              >
-                View Filing Guidelines ↗
-              </button>
-            </div>
-          )}
-        </aside>
-
-        <section className="eisf-module-documents-card">
+      <div className={`eisf-module-grid${previewDocument ? " eisf-split-view" : ""}`}>
+        <section className="eisf-module-documents-card eisf-split-list">
           {!activeSection ? (
             <div className="eisf-submodule-disabled-panel">
               <span className="disabled-icon" aria-hidden="true">▤</span>
@@ -422,12 +443,19 @@ export default function EISFModuleWorkspace({
           ) : (
             <>
           <div className="eisf-documents-header">
-            <div>
+            <div className="eisf-documents-title-row">
               <h3>{activeSection?.id} {activeSection?.title}</h3>
               <span>{totalLabel}</span>
             </div>
 
             <div className="eisf-documents-actions">
+              <button
+                type="button"
+                className="filing-guideline-btn"
+                onClick={() => setGuidelineOpen(true)}
+              >
+                View Filing Guidelines ↗
+              </button>
               <button type="button" onClick={handleExport}>⇩ Export</button>
               {canUploadDocs && (
                 <button type="button" className="primary" onClick={() => setShowUpload(true)}>Upload</button>
@@ -484,7 +512,9 @@ export default function EISFModuleWorkspace({
             sortField={sortField}
             sortDirection={sortDirection}
             onSort={handleSort}
-            onView={(document) => openModal(document, setViewerOpen)}
+            selectedDocumentId={previewDocument?.id || null}
+            onSelect={handlePreview}
+            onView={handlePreview}
             onHistory={(document) => openModal(document, setHistoryOpen)}
             onAudit={(document) => openModal(document, setAuditOpen)}
             onDownload={handleDownload}
@@ -542,6 +572,19 @@ export default function EISFModuleWorkspace({
             </>
           )}
         </section>
+
+        {previewDocument && (
+          <section className="eisf-module-documents-card eisf-split-preview">
+            <DocumentViewer
+              inline
+              document={previewDocument}
+              onClose={() => setPreviewDocument(null)}
+              onDownload={handleDownload}
+              onHistory={(document) => openModal(document, setHistoryOpen)}
+              onAudit={(document) => openModal(document, setAuditOpen)}
+            />
+          </section>
+        )}
       </div>
 
       <UploadDocumentModal
@@ -550,13 +593,6 @@ export default function EISFModuleWorkspace({
         onUpload={handleUpload}
         categoryOptions={categoryOptions}
         defaultCategory={activeSection?.title}
-      />
-
-      <DocumentViewer
-        open={viewerOpen && activeSectionEnabled}
-        document={selectedDocument}
-        onClose={() => closeDocumentModal(setViewerOpen)}
-        onDownload={handleDownload}
       />
 
       <EditDocumentModal

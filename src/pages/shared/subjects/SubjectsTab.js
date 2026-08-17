@@ -32,7 +32,7 @@ export default function SubjectsTab() {
   };
 
   return (
-    <div className="subjects-wrapper">
+    <div className="subjects-wrapper tnxt-compact">
 
       {/* LEGEND */}
       <div className="legend-row">
@@ -47,7 +47,7 @@ export default function SubjectsTab() {
 
       {/* TIMELINE */}
       <div className="timeline-scroll">
-        <table className="timeline-table">
+        <table className="timeline-table ctms-standard-table">
 
           <colgroup>
             <col className="col-subject" />
@@ -141,7 +141,7 @@ export default function SubjectsTab() {
 
   <h3>Visit History</h3>
 
-  <table className="history-table">
+  <table className="history-table ctms-standard-table">
 
     <thead>
 

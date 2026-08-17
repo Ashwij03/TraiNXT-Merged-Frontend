@@ -143,7 +143,7 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
 
   return (
 
-    <div className="delegation-container">
+    <div className="delegation-container tnxt-compact">
 
       <h2 className="delegation-title">
          Electronic Delegation Log
@@ -187,7 +187,6 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
         initialPageSize={10}
       />
 
-
       {/* ============================================================ */}
       {/* Delegation History modal — driven entirely by the `history`   */}
       {/* prop from StudyLogsTab.                                       */}
@@ -205,7 +204,7 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
               </span>
             </div>
 
-            <table className="delegation-table">
+            <table className="delegation-table ctms-standard-table">
               <thead>
                 <tr>
                   <th>Date</th>

@@ -1,49 +1,94 @@
-.audit-overlay{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.4);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    z-index:9999;
+.audit-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 16px;
 }
 
-.audit-modal{
-    width:850px;
-    background:#fff;
-    border-radius:10px;
-    overflow:hidden;
+.audit-modal {
+  width: 100%;
+  max-width: 850px;
+  background: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
 }
 
-.audit-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    background:#082b3d;
-    color:#fff;
-    padding:18px 24px;
+.audit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #082b3d;
+  color: #ffffff;
+  padding: 18px 24px;
 }
 
-.audit-header button{
-    background:none;
-    border:none;
-    color:#fff;
-    cursor:pointer;
-    font-size:20px;
+.audit-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
 }
 
-.audit-table{
-    width:100%;
-    border-collapse:collapse;
+.audit-header button {
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
 }
 
-.audit-table th{
-    background:#f5f5f5;
-    padding:14px;
-    text-align:left;
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.audit-table td{
-    padding:14px;
-    border-bottom:1px solid #ececec;
+.audit-table thead {
+  background: #f5f7fa;
+}
+
+.audit-table th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.audit-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #ececec;
+  font-size: 14px;
+  color: #374151;
+  vertical-align: top;
+}
+
+.audit-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+@media (max-width: 768px) {
+  .audit-modal {
+    max-width: 100%;
+  }
+
+  .audit-header {
+    padding: 14px 16px;
+  }
+
+  .audit-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .audit-table th,
+  .audit-table td {
+    padding: 12px;
+  }
 }

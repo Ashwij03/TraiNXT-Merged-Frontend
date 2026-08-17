@@ -86,7 +86,7 @@ function PIAccountSecurity() {
   const activeSessions = data.sessions.filter((s) => s.active).length;
 
   return (
-    <div className="pi-security-page">
+    <div className="pi-security-page tnxt-compact">
       <div className="pi-kpi-cards-grid">
         <div className="pi-enterprise-kpi blue pi-kpi-clickable">
           <span className="pi-enterprise-kpi-label">Password Status</span>
@@ -178,7 +178,7 @@ function PIAccountSecurity() {
             <FaHistory /> Login Activity
           </h3>
           <div className="pi-table-responsive">
-            <table className="pi-table">
+            <table className="pi-table ctms-standard-table">
               <thead>
                 <tr>
                   <th>Date &amp; Time</th>

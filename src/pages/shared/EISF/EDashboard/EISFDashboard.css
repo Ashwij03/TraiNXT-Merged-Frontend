@@ -58,11 +58,16 @@
   font-weight: 600;
 }
 
+/* Task 1: the label button now covers the full row so a click anywhere on the
+   module toggles its sub-modules. The +/- glyph lives inside it as a passive
+   indicator. */
 .eisf-menu-label {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
   flex: 1;
+  width: 100%;
   min-height: 46px;
   border: 0;
   background: transparent;
@@ -75,29 +80,49 @@
   line-height: 1.25;
 }
 
+.eisf-menu-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
 .eisf-module-number {
   flex: 0 0 auto;
   color: currentColor;
   font-weight: 800;
 }
 
-.eisf-expand-btn {
+/* Expand/collapse indicator only — not a separate click target. */
+.eisf-expand-indicator {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  min-height: 46px;
-  border: none;
-  border-left: 1px solid transparent;
-  background: transparent;
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
   color: #0f172a;
   font-size: 17px;
   font-weight: 800;
-  cursor: pointer;
+  pointer-events: none;
+  user-select: none;
+  transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.eisf-menu-item.active .eisf-expand-indicator {
+  color: #1c6ed4;
+}
+
+.eisf-menu-item.expanded .eisf-expand-indicator {
+  transform: scale(1.1);
 }
 
 .eisf-child-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   width: 100%;
   border: 0;
   border-bottom: 1px solid #f6f8fb;
@@ -112,6 +137,106 @@
 
 .eisf-child-item:hover {
   background: #f5f7fb;
+}
+
+/* Sub-module row: existing child button + document count + enable/disable
+   toggle moved here from the removed Sections panel. */
+.eisf-child-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 12px;
+  background: #fbfdff;
+  border-bottom: 1px solid #f6f8fb;
+}
+
+.eisf-child-row:hover {
+  background: #f5f7fb;
+}
+
+.eisf-child-row .eisf-child-item {
+  flex: 1;
+  min-width: 0;
+  border-bottom: 0;
+  background: transparent;
+}
+
+.eisf-child-title {
+  min-width: 0;
+}
+
+.eisf-child-item .section-count {
+  flex: 0 0 auto;
+  min-width: 22px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #dcecff;
+  color: #1f7ae0;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.eisf-child-item.disabled {
+  opacity: 0.65;
+  color: #64748b;
+}
+
+.eisf-child-item.disabled .section-count {
+  background: #e2e8f0;
+  color: #64748b;
+}
+
+/* Compact switch — same markup/behaviour as the previous panel toggle. */
+.eisf-child-row .eisf-submodule-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  line-height: 1;
+  user-select: none;
+}
+
+.eisf-child-row .eisf-submodule-toggle:focus {
+  outline: none;
+}
+
+.eisf-child-row .eisf-submodule-toggle:focus-visible .toggle-track {
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.35);
+}
+
+.eisf-child-row .eisf-submodule-toggle .toggle-track {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 17px;
+  border-radius: 999px;
+  background: #cbd5e1;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.eisf-child-row .eisf-submodule-toggle .toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 13px;
+  height: 13px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.25);
+  transition: transform 0.15s ease;
+}
+
+.eisf-child-row .eisf-submodule-toggle.enabled .toggle-track {
+  background: #16a34a;
+}
+
+.eisf-child-row .eisf-submodule-toggle.enabled .toggle-thumb {
+  transform: translateX(13px);
 }
 
 .eisf-content {

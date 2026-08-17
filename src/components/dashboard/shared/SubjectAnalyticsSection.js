@@ -9,7 +9,14 @@ function SubjectAnalyticsSection({
   subjects = [],
   studies = [],
   studyCode = null,
-  compactKpis = false
+  compactKpis = false,
+  // Task 6 (Study Details Subject Analytics): when a specific study's
+  // planned vs. current subject counts are supplied, show a small
+  // summary panel beside the Subject Status Analytics pie chart. Left
+  // undefined/null on the Dashboard (multi-study) usage, so that view
+  // is unaffected.
+  plannedSubjects = null,
+  currentSubjects = null,
 }) {
   const subjectStatusData = getSubjectStatusAnalytics(subjects);
   const enrollmentStatusData = getEnrollmentStatusAnalytics(subjects, {
@@ -20,6 +27,12 @@ function SubjectAnalyticsSection({
   const compactClass = compactKpis
     ? " subject-analytics-section--compact"
     : "";
+
+  const showEnrollmentSummary =
+    plannedSubjects !== null &&
+    plannedSubjects !== undefined &&
+    currentSubjects !== null &&
+    currentSubjects !== undefined;
 
   return (
     <div className={`subject-analytics-section${compactClass}`}>
@@ -33,7 +46,39 @@ function SubjectAnalyticsSection({
               </div>
             ))}
           </div>
-          <DashboardPieChart data={subjectStatusData} />
+
+          <div className="subject-status-chart-row">
+            <div className="subject-status-chart-row-chart">
+              <DashboardPieChart data={subjectStatusData} />
+            </div>
+
+            {showEnrollmentSummary && (
+              <div className="subject-analytics-enrollment-summary">
+                <div className="subject-analytics-enrollment-stat">
+                  <span className="subject-analytics-enrollment-label">
+                    Planned Subjects
+                  </span>
+                  <strong className="subject-analytics-enrollment-value">
+                    {plannedSubjects}
+                  </strong>
+                </div>
+
+                <div
+                  className="subject-analytics-enrollment-divider"
+                  aria-hidden="true"
+                />
+
+                <div className="subject-analytics-enrollment-stat">
+                  <span className="subject-analytics-enrollment-label">
+                    Current Subjects
+                  </span>
+                  <strong className="subject-analytics-enrollment-value">
+                    {currentSubjects}
+                  </strong>
+                </div>
+              </div>
+            )}
+          </div>
         </DashboardCard>
 
         <DashboardCard title="Enrollment Status">

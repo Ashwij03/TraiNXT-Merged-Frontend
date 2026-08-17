@@ -5,7 +5,7 @@ function SubjectDocuments({ subject }) {
   const subjectId = subject?.subjectId || subject?.id || "unknown";
 
   return (
-    <div className="subject-documents">
+    <div className="subject-documents tnxt-compact">
 
       <DocumentFolderManager
   sectionId="subjects"
@@ -18,7 +18,7 @@ function SubjectDocuments({ subject }) {
       <div className="subject-extra-section">
         <h3>Subject Timeline</h3>
 
-        <table className="table">
+        <table className="table ctms-standard-table">
           <thead>
             <tr>
               <th>Date</th>
@@ -44,7 +44,7 @@ function SubjectDocuments({ subject }) {
       <div className="subject-extra-section">
         <h3>Visit History</h3>
 
-        <table className="table">
+        <table className="table ctms-standard-table">
           <thead>
             <tr>
               <th>Visit</th>
@@ -73,7 +73,7 @@ function SubjectDocuments({ subject }) {
       <div className="subject-extra-section">
         <h3>Activity Log</h3>
 
-        <table className="table">
+        <table className="table ctms-standard-table">
           <thead>
             <tr>
               <th>Date</th>

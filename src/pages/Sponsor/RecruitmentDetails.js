@@ -3,6 +3,8 @@ import AppLayout from "./AppLayout";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./RecruitmentDetails.css";
 import jsPDF from "jspdf";
+import { getStudies } from "../../services/studyService";
+import { resolveSiteDisplay } from "../../utils/siteDisplay";
 import { useState } from "react";
 import {
   ResponsiveContainer,
@@ -167,7 +169,7 @@ const location = useLocation();
   return (
     <AppLayout>
 
-      <div className="page-container">
+      <div className="page-container tnxt-compact">
         <button
   className="back-btn"
   onClick={() => navigate(-1)}
@@ -236,7 +238,7 @@ const location = useLocation();
 
   <h2>Recruitment Metrics</h2>
 
-  <table className="metrics-table">
+  <table className="metrics-table ctms-standard-table">
 
     <thead>
       <tr>
@@ -380,7 +382,7 @@ const location = useLocation();
 
   <h2>Site Recruitment Performance</h2>
 
-  <table className="sponsor-table">
+  <table className="sponsor-table ctms-standard-table">
 
     <thead>
       <tr>
@@ -395,7 +397,7 @@ const location = useLocation();
     <tbody>
 
       <tr>
-        <td>Apollo Hospital</td>
+        <td>{resolveSiteDisplay("Apollo Hospital", { sources: getStudies() })}</td>
         <td>500</td>
         <td>420</td>
         <td>84%</td>
@@ -403,7 +405,7 @@ const location = useLocation();
       </tr>
 
       <tr>
-        <td>Care Hospital</td>
+        <td>{resolveSiteDisplay("Care Hospital", { sources: getStudies() })}</td>
         <td>400</td>
         <td>290</td>
         <td>72%</td>
@@ -411,7 +413,7 @@ const location = useLocation();
       </tr>
 
       <tr>
-        <td>Metro Hospital</td>
+        <td>{resolveSiteDisplay("Metro Hospital", { sources: getStudies() })}</td>
         <td>350</td>
         <td>210</td>
         <td>60%</td>
@@ -461,7 +463,7 @@ const location = useLocation();
 
   <h2>Recruitment Campaigns</h2>
 
-  <table className="sponsor-table">
+  <table className="sponsor-table ctms-standard-table">
 
     <thead>
       <tr>

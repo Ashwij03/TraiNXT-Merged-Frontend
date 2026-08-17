@@ -122,8 +122,8 @@ function CROReports() {
         {filteredReports.length === 0 ? (
           <EmptyState title="No Reports Found" />
         ) : (
-          <div className="cro-table-wrap">
-            <table className="cro-data-table">
+          <div className="cro-table-wrap tnxt-compact">
+            <table className="cro-data-table ctms-standard-table">
               <thead>
                 <tr>
                   <th>Report ID</th>

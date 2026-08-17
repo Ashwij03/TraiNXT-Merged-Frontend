@@ -9,6 +9,7 @@ import {
 import { getCurrentUser, getAssignedSite } from "../../../services/roleService";
 import { getStudyByCode } from "../../../services/studyService";
 import { useComments } from "../../../comments/CommentsContext";
+import CommentModal from "../../../comments/CommentModal";
 
 function StudyComments() {
   const { id } = useParams();
@@ -22,17 +23,50 @@ function StudyComments() {
     resolveComment,
     reopenComment,
   } = useComments();
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  // ===== NEW: Search + Filter state =====
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [commentText, setCommentText] = useState("");
 
+  // ===== Canonical pipeline =====
+  // authorized → study filter → search/filter → table
   const comments = useMemo(() => {
-    return liveComments
+    let result = liveComments
       .filter((comment) =>
         canViewComment(comment, currentUser, study?.status),
       )
       .filter(
         (comment) => !studyCode || String(comment.study) === String(studyCode),
-      )
-      .map((comment) => ({
+      );
+
+    if (statusFilter !== "All") {
+      result = result.filter((comment) => comment.status === statusFilter);
+    }
+
+    const query = searchTerm.trim().toLowerCase();
+
+    if (query) {
+      result = result.filter((comment) => {
+        const searchableText = [
+          comment.id,
+          comment.study,
+          comment.subjectId,
+          comment.createdBy,
+          comment.description,
+          comment.status,
+          comment.createdAt,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return searchableText.includes(query);
+      });
+    }
+
+    return result.map((comment) => ({
         id: `C-${String(comment.id).slice(-6)}`,
         studyId: comment.study || studyCode || "—",
         subjectDocument: comment.documentDeleted
@@ -66,7 +100,7 @@ function StudyComments() {
           ) : (
             "—"
           ),
-      }));
+    }));
   }, [
     liveComments,
     studyCode,
@@ -74,10 +108,19 @@ function StudyComments() {
     currentUser,
     resolveComment,
     reopenComment,
+    statusFilter,
+    searchTerm,
   ]);
 
   const handleAddComment = () => {
-    const text = commentText.trim();
+    if (!studyCode) {
+      return;
+    }
+    setShowAddModal(true);
+  };
+
+  const handleModalSubmit = (payload) => {
+    const text = (payload?.comment || payload?.text || "").trim();
 
     if (!text || !studyCode) {
       return;
@@ -92,7 +135,7 @@ function StudyComments() {
       activity: "Study",
     });
 
-    setCommentText("");
+    setShowAddModal(false);
   };
 
   return (
@@ -104,19 +147,69 @@ function StudyComments() {
             onChange={(event) => setCommentText(event.target.value)}
             placeholder="Add a comment..."
             rows={3}
-            style={{ width: "100%", maxWidth: "480px", display: "block" }}
+            style={{
+              width: "100%",
+              maxWidth: "560px",
+              display: "block",
+            }}
             disabled={!studyCode}
           />
+
           <button
             type="button"
             onClick={handleAddComment}
-            disabled={!studyCode || !commentText.trim()}
-            style={{ marginTop: "8px" }}
+            disabled={!studyCode}
           >
             Add Comment
           </button>
         </div>
       )}
+
+      {showAddModal && (
+        <CommentModal
+          visitId=""
+          subject=""
+          visit=""
+          onSubmit={handleModalSubmit}
+          onClose={() => setShowAddModal(false)}
+        />
+      )}
+
+      {/* ===== Search + Filter ===== */}
+      <div
+        style={{
+          display: "flex",
+          gap: "12px",
+          flexWrap: "wrap",
+          marginBottom: "20px",
+        }}
+      >
+        <input
+          type="text"
+          placeholder="Search comments, subjects, users..."
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+          style={{
+            flex: "1 1 320px",
+            minWidth: "260px",
+            padding: "10px 12px",
+          }}
+        />
+
+        <select
+          value={statusFilter}
+          onChange={(event) => setStatusFilter(event.target.value)}
+          style={{
+            minWidth: "180px",
+            padding: "10px 12px",
+          }}
+        >
+          <option value="All">All Comments</option>
+          <option value="Open">Open / Unresolved</option>
+          <option value="Resolved">Resolved</option>
+        </select>
+      </div>
+
       <div
         style={{
           width: "100%",
@@ -128,7 +221,11 @@ function StudyComments() {
           columns={[
             { key: "id", label: "ID", width: "90px" },
             { key: "studyId", label: "Study ID", width: "120px" },
-            { key: "subjectDocument", label: "Subject / Document", width: "220px" },
+            {
+              key: "subjectDocument",
+              label: "Subject / Document",
+              width: "220px",
+            },
             { key: "comment", label: "Comment", width: "320px" },
             { key: "by", label: "By", width: "170px" },
             { key: "date", label: "Date", width: "180px" },
@@ -140,6 +237,7 @@ function StudyComments() {
           data={comments}
           emptyMessage="No comments for this study"
           pagination
+          searchable={false}
         />
       </div>
     </div>

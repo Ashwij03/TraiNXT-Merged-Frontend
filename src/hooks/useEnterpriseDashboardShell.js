@@ -8,6 +8,7 @@ import {
   setAdminPreviewRole,
   setPIPreviewRole
 } from "../services/roleService";
+import { EISF_SIDEBAR_COLLAPSE_EVENT } from "../constants/headerFilters";
 
 const DASHBOARD_ROUTE_ROLES = {
   "/admin-dashboard": ROLES.ADMIN,
@@ -64,6 +65,31 @@ export function useEnterpriseDashboardShell() {
     }
 
     setSidebarOpen((prev) => !prev);
+  }, [viewportMode]);
+
+  // Task 14 — eISF Sidebar Auto Close: collapse (desktop) or close
+  // (mobile/tablet drawer) the sidebar whenever a Study Details page
+  // signals its eISF tab just became active. Fires once per entry into
+  // eISF; nothing re-opens the sidebar afterwards, so leaving eISF keeps
+  // whatever state the user left it in.
+  useEffect(() => {
+    const handleEisfEntered = () => {
+      if (viewportMode === "desktop") {
+        setSidebarCollapsed(true);
+        return;
+      }
+
+      setSidebarOpen(false);
+    };
+
+    window.addEventListener(EISF_SIDEBAR_COLLAPSE_EVENT, handleEisfEntered);
+
+    return () => {
+      window.removeEventListener(
+        EISF_SIDEBAR_COLLAPSE_EVENT,
+        handleEisfEntered
+      );
+    };
   }, [viewportMode]);
 
   

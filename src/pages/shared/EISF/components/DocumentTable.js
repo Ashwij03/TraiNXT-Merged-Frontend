@@ -40,6 +40,10 @@ export default function DocumentTable({
   // true so any other consumer that doesn't pass these keeps prior behavior.
   canEdit = true,
   canDelete = true,
+  // Split-view selection: id of the document currently shown in the preview
+  // panel. Rows become clickable and the active row is highlighted.
+  selectedDocumentId = null,
+  onSelect,
 }) {
   const [openMenuId, setOpenMenuId] = useState(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
@@ -123,8 +127,8 @@ export default function DocumentTable({
   };
 
   return (
-    <div className={`document-table-card ${isReferenceView ? "reference-table-card" : ""}`}>
-      <table className="document-table">
+    <div className={`document-table-card tnxt-compact ${isReferenceView ? "reference-table-card" : ""}`}>
+      <table className="document-table ctms-standard-table">
         <thead>
           <tr>
             {isReferenceView && <th className="select-col"><input type="checkbox" aria-label="Select all documents" /></th>}
@@ -155,9 +159,14 @@ export default function DocumentTable({
             </tr>
           ) : (
             documents.map((doc) => (
-              <tr key={doc.id}>
+              <tr
+                key={doc.id}
+                className={`${onSelect ? "selectable-row" : ""} ${selectedDocumentId === doc.id ? "row-selected" : ""}`.trim()}
+                onClick={onSelect ? () => onSelect(doc) : undefined}
+                aria-selected={selectedDocumentId === doc.id}
+              >
                 {isReferenceView && (
-                  <td className="select-col">
+                  <td className="select-col" onClick={(event) => event.stopPropagation()}>
                     <input type="checkbox" aria-label={`Select ${doc.documentName}`} />
                   </td>
                 )}
@@ -193,7 +202,7 @@ export default function DocumentTable({
 
                 {!isReferenceView && <td>{doc.uploadedBy}</td>}
 
-                <td>
+                <td onClick={(event) => event.stopPropagation()}>
                   {isReferenceView ? (
                     <div className="icon-actions">
                       <button

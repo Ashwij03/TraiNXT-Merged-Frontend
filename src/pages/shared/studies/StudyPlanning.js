@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import RequestPermissionButton from "../../../components/common/RequestPermissionButton";
-import { canEditStudyContent } from "../../../utils/contentAccess";
-import { getCurrentUser } from "../../../services/roleService";
+import useCanEditStudyContent from "../../../hooks/useCanEditStudyContent";
 import { getStudyByCode } from "../../../services/studyService";
 import { resolveSiteDisplay } from "../../../utils/siteDisplay";
 import {
@@ -29,7 +28,7 @@ function StudyPlanning() {
   const [editingProtocol, setEditingProtocol] = useState(null);
   const [editingMember, setEditingMember] = useState(null);
   const { id: studyCode } = useParams();
-  const canEdit = canEditStudyContent(getCurrentUser());
+  const canEdit = useCanEditStudyContent("Study Planning", studyCode);
   const [version, setVersion] = useState(0);
   const [editingMilestone, setEditingMilestone] = useState(null);
 const [editingTask, setEditingTask] = useState(null);
@@ -53,7 +52,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
   const bump = () => setVersion((v) => v + 1);
 
   return (
-    <div className="study-planning-page">
+    <div className="study-planning-page tnxt-compact">
       <div className="study-planning-header">
         <div>
           <h2>Planning</h2>
@@ -103,7 +102,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
         {milestones.length === 0 ? (
           <p className="planning-empty">No planning milestones yet</p>
         ) : (
-          <table className="planning-table">
+          <table className="planning-table ctms-standard-table">
             <thead>
               <tr>
                 <th>Title</th>
@@ -176,7 +175,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
         {tasks.length === 0 ? (
           <p className="planning-empty">No tasks yet</p>
         ) : (
-          <table className="planning-table">
+          <table className="planning-table ctms-standard-table">
             <thead>
   <tr>
     <th>Task ID</th>
@@ -241,7 +240,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
         {team.length === 0 ? (
           <p className="planning-empty">No team members added yet</p>
         ) : (
-          <table className="planning-table">
+          <table className="planning-table ctms-standard-table">
             <thead>
               <tr>
                 <th>Name</th>
@@ -466,21 +465,34 @@ bump();
   );
 }
 
+const MILESTONE_FORM_DEFAULTS = {
+  title: "",
+  dueDate: "",
+  owner: "",
+  status: "Not Started",
+};
+
 function PlanningMilestoneForm({
     initialData,
     onSave
 }) {
-  const [form, setForm] = useState({
-    title: "",
-    dueDate: "",
-    owner: "",
-    status: "Not Started",
-  });
+  const [form, setForm] = useState(MILESTONE_FORM_DEFAULTS);
   useEffect(() => {
-  if (initialData) {
-    setForm(initialData);
-  }
-}, [initialData]);
+    // Phase 11–13 BUG-1: Merge stored record onto defaults so every controlled
+    // field remains a defined string. Stored records may be missing keys
+    // (e.g. legacy milestone with no `owner`), which previously flipped the
+    // corresponding input from controlled → uncontrolled on Edit.
+    if (initialData) {
+      setForm({
+        ...MILESTONE_FORM_DEFAULTS,
+        ...initialData,
+        title: initialData.title ?? "",
+        dueDate: initialData.dueDate ?? "",
+        owner: initialData.owner ?? "",
+        status: initialData.status ?? "Not Started",
+      });
+    }
+  }, [initialData]);
 
   return (
     <form
@@ -489,22 +501,22 @@ function PlanningMilestoneForm({
         e.preventDefault();
         if (!form.title.trim()) return;
         onSave(form);
-        setForm({ title: "", dueDate: "", owner: "", status: "Not Started" });
+        setForm(MILESTONE_FORM_DEFAULTS);
       }}
     >
       <input
         placeholder="Milestone title"
-        value={form.title}
+        value={form.title ?? ""}
         onChange={(e) => setForm({ ...form, title: e.target.value })}
       />
       <input
         type="date"
-        value={form.dueDate}
+        value={form.dueDate ?? ""}
         onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
       />
       <input
         placeholder="Owner"
-        value={form.owner}
+        value={form.owner ?? ""}
         onChange={(e) => setForm({ ...form, owner: e.target.value })}
       />
       <button type="submit" className="secondary-btn">
@@ -514,22 +526,34 @@ function PlanningMilestoneForm({
   );
 }
 
+const TASK_FORM_DEFAULTS = {
+  title: "",
+  assignee: "",
+  dueDate: "",
+  priority: "Medium",
+  status: "Open",
+};
+
 function PlanningTaskForm({
   initialData,
   onSave,
 }) {
-  const [form, setForm] = useState({
-    title: "",
-    assignee: "",
-    dueDate: "",
-    priority: "Medium",
-    status: "Open",
-  });
-useEffect(() => {
-  if (initialData) {
-    setForm(initialData);
-  }
-}, [initialData]);
+  const [form, setForm] = useState(TASK_FORM_DEFAULTS);
+  useEffect(() => {
+    // Phase 11–13 BUG-1: keep every controlled field defined when editing an
+    // existing task record that may not carry all keys.
+    if (initialData) {
+      setForm({
+        ...TASK_FORM_DEFAULTS,
+        ...initialData,
+        title: initialData.title ?? "",
+        assignee: initialData.assignee ?? "",
+        dueDate: initialData.dueDate ?? "",
+        priority: initialData.priority ?? "Medium",
+        status: initialData.status ?? "Open",
+      });
+    }
+  }, [initialData]);
   return (
     <form
       className="planning-inline-form"
@@ -537,28 +561,22 @@ useEffect(() => {
         e.preventDefault();
         if (!form.title.trim()) return;
         onSave(form);
-        setForm({
-          title: "",
-          assignee: "",
-          dueDate: "",
-          priority: "Medium",
-          status: "Open",
-        });
+        setForm(TASK_FORM_DEFAULTS);
       }}
     >
       <input
         placeholder="Task title"
-        value={form.title}
+        value={form.title ?? ""}
         onChange={(e) => setForm({ ...form, title: e.target.value })}
       />
       <input
         placeholder="Assignee"
-        value={form.assignee}
+        value={form.assignee ?? ""}
         onChange={(e) => setForm({ ...form, assignee: e.target.value })}
       />
       <input
         type="date"
-        value={form.dueDate}
+        value={form.dueDate ?? ""}
         onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
       />
      <button type="submit" className="secondary-btn">
@@ -568,22 +586,34 @@ useEffect(() => {
   );
 }
 
+const STUDY_TEAM_FORM_DEFAULTS = {
+  name: "",
+  role: "",
+  email: "",
+  organization: "",
+  startDate: "",
+};
+
 function StudyTeamForm({
   initialData,
   onSave,
 }) {
-  const [form, setForm] = useState({
-    name: "",
-    role: "",
-    email: "",
-    organization: "",
-    startDate: "",
-  });
+  const [form, setForm] = useState(STUDY_TEAM_FORM_DEFAULTS);
   useEffect(() => {
-  if (initialData) {
-    setForm(initialData);
-  }
-}, [initialData]);
+    // Phase 11–13 BUG-1: keep every controlled field defined when editing an
+    // existing team member record.
+    if (initialData) {
+      setForm({
+        ...STUDY_TEAM_FORM_DEFAULTS,
+        ...initialData,
+        name: initialData.name ?? "",
+        role: initialData.role ?? "",
+        email: initialData.email ?? "",
+        organization: initialData.organization ?? "",
+        startDate: initialData.startDate ?? "",
+      });
+    }
+  }, [initialData]);
 
   return (
     <form
@@ -592,22 +622,22 @@ function StudyTeamForm({
         e.preventDefault();
         if (!form.name.trim()) return;
         onSave(form);
-        setForm({ name: "", role: "", email: "", organization: "", startDate: "" });
+        setForm(STUDY_TEAM_FORM_DEFAULTS);
       }}
     >
       <input
         placeholder="Name"
-        value={form.name}
+        value={form.name ?? ""}
         onChange={(e) => setForm({ ...form, name: e.target.value })}
       />
       <input
         placeholder="Role"
-        value={form.role}
+        value={form.role ?? ""}
         onChange={(e) => setForm({ ...form, role: e.target.value })}
       />
       <input
   type="date"
-  value={form.startDate}
+  value={form.startDate ?? ""}
   onChange={(e) =>
     setForm({
       ...form,
@@ -617,12 +647,12 @@ function StudyTeamForm({
 />
       <input
         placeholder="Email"
-        value={form.email}
+        value={form.email ?? ""}
         onChange={(e) => setForm({ ...form, email: e.target.value })}
       />
       <input
         placeholder="Organization"
-        value={form.organization}
+        value={form.organization ?? ""}
         onChange={(e) => setForm({ ...form, organization: e.target.value })}
       />
       <button type="submit" className="secondary-btn">
@@ -632,23 +662,36 @@ function StudyTeamForm({
   );
 }
 
-function RegulatoryItemForm({
-  initialData,
-  onSave,
-}) {
-  const [form, setForm] = useState({
+const REGULATORY_ITEM_FORM_DEFAULTS = {
   label: "",
   documentDate: "",
   dueDate: "",
   status: "Pending",
   documentName: "",
   documentUrl: "",
-});
-useEffect(() => {
-  if (initialData) {
-    setForm(initialData);
-  }
-}, [initialData]);
+};
+
+function RegulatoryItemForm({
+  initialData,
+  onSave,
+}) {
+  const [form, setForm] = useState(REGULATORY_ITEM_FORM_DEFAULTS);
+  useEffect(() => {
+    // Phase 11–13 BUG-1: keep every controlled field defined when editing an
+    // existing regulatory checklist item that may not carry all keys.
+    if (initialData) {
+      setForm({
+        ...REGULATORY_ITEM_FORM_DEFAULTS,
+        ...initialData,
+        label: initialData.label ?? "",
+        documentDate: initialData.documentDate ?? "",
+        dueDate: initialData.dueDate ?? "",
+        status: initialData.status ?? "Pending",
+        documentName: initialData.documentName ?? "",
+        documentUrl: initialData.documentUrl ?? "",
+      });
+    }
+  }, [initialData]);
 
   return (
     <form
@@ -662,19 +705,12 @@ onSave({
   completed: false,
 });
 
-setForm({
-  label: "",
-  documentDate: "",
-  dueDate: "",
-  status: "Pending",
-  documentName: "",
-  documentUrl: "",
-});
+setForm(REGULATORY_ITEM_FORM_DEFAULTS);
       }}
     >
       <input
   placeholder="Checklist Item"
-  value={form.label}
+  value={form.label ?? ""}
   onChange={(e) =>
     setForm({
       ...form,
@@ -685,7 +721,7 @@ setForm({
 
 <input
   type="date"
-  value={form.documentDate}
+  value={form.documentDate ?? ""}
   onChange={(e) =>
     setForm({
       ...form,
@@ -696,7 +732,7 @@ setForm({
 
 <input
   type="date"
-  value={form.dueDate}
+  value={form.dueDate ?? ""}
   onChange={(e) =>
     setForm({
       ...form,
@@ -706,7 +742,7 @@ setForm({
 />
 
 <select
-  value={form.status}
+  value={form.status ?? "Pending"}
   onChange={(e) =>
     setForm({
       ...form,
@@ -741,23 +777,37 @@ setForm({
   );
 }
 
+const PROTOCOL_FORM_DEFAULTS = {
+  title: "",
+  protocolNumber: "",
+  version: "1.0",
+  effectiveDate: "",
+  summary: "",
+  status: "Draft",
+};
+
 function ProtocolForm({
 initialData,
 onSave
 }) {
-  const [form,setForm]=useState({
-title:"",
-protocolNumber:"",
-version:"1.0",
-effectiveDate:"",
-summary:"",
-status:"Draft"
-});
-useEffect(()=>{
-if(initialData){
-setForm(initialData);
-}
-},[initialData]);
+  const [form, setForm] = useState(PROTOCOL_FORM_DEFAULTS);
+  useEffect(() => {
+    // Phase 11–13 BUG-1: keep every controlled field defined when editing an
+    // existing protocol record that may not carry all keys (legacy protocols
+    // often have no `summary`, `effectiveDate`, or `protocolNumber`).
+    if (initialData) {
+      setForm({
+        ...PROTOCOL_FORM_DEFAULTS,
+        ...initialData,
+        title: initialData.title ?? "",
+        protocolNumber: initialData.protocolNumber ?? "",
+        version: initialData.version ?? "1.0",
+        effectiveDate: initialData.effectiveDate ?? "",
+        summary: initialData.summary ?? "",
+        status: initialData.status ?? "Draft",
+      });
+    }
+  }, [initialData]);
 
   return (
     <form
@@ -766,24 +816,17 @@ setForm(initialData);
         e.preventDefault();
         if (!form.title.trim()) return;
         onSave(form);
-        setForm({
-title:"",
-protocolNumber:"",
-version:"1.0",
-effectiveDate:"",
-summary:"",
-status:"Draft"
-});
+        setForm(PROTOCOL_FORM_DEFAULTS);
       }}
     >
       <input
         placeholder="Protocol title"
-        value={form.title}
+        value={form.title ?? ""}
         onChange={(e) => setForm({ ...form, title: e.target.value })}
       />
       <input
 placeholder="Protocol Number"
-value={form.protocolNumber}
+value={form.protocolNumber ?? ""}
 onChange={(e)=>
 setForm({
 ...form,
@@ -792,7 +835,7 @@ protocolNumber:e.target.value
 }
 />
 <select
-value={form.status}
+value={form.status ?? "Draft"}
 onChange={(e)=>
 setForm({
 ...form,
@@ -810,17 +853,17 @@ status:e.target.value
 </select>
       <input
         placeholder="Version"
-        value={form.version}
+        value={form.version ?? ""}
         onChange={(e) => setForm({ ...form, version: e.target.value })}
       />
       <input
         type="date"
-        value={form.effectiveDate}
+        value={form.effectiveDate ?? ""}
         onChange={(e) => setForm({ ...form, effectiveDate: e.target.value })}
       />
       <textarea
         placeholder="Summary"
-        value={form.summary}
+        value={form.summary ?? ""}
         rows={2}
         onChange={(e) => setForm({ ...form, summary: e.target.value })}
       />

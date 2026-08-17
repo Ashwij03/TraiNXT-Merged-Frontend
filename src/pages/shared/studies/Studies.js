@@ -2,13 +2,23 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
 import KPICard from "../../../components/dashboard/shared/KPICard";
+import StudyModal from "../../../components/studies/StudyModal";
 import { createStudy } from "../../../services/studyService";
 import {
   getAccessibleStudies,
   getCurrentUser,
 } from "../../../services/roleService";
 import { canAddStudy } from "../../../utils/contentAccess";
+import { resolveSiteDisplay } from "../../../utils/siteDisplay";
 import { readStorage } from "../../../utils/storageHelpers";
+import {
+  HEADER_FILTERS_EVENT,
+  INSTITUTION_FILTER_EVENT,
+  getStoredIndicationFilter,
+  getStoredInstitutionFilter,
+  getStoredSiteNumberFilter,
+} from "../../../constants/headerFilters";
+import { getInstitutionForSiteNumber } from "../../../services/filterService";
 import {
   STUDY_STATUS_OPTIONS,
   STUDY_STATUS_DEFAULT,
@@ -34,6 +44,7 @@ const initialForm = {
   name: "",
   protocol: "",
   indication: "",
+  siteNumber: "",
   country: "",
   location: "",
   site: "",
@@ -194,11 +205,69 @@ function Studies() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [sponsorFilter, setSponsorFilter] = useState("");
-  const [indicationFilter, setIndicationFilter] = useState("");
+  // Task: Header Indication Link — the header's Indication dropdown now
+  // routes here (see EnterpriseNavbarBase's updateFilter), so this page's
+  // own Indication filter must open already scoped to whatever indication
+  // was picked in the header, and stay in sync with it afterwards (see the
+  // HEADER_FILTERS_EVENT listener below). The dropdown remains editable
+  // locally same as before; it's simply re-synced whenever the header
+  // filter changes.
+  const [indicationFilter, setIndicationFilter] = useState(() =>
+    getStoredIndicationFilter()
+  );
   const [countryFilter, setCountryFilter] = useState("");
   const [sortBy, setSortBy] = useState("studyId");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  // Task 10 — Studies Page Header Filters: the header's Site Name / Site
+  // Number dropdowns should scope this page's study list the same way
+  // they scope the Dashboards, live, with no refresh required. Read the
+  // current value on mount and stay in sync via the same events the
+  // header itself dispatches when either dropdown changes.
+  const [headerInstitutionFilter, setHeaderInstitutionFilter] = useState(() =>
+    getStoredInstitutionFilter()
+  );
+  const [headerSiteNumberFilter, setHeaderSiteNumberFilter] = useState(() =>
+    getStoredSiteNumberFilter()
+  );
+
+  useEffect(() => {
+    const handleInstitutionEvent = (event) => {
+      setHeaderInstitutionFilter(event?.detail || getStoredInstitutionFilter());
+    };
+
+    const handleHeaderFiltersEvent = () => {
+      setHeaderInstitutionFilter(getStoredInstitutionFilter());
+      setHeaderSiteNumberFilter(getStoredSiteNumberFilter());
+      // Task: Header Indication Link — keep this page's Indication filter
+      // in sync with the header's Indication dropdown too.
+      setIndicationFilter(getStoredIndicationFilter());
+    };
+
+    window.addEventListener(INSTITUTION_FILTER_EVENT, handleInstitutionEvent);
+    window.addEventListener(HEADER_FILTERS_EVENT, handleHeaderFiltersEvent);
+
+    return () => {
+      window.removeEventListener(
+        INSTITUTION_FILTER_EVENT,
+        handleInstitutionEvent
+      );
+      window.removeEventListener(
+        HEADER_FILTERS_EVENT,
+        handleHeaderFiltersEvent
+      );
+    };
+  }, []);
+
+  // Whichever of Site Name / Site Number is set (Site Number resolves to
+  // its paired Site Name), narrowed the same way the Dashboards already do.
+  const effectiveHeaderSite = useMemo(
+    () =>
+      headerInstitutionFilter ||
+      getInstitutionForSiteNumber(headerSiteNumberFilter, currentUser),
+    [headerInstitutionFilter, headerSiteNumberFilter, currentUser]
+  );
 
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem("studiesViewMode") || "grid";
@@ -263,12 +332,22 @@ function Studies() {
         !indicationFilter || study.indication === indicationFilter;
       const matchesCountry = !countryFilter || study.country === countryFilter;
 
+      // Task 10 — Studies Page Header Filters: narrow to studies at the
+      // site selected via the header's Site Name / Site Number dropdown.
+      const studySite = study.site || study.location || "";
+      const matchesHeaderSite =
+        !effectiveHeaderSite ||
+        studySite === effectiveHeaderSite ||
+        studySite.includes(effectiveHeaderSite) ||
+        effectiveHeaderSite.includes(studySite);
+
       return (
         matchesSearch &&
         matchesStatus &&
         matchesSponsor &&
         matchesIndication &&
-        matchesCountry
+        matchesCountry &&
+        matchesHeaderSite
       );
     });
 
@@ -324,6 +403,7 @@ function Studies() {
     sponsorFilter,
     indicationFilter,
     countryFilter,
+    effectiveHeaderSite,
     sortBy,
   ]);
 
@@ -340,6 +420,7 @@ function Studies() {
     sponsorFilter,
     indicationFilter,
     countryFilter,
+    effectiveHeaderSite,
     sortBy,
     viewMode,
     pageSize,
@@ -564,7 +645,7 @@ function Studies() {
 
   return (
     <DashboardLayout>
-      <div className="studies-page">
+      <div className="studies-page tnxt-compact">
         <div className="studies-page-header">
           <div>
             <h1>My Studies</h1>
@@ -743,7 +824,7 @@ function Studies() {
 
                     <div>
                       <strong>Site:</strong>
-                      {getStudySiteName(study, sites) || "N/A"}
+                      {resolveSiteDisplay(study, { sources: sites }) || "N/A"}
                     </div>
 
                     <div>
@@ -823,7 +904,7 @@ function Studies() {
 
                 <div className="study-list-field">
                   <label>Site</label>
-                  <span>{getStudySiteName(study, sites) || "-"}</span>
+                  <span>{resolveSiteDisplay(study, { sources: sites }) || "-"}</span>
                 </div>
 
                 <div className="study-list-field">
@@ -948,212 +1029,196 @@ function Studies() {
         {renderPagination()}
 
         {formOpen && (
-          <div className="study-modal-overlay">
-            <form className="study-modal" onSubmit={handleSubmit}>
-              <div className="study-modal-header">
-                <div>
-                  <h2>Add Study</h2>
-                  <p>Enter the study, site and subject details.</p>
-                </div>
+          <StudyModal
+            mode="add"
+            onClose={() => setFormOpen(false)}
+            onSubmit={handleSubmit}
+          >
+            <div className="study-form-grid">
+              <label>
+                Study ID
+                <input
+                  name="code"
+                  value={form.code}
+                  onChange={handleChange}
+                  required
+                  placeholder="Example: ABC-101"
+                />
+              </label>
 
-                <button
-                  type="button"
-                  onClick={() => setFormOpen(false)}
-                  aria-label="Close add study form"
+              <label>
+                Study Name
+                <input
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  required
+                  placeholder="Study name"
+                />
+              </label>
+
+              <label>
+                Protocol
+                <input
+                  name="protocol"
+                  value={form.protocol}
+                  onChange={handleChange}
+                  placeholder="Protocol title"
+                />
+              </label>
+
+              <label>
+                Indication
+                <input
+                  name="indication"
+                  value={form.indication}
+                  onChange={handleChange}
+                  required
+                  placeholder="Example: Oncology"
+                />
+              </label>
+
+              <label>
+                Site Number
+                <input
+                  name="siteNumber"
+                  value={form.siteNumber}
+                  onChange={handleChange}
+                  required
+                  placeholder="Example: 001"
+                />
+              </label>
+
+              <label>
+                Site / Hospital
+                <input
+                  name="location"
+                  value={form.location}
+                  onChange={handleChange}
+                  required
+                  placeholder="Apollo Hospital"
+                />
+              </label>
+
+              <label>
+                Country
+                <input
+                  name="country"
+                  value={form.country}
+                  onChange={handleChange}
+                  required
+                  placeholder="India"
+                />
+              </label>
+
+              <label>
+                Subjects Enrolled
+                <input
+                  name="enrolled"
+                  type="number"
+                  min="0"
+                  value={form.enrolled}
+                  onChange={handleChange}
+                  required
+                  placeholder="0"
+                />
+              </label>
+
+              <label>
+                Target Subjects
+                <input
+                  name="targetSubjects"
+                  type="number"
+                  min="0"
+                  value={form.targetSubjects}
+                  onChange={handleChange}
+                  required
+                  placeholder="100"
+                />
+              </label>
+
+              <label>
+                Study Status
+                <select
+                  name="status"
+                  value={form.status}
+                  onChange={handleChange}
+                  required
                 >
-                  ×
-                </button>
-              </div>
+                  {STUDY_STATUS_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-              <div className="study-form-grid">
-                <label>
-                  Study ID
-                  <input
-                    name="code"
-                    value={form.code}
-                    onChange={handleChange}
-                    required
-                    placeholder="Example: ABC-101"
-                  />
-                </label>
+              <label>
+                Principal Investigator
+                <input
+                  name="principalInvestigator"
+                  value={form.principalInvestigator}
+                  onChange={handleChange}
+                  required
+                  placeholder="PI name"
+                />
+              </label>
 
-                <label>
-                  Study Name
-                  <input
-                    name="name"
-                    value={form.name}
-                    onChange={handleChange}
-                    required
-                    placeholder="Study name"
-                  />
-                </label>
+              <label>
+                Sponsor
+                <input
+                  name="sponsor"
+                  value={form.sponsor}
+                  onChange={handleChange}
+                  required
+                  placeholder="Sponsor name"
+                />
+              </label>
 
-                <label>
-                  Protocol
-                  <input
-                    name="protocol"
-                    value={form.protocol}
-                    onChange={handleChange}
-                    placeholder="Protocol title"
-                  />
-                </label>
+              <label>
+                CRO
+                <input
+                  name="cro"
+                  value={form.cro}
+                  onChange={handleChange}
+                  placeholder="IQVIA"
+                />
+              </label>
 
-                <label>
-                  Indication
-                  <input
-                    name="indication"
-                    value={form.indication}
-                    onChange={handleChange}
-                    required
-                    placeholder="Example: Oncology"
-                  />
-                </label>
+              <label>
+                Start Date
+                <input
+                  name="startDate"
+                  type="date"
+                  value={form.startDate}
+                  onChange={handleChange}
+                  required
+                />
+              </label>
 
-                <label>
-                  Site / Hospital
-                  <input
-                    name="location"
-                    value={form.location}
-                    onChange={handleChange}
-                    required
-                    placeholder="Apollo Hospital"
-                  />
-                </label>
+              <label>
+                Completed Date
+                <input
+                  name="completedDate"
+                  type="date"
+                  value={form.completedDate}
+                  onChange={handleChange}
+                />
+              </label>
 
-                <label>
-                  Country
-                  <input
-                    name="country"
-                    value={form.country}
-                    onChange={handleChange}
-                    required
-                    placeholder="India"
-                  />
-                </label>
-
-                <label>
-                  Subjects Enrolled
-                  <input
-                    name="enrolled"
-                    type="number"
-                    min="0"
-                    value={form.enrolled}
-                    onChange={handleChange}
-                    required
-                    placeholder="0"
-                  />
-                </label>
-
-                <label>
-                  Target Subjects
-                  <input
-                    name="targetSubjects"
-                    type="number"
-                    min="0"
-                    value={form.targetSubjects}
-                    onChange={handleChange}
-                    required
-                    placeholder="100"
-                  />
-                </label>
-
-                <label>
-                  Study Status
-                  <select
-                    name="status"
-                    value={form.status}
-                    onChange={handleChange}
-                    required
-                  >
-                    {STUDY_STATUS_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label>
-                  Principal Investigator
-                  <input
-                    name="principalInvestigator"
-                    value={form.principalInvestigator}
-                    onChange={handleChange}
-                    required
-                    placeholder="PI name"
-                  />
-                </label>
-
-                <label>
-                  Sponsor
-                  <input
-                    name="sponsor"
-                    value={form.sponsor}
-                    onChange={handleChange}
-                    required
-                    placeholder="Sponsor name"
-                  />
-                </label>
-
-                <label>
-                  CRO
-                  <input
-                    name="cro"
-                    value={form.cro}
-                    onChange={handleChange}
-                    placeholder="IQVIA"
-                  />
-                </label>
-
-                <label>
-                  Start Date
-                  <input
-                    name="startDate"
-                    type="date"
-                    value={form.startDate}
-                    onChange={handleChange}
-                    required
-                  />
-                </label>
-
-                <label>
-                  Completed Date
-                  <input
-                    name="completedDate"
-                    type="date"
-                    value={form.completedDate}
-                    onChange={handleChange}
-                  />
-                </label>
-
-                <label className="study-form-wide">
-                  Study Description
-                  <textarea
-                    name="description"
-                    value={form.description}
-                    onChange={handleChange}
-                    required
-                    rows="3"
-                    placeholder="Brief study description"
-                  />
-                </label>
-              </div>
-
-              <div className="study-modal-actions">
-                <button
-                  type="button"
-                  className="secondary-btn"
-                  onClick={() => setFormOpen(false)}
-                >
-                  Cancel
-                </button>
-
-                <button type="submit" className="add-study-btn">
-                  Submit Study
-                </button>
-              </div>
-            </form>
-          </div>
+              <label className="study-form-wide">
+                Study Description
+                <textarea
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  required
+                  rows="3"
+                  placeholder="Brief study description"
+                />
+              </label>
+            </div>
+          </StudyModal>
         )}
       </div>
     </DashboardLayout>

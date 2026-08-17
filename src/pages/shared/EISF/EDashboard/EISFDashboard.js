@@ -1,6 +1,16 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import "./EISFDashboard.css";
 import EISFMenuConfig from "../Constants/EISFMenuConfig";
+import EISF_ASSIGNED_MODULES from "../eisfAssignedModuleConfig";
+import {
+  EISF_DOCUMENTS_EVENT,
+  getFolderCounts,
+  initializeModuleDocuments,
+} from "../services/documentService";
+import {
+  getSubModuleEnabledMap,
+  setSubModuleEnabled,
+} from "../utils/subModuleStateUtils";
 
 // Pages
 import ParticipatingSiteTeam from "../ParticipatingSiteTeam/ParticipatingSiteTeam";
@@ -58,13 +68,91 @@ function getParentSectionId(id) {
   return `${sectionNumber}.0`;
 }
 
+// Reuses the existing module configs, keyed by module id, so the accordion can
+// read the same sections/documents the workspace already uses.
+const moduleConfigById = Object.values(EISF_ASSIGNED_MODULES).reduce(
+  (map, moduleConfig) => {
+    map[moduleConfig.id] = moduleConfig;
+    return map;
+  },
+  {}
+);
+
 export default function EISFDashboard({ studyCode } = {}) {
   const [selected, setSelected] = useState("1.0");
   const [expandedModuleId, setExpandedModuleId] = useState(null);
+  // Sub-module Enable/Disable state (Item 9) — same localStorage-backed state
+  // the workspace already used, now surfaced in the accordion.
+  const [enabledMap, setEnabledMap] = useState(() =>
+    getSubModuleEnabledMap(studyCode)
+  );
+  // Bumped when the workspace persists documents (existing eISF event) so the
+  // sub-module counts stay in sync, and when a sub-module is toggled so the
+  // workspace re-reads the stored enable/disable state.
+  const [documentsVersion, setDocumentsVersion] = useState(0);
+  const [enabledVersion, setEnabledVersion] = useState(0);
 
   const selectedModuleId = useMemo(
     () => getParentSectionId(selected),
     [selected]
+  );
+
+  useEffect(() => {
+    setEnabledMap(getSubModuleEnabledMap(studyCode));
+  }, [studyCode]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+
+    const bump = () => setDocumentsVersion((current) => current + 1);
+
+    window.addEventListener(EISF_DOCUMENTS_EVENT, bump);
+
+    return () => window.removeEventListener(EISF_DOCUMENTS_EVENT, bump);
+  }, []);
+
+  // Document counts per sub-module, built from the same module documents and
+  // the same getFolderCounts() helper the removed panel used.
+  const folderCounts = useMemo(() => {
+    return EISFMenuConfig.reduce((counts, item) => {
+      const moduleConfig = moduleConfigById[item.id];
+
+      if (!moduleConfig) return counts;
+
+      return {
+        ...counts,
+        ...getFolderCounts(
+          moduleConfig.sections,
+          initializeModuleDocuments(moduleConfig, studyCode)
+        ),
+      };
+    }, {});
+    // documentsVersion re-reads the persisted documents after an upload/delete.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studyCode, documentsVersion]);
+
+  const isSectionEnabled = useCallback(
+    (sectionId) => {
+      if (!sectionId) return true;
+      // Default to enabled (backwards compatible) when never toggled.
+      return enabledMap[sectionId] !== false;
+    },
+    [enabledMap]
+  );
+
+  const handleToggleSectionEnabled = useCallback(
+    (sectionId, event) => {
+      if (event) {
+        event.stopPropagation();
+      }
+      if (!sectionId) return;
+
+      const nextEnabled = !isSectionEnabled(sectionId);
+      setSubModuleEnabled(studyCode, sectionId, nextEnabled);
+      setEnabledMap((prev) => ({ ...prev, [sectionId]: nextEnabled }));
+      setEnabledVersion((current) => current + 1);
+    },
+    [isSectionEnabled, studyCode]
   );
 
   const CurrentPage = useMemo(() => {
@@ -84,6 +172,17 @@ export default function EISFDashboard({ studyCode } = {}) {
     );
   };
 
+  // Task 1: the whole module row is the expand/collapse trigger. It keeps the
+  // existing module-selection behaviour and the single-open accordion, while
+  // the "+" / "−" glyph is now only a visual indicator.
+  const handleModuleRowClick = (item) => {
+    handleModuleChange(item.id);
+
+    if (item.children?.length > 0) {
+      toggleModule(item.id);
+    }
+  };
+
   return (
     <div className="eisf-layout eisf-layout-reference">
       <aside className="eisf-sidebar">
@@ -95,42 +194,78 @@ export default function EISFDashboard({ studyCode } = {}) {
               <div
                 className={`eisf-menu-item ${
                   selectedModuleId === item.id ? "active" : ""
-                }`}
+                } ${expandedModuleId === item.id ? "expanded" : ""}`}
               >
                 <button
                   type="button"
                   className="eisf-menu-label"
-                  onClick={() => handleModuleChange(item.id)}
+                  onClick={() => handleModuleRowClick(item)}
+                  aria-expanded={
+                    item.children?.length > 0
+                      ? expandedModuleId === item.id
+                      : undefined
+                  }
+                  aria-label={
+                    item.children?.length > 0
+                      ? `${expandedModuleId === item.id ? "Collapse" : "Expand"} ${item.title}`
+                      : item.title
+                  }
                 >
-                  <span className="eisf-module-number">{item.id}</span>
-                  <span>{item.title}</span>
-                </button>
+                  <span className="eisf-menu-text">
+                    <span className="eisf-module-number">{item.id}</span>
+                    <span>{item.title}</span>
+                  </span>
 
-                {item.children?.length > 0 && (
-                  <button
-                    type="button"
-                    className="eisf-expand-btn"
-                    onClick={() => toggleModule(item.id)}
-                    aria-label={`${expandedModuleId === item.id ? "Collapse" : "Expand"} ${item.title}`}
-                  >
-                    {expandedModuleId === item.id ? "−" : "+"}
-                  </button>
-                )}
+                  {item.children?.length > 0 && (
+                    <span className="eisf-expand-indicator" aria-hidden="true">
+                      {expandedModuleId === item.id ? "−" : "+"}
+                    </span>
+                  )}
+                </button>
               </div>
 
               {expandedModuleId === item.id &&
-                item.children?.map((child) => (
-                  <button
-                    type="button"
-                    key={child.id}
-                    className={`eisf-child-item ${
-                      selected === child.id ? "active" : ""
-                    }`}
-                    onClick={() => handleSectionChange(child.id)}
-                  >
-                    {child.id} {child.title}
-                  </button>
-                ))}
+                item.children?.map((child) => {
+                  const enabled = isSectionEnabled(child.id);
+
+                  return (
+                    <div className="eisf-child-row" key={child.id}>
+                      <button
+                        type="button"
+                        className={`eisf-child-item ${
+                          selected === child.id ? "active" : ""
+                        } ${enabled ? "" : "disabled"}`}
+                        onClick={() => handleSectionChange(child.id)}
+                      >
+                        <span className="eisf-child-title">
+                          {child.id} {child.title}
+                        </span>
+                        <span className="section-count">
+                          {folderCounts[child.id] || 0}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        className={`eisf-submodule-toggle ${enabled ? "enabled" : ""}`}
+                        onClick={(event) =>
+                          handleToggleSectionEnabled(child.id, event)
+                        }
+                        aria-pressed={enabled}
+                        aria-label={
+                          enabled ? "Disable sub-module" : "Enable sub-module"
+                        }
+                        title={
+                          enabled ? "Disable sub-module" : "Enable sub-module"
+                        }
+                      >
+                        <span className="toggle-track" aria-hidden="true">
+                          <span className="toggle-thumb" />
+                        </span>
+                      </button>
+                    </div>
+                  );
+                })}
             </div>
           ))}
         </div>
@@ -138,6 +273,10 @@ export default function EISFDashboard({ studyCode } = {}) {
 
       <main className="eisf-content">
         <CurrentPage
+          // enabledVersion re-mounts the module page after a sub-module toggle
+          // so it re-reads the stored enable/disable state (no prop-chain or
+          // service changes needed).
+          key={`${selectedModuleId}-${enabledVersion}`}
           studyCode={studyCode}
           activeSectionId={selected === selectedModuleId ? undefined : selected}
           selectedModuleId={selectedModuleId}

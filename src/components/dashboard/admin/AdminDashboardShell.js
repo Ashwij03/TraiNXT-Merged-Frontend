@@ -11,6 +11,7 @@ import {
   setAdminPreviewRole,
   setPIPreviewRole
 } from "../../../services/roleService";
+import { EISF_SIDEBAR_COLLAPSE_EVENT } from "../../../constants/headerFilters";
 
 import "../shared/DashboardLayout.css";
 import "../shared/dashboard.css";
@@ -69,6 +70,30 @@ function AdminDashboardShell({ children }) {
     }
 
     setSidebarOpen((prev) => !prev);
+  }, [viewportMode]);
+
+  // Task 14 — eISF Sidebar Auto Close: see useEnterpriseDashboardShell for
+  // the full explanation. AdminDashboardShell keeps its own separate
+  // sidebar state (rather than the shared hook), so it needs its own copy
+  // of this listener.
+  useEffect(() => {
+    const handleEisfEntered = () => {
+      if (viewportMode === "desktop") {
+        setSidebarCollapsed(true);
+        return;
+      }
+
+      setSidebarOpen(false);
+    };
+
+    window.addEventListener(EISF_SIDEBAR_COLLAPSE_EVENT, handleEisfEntered);
+
+    return () => {
+      window.removeEventListener(
+        EISF_SIDEBAR_COLLAPSE_EVENT,
+        handleEisfEntered
+      );
+    };
   }, [viewportMode]);
 
   const sidebarWrapClass = [

@@ -4,9 +4,11 @@
   margin: 12px 0;
 }
 
-/* Sub-log tab strip inside a Study's Logs tab (Delegation / Training). */
+/* Sub-log tab strip inside a Study's Logs tab (Delegation / Training /
+   Site Visit / NTF / Miscellaneous). */
 .study-log-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin: 20px 0 8px;
   border-bottom: 1px solid #e5e7eb;

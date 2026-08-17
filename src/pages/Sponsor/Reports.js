@@ -114,7 +114,7 @@ const Reports = () => {
 
   return (
     <AppLayout>
-      <div className="reports-page">
+      <div className="reports-page tnxt-compact">
         <div className="sponsor-page-header">
           <h1>Reports</h1>
           <p>Generate and access clinical trial reports and analytics.</p>
@@ -254,7 +254,7 @@ const Reports = () => {
         <div className="sponsor-table-wrap" style={{ marginTop: 24 }}>
           <h2>Recent Reports</h2>
 
-          <table className="sponsor-table">
+          <table className="sponsor-table ctms-standard-table">
             <thead>
               <tr>
                 <th>ID</th>

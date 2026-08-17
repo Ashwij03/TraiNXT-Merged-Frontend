@@ -16,10 +16,10 @@ function Monitoring() {
       : "—";
 
   return (
-    <div style={{ padding: "30px" }}>
+    <div style={{ padding: "30px" }} className="monitoring-visits-page tnxt-compact">
       <h1>Monitoring Visits</h1>
 
-      <table>
+      <table className="ctms-standard-table">
         <thead>
           <tr>
             <th>Site</th>
