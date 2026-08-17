@@ -5,8 +5,7 @@
 }
 
 /* Sub-log tab strip inside a Study's Logs tab (Delegation / Training /
-   AE-SE / PD / Temperature). Wraps on narrow screens so the extra tabs
-   never overflow the card. */
+   Site Visit / NTF / Miscellaneous). */
 .study-log-tabs {
   display: flex;
   flex-wrap: wrap;

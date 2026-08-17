@@ -5,6 +5,9 @@ import DataTable from "../../../components/dashboard/shared/DataTable";
 import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
 import DelegationLog from "../../../components/DelegationLog";
 import TrainingLog from "../../../components/TrainingLog";
+import SiteVisitLog from "../../../components/SiteVisitLog";
+import NTFLog from "../../../components/NTFLog";
+import MiscellaneousLog from "../../../components/MiscellaneousLog";
 import AELog from "../../../components/AELog";
 import PDLog from "../../../components/PDLog";
 import TempLog from "../../../components/TempLog";
@@ -13,6 +16,12 @@ import {
   getStudyLogs,
   getDelegationLogs,
   getTrainingLogs,
+  getSiteVisitLogs,
+  getNTFLogs,
+  getMiscellaneousLogs,
+  saveSiteVisitLogs,
+  saveNTFLogs,
+  saveMiscellaneousLogs,
   getAELogs,
   getPDLogs,
   getTempLogs,
@@ -20,6 +29,7 @@ import {
   savePDLogs,
   saveTempLogs
 } from "../../../services/adminService";
+import { getSiteNumberDirectory } from "../../../services/filterService";
 import { getStudyByCode } from "../../../services/studyService";
 import "./StudyLogsTab.css";
 
@@ -38,6 +48,24 @@ function StudyLogsTab() {
   // child component stays presentational. ----
   const [activeLog, setActiveLog] = useState("delegation");
   const [trainingRecords, setTrainingRecords] = useState([]);
+
+  // ---- NEW: Site Visit / NTF / Miscellaneous log records follow the
+  // same pattern as trainingRecords — fetched from the shared log
+  // services, owned here (single source of truth), and passed down to
+  // the presentational log components as props. `siteOptions` feeds the
+  // Site field datalist in each log's Add/Edit form. ----
+  const [siteVisitLogs, setSiteVisitLogs] = useState([]);
+  const [ntfLogs, setNTFLogs] = useState([]);
+  const [miscellaneousLogs, setMiscellaneousLogs] = useState([]);
+  const [siteOptions, setSiteOptions] = useState([]);
+
+  // ---- Task 2A (Ramya): AE/SE, PD and Temperature log records are also
+  // owned here (single source of truth) and passed down to AELog / PDLog /
+  // TempLog as props. Loaded from the adminService localStorage keys, the
+  // same persistence pattern the Training/Delegation logs use. ----
+  const [aeRecords, setAeRecords] = useState([]);
+  const [pdRecords, setPdRecords] = useState([]);
+  const [tempRecords, setTempRecords] = useState([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -177,14 +205,20 @@ const RESPONSIBILITY_MAP = {
     setTrainingRecords(getTrainingLogs());
   }, []);
 
+  // ---- NEW: Seed the Site Visit / NTF / Miscellaneous logs from the
+  // shared log services (same localStorage-backed pattern as Training /
+  // Delegation logs) and build the site name suggestions for the forms. ----
+  useEffect(() => {
+    setSiteVisitLogs(getSiteVisitLogs());
+    setNTFLogs(getNTFLogs());
+    setMiscellaneousLogs(getMiscellaneousLogs());
+    setSiteOptions(getSiteNumberDirectory().map((entry) => entry.name));
+  }, []);
+
   // ---- Task 2A (Ramya): AE/SE, PD and Temperature log records are also
   // owned here (single source of truth) and passed down to AELog / PDLog /
   // TempLog as props. Loaded from the adminService localStorage keys, the
   // same persistence pattern the Training/Delegation logs use. ----
-  const [aeRecords, setAeRecords] = useState([]);
-  const [pdRecords, setPdRecords] = useState([]);
-  const [tempRecords, setTempRecords] = useState([]);
-
   useEffect(() => {
     setAeRecords(getAELogs());
     setPdRecords(getPDLogs());
@@ -298,6 +332,61 @@ const RESPONSIBILITY_MAP = {
     }
   };
 
+  // ---- NEW: Site Visit / NTF / Miscellaneous log persistence. Each
+  // handler updates the in-memory list (single source of truth) and
+  // writes the full array back through the shared log service saver,
+  // so records survive reloads exactly like Training/Delegation logs. ----
+  const handleSaveSiteVisitLog = (record) => {
+    const exists = siteVisitLogs.some((item) => item.id === record.id);
+    const next = exists
+      ? siteVisitLogs.map((item) =>
+          item.id === record.id ? { ...item, ...record } : item
+        )
+      : [...siteVisitLogs, record];
+    setSiteVisitLogs(next);
+    saveSiteVisitLogs(next);
+  };
+
+  const handleDeleteSiteVisitLog = (id) => {
+    const next = siteVisitLogs.filter((item) => item.id !== id);
+    setSiteVisitLogs(next);
+    saveSiteVisitLogs(next);
+  };
+
+  const handleSaveNTFLog = (record) => {
+    const exists = ntfLogs.some((item) => item.id === record.id);
+    const next = exists
+      ? ntfLogs.map((item) =>
+          item.id === record.id ? { ...item, ...record } : item
+        )
+      : [...ntfLogs, record];
+    setNTFLogs(next);
+    saveNTFLogs(next);
+  };
+
+  const handleDeleteNTFLog = (id) => {
+    const next = ntfLogs.filter((item) => item.id !== id);
+    setNTFLogs(next);
+    saveNTFLogs(next);
+  };
+
+  const handleSaveMiscellaneousLog = (record) => {
+    const exists = miscellaneousLogs.some((item) => item.id === record.id);
+    const next = exists
+      ? miscellaneousLogs.map((item) =>
+          item.id === record.id ? { ...item, ...record } : item
+        )
+      : [...miscellaneousLogs, record];
+    setMiscellaneousLogs(next);
+    saveMiscellaneousLogs(next);
+  };
+
+  const handleDeleteMiscellaneousLog = (id) => {
+    const next = miscellaneousLogs.filter((item) => item.id !== id);
+    setMiscellaneousLogs(next);
+    saveMiscellaneousLogs(next);
+  };
+
   // ---- Task 2A (Ramya): shared save/delete handlers for the AE/SE, PD and
   // Temperature logs. Each updates the in-memory array and immediately
   // persists the full array back through the adminService, so changes
@@ -331,7 +420,7 @@ const RESPONSIBILITY_MAP = {
   const handleDeleteTempLog = (id) => deleteLogRecord(setTempRecords, saveTempLogs, id);
 
   return (
-    <div className="module-card study-logs-module">
+    <div className="module-card">
       <DocumentFolderManager
         sectionId="logs"
         contextKey={studyCode || "default"}
@@ -394,6 +483,27 @@ const RESPONSIBILITY_MAP = {
         </button>
         <button
           type="button"
+          className={activeLog === "siteVisit" ? "tab active" : "tab"}
+          onClick={() => setActiveLog("siteVisit")}
+        >
+          Site Visit Log
+        </button>
+        <button
+          type="button"
+          className={activeLog === "ntf" ? "tab active" : "tab"}
+          onClick={() => setActiveLog("ntf")}
+        >
+          NTF Log
+        </button>
+        <button
+          type="button"
+          className={activeLog === "miscellaneous" ? "tab active" : "tab"}
+          onClick={() => setActiveLog("miscellaneous")}
+        >
+          Miscellaneous Log
+        </button>
+        <button
+          type="button"
           className={activeLog === "ae" ? "tab active" : "tab"}
           onClick={() => setActiveLog("ae")}
         >
@@ -432,6 +542,41 @@ const RESPONSIBILITY_MAP = {
       passed as a prop, matching the Delegation Log integration pattern. ---- */}
       {activeLog === "training" && (
         <TrainingLog records={trainingRecords} />
+      )}
+
+      {/* ---- NEW: Site Visit / NTF / Miscellaneous logs reuse the shared
+      LogCrudTable via their wrapper components. Records and site options
+      live here (single source of truth); the Add/Edit/View/Delete flows
+      are handled inside each log, and every save/delete comes back through
+      the handlers above, which persist to the shared log services. ---- */}
+      {activeLog === "siteVisit" && (
+        <SiteVisitLog
+          records={siteVisitLogs}
+          siteOptions={siteOptions}
+          initialSite={study?.site || ""}
+          onSave={handleSaveSiteVisitLog}
+          onDelete={handleDeleteSiteVisitLog}
+        />
+      )}
+
+      {activeLog === "ntf" && (
+        <NTFLog
+          records={ntfLogs}
+          siteOptions={siteOptions}
+          initialSite={study?.site || ""}
+          onSave={handleSaveNTFLog}
+          onDelete={handleDeleteNTFLog}
+        />
+      )}
+
+      {activeLog === "miscellaneous" && (
+        <MiscellaneousLog
+          records={miscellaneousLogs}
+          siteOptions={siteOptions}
+          initialSite={study?.site || ""}
+          onSave={handleSaveMiscellaneousLog}
+          onDelete={handleDeleteMiscellaneousLog}
+        />
       )}
 
       {/* ---- Task 2A (Ramya): AE/SE, PD and Temperature logs. Each reuses
