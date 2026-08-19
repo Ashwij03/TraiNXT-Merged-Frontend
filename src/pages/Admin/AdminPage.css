@@ -230,9 +230,9 @@
   background: #ffffff;
   border: 1px solid #d1d5db;
   border-radius: var(--admin-radius);
-  flex: 0 1 300px;
+  flex: 1 1 280px;
   font-size: var(--admin-font-sm);
-  min-width: 180px;
+  min-width: 200px;
   padding: clamp(8px, 1vw, 10px) clamp(12px, 1.6vw, 14px);
 }
 
@@ -248,59 +248,6 @@
   flex: 0 0 200px;
   font-size: var(--admin-font-sm);
   padding: clamp(8px, 1vw, 10px) clamp(12px, 1.6vw, 14px);
-}
-
-.user-management-status-filter {
-  background: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: var(--admin-radius);
-  flex: 0 0 170px;
-  font-size: var(--admin-font-sm);
-  padding: clamp(8px, 1vw, 10px) clamp(12px, 1.6vw, 14px);
-}
-
-.user-management-history-section {
-  margin-top: var(--admin-gap-md);
-}
-
-.user-management-history-summary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 10px;
-  font-size: var(--admin-font-sm);
-  color: #6b7280;
-}
-
-.user-management-history-summary p {
-  margin: 0;
-}
-
-.user-management-history-summary strong {
-  background: #fee2e2;
-  color: #991b1b;
-  border-radius: 999px;
-  padding: 2px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  margin-right: 6px;
-}
-
-.permission-remove-btn {
-  border: none;
-  background: #fee2e2;
-  color: #991b1b;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.permission-remove-btn:hover {
-  background: #dc2626;
-  color: #ffffff;
 }
 
 /* ===== Responsive breakpoints ===== */
@@ -333,8 +280,7 @@
 
 @media screen and (max-width: 640px) {
   .user-management-search,
-  .user-management-role-filter,
-  .user-management-status-filter {
+  .user-management-role-filter {
     flex: 1 1 100%;
   }
 

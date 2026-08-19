@@ -817,7 +817,7 @@ window.dispatchEvent(new Event("studies-updated"));
               <SubjectProfile setActiveTab={setActiveTab} />
             )} */}
 
-            {activeTab === "Planning" && <StudyPlanning />}
+            {activeTab === "Study Milestone" && <StudyPlanning />}
 
             {activeTab === "Visit Plan" && <StudyVisitPlan />}
 

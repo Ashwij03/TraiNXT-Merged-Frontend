@@ -134,16 +134,7 @@ export function deleteStudyTeamMember(studyCode, memberId) {
 }
 
 export function getRegulatoryChecklist(studyCode) {
-  const existing = studyList(REGULATORY_CHECKLIST_KEY, studyCode);
-  if (existing.length) return existing;
-
-  return DEFAULT_REGULATORY_ITEMS.map((label, index) => ({
-    id: `rc-${index + 1}`,
-    label,
-    completed: false,
-    dueDate: "",
-    notes: "",
-  }));
+  return studyList(REGULATORY_CHECKLIST_KEY, studyCode);
 }
 
 export function saveRegulatoryChecklistItem(studyCode, item) {

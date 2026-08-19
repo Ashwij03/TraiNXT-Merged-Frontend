@@ -757,15 +757,15 @@ const SiteDetails = () => {
 
                 <p>
                   No activation milestones have been recorded.
-                  Activation milestones are managed through the study
-                  Planning workspace.
+                  Activation milestones are managed through the
+                  Study Milestone workspace.
                 </p>
 
                 <button
                   type="button"
                   className="site-empty-btn"
                   disabled
-                  title="Activation milestones are managed in the study Planning workspace."
+                  title="Activation milestones are managed in the Study Milestone workspace."
                 >
                   + Add Activation
                 </button>
