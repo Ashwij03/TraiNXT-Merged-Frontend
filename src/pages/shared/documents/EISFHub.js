@@ -1,6 +1,7 @@
 import { useState } from "react";
 import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
 import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
+import useCanEditStudyContent from "../../../hooks/useCanEditStudyContent";
 import "./EISFHub.css";
 
 const DOCUMENT_TABS = [
@@ -11,6 +12,9 @@ const DOCUMENT_TABS = [
 
 function EISFHub() {
   const [activeTab, setActiveTab] = useState("eISF");
+  // Vastav — Task 5: eISF/ICF/Others are still study documents, so a
+  // Read-only CRO/Sponsor user should be able to view but not modify them.
+  const canEdit = useCanEditStudyContent(`eISF Hub - ${activeTab}`, "global");
 
   return (
     <DashboardLayout>
@@ -37,6 +41,7 @@ function EISFHub() {
           sectionId={activeTab}
           contextKey="global"
           title={DOCUMENT_TABS.find((tab) => tab.id === activeTab)?.label}
+          readOnly={!canEdit}
         />
       </div>
     </DashboardLayout>

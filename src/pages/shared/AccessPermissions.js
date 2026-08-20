@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
 import DataTable from "../../components/dashboard/shared/DataTable";
 import {
@@ -13,7 +13,13 @@ import {
   getPendingSignupRequests,
   rejectSignupRequest,
 } from "../../services/adminService";
+import {
+  getUserAccessLevel,
+  setUserAccessLevel,
+  ACCESS_LEVELS_UPDATED,
+} from "../../services/accessLevelService";
 import { ROLE_LABELS } from "../../services/roleService";
+import ROLES from "../../constants/roles";
 import "./AccessPermissions.css";
 
 function StatusPill({ status }) {
@@ -48,9 +54,12 @@ function AccessPermissions() {
     const refresh = () => setRefreshKey((value) => value + 1);
 
     window.addEventListener(PERMISSION_REQUESTS_UPDATED, refresh);
+    window.addEventListener(ACCESS_LEVELS_UPDATED, refresh);
 
-    return () =>
+    return () => {
       window.removeEventListener(PERMISSION_REQUESTS_UPDATED, refresh);
+      window.removeEventListener(ACCESS_LEVELS_UPDATED, refresh);
+    };
   }, []);
 
   const pendingRequests = useMemo(() => {
@@ -88,6 +97,11 @@ function AccessPermissions() {
     setRefreshKey((value) => value + 1);
   };
 
+  const handleAccessChange = useCallback((email, role, level) => {
+    setUserAccessLevel(email, level, role);
+    setRefreshKey((value) => value + 1);
+  }, []);
+
   const pendingColumns = [
     { key: "id", label: "Request ID" },
     { key: "user", label: "User" },
@@ -112,12 +126,18 @@ function AccessPermissions() {
     { key: "resolvedOn", label: "Resolved On" },
   ];
 
+  // Access-controlled roles are the only ones whose Access column shows
+  // interactive checkboxes.  Admin / Site Staff / PI always have full
+  // access and display a static badge instead.
+  const ACCESS_CONTROLLED_ROLES = [ROLES.CRO, ROLES.SPONSOR];
+
   const signupColumns = [
     { key: "name", label: "Name" },
     { key: "email", label: "Email" },
     { key: "role", label: "Role" },
     { key: "organization", label: "Organization" },
     { key: "status", label: "Status" },
+    { key: "access", label: "Access", width: "220px" },
     { key: "actions", label: "Actions" },
   ];
 
@@ -176,32 +196,67 @@ function AccessPermissions() {
       "—",
   }));
 
-  const signupData = pendingSignupRequests.map((user) => ({
-    name: user.name || "N/A",
-    email: user.email || "N/A",
-    role: ROLE_LABELS[user.role] || user.role || "N/A",
-    organization: user.orgType || user.assignedSite || "—",
-    status: <StatusPill status={user.approvalStatus || "Pending"} />,
-    actions: (
-      <>
-        <button
-          type="button"
-          className="access-action-link"
-          onClick={() => handleApproveSignup(user.email)}
-        >
-          Approve
-        </button>
+  const signupData = pendingSignupRequests.map((user) => {
+    const isAccessControlled = ACCESS_CONTROLLED_ROLES.includes(user.role);
+    const currentLevel = getUserAccessLevel(user.email, user.role);
 
-        <button
-          type="button"
-          className="access-action-link revoke"
-          onClick={() => handleRejectSignup(user.email)}
-        >
-          Reject
-        </button>
-      </>
-    ),
-  }));
+    return {
+      name: user.name || "N/A",
+      email: user.email || "N/A",
+      role: ROLE_LABELS[user.role] || user.role || "N/A",
+      organization: user.orgType || user.assignedSite || "—",
+      status: <StatusPill status={user.approvalStatus || "Pending"} />,
+      access: isAccessControlled ? (
+        <div className="access-checkbox-group">
+          <label className="access-checkbox-label">
+            <input
+              type="checkbox"
+              checked={currentLevel === "Read" || currentLevel === "Read and Write" || currentLevel === "Edit"}
+              onChange={() => handleAccessChange(user.email, user.role, "Read")}
+            />
+            <span>Read</span>
+          </label>
+          <label className="access-checkbox-label">
+            <input
+              type="checkbox"
+              checked={currentLevel === "Read and Write" || currentLevel === "Edit"}
+              onChange={() => handleAccessChange(user.email, user.role, "Read and Write")}
+            />
+            <span>Read and Write</span>
+          </label>
+          <label className="access-checkbox-label">
+            <input
+              type="checkbox"
+              checked={currentLevel === "Edit"}
+              onChange={() => handleAccessChange(user.email, user.role, "Edit")}
+            />
+            <span>Edit</span>
+          </label>
+        </div>
+      ) : (
+        <span className="access-full-badge">Full Access</span>
+      ),
+      actions: (
+        <>
+          <button
+            type="button"
+            className="access-action-link"
+            onClick={() => handleApproveSignup(user.email)}
+          >
+            Approve
+          </button>
+
+          <button
+            type="button"
+            className="access-action-link revoke"
+            onClick={() => handleRejectSignup(user.email)}
+          >
+            Reject
+          </button>
+        </>
+      ),
+    };
+  });
 
   return (
     <DashboardLayout>
