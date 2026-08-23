@@ -3,6 +3,7 @@
 import ROLES from "../constants/roles";
 import PERMISSIONS from "../constants/permissions";
 import rolePermissions from "../utils/rolePermissions";
+import { getPermissionsForAccessLevel } from "./accessLevelService";
 import {
   getStoredAdminPreviewRole,
   getStoredPIPreviewRole,
@@ -138,6 +139,19 @@ export function hasPermission(permission, user = getCurrentUser()) {
 
   if (effectiveRole === ROLES.ADMIN || user.permissions?.includes("*")) {
     return true;
+  }
+
+  // For CRO/Sponsor roles, use access-level-based permissions instead of
+  // the static rolePermissions map — this is how the Access column in
+  // Permission Approval / User Directory actually controls what the user
+  // can do in the application.
+  const accessLevelPermissions = getPermissionsForAccessLevel(
+    user.email,
+    effectiveRole,
+  );
+
+  if (accessLevelPermissions !== null) {
+    return accessLevelPermissions.includes(permission);
   }
 
   const permissions = rolePermissions[effectiveRole] || [];

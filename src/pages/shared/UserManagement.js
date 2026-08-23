@@ -1,13 +1,39 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
 import KPICard from "../../components/dashboard/shared/KPICard";
 import DataTable from "../../components/dashboard/shared/DataTable";
 import { getUsers } from "../../services/adminService";
-import { removeUserPermissions } from "../../services/accessPermissionService";
+import {
+  removeUserPermissions,
+  PERMISSION_REQUESTS_UPDATED,
+} from "../../services/accessPermissionService";
+import {
+  getUserAccessLevel,
+  setUserAccessLevel,
+  ACCESS_LEVELS_UPDATED,
+} from "../../services/accessLevelService";
 import { ROLE_LABELS } from "../../services/roleService";
+import ROLES from "../../constants/roles";
 import "../../pages/Admin/AdminPage.css";
 import "./AccessPermissions.css";
+
+// Reuses the shared status-pill styles from AccessPermissions.css.
+function AccessStatusPill({ status }) {
+  let className = "status-pill";
+
+  if (status === "Permissions Removed" || status === "Rejected") {
+    className += " revoked";
+  } else if (status === "Pending Approval") {
+    className += " pending";
+  } else {
+    className += " inactive";
+  }
+
+  return <span className={className}>{status}</span>;
+}
+
+const ACCESS_CONTROLLED_ROLES = [ROLES.CRO, ROLES.SPONSOR];
 
 function UserManagement() {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -19,6 +45,21 @@ function UserManagement() {
   const [roleFilter, setRoleFilter] = useState("All");
 
   const navigate = useNavigate();
+
+  // Stay in sync with changes made elsewhere (e.g. an admin approving or
+  // changing a user's Access level from Permission Approval → Signup
+  // Approvals) without requiring this page to remount.
+  useEffect(() => {
+    const refresh = () => setRefreshKey((value) => value + 1);
+
+    window.addEventListener(ACCESS_LEVELS_UPDATED, refresh);
+    window.addEventListener(PERMISSION_REQUESTS_UPDATED, refresh);
+
+    return () => {
+      window.removeEventListener(ACCESS_LEVELS_UPDATED, refresh);
+      window.removeEventListener(PERMISSION_REQUESTS_UPDATED, refresh);
+    };
+  }, []);
 
   const roles = useMemo(() => {
     const unique = Array.from(
@@ -61,6 +102,11 @@ function UserManagement() {
     removeUserPermissions(userEmail);
     setRefreshKey((value) => value + 1);
   };
+
+  const handleAccessChange = useCallback((email, role, level) => {
+    setUserAccessLevel(email, level, role);
+    setRefreshKey((value) => value + 1);
+  }, []);
 
   return (
     <DashboardLayout>
@@ -125,25 +171,61 @@ function UserManagement() {
               { key: "assignedSite", label: "Institution" },
               { key: "approvalStatus", label: "Approval" },
               { key: "accountStatus", label: "Account Status" },
+              { key: "access", label: "Access", width: "220px" },
               { key: "removePermission", label: "Remove Permission" }
             ]}
-            data={filteredUsers.map((user) => ({
-              name: user.name || "N/A",
-              email: user.email || "N/A",
-              role: ROLE_LABELS[user.role] || user.role || "N/A",
-              assignedSite: user.assignedSite || "—",
-              approvalStatus: user.approvalStatus || "Pending",
-              accountStatus: user.accountStatus || "Inactive",
-              removePermission: (
-                <button
-                  type="button"
-                  className="permission-remove-btn"
-                  onClick={() => handleRemovePermission(user.email)}
-                >
-                  Remove
-                </button>
-              )
-            }))}
+            data={filteredUsers.map((user) => {
+              const isAccessControlled = ACCESS_CONTROLLED_ROLES.includes(user.role);
+              const currentLevel = getUserAccessLevel(user.email, user.role);
+
+              return {
+                name: user.name || "N/A",
+                email: user.email || "N/A",
+                role: ROLE_LABELS[user.role] || user.role || "N/A",
+                assignedSite: user.assignedSite || "—",
+                approvalStatus: user.approvalStatus || "Pending",
+                accountStatus: user.accountStatus || "Inactive",
+                access: isAccessControlled ? (
+                  <div className="access-checkbox-group">
+                    <label className="access-checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={currentLevel === "Read" || currentLevel === "Read and Write" || currentLevel === "Edit"}
+                        onChange={() => handleAccessChange(user.email, user.role, "Read")}
+                      />
+                      <span>Read</span>
+                    </label>
+                    <label className="access-checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={currentLevel === "Read and Write" || currentLevel === "Edit"}
+                        onChange={() => handleAccessChange(user.email, user.role, "Read and Write")}
+                      />
+                      <span>Read and Write</span>
+                    </label>
+                    <label className="access-checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={currentLevel === "Edit"}
+                        onChange={() => handleAccessChange(user.email, user.role, "Edit")}
+                      />
+                      <span>Edit</span>
+                    </label>
+                  </div>
+                ) : (
+                  <span className="access-full-badge">Full Access</span>
+                ),
+                removePermission: (
+                  <button
+                    type="button"
+                    className="permission-remove-btn"
+                    onClick={() => handleRemovePermission(user.email)}
+                  >
+                    Remove
+                  </button>
+                )
+              };
+            })}
             emptyMessage="No users match the current search/filter"
             pagination
           />
