@@ -95,7 +95,7 @@ function StudyWorkspace() {
     className={activeTab === "planning" ? "active-tab" : ""}
     onClick={() => setActiveTab("planning")}
   >
-    Planning
+    Study Milestone
   </button>
 
   <button

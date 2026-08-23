@@ -194,7 +194,6 @@ export function removeUserPermission(userEmail) {
       permissions: [],
       requestedPermissions: [],
       approvalStatus: "Revoked",
-      lastPermissionUpdate: new Date().toISOString(),
     };
   });
 

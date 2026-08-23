@@ -22,10 +22,8 @@ const TrainingLog = ({ records = [] }) => {
         training: item.training || "",
         linkedDuties: item.linkedDuties || "",
         site: item.site || "",
-        delegateCount: Array.isArray(item.delegates)
-          ? item.delegates.length
-          : 0,
-        delegateNames: (Array.isArray(item.delegates) ? item.delegates : [])
+        delegateCount: item.delegates?.length || 0,
+        delegateNames: (item.delegates || [])
           .map((d) => `${d.name || ""} ${d.role || ""}`.trim())
           .join(" | "),
         _raw: item
@@ -46,9 +44,7 @@ const TrainingLog = ({ records = [] }) => {
         label: "Delegates",
         render: (_value, row) => {
           const item = row._raw || {};
-          const delegates = Array.isArray(item.delegates)
-            ? item.delegates
-            : [];
+          const delegates = item.delegates || [];
           if (delegates.length === 0) {
             return <span style={{ color: "#98a2b3" }}>—</span>;
           }

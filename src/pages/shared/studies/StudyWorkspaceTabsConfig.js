@@ -33,7 +33,7 @@ export const STUDY_WORKSPACE_TABS = [
   },
   {
     id: "planning",
-    label: "Planning",
+    label: "Study Milestone",
   },
   {
     id: "visit-plan",

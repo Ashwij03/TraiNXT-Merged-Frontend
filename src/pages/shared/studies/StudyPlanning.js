@@ -28,7 +28,7 @@ function StudyPlanning() {
   const [editingProtocol, setEditingProtocol] = useState(null);
   const [editingMember, setEditingMember] = useState(null);
   const { id: studyCode } = useParams();
-  const canEdit = useCanEditStudyContent("Study Planning", studyCode);
+  const canEdit = useCanEditStudyContent("Study Milestone", studyCode);
   const [version, setVersion] = useState(0);
   const [editingMilestone, setEditingMilestone] = useState(null);
 const [editingTask, setEditingTask] = useState(null);
@@ -55,7 +55,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
     <div className="study-planning-page tnxt-compact">
       <div className="study-planning-header">
         <div>
-          <h2>Planning</h2>
+          <h2>Study Milestone</h2>
           <p className="study-planning-site-ref">
             <span>Site</span>{" "}
             <strong>
@@ -76,8 +76,8 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
         </div>
         {!canEdit && (
           <RequestPermissionButton
-            action="Edit Planning"
-            module="Study Planning"
+            action="Edit Study Milestone"
+            module="Study Milestone"
             studyCode={studyCode}
             label="Request Edit Permission"
           />
@@ -100,7 +100,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
     </button>
   </div>
         {milestones.length === 0 ? (
-          <p className="planning-empty">No planning milestones yet</p>
+          <p className="planning-empty">No study milestones yet</p>
         ) : (
           <table className="planning-table ctms-standard-table">
             <thead>
@@ -771,7 +771,7 @@ setForm(REGULATORY_ITEM_FORM_DEFAULTS);
   }}
 />
       <button type="submit" className="secondary-btn">
-        Add Item
+        {form.id ? "Update Item" : "Add Item"}
       </button>
     </form>
   );

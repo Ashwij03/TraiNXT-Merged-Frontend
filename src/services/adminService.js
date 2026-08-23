@@ -38,13 +38,7 @@ const STORAGE_KEYS = {
   reports: "adminReports",
   compliance: "adminCompliance",
   trainingLogs: "trainingLogs",
-  delegationLogs: "delegationLogs",
-  siteVisitLogs: "siteVisitLogs",
-  ntfLogs: "ntfLogs",
-  miscellaneousLogs: "miscellaneousLogs",
-  aeLogs: "aeLogs",
-  pdLogs: "pdLogs",
-  tempLogs: "tempLogs"
+  delegationLogs: "delegationLogs"
 };
 
 function writeJson(key, value) {
@@ -548,80 +542,6 @@ export function getDelegationLogs(user = getCurrentUser()) {
   initializeAdminData();
   const logs = readJson(STORAGE_KEYS.delegationLogs, []);
   return filterBySite(logs, "site", user);
-}
-
-// ---- Site Visit / NTF / Miscellaneous logs ----
-// Same localStorage-backed pattern as Training/Delegation logs: the
-// getters read the persisted arrays (site-scoped for non-admin roles)
-// and the savers persist the full array back through the shared
-// writeJson helper, keeping every log in sync with the app's existing
-// logs data/service pattern. No seed/demo data is manufactured — the
-// arrays simply start empty until the first record is added.
-
-export function getSiteVisitLogs(user = getCurrentUser()) {
-  initializeAdminData();
-  const logs = readJson(STORAGE_KEYS.siteVisitLogs, []);
-  return filterBySite(logs, "site", user);
-}
-
-export function saveSiteVisitLogs(logs) {
-  writeJson(STORAGE_KEYS.siteVisitLogs, logs);
-}
-
-export function getNTFLogs(user = getCurrentUser()) {
-  initializeAdminData();
-  const logs = readJson(STORAGE_KEYS.ntfLogs, []);
-  return filterBySite(logs, "site", user);
-}
-
-export function saveNTFLogs(logs) {
-  writeJson(STORAGE_KEYS.ntfLogs, logs);
-}
-
-export function getMiscellaneousLogs(user = getCurrentUser()) {
-  initializeAdminData();
-  const logs = readJson(STORAGE_KEYS.miscellaneousLogs, []);
-  return filterBySite(logs, "site", user);
-}
-
-export function saveMiscellaneousLogs(logs) {
-  writeJson(STORAGE_KEYS.miscellaneousLogs, logs);
-}
-
-// ---- Task 2A (Ramya): AE/SE, PD and Temperature logs. These follow the
-// exact same localStorage-backed pattern as getTrainingLogs /
-// getDelegationLogs above: read from the storage key, then scope to the
-// viewer's assigned site. The save functions persist the full array (add /
-// edit / delete all go through the StudyLogsTab handlers, which write the
-// updated array back here so changes survive refresh/remount). ----
-export function getAELogs(user = getCurrentUser()) {
-  initializeAdminData();
-  const logs = readJson(STORAGE_KEYS.aeLogs, []);
-  return filterBySite(logs, "site", user);
-}
-
-export function saveAELogs(logs) {
-  writeJson(STORAGE_KEYS.aeLogs, logs);
-}
-
-export function getPDLogs(user = getCurrentUser()) {
-  initializeAdminData();
-  const logs = readJson(STORAGE_KEYS.pdLogs, []);
-  return filterBySite(logs, "site", user);
-}
-
-export function savePDLogs(logs) {
-  writeJson(STORAGE_KEYS.pdLogs, logs);
-}
-
-export function getTempLogs(user = getCurrentUser()) {
-  initializeAdminData();
-  const logs = readJson(STORAGE_KEYS.tempLogs, []);
-  return filterBySite(logs, "site", user);
-}
-
-export function saveTempLogs(logs) {
-  writeJson(STORAGE_KEYS.tempLogs, logs);
 }
 
 export function getStudyLogs(studyCode, user = getCurrentUser()) {
