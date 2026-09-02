@@ -4,32 +4,37 @@ import { BrowserRouter } from "react-router-dom";
 
 import "./index.css";
 import App from "./App";
-import { initializeAdminData } from "./services/adminService";
-import { initializeStudies } from "./services/studyService";
-import { initializeUpcomingVisitReminderSynchronization } from "./services/visitScheduleService";
+import { initializeAdminData } from "./shared/services/adminService";
+import { initializeStudies } from "./shared/services/studyService";
+import { initializeUpcomingVisitReminderSynchronization } from "./shared/services/visitScheduleService";
 
 // Friend imports
-import { CommentsProvider } from "./comments/CommentsContext";
-import { CROProvider } from "./pages/CRO/CRODATAContext";
-import { FolderProvider } from "./context/FolderContext";
+import { CommentsProvider } from "./shared/comments/CommentsContext";
+import { CROProvider } from "./CRO/pages/CRODATAContext";
+import { FolderProvider } from "./shared/context/FolderContext";
+import { AuthProvider } from "./shared/context/AuthContext";
 
 // UPDATED: seed admin and studies localStorage data on app startup
 initializeAdminData();
 initializeStudies();
 initializeUpcomingVisitReminderSynchronization();
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
+const root = ReactDOM.createRoot(
+  document.getElementById("root")
+);
 
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <CommentsProvider>
-        <CROProvider>
-          <FolderProvider>
-            <App />
-          </FolderProvider>
-        </CROProvider>
-      </CommentsProvider>
+      <AuthProvider>
+        <CommentsProvider>
+          <CROProvider>
+            <FolderProvider>
+              <App />
+            </FolderProvider>
+          </CROProvider>
+        </CommentsProvider>
+      </AuthProvider>
     </BrowserRouter>
-  </React.StrictMode>,
+  </React.StrictMode>
 );
