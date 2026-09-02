@@ -275,8 +275,6 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
 
 <span
   onClick={() => {
-    console.log("Comments clicked");
-
     if (setSelectedPage) {
       setSelectedPage("comments");
     }
