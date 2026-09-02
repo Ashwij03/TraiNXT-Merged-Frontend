@@ -307,6 +307,7 @@ const handleRemovePhoto = () => {
             </div>
           </>
         );
+
       default:
         return null;
     }

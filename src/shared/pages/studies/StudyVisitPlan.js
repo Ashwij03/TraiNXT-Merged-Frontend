@@ -1021,10 +1021,8 @@ function ProcedureDetailsTable({ visits, procedures, canEdit, onChange }) {
 function ScreeningEnrollmentSummary({ studyCode }) {
   let subjects = [];
   try {
-    const byStudy = JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
-    subjects = Array.isArray(byStudy[String(studyCode)])
-      ? byStudy[String(studyCode)]
-      : [];
+    const { getSubjectsForStudy } = require("../../services/subjectService");
+    subjects = getSubjectsForStudy(String(studyCode || ""));
   } catch {
     subjects = [];
   }

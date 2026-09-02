@@ -37,7 +37,20 @@ import {
 import "./Studies.css";
 
 const STUDIES_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
-const SUBJECTS_STORAGE_KEY = "subjectsByStudy";
+
+/**
+ * Subject data access via subjectService — the single source of truth.
+ */
+function getSubjectsForStudyFromService(study) {
+  try {
+    const { getSubjectsForStudy, resolveStudyKey } = require("../../services/subjectService");
+    const studyKey = resolveStudyKey(study);
+    return getSubjectsForStudy(studyKey);
+  } catch {
+    return [];
+  }
+}
+
 
 const initialForm = {
   code: "",
@@ -65,40 +78,14 @@ function normalizeValue(value) {
     .toLowerCase();
 }
 
-function readSubjectsByStudy() {
-  return readStorage(SUBJECTS_STORAGE_KEY, {});
-}
+
 
 function readSiteRecords() {
   const sites = readStorage("sites", []);
   return Array.isArray(sites) ? sites : [];
 }
 
-function getSubjectsForStudy(subjectsByStudy, study) {
-  if (!subjectsByStudy || typeof subjectsByStudy !== "object" || !study) {
-    return [];
-  }
 
-  const studyKey = study.code;
-  const normalizedStudyKey = normalizeValue(studyKey);
-  const matchedSubjects = [];
-
-  Object.entries(subjectsByStudy).forEach(([collectionKey, subjects]) => {
-    if (!Array.isArray(subjects)) {
-      return;
-    }
-
-    subjects.forEach((subject) => {
-      const subjectStudyReference = subject.studyId || collectionKey;
-
-      if (normalizeValue(subjectStudyReference) === normalizedStudyKey) {
-        matchedSubjects.push(subject);
-      }
-    });
-  });
-
-  return matchedSubjects;
-}
 
 function resolveStudySite(study, sites) {
   const siteReference = study?.site || study?.location;
@@ -198,9 +185,6 @@ function Studies() {
   }, []);
 
   const [studies, setStudies] = useState(() => loadStudies());
-  const [subjectsByStudy, setSubjectsByStudy] = useState(() =>
-    readSubjectsByStudy()
-  );
   const [sites, setSites] = useState(() => readSiteRecords());
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -439,7 +423,7 @@ function Studies() {
     };
 
     const refreshSubjects = () => {
-      setSubjectsByStudy(readSubjectsByStudy());
+      // Subject data now flows through subjectService — no local state refresh needed
     };
 
     window.addEventListener("studies-updated", refreshStudies);
@@ -519,13 +503,9 @@ function Studies() {
       protocol: form.protocol || form.name,
     });
 
-    const subjectsByStudy =
-      JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
-
-    if (!subjectsByStudy[createdStudy.code]) {
-      subjectsByStudy[createdStudy.code] = [];
-      localStorage.setItem("subjectsByStudy", JSON.stringify(subjectsByStudy));
-    }
+    // No need to pre-create an empty subjectsByStudy bucket.
+    // The bucket is created automatically when the first subject is added
+    // via studyService.createSubject().
 
     localStorage.setItem("sidebarStudiesOpen", JSON.stringify(true));
     localStorage.setItem("sidebarStudyBinderOpen", JSON.stringify(true));
@@ -828,7 +808,7 @@ function Studies() {
 
                     <div>
                       <strong>Subjects:</strong>
-                      {getSubjectsForStudy(subjectsByStudy, study).length}
+                      {      getSubjectsForStudyFromService(study).length}
                       {" / "}
                       {study.targetSubjects || 0}
                     </div>
@@ -909,7 +889,7 @@ function Studies() {
                 <div className="study-list-field">
                   <label>Subjects</label>
                   <span>
-                    {getSubjectsForStudy(subjectsByStudy, study).length}/{study.targetSubjects || 0}
+                    {      getSubjectsForStudyFromService(study).length}/{study.targetSubjects || 0}
                   </span>
                 </div>
 
@@ -989,7 +969,7 @@ function Studies() {
                     <td>{getStudySiteNumber(study, sites) || "-"}</td>
                     <td>{getStudySiteName(study, sites) || "-"}</td>
                     <td>
-                      {getSubjectsForStudy(subjectsByStudy, study).length}/{study.targetSubjects || 0}
+                      {      getSubjectsForStudyFromService(study).length}/{study.targetSubjects || 0}
                     </td>
 
                     <td>

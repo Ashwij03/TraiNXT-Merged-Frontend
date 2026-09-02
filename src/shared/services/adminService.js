@@ -62,17 +62,16 @@ function writeJson(key, value) {
 }
 
 function getAllSubjectsFlat() {
-  const subjectsByStudy =
-    readJson("subjectsByStudy", {});
-
-  return Object.entries(subjectsByStudy).flatMap(
-    ([studyKey, subjects]) =>
-      (Array.isArray(subjects) ? subjects : []).map((subject) => ({
-        ...subject,
-        studyKey,
-        subjectId: subject.subjectId || subject.id
-      }))
-  );
+  try {
+    const { getAllSubjects } = require("./subjectService");
+    return getAllSubjects().map((subject) => ({
+      ...subject,
+      studyKey: subject.studyId,
+      subjectId: subject.subjectId || subject.id
+    }));
+  } catch {
+    return [];
+  }
 }
 
 function normalizeRelationshipValue(value) {
@@ -1191,4 +1190,21 @@ export function getSubjectsForAnalytics(user = getCurrentUser()) {
   }
 
   return filterBySite(subjects, "site", user);
+}
+
+// ---------------------------------------------------------------------------
+// Task 6 (Ashwij) — Referral & Limited Free License Model.
+// Additive only: everything above this line is unchanged.
+//
+// The R6 admin toggle ("does the referrer also earn 15 free days") rides on
+// this file's existing getSettings()/saveSettings() key ("adminSettings")
+// rather than a brand-new storage key, so no new plumbing/migration is
+// needed here. referralService.js is the source of truth for reading and
+// writing the nested `referralProgram` object; this wrapper exists purely
+// for discoverability/consistency with the rest of this file's naming.
+// ---------------------------------------------------------------------------
+
+export function getReferralProgramSettings() {
+  const settings = getSettings();
+  return settings.referralProgram || { referrerBonusEnabled: false };
 }

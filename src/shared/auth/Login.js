@@ -2,12 +2,15 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
 import { initializeUserSession } from "../services/sessionService";
+import { settleLicenseEntitlementOnLogin } from "../services/referralService";
 import {
   setPIPreviewRole,
   setAdminPreviewRole
 } from "../services/roleService";
+import { useAuth } from "../context/AuthContext";
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -103,7 +106,15 @@ function Login() {
 
 	  // ✅ ADD THIS LINE (THIS IS YOUR STEP-1 FIX)
 	  localStorage.setItem("currentUser", JSON.stringify(user));
+    // Sync AuthContext state with localStorage so useAuth() resolves
+    // correctly throughout the session (fixes "Unknown user" in audit trails).
+    login(user);
     initializeUserSession(user);
+
+    // Task 6 (Ashwij): settle any expired referral license bonus as soon as
+    // the session starts. Synchronous, side-effect-free beyond a normal
+    // read, and fails soft — never blocks login.
+    settleLicenseEntitlementOnLogin(user.id);
     setPIPreviewRole(null);
 setAdminPreviewRole(null);
 

@@ -10,11 +10,15 @@ import {
   getNotificationsForUser,
   markNotificationRead as markSharedNotificationRead,
 } from "../../shared/services/notificationService";
-import { getCurrentUser, getAssignedSite } from "../../shared/services/roleService";
+import {
+  formatUserDisplayName,
+  getCurrentUser,
+  getAssignedSite,
+} from "../../shared/services/roleService";
 import { getComments, saveComments } from "../../shared/services/adminService";
 import {
   getFilteredSchedules,
-  getUpcomingVisitsWindow
+  getUpcomingVisitsWindow,
 } from "../../shared/services/visitScheduleService";
 import {
   addCommentRecord,
@@ -78,12 +82,13 @@ export const getDefaultDashboardData = () => ({
 
 const getDynamicUpcomingVisits = () => {
   try {
-    return getUpcomingVisitsWindow(getFilteredSchedules(getCurrentUser()), 30).map(
-      (visit) => ({
-        ...visit,
-        subject: visit.subject || visit.subjectId || visit.subjectid
-      })
-    );
+    return getUpcomingVisitsWindow(
+      getFilteredSchedules(getCurrentUser()),
+      30,
+    ).map((visit) => ({
+      ...visit,
+      subject: visit.subject || visit.subjectId || visit.subjectid,
+    }));
   } catch {
     return [];
   }
@@ -168,7 +173,7 @@ export const markNavbarNotificationRead = (index, read = true) => {
   const data = getDashboardData();
 
   const notifications = (data.notifications || []).map((n, i) =>
-    i === index ? { ...n, read } : n
+    i === index ? { ...n, read } : n,
   );
 
   return saveDashboardData({
@@ -227,7 +232,7 @@ export const buildDynamicAlerts = (dashboardData, comments = []) => {
   const upcomingCount = (dashboardData.upcomingVisits || []).length;
 
   const openQueries = (dashboardData.pendingQueries || []).filter(
-    (query) => query.status === "Open"
+    (query) => query.status === "Open",
   ).length;
 
   const overdueDocs = dashboardData.kpis?.overdueDocuments || 0;
@@ -374,7 +379,7 @@ export const addComment = (comment = {}) => {
       sourceView: "pi-dashboard",
       activity: comment.type || comment.stage || comment.activity || "General",
     },
-    user
+    user,
   );
 
   if (comment.status === "resolved" && record?.id) {
@@ -421,7 +426,7 @@ export const updateComment = (commentId, updates = {}) => {
 
 export const deleteComment = (commentId) => {
   const updatedComments = getCommentsData().filter(
-    (comment) => comment.id !== commentId
+    (comment) => comment.id !== commentId,
   );
 
   return saveCommentsData(updatedComments);
@@ -492,7 +497,8 @@ const formatNotificationDate = (isoString) => {
 const toNotificationsPageItem = (notification) => ({
   id: notification.id,
   message: notification.message,
-  category: NOTIFICATION_CATEGORY_BY_TITLE[notification.title] || "Study Updates",
+  category:
+    NOTIFICATION_CATEGORY_BY_TITLE[notification.title] || "Study Updates",
   study: notification.studyCode || "",
   priority: NOTIFICATION_PRIORITY_BY_TITLE[notification.title] || "Medium",
   date: formatNotificationDate(notification.createdAt),
@@ -501,12 +507,12 @@ const toNotificationsPageItem = (notification) => ({
 
 export const getNotificationsPageData = () => {
   const items = getNotificationsForUser(getCurrentUser()).map(
-    toNotificationsPageItem
+    toNotificationsPageItem,
   );
 
   const unread = items.filter((item) => item.status === "Unread").length;
   const alerts = items.filter(
-    (item) => item.priority === "High" || item.priority === "Critical"
+    (item) => item.priority === "High" || item.priority === "Critical",
   ).length;
 
   return {
@@ -522,7 +528,7 @@ export const saveNotificationsPageData = (data) => {
   const currentlyUnreadIds = new Set(
     getNotificationsForUser(user)
       .filter((notification) => !notification.read)
-      .map((notification) => notification.id)
+      .map((notification) => notification.id),
   );
 
   items.forEach((item) => {
@@ -544,10 +550,10 @@ export const syncNotificationsPageToNavbar = (pageItems = []) => {
       item.priority === "Critical"
         ? "critical"
         : item.priority === "High"
-        ? "danger"
-        : item.priority === "Medium"
-        ? "warning"
-        : "info",
+          ? "danger"
+          : item.priority === "Medium"
+            ? "warning"
+            : "info",
     priority: item.priority,
     title: item.message,
     message: `${item.study || "All Studies"} · ${
@@ -572,7 +578,7 @@ export const getSettingsData = () => {
   const defaults = {
     profile: {
       name:
-        user?.name ||
+        formatUserDisplayName(user) ||
         localStorage.getItem("userFullName") ||
         "Principal Investigator",
       role: user?.role || "Principal Investigator",
@@ -734,7 +740,7 @@ export const filterByStudy = (items, selectedStudy, studyKey = "study") => {
     (item) =>
       !item[studyKey] ||
       item[studyKey] === selectedStudy ||
-      item[studyKey] === "All Studies"
+      item[studyKey] === "All Studies",
   );
 };
 
@@ -819,9 +825,7 @@ export const collectAllStudies = () => {
   const dashboard = getDashboardData();
 
   const studySet = new Set(
-    (dashboard.studies || [])
-      .map((study) => study?.study)
-      .filter(Boolean)
+    (dashboard.studies || []).map((study) => study?.study).filter(Boolean),
   );
 
   return ["All Studies", ...Array.from(studySet).sort()];
@@ -830,9 +834,7 @@ export const collectAllStudies = () => {
 export const collectAllDepartments = () => {
   const settings = getSettingsData();
 
-  return settings.profile?.department
-    ? [settings.profile.department]
-    : [];
+  return settings.profile?.department ? [settings.profile.department] : [];
 };
 
 export const getNavbarData = () => {
@@ -853,7 +855,7 @@ export const getNavbarData = () => {
 
   return {
     userName:
-      user?.name ||
+      formatUserDisplayName(user) ||
       localStorage.getItem("userFullName") ||
       localStorage.getItem("userName") ||
       settings.profile?.name ||
@@ -864,8 +866,7 @@ export const getNavbarData = () => {
     allStudies,
     studies: allStudies.filter((study) => study !== "All Studies"),
     departments: allDepartments,
-    selectedDepartment:
-      saved.selectedDepartment || allDepartments[0] || "",
+    selectedDepartment: saved.selectedDepartment || allDepartments[0] || "",
     selectedStudy,
     ...saved,
   };
@@ -932,16 +933,16 @@ export const syncKpisFromData = (data = {}) => {
 
   const totalEnrolled = studies.reduce(
     (sum, study) => sum + Number(study.enrolled || 0),
-    0
+    0,
   );
 
   const totalTarget = studies.reduce(
     (sum, study) => sum + Number(study.target || 0),
-    0
+    0,
   );
 
   const activeSubjects = recentSubjects.filter(
-    (subject) => subject.status === "Active"
+    (subject) => subject.status === "Active",
   ).length;
 
   const studiesCount = studies.length;
@@ -952,7 +953,7 @@ export const syncKpisFromData = (data = {}) => {
   const commentsCount = openComments;
 
   const completedSubjects = recentSubjects.filter(
-    (subject) => subject.status === "Completed"
+    (subject) => subject.status === "Completed",
   ).length;
 
   const visitCompletion =
@@ -961,8 +962,7 @@ export const syncKpisFromData = (data = {}) => {
       : 0;
 
   const consentedSubjects = recentSubjects.filter(
-    (subject) =>
-      subject.status === "Active" || subject.status === "Completed"
+    (subject) => subject.status === "Active" || subject.status === "Completed",
   ).length;
 
   const consentRate =
@@ -978,9 +978,7 @@ export const syncKpisFromData = (data = {}) => {
     pendingQueries: Array.isArray(data.pendingQueries)
       ? data.pendingQueries
       : [],
-    notifications: Array.isArray(data.notifications)
-      ? data.notifications
-      : [],
+    notifications: Array.isArray(data.notifications) ? data.notifications : [],
     visitData: Array.isArray(data.visitData) ? data.visitData : [],
     kpis: {
       ...(data.kpis || {}),
@@ -1004,7 +1002,7 @@ export const filterVisitsByDate = (visits, selectedDate) => {
   const targetDate = new Date(selectedDate).toDateString();
 
   return (visits || []).filter(
-    (visit) => new Date(visit.date).toDateString() === targetDate
+    (visit) => new Date(visit.date).toDateString() === targetDate,
   );
 };
 
@@ -1014,7 +1012,7 @@ export const getVisitsForDate = (visits, date) => {
   const targetDate = new Date(date).toDateString();
 
   return (visits || []).filter(
-    (visit) => new Date(visit.date).toDateString() === targetDate
+    (visit) => new Date(visit.date).toDateString() === targetDate,
   );
 };
 
@@ -1029,35 +1027,35 @@ export const recalculateSitePerformanceKpis = (data) => {
     return Math.round(
       matchedMetrics.reduce(
         (sum, metric) => sum + Number(metric.value || 0),
-        0
-      ) / matchedMetrics.length
+        0,
+      ) / matchedMetrics.length,
     );
   };
 
   const kpis = {
     enrollmentPerformance: averageMetric((metric) =>
-      metric.metric.includes("Enrollment")
+      metric.metric.includes("Enrollment"),
     ),
     screeningSuccessRate: averageMetric((metric) =>
-      metric.metric.includes("Screening")
+      metric.metric.includes("Screening"),
     ),
     visitCompletionRate: averageMetric((metric) =>
-      metric.metric.includes("Visit")
+      metric.metric.includes("Visit"),
     ),
     protocolCompliance: averageMetric((metric) =>
-      metric.metric.includes("Protocol")
+      metric.metric.includes("Protocol"),
     ),
     queryResolutionRate: averageMetric((metric) =>
-      metric.metric.includes("Query")
+      metric.metric.includes("Query"),
     ),
     patientRetentionRate: averageMetric((metric) =>
-      metric.metric.includes("Retention")
+      metric.metric.includes("Retention"),
     ),
     dataEntryTimeliness: averageMetric((metric) =>
-      metric.metric.includes("Data")
+      metric.metric.includes("Data"),
     ),
     studyProgress: averageMetric((metric) =>
-      metric.metric.includes("Study Progress")
+      metric.metric.includes("Study Progress"),
     ),
   };
 
@@ -1088,29 +1086,22 @@ export const recalculateRecruitmentKpis = (data, dashboard) => {
 
   const enrolledPatients = syncedDashboard
     ? syncedDashboard.kpis.enrollmentCount
-    : studies.reduce(
-        (sum, study) => sum + Number(study.enrolled || 0),
-        0
-      );
+    : studies.reduce((sum, study) => sum + Number(study.enrolled || 0), 0);
 
   const recruitmentTarget = syncedDashboard
     ? syncedDashboard.kpis.targetCount
-    : studies.reduce(
-        (sum, study) => sum + Number(study.target || 0),
-        0
-      );
+    : studies.reduce((sum, study) => sum + Number(study.target || 0), 0);
 
   return {
     ...data,
     kpis: {
       ...(data.kpis || {}),
-      activeRecruitment: studies.filter(
-        (study) => study.status !== "Completed"
-      ).length,
+      activeRecruitment: studies.filter((study) => study.status !== "Completed")
+        .length,
       enrolledPatients,
       screeningFailures: studies.reduce(
         (sum, study) => sum + Number(study.screenFailures || 0),
-        0
+        0,
       ),
       recruitmentTarget,
       recruitmentProgress:

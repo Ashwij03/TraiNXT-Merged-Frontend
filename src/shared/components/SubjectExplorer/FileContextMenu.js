@@ -10,24 +10,25 @@ import {
   MdMoreVert,
   MdDriveFileRenameOutline,
   MdDeleteOutline,
+  MdDownload,
+  MdHistory,
+  MdContentCopy,
+  MdPublic,
+  MdDriveFileMoveOutline,
+  MdLockOutline,
 } from "react-icons/md";
 
 /**
- * Subject Explorer - file row action menu (Phase 4, requirement 4).
+ * Subject Explorer - file row action menu.
  *
  * Mirrors FolderContextMenu: presentational, reports the chosen action
  * upward, and portals the dropdown with fixed positioning so the table's
  * horizontal scroll container cannot clip it.
  *
- * Actions: rename · delete. View and Download are no longer here - they're
- * now their own always-visible icon buttons in the row (see
- * `SubjectFileRow.js`), so this menu only ever holds the two secondary,
- * less-frequent actions. When `locked` is true (the file's folder is a
- * system folder like ICF) there is nothing left for this menu to offer, so
- * it renders nothing at all - `SubjectFileRow.js` does not mount it for a
- * locked row either, this is defense in depth for any other caller.
- * `SubjectFileManager.handleAction` refuses rename/delete for a locked
- * folder regardless of how the action is reached.
+ * Full action set: Audit Trail, Download, Duplicate, Global View, Move,
+ * Permissions, Rename / Update, Delete. When `locked` is true (the file's
+ * folder is a system folder like ICF) there is nothing left for this menu
+ * to offer, so it renders nothing at all.
  *
  * Props
  *   file          the file record
@@ -37,11 +38,17 @@ import {
  *                 actions apply)
  */
 
-const MENU_WIDTH = 176;
+const MENU_WIDTH = 194;
 const MENU_MARGIN = 8;
 
 const ALL_ITEMS = [
-  { key: "rename", label: "Rename", Icon: MdDriveFileRenameOutline },
+  { key: "audit-trail", label: "Audit Trail", Icon: MdHistory },
+  { key: "download", label: "Download", Icon: MdDownload },
+  { key: "duplicate", label: "Duplicate", Icon: MdContentCopy },
+  { key: "global-view", label: "Global View", Icon: MdPublic },
+  { key: "move", label: "Move", Icon: MdDriveFileMoveOutline },
+  { key: "permissions", label: "Permissions", Icon: MdLockOutline },
+  { key: "rename", label: "Rename / Update", Icon: MdDriveFileRenameOutline },
   { key: "delete", label: "Delete", Icon: MdDeleteOutline, danger: true },
 ];
 

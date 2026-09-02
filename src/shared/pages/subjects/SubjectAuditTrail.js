@@ -1,5 +1,6 @@
 // newly added
 
+import { formatDateTimeUTC } from "../../utils/dateTime";
 import "./SubjectAuditTrail.css";
 
 function SubjectAuditTrail() {
@@ -91,11 +92,11 @@ function SubjectAuditTrail() {
                     log.updatedAt ||
                     log.deletedAt ||
                     log.createdAt
-                      ? new Date(
+                      ? formatDateTimeUTC(
                           log.updatedAt ||
                           log.deletedAt ||
                           log.createdAt
-                        ).toLocaleString()
+                        )
                       : "-"
                   }
 

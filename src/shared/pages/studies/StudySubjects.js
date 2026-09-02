@@ -1,6 +1,13 @@
+<<<<<<< HEAD
+<<<<<<<< HEAD:src/shared/pages/studies/StudySubjects.js
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { readStorage } from "../../utils/storageHelpers";
+=======
 import { readStorage } from "../../utils/storageHelpers";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+>>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
 import {
   FiArrowLeft,
   FiChevronLeft,
@@ -34,10 +41,19 @@ import {
   COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE,
   getStudies,
 } from "../../services/studyService";
+<<<<<<< HEAD
+import { getSubjectsForStudy, subscribeSubjects } from "../../services/subjectService";
+=======
+>>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
 import { STUDY_STATUS_COMPLETED } from "../../constants/studyStatus";
 import { resolveSiteDisplay } from "../../utils/siteDisplay";
 import "./StudySubjects.css";
 
+<<<<<<< HEAD
+const SELECTED_SUBJECT_STORAGE_KEY = "selectedSubject";
+const SUBJECTS_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+
+=======
 const SUBJECTS_STORAGE_KEY = "subjectsByStudy";
 const SELECTED_SUBJECT_STORAGE_KEY = "selectedSubject";
 const SUBJECTS_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
@@ -54,6 +70,7 @@ function writeStorage(key, value, eventName) {
   }
 }
 
+>>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
 function normalizeValue(value) {
   return String(value ?? "")
     .trim()
@@ -94,6 +111,11 @@ function getSearchableSubjectText(subject) {
   return searchableValues.join(" ").toLowerCase();
 }
 
+<<<<<<< HEAD
+// A2 (Study-Scoped Subject Visibility): all subject data now flows through
+// subjectService.getSubjectsForStudy() which performs cross-checking
+// automatically. No more local filtering needed.
+=======
 // A2 (Study-Scoped Subject Visibility): a bucket in `subjectsByStudy` can
 // end up holding subjects that don't actually belong to this study (e.g.
 // left behind by a study code change, or written under a stale key before
@@ -144,6 +166,7 @@ function getSubjectsForStudy(subjectsByStudy, studyId) {
 
   return [];
 }
+>>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
 
 function getSubjectDetailCards(subject, siteSources = []) {
   const latestSite =
@@ -207,9 +230,15 @@ function StudySubjects({
     params.id || params.studyId || params.code || ""
   ).trim();
 
+<<<<<<< HEAD
+  // Subject data is now sourced from subjectService (single source of truth).
+  // The local state is kept for UI reactivity but populated via subjectService.
+  const [subjectsVersion, setSubjectsVersion] = useState(0);
+=======
   const [subjectsByStudy, setSubjectsByStudy] = useState(() =>
     readStorage(SUBJECTS_STORAGE_KEY, {})
   );
+>>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
   const [showSubjectCommentsModal, setShowSubjectCommentsModal] = useState(false);
@@ -257,6 +286,13 @@ function StudySubjects({
 
   useEffect(() => {
     const refreshSubjects = () => {
+<<<<<<< HEAD
+      setSubjectsVersion((v) => v + 1);
+    };
+
+    const unsub = subscribeSubjects(refreshSubjects);
+    return unsub;
+=======
       setSubjectsByStudy(readStorage(SUBJECTS_STORAGE_KEY, {}));
     };
 
@@ -267,6 +303,7 @@ function StudySubjects({
       window.removeEventListener("subjects-updated", refreshSubjects);
       window.removeEventListener("storage", refreshSubjects);
     };
+>>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
   }, []);
 
   useEffect(() => {
@@ -295,8 +332,15 @@ function StudySubjects({
 }, [studyId]);
 
   const subjectsData = useMemo(() => {
+<<<<<<< HEAD
+    // subjectService.getSubjectsForStudy() returns cross-checked, study-scoped data
+    return getSubjectsForStudy(studyId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studyId, subjectsVersion]);
+=======
     return getSubjectsForStudy(subjectsByStudy, studyId);
   }, [studyId, subjectsByStudy]);
+>>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
 
   const filteredSubjects = useMemo(() => {
     const normalizedSearchTerm = normalizeValue(searchTerm);
@@ -352,6 +396,12 @@ function StudySubjects({
     );
   }, [selectedSubjectId, subjectsData]);
 
+<<<<<<< HEAD
+  const saveSubjects = () => {
+    // Trigger a re-read from subjectService — the write already happened
+    // via studyService.createSubject/updateSubject/deleteSubject.
+    setSubjectsVersion((v) => v + 1);
+=======
   const saveSubjects = (updatedSubjectsByStudy) => {
     setSubjectsByStudy(updatedSubjectsByStudy);
 
@@ -360,6 +410,7 @@ function StudySubjects({
       updatedSubjectsByStudy,
       "subjects-updated"
     );
+>>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
   };
 
   /** Validate that a subject ID is unique among all subjects. */
@@ -419,8 +470,11 @@ function StudySubjects({
         };
       });
 
+<<<<<<< HEAD
+=======
       saveSubjects({ ...subjectsByStudy, [studyId]: updatedSubjectsForStudy });
 
+>>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
       const editedSubject = updatedSubjectsForStudy.find(
         (s) => normalizeValue(s.id) === normalizeValue(subjectId)
       );
@@ -431,7 +485,11 @@ function StudySubjects({
         return;
       }
 
+<<<<<<< HEAD
+      saveSubjects();
+=======
       setSubjectsByStudy((current) => ({ ...current, [studyId]: updatedSubjectsForStudy }));
+>>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
       syncSubjectSchedules(studyId, subjectId, editedSubject);
     } else {
       const studyDefaults = getSubjectStudyDefaults(studyId);
@@ -459,10 +517,14 @@ function StudySubjects({
         return;
       }
 
+<<<<<<< HEAD
+      saveSubjects();
+=======
       setSubjectsByStudy((current) => ({
         ...current,
         [studyId]: [...subjectsData, createdSubject],
       }));
+>>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
       syncSubjectSchedules(studyId, subjectId, createdSubject);
       notifySubjectCreated({
         subjectId,
@@ -527,6 +589,9 @@ function StudySubjects({
 
     const subject = subjectToDelete;
 
+<<<<<<< HEAD
+    saveSubjects();
+=======
     const updatedSubjectsForStudy = subjectsData.filter(
       (item) => normalizeValue(item.id) !== normalizeValue(subject.id)
     );
@@ -535,6 +600,7 @@ function StudySubjects({
       ...subjectsByStudy,
       [studyId]: updatedSubjectsForStudy,
     });
+>>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
 
     if (
       selectedSubjectId &&
@@ -1003,4 +1069,10 @@ function StudySubjects({
   );
 }
 
+<<<<<<< HEAD
 export default StudySubjects;
+========
+>>>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6:src/pages/shared/studies/StudySubjects.js
+=======
+export default StudySubjects;
+>>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6

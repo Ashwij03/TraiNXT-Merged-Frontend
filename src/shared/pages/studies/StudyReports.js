@@ -24,10 +24,8 @@ function StudyReports() {
 
   const studySubjects = useMemo(() => {
     try {
-      const subjectsByStudy =
-        JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
-      const subjects = subjectsByStudy[id];
-      return Array.isArray(subjects) ? subjects : [];
+      const { getSubjectsForStudy } = require("../../services/subjectService");
+      return getSubjectsForStudy(id);
     } catch {
       return [];
     }

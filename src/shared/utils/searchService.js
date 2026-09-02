@@ -8,36 +8,29 @@ import {
   getCurrentUser
 } from "../services/roleService";
 
+/**
+ * Get all subjects from the canonical subjectService (single source of truth).
+ * This replaces the old direct localStorage read.
+ */
 function getAllSubjectsFlat() {
   try {
-    const byStudy =
-      JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
-    const results = [];
+    const { getAllSubjects } = require("../services/subjectService");
+    const all = getAllSubjects();
 
-    Object.entries(byStudy).forEach(([studyKey, subjects]) => {
-      if (!Array.isArray(subjects)) {
-        return;
-      }
-
-      subjects.forEach((subject) => {
-        results.push({
-          type: "subject",
-          id: subject.id || subject.subjectId,
-          studyKey,
-          label: subject.id || subject.subjectId,
-          meta: [
-            subject.status,
-            subject.site,
-            subject.pi,
-            studyKey
-          ]
-            .filter(Boolean)
-            .join(" • ")
-        });
-      });
-    });
-
-    return results;
+    return all.map((subject) => ({
+      type: "subject",
+      id: subject.id || subject.subjectId,
+      studyKey: subject.studyId,
+      label: subject.id || subject.subjectId,
+      meta: [
+        subject.status,
+        subject.site,
+        subject.pi,
+        subject.studyId,
+      ]
+        .filter(Boolean)
+        .join(" • ")
+    }));
   } catch {
     return [];
   }

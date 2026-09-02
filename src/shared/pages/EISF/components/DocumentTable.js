@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import "./DocumentTable.css";
 import StatusBadge from "./StatusBadge";
 import {
@@ -19,7 +20,6 @@ const REFERENCE_COLUMNS = [
 ];
 
 const ACTION_MENU_WIDTH = 210;
-const ACTION_MENU_ESTIMATED_HEIGHT = 282;
 const ACTION_MENU_GAP = 8;
 
 export default function DocumentTable({
@@ -34,20 +34,15 @@ export default function DocumentTable({
   sortField = "documentName",
   sortDirection = "asc",
   variant = "default",
-  // Permission flags — computed via hasPermission() in EISFModuleWorkspace
-  // and passed down here. DocumentTable has no direct access to the
-  // permission service; it only respects the flags it's given. Default to
-  // true so any other consumer that doesn't pass these keeps prior behavior.
   canEdit = true,
   canDelete = true,
-  // Split-view selection: id of the document currently shown in the preview
-  // panel. Rows become clickable and the active row is highlighted.
   selectedDocumentId = null,
   onSelect,
 }) {
   const [openMenuId, setOpenMenuId] = useState(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const menuButtonRefs = useRef({});
+  const menuRef = useRef(null);
   const isReferenceView = variant === "reference";
 
   const runAction = (callback, doc) => {
@@ -55,19 +50,33 @@ export default function DocumentTable({
     callback?.(doc);
   };
 
-  const updateMenuPosition = useCallback((documentId) => {
-    const button = menuButtonRefs.current[documentId];
-
+  /**
+   * Compute menu position from the trigger button's viewport rect.
+   * Flips above the button when there isn't room below, and clamps
+   * to the viewport edges so the menu is never clipped.
+   */
+  const updatePosition = useCallback(() => {
+    const button = menuButtonRefs.current[openMenuId];
     if (!button || typeof window === "undefined") return;
 
     const rect = button.getBoundingClientRect();
+    const menuHeight = menuRef.current?.offsetHeight ?? 0;
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
-    const hasRoomBelow = viewportHeight - rect.bottom >= ACTION_MENU_ESTIMATED_HEIGHT + ACTION_MENU_GAP;
-    const hasRoomAbove = rect.top >= ACTION_MENU_ESTIMATED_HEIGHT + ACTION_MENU_GAP;
-    const top = hasRoomBelow || !hasRoomAbove
-      ? Math.min(rect.bottom + ACTION_MENU_GAP, viewportHeight - ACTION_MENU_ESTIMATED_HEIGHT - ACTION_MENU_GAP)
-      : rect.top - ACTION_MENU_ESTIMATED_HEIGHT - ACTION_MENU_GAP;
+
+    const hasRoomBelow =
+      viewportHeight - rect.bottom >= menuHeight + ACTION_MENU_GAP;
+    const hasRoomAbove =
+      rect.top >= menuHeight + ACTION_MENU_GAP;
+
+    const top =
+      hasRoomBelow || !hasRoomAbove
+        ? Math.min(
+            rect.bottom + ACTION_MENU_GAP,
+            viewportHeight - menuHeight - ACTION_MENU_GAP
+          )
+        : rect.top - menuHeight - ACTION_MENU_GAP;
+
     const left = Math.min(
       Math.max(ACTION_MENU_GAP, rect.right - ACTION_MENU_WIDTH),
       viewportWidth - ACTION_MENU_WIDTH - ACTION_MENU_GAP
@@ -77,37 +86,59 @@ export default function DocumentTable({
       top: Math.max(ACTION_MENU_GAP, top),
       left: Math.max(ACTION_MENU_GAP, left),
     });
-  }, []);
+  }, [openMenuId]);
 
   const toggleActionMenu = (documentId) => {
     if (openMenuId === documentId) {
       setOpenMenuId(null);
       return;
     }
-
-    updateMenuPosition(documentId);
     setOpenMenuId(documentId);
+    // Position is computed in useLayoutEffect below, after the menu DOM
+    // is committed and its real height is measurable.
   };
 
+  /* --- Outside-click dismissal + keyboard (Escape) --- */
   useEffect(() => {
     if (!openMenuId || typeof window === "undefined") return undefined;
 
-    const reposition = () => updateMenuPosition(openMenuId);
     const closeOnOutsideClick = (event) => {
-      if (event.target.closest(".document-action-menu, .icon-action-btn.menu")) return;
+      if (event.target.closest(".document-action-menu, .icon-action-btn.menu"))
+        return;
       setOpenMenuId(null);
     };
 
-    window.addEventListener("resize", reposition);
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setOpenMenuId(null);
+      }
+    };
+
+    window.addEventListener("mousedown", closeOnOutsideClick);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("mousedown", closeOnOutsideClick);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [openMenuId]);
+
+  /* --- Reposition after mount, and on scroll / resize --- */
+  useLayoutEffect(() => {
+    if (!openMenuId) return;
+
+    // Compute once immediately after the menu commits to the DOM.
+    updatePosition();
+
+    const reposition = () => updatePosition();
+
     window.addEventListener("scroll", reposition, true);
-    window.document.addEventListener("mousedown", closeOnOutsideClick);
+    window.addEventListener("resize", reposition);
 
     return () => {
-      window.removeEventListener("resize", reposition);
       window.removeEventListener("scroll", reposition, true);
-      window.document.removeEventListener("mousedown", closeOnOutsideClick);
+      window.removeEventListener("resize", reposition);
     };
-  }, [openMenuId, updateMenuPosition]);
+  }, [openMenuId, updatePosition]);
 
   const renderSortLabel = (column) => {
     if (!onSort) return column.label;
@@ -239,37 +270,6 @@ export default function DocumentTable({
                         >
                           <FiMoreVertical />
                         </button>
-
-                        {openMenuId === doc.id && (
-                          <div
-                            className="document-action-menu"
-                            role="menu"
-                            style={menuPosition}
-                          >
-                            <button type="button" role="menuitem" onClick={() => runAction(onView, doc)}>
-                              <FiEye /> View
-                            </button>
-                            <button type="button" role="menuitem" onClick={() => runAction(onDownload, doc)}>
-                              <FiDownload /> Download
-                            </button>
-                            <button type="button" role="menuitem" onClick={() => runAction(onHistory, doc)}>
-                              <FiList /> Version History
-                            </button>
-                            <button type="button" role="menuitem" onClick={() => runAction(onAudit, doc)}>
-                              <FiEye /> Audit Trail
-                            </button>
-                            {canEdit && (
-                              <button type="button" role="menuitem" onClick={() => runAction(onEdit, doc)}>
-                                <FiEdit2 /> Edit
-                              </button>
-                            )}
-                            {canDelete && (
-                              <button type="button" role="menuitem" className="danger" onClick={() => runAction(onDelete, doc)}>
-                                <FiTrash2 /> Delete
-                              </button>
-                            )}
-                          </div>
-                        )}
                       </div>
                     </div>
                   ) : (
@@ -292,6 +292,51 @@ export default function DocumentTable({
           )}
         </tbody>
       </table>
+
+      {/* Portal the action menu to document.body so position: fixed
+          coordinates are always relative to the viewport, not any
+          containing-block ancestor with transform/filter. */}
+      {openMenuId &&
+        createPortal(
+          <div
+            ref={menuRef}
+            className="document-action-menu"
+            role="menu"
+            style={{ top: menuPosition.top, left: menuPosition.left }}
+          >
+            {(() => {
+              const doc = documents.find((d) => d.id === openMenuId);
+              if (!doc) return null;
+              return (
+                <>
+                  <button type="button" role="menuitem" onClick={() => runAction(onView, doc)}>
+                    <FiEye /> View
+                  </button>
+                  <button type="button" role="menuitem" onClick={() => runAction(onDownload, doc)}>
+                    <FiDownload /> Download
+                  </button>
+                  <button type="button" role="menuitem" onClick={() => runAction(onHistory, doc)}>
+                    <FiList /> Version History
+                  </button>
+                  <button type="button" role="menuitem" onClick={() => runAction(onAudit, doc)}>
+                    <FiEye /> Audit Trail
+                  </button>
+                  {canEdit && (
+                    <button type="button" role="menuitem" onClick={() => runAction(onEdit, doc)}>
+                      <FiEdit2 /> Edit
+                    </button>
+                  )}
+                  {canDelete && (
+                    <button type="button" role="menuitem" className="danger" onClick={() => runAction(onDelete, doc)}>
+                      <FiTrash2 /> Delete
+                    </button>
+                  )}
+                </>
+              );
+            })()}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

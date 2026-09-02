@@ -9,6 +9,7 @@ import AdminRecruitment from "../../Admin/pages/Recruitment";
 import AdminReports from "../../Admin/pages/Reports";
 import AdminNotifications from "../../Admin/pages/Notifications";
 import AdminSettings from "../../Admin/pages/Settings";
+import AdminReferral from "../../Admin/pages/Referral";
 import SharedProgressNotes from "../pages/operations/ProgressNotes";
 import SharedStudies from "../pages/studies/Studies";
 
@@ -23,6 +24,7 @@ import SponsorRegulatory from "../../Sponsor/pages/Regulatory";
 import SponsorReports from "../../Sponsor/pages/Reports";
 import SponsorNotifications from "../../Sponsor/pages/Notifications";
 import SponsorSettings from "../../Sponsor/pages/Settings";
+import SponsorReferral from "../../Sponsor/pages/Referral";
 import SponsorProgressNotes from "../../Sponsor/pages/ProgressNotes";
 import SponsorSubjects from "../../Sponsor/pages/Subjects";
 
@@ -143,6 +145,16 @@ export function RoleAwareSettings() {
       [ROLES.PI]: PISettingsWithLayout,
     },
     AdminSettings
+  );
+  return <Component />;
+}
+
+export function RoleAwareReferral() {
+  const Component = pickComponent(
+    {
+      [ROLES.SPONSOR]: SponsorReferral,
+    },
+    AdminReferral
   );
   return <Component />;
 }

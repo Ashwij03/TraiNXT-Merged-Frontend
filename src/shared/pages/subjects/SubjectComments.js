@@ -3,7 +3,6 @@ import DataTable from "../../components/dashboard/shared/DataTable";
 import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
 import { canWriteComments, canViewComment } from "../../services/commentService";
 import { getCurrentUser } from "../../services/roleService";
-import { readJson } from "../../utils/storageHelpers";
 import { useComments } from "../../comments/CommentsContext";
 import CommentModal from "../../comments/CommentModal";
 import "./SubjectComments.css";
@@ -16,22 +15,21 @@ function resolveStudyIdForSubject(subjectId) {
     return "";
   }
 
-  const subjectsByStudy = readJson("subjectsByStudy", {});
-  const normalized = String(subjectId).toLowerCase();
+  try {
+    const { getAllSubjects } = require("../../services/subjectService");
+    const allSubjects = getAllSubjects();
+    const normalized = String(subjectId).toLowerCase();
 
-  for (const [studyKey, subjects] of Object.entries(subjectsByStudy)) {
-    if (!Array.isArray(subjects)) {
-      continue;
-    }
-
-    const match = subjects.find((subject) => {
+    const match = allSubjects.find((subject) => {
       const candidateId = subject?.subjectId || subject?.id || "";
       return String(candidateId).toLowerCase() === normalized;
     });
 
     if (match) {
-      return match.studyCode || match.studyId || studyKey;
+      return match.studyId || "";
     }
+  } catch {
+    // ignore
   }
 
   return "";

@@ -22,6 +22,7 @@ import {
 import { getStudyByCode } from "../../../services/studyService";
 import ROLES from "../../../constants/roles";
 import {
+  formatUserDisplayName,
   getCurrentUser,
   getDashboardPath,
   getEffectiveRole,
@@ -75,6 +76,7 @@ import {
   getSubjectOptions,
 } from "../../../services/filterService";
 import useLiveChatNavigation from "../../../hooks/useLiveChatNavigation";
+import { useAuth } from "../../../context/AuthContext";
 
 // Task 8 (Dashboard Data Reset Bug) + Task 15 (Dashboard Must Show All
 // Sites): every per-role Dashboard route. Used to detect "the Dashboard
@@ -100,6 +102,7 @@ function EnterpriseNavbarBase({
   const location = useLocation();
   const profileSectionRef = useRef(null);
   const filtersWrapRef = useRef(null);
+  const { logout } = useAuth();
 
   const currentUser = getCurrentUser();
   const userEmail = currentUser?.email || "";
@@ -117,37 +120,36 @@ function EnterpriseNavbarBase({
     useAdminNavbarNotifications();
 
   const [previewRole, setPreviewRoleState] = useState(
-    () => effectiveRole || ROLES.ADMIN
+    () => effectiveRole || ROLES.ADMIN,
   );
 
   const [profilePhoto, setProfilePhoto] = useState(
-    currentUser?.profilePhoto || ""
+    currentUser?.profilePhoto || "",
   );
 
   const [selectedIndication, setSelectedIndication] = useState(
-    getStoredIndicationFilter
+    getStoredIndicationFilter,
   );
 
   const [selectedSponsor, setSelectedSponsor] = useState(
-    getStoredSponsorFilter
+    getStoredSponsorFilter,
   );
 
   const [selectedCRO, setSelectedCRO] = useState(getStoredCROFilter);
 
   const [selectedInstitution, setSelectedInstitution] = useState(
-    () => getStoredInstitutionFilter() || getDefaultInstitution(currentUser)
+    () => getStoredInstitutionFilter() || getDefaultInstitution(currentUser),
   );
 
   const [selectedSiteNumber, setSelectedSiteNumber] = useState(
-    getStoredSiteNumberFilter
+    getStoredSiteNumberFilter,
   );
 
-  const [selectedStudyCode, setSelectedStudyCode] = useState(
-    getStoredStudyFilter
-  );
+  const [selectedStudyCode, setSelectedStudyCode] =
+    useState(getStoredStudyFilter);
 
   const [selectedSubject, setSelectedSubject] = useState(
-    getStoredSubjectFilter
+    getStoredSubjectFilter,
   );
 
   const indicationOptions = useMemo(() => {
@@ -365,20 +367,15 @@ function EnterpriseNavbarBase({
 
   useEffect(() => {
     const handlePreviewRoleChange = () => {
-      setPreviewRoleState(
-        getEffectiveRole(getCurrentUser()) || ROLES.ADMIN
-      );
+      setPreviewRoleState(getEffectiveRole(getCurrentUser()) || ROLES.ADMIN);
     };
 
-    window.addEventListener(
-      ADMIN_PREVIEW_ROLE_EVENT,
-      handlePreviewRoleChange
-    );
+    window.addEventListener(ADMIN_PREVIEW_ROLE_EVENT, handlePreviewRoleChange);
 
     return () => {
       window.removeEventListener(
         ADMIN_PREVIEW_ROLE_EVENT,
-        handlePreviewRoleChange
+        handlePreviewRoleChange,
       );
     };
   }, [userEmail]);
@@ -444,6 +441,9 @@ function EnterpriseNavbarBase({
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("adminPreviewRole");
     localStorage.removeItem("currentUser");
+
+    // Sync AuthContext state so useAuth() resolves to null immediately.
+    logout();
 
     setAdminPreviewRole(null);
 
@@ -515,7 +515,7 @@ function EnterpriseNavbarBase({
     // see getSubjectOptions in filterService.js. Fall back to whatever study
     // is currently selected in the header if a match isn't found.
     const matchedOption = subjectOptions.find(
-      (option) => String(option.value) === String(subjectId)
+      (option) => String(option.value) === String(subjectId),
     );
 
     const studyCode = matchedOption?.studyKey || selectedStudyCode;
@@ -532,13 +532,13 @@ function EnterpriseNavbarBase({
     // on this subject.
     localStorage.setItem(
       SELECTED_SUBJECT_KEY,
-      JSON.stringify({ id: subjectId, studyId: studyCode })
+      JSON.stringify({ id: subjectId, studyId: studyCode }),
     );
 
     navigate(
       `/study-dashboard/${encodeURIComponent(
-        studyCode
-      )}?tab=Subjects&subject=${encodeURIComponent(subjectId)}`
+        studyCode,
+      )}?tab=Subjects&subject=${encodeURIComponent(subjectId)}`,
     );
   };
 
@@ -671,10 +671,7 @@ function EnterpriseNavbarBase({
             onChange={(value) =>
               updateFilter("sponsor", value, setSelectedSponsor)
             }
-            options={[
-              { value: "", label: "All Sponsors" },
-              ...sponsorOptions,
-            ]}
+            options={[{ value: "", label: "All Sponsors" }, ...sponsorOptions]}
             placeholder="All Sponsors"
             searchPlaceholder="Search Sponsor"
             className="header-dropdown"
@@ -693,13 +690,8 @@ function EnterpriseNavbarBase({
         return (
           <SearchableDropdown
             value={selectedCRO}
-            onChange={(value) =>
-              updateFilter("cro", value, setSelectedCRO)
-            }
-            options={[
-              { value: "", label: "All CROs" },
-              ...croOptions,
-            ]}
+            onChange={(value) => updateFilter("cro", value, setSelectedCRO)}
+            options={[{ value: "", label: "All CROs" }, ...croOptions]}
             placeholder="All CROs"
             searchPlaceholder="Search CRO"
             className="header-dropdown"
@@ -807,6 +799,7 @@ function EnterpriseNavbarBase({
   const profileRoleLabel = userIsAdmin
     ? ROLE_LABELS[ROLES.ADMIN]
     : ROLE_LABELS[currentUser?.role] || currentUser?.role || "User";
+  const currentUserDisplayName = formatUserDisplayName(currentUser);
 
   return (
     <div className={`enterprise-header ${navbarClassName}`.trim()}>
@@ -837,7 +830,7 @@ function EnterpriseNavbarBase({
           <span className="header-welcome-text">Welcome</span>
           <span className={`role-badge ${badgeClass}`}>{badgeLabel}</span>
           <span className="header-username-inline">
-            {currentUser?.name || "User"}
+            {currentUserDisplayName || "User"}
           </span>
         </div>
 
@@ -846,9 +839,7 @@ function EnterpriseNavbarBase({
         <div className="header-filters-wrap" ref={filtersWrapRef}>
           <button
             type="button"
-            className={`header-filter-toggle${
-              filtersOpen ? " is-open" : ""
-            }`}
+            className={`header-filter-toggle${filtersOpen ? " is-open" : ""}`}
             onClick={() => setFiltersOpen((previousValue) => !previousValue)}
             aria-label="Toggle filters"
             aria-expanded={filtersOpen}
@@ -931,18 +922,16 @@ function EnterpriseNavbarBase({
           >
             <div className="profile-avatar">
               {profilePhoto ? (
-                <img
-                  src={profilePhoto}
-                  alt=""
-                  className="profile-avatar-img"
-                />
+                <img src={profilePhoto} alt="" className="profile-avatar-img" />
               ) : (
                 currentUser?.name?.charAt(0)?.toUpperCase()
               )}
             </div>
 
             <div>
-              <div className="profile-name">{currentUser?.name || "User"}</div>
+              <div className="profile-name">
+                {currentUserDisplayName || "User"}
+              </div>
               <div className="profile-role">{profileRoleLabel}</div>
             </div>
 

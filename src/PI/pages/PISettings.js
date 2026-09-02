@@ -293,6 +293,7 @@ function PISettings({ activeView = "security" }) {
             </div>
           );
         })}
+
       </div>
 
       {view === "security" && <PIAccountSecurity />}

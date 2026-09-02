@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "../styles/PISubjectsDashboard.css";
 // Phase 7 — IMP-MOD-2: reuse the standardized Subject Modal styles so the PI
 // Subject create flow matches the shared standardized modal layout, spacing,
@@ -7,12 +7,13 @@ import "../../shared/pages/studies/StudySubjects.css";
 import { FaEye, FaFileAlt, FaEllipsisV } from "react-icons/fa";
 import {
   COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE,
-  createSubject,
   getStudyByCode,
   getSubjectStudyDefaults,
   getStudies,
+  createSubject,
 } from "../../shared/services/studyService";
 import { STUDY_STATUS_COMPLETED } from "../../shared/constants/studyStatus";
+import SubjectService from "../../shared/services/subjectService";
 
 import { resolveSiteDisplay } from "../../shared/utils/siteDisplay";
 
@@ -31,14 +32,33 @@ function PISubjectsDashboard({ onProfileClick }) {
   const studyOptions = useMemo(
     () =>
       getStudies().filter(
-        (study) => study && study.status !== STUDY_STATUS_COMPLETED
+        (study) => study && study.status !== STUDY_STATUS_COMPLETED,
       ),
-    []
+    [],
   );
 
+  const [selectedStudyId, setSelectedStudyId] = useState("");
+  const isCompletedStudySelected = Boolean(
+    selectedStudyId &&
+    getStudyByCode(selectedStudyId)?.status === STUDY_STATUS_COMPLETED,
+  );
   const [subjects, setSubjects] = useState(() => {
-    return JSON.parse(localStorage.getItem("subjectsData")) || [];
+    return selectedStudyId
+      ? SubjectService.getSubjectsForStudy(selectedStudyId)
+      : SubjectService.getAllSubjects();
   });
+
+  useEffect(() => {
+    const refresh = () => {
+      setSubjects(
+        selectedStudyId
+          ? SubjectService.getSubjectsForStudy(selectedStudyId)
+          : SubjectService.getAllSubjects(),
+      );
+    };
+    window.addEventListener("subjects-updated", refresh);
+    return () => window.removeEventListener("subjects-updated", refresh);
+  }, [selectedStudyId]);
   const handleAddSubject = (event) => {
     if (event && typeof event.preventDefault === "function") {
       event.preventDefault();
@@ -70,38 +90,22 @@ function PISubjectsDashboard({ onProfileClick }) {
       enrollmentDate: newSubject.enrollmentDate,
       currentVisit: newSubject.lastVisit,
     };
-    let createdSubject;
-
     try {
-      createdSubject = createSubject(
-        newSubject.study,
-        subjectForCanonicalStore
-      );
+      createSubject(newSubject.study, subjectForCanonicalStore);
     } catch (error) {
       setSubjectModalError(
-        (error && error.message) ||
-          COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE
+        (error && error.message) || COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE,
       );
       return;
     }
 
-    const piSubjectRecord = {
-      ...newSubject,
-      id: createdSubject.id,
-      initials: createdSubject.initials || newSubject.initials,
-      study: createdSubject.studyId || newSubject.study,
-      pi: createdSubject.pi,
-      principalInvestigator: createdSubject.principalInvestigator,
-      site: createdSubject.site,
-      siteNumber: createdSubject.siteNumber,
-    };
-
-    const updatedSubjects = [...subjects, piSubjectRecord];
-
-    setSubjects(updatedSubjects);
-
-    localStorage.setItem("subjectsData", JSON.stringify(updatedSubjects));
-    window.dispatchEvent(new Event("subjects-updated"));
+    // Subject was already created in the canonical store via createSubject above.
+    // Refresh from the store to get the authoritative record.
+    setSubjects(
+      selectedStudyId
+        ? SubjectService.getSubjectsForStudy(selectedStudyId)
+        : SubjectService.getAllSubjects(),
+    );
 
     setShowModal(false);
     setSubjectModalError("");
@@ -219,7 +223,7 @@ function PISubjectsDashboard({ onProfileClick }) {
 
   const selectedStudyDefaults = useMemo(
     () => getSubjectStudyDefaults(newSubject.study),
-    [newSubject.study]
+    [newSubject.study],
   );
 
   const handleView = (subject) => {
@@ -250,18 +254,38 @@ function PISubjectsDashboard({ onProfileClick }) {
           <p>View and manage all subjects</p>
         </div>
 
-        <button
-          className="add-subject-btn"
-          onClick={() => setShowModal(true)}
-          disabled={studyOptions.length === 0}
-          title={
-            studyOptions.length === 0
-              ? "No non-completed studies are available for subject creation."
-              : undefined
-          }
-        >
-          + Add Subject
-        </button>
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+          <select
+            value={selectedStudyId}
+            onChange={(e) => setSelectedStudyId(e.target.value)}
+            style={{ padding: "0.4rem", borderRadius: "4px" }}
+          >
+            <option value="">All Studies</option>
+            {studyOptions.map((study) => (
+              <option key={study.code} value={study.code}>
+                {study.code} — {study.name || study.protocol || "Untitled"}
+              </option>
+            ))}
+          </select>
+          <button
+            className="add-subject-btn"
+            onClick={() => {
+              if (!isCompletedStudySelected) {
+                setShowModal(true);
+              }
+            }}
+            disabled={studyOptions.length === 0 || isCompletedStudySelected}
+            title={
+              isCompletedStudySelected
+                ? COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE
+                : studyOptions.length === 0
+                  ? "No non-completed studies are available for subject creation."
+                  : undefined
+            }
+          >
+            + Add Subject
+          </button>
+        </div>
       </div>
 
       <div className="subjects-filters">

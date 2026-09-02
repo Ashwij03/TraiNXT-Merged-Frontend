@@ -5,22 +5,20 @@ import RequestPermissionButton from "../../shared/components/RequestPermissionBu
 
 function readScreeningRecords() {
   try {
-    const subjectsByStudy = JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
-    return Object.entries(subjectsByStudy).flatMap(([studyCode, subjects]) =>
-      (Array.isArray(subjects) ? subjects : [])
-        .filter((subject) =>
-          ["Screening", "Pending"].includes(subject.status) ||
-          String(subject.visit || "").toLowerCase().includes("screening"),
-        )
-        .map((subject, index) => ({
-          id: subject.id || subject.subjectId || `${studyCode}-${index}`,
-          subjectId: subject.subjectId || subject.id || `${studyCode}-${index}`,
-          name: subject.name || subject.subjectId || subject.id,
-          study: studyCode,
-          screeningDate: subject.enrollment || subject.createdAt || "—",
-          status: subject.status || "Pending",
-        })),
-    );
+    const { getAllSubjects } = require("../../shared/services/subjectService");
+    return getAllSubjects()
+      .filter((subject) =>
+        ["Screening", "Pending"].includes(subject.status) ||
+        String(subject.visit || "").toLowerCase().includes("screening"),
+      )
+      .map((subject, index) => ({
+        id: subject.id || subject.subjectId || `${subject.studyId}-${index}`,
+        subjectId: subject.subjectId || subject.id || `${subject.studyId}-${index}`,
+        name: subject.name || subject.subjectId || subject.id,
+        study: subject.studyId,
+        screeningDate: subject.enrollment || subject.createdAt || "—",
+        status: subject.status || "Pending",
+      }));
   } catch {
     return [];
   }

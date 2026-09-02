@@ -72,12 +72,13 @@ function resolveAdminSiteByStudySite(study = {}) {
 
 
 function mapStudyToPortfolio(study = {}) {
-  const subjectsByStudy =
-    JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
-
-  const enrolled = Array.isArray(subjectsByStudy[study.code])
-    ? subjectsByStudy[study.code].length
-    : 0;
+  let enrolled = 0;
+  try {
+    const { getSubjectsForStudy } = require("../../shared/services/subjectService");
+    enrolled = getSubjectsForStudy(study.code).length;
+  } catch {
+    enrolled = 0;
+  }
 
   return {
     studyId: study.code || study.studyId || study.id || "",
@@ -197,8 +198,15 @@ export function saveCROs(data) {
 }
 
 export function getSites(study) {
-  const subjectsByStudy =
-    JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
+  // Subject counts are now sourced from subjectService
+  function getEnrolledCount(studyCode) {
+    try {
+      const { getSubjectsForStudy } = require("../../shared/services/subjectService");
+      return getSubjectsForStudy(studyCode).length;
+    } catch {
+      return 0;
+    }
+  }
 
   // SCOPED MODE — used by the per-study Clinical Sites tab.
   // Studies that share the same Sponsor AND Indication as the currently
@@ -223,10 +231,9 @@ export function getSites(study) {
       matchingStudies.length > 0 ? matchingStudies : [study];
 
     return studiesToShow.map((matchedStudy, index) => {
-      const subjects = subjectsByStudy[matchedStudy.code] || [];
       const adminSite = resolveAdminSiteByStudySite(matchedStudy);
 
-      const enrolled = subjects.length;
+      const enrolled = getEnrolledCount(matchedStudy.code);
 
       const target = Number(matchedStudy.targetSubjects || 0);
 
@@ -277,10 +284,9 @@ export function getSites(study) {
   const studies = getStudies();
 
   return studies.map((singleStudy, index) => {
-    const subjects = subjectsByStudy[singleStudy.code] || [];
     const adminSite = resolveAdminSiteByStudySite(singleStudy);
 
-    const enrolled = subjects.length;
+    const enrolled = getEnrolledCount(singleStudy.code);
 
     const target = Number(singleStudy.targetSubjects || 0);
 

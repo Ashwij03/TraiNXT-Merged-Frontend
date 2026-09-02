@@ -35,6 +35,7 @@ import {
 import {
   STUDY_STATUS_OPTIONS,
   STUDY_STATUS_DEFAULT,
+  STUDY_STATUS_COMPLETED,
 } from "../../constants/studyStatus";
 import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
 import RecentSubjectsWidget from "../../components/dashboard/shared/RecentSubjectsWidget";
@@ -96,8 +97,15 @@ function StudyDashboard() {
   // and only then. Every other tab is untouched, and the sidebar stays
   // wherever the user leaves it after that (it isn't forced back open
   // when navigating away from eISF).
+  //
+  // Subjects Sidebar Auto Close: the Subjects tab now gets the exact same
+  // treatment as eISF, so it reuses the same event/listener pair instead
+  // of introducing a parallel mechanism - every dashboard shell already
+  // knows how to respond to EISF_SIDEBAR_COLLAPSE_EVENT, so opening
+  // Subjects collapses the sidebar the same way opening eISF does. As
+  // with eISF, the sidebar isn't forced back open when navigating away.
   useEffect(() => {
-    if (activeTab === "eISF") {
+    if (activeTab === "eISF" || activeTab === "Subjects") {
       window.dispatchEvent(new Event(EISF_SIDEBAR_COLLAPSE_EVENT));
     }
   }, [activeTab]);
@@ -236,12 +244,8 @@ useEffect(() => {
 
   const studySubjectsFromStorage = useMemo(() => {
     try {
-      const allSubjectsByStudy =
-        JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
-
-      const studySubjects = allSubjectsByStudy[currentStudyKey];
-
-      return Array.isArray(studySubjects) ? studySubjects : [];
+      const { getSubjectsForStudy } = require("../../services/subjectService");
+      return getSubjectsForStudy(currentStudyKey);
     } catch {
       return [];
     }
@@ -673,17 +677,21 @@ window.dispatchEvent(new Event("studies-updated"));
                   </span>
                 </span>
                 <span className="study-quick-detail">
-                  <span className="study-quick-detail-label">Site No</span>
+                  <span className="study-quick-detail-label">Site:</span>
                   <span className="study-quick-detail-value">
                     {currentStudy?.siteNumber || currentStudy?.location || "-"}
                   </span>
-                </span>
-                <span className="study-quick-detail">
-                  <span className="study-quick-detail-label">Site</span>
+                  <span className="study-quick-detail-label">-</span>
                   <span className="study-quick-detail-value">
                     {currentStudy?.site || currentStudy?.location || "-"}
                   </span>
                 </span>
+                {/* <span className="study-quick-detail">
+                  <span className="study-quick-detail-label">Site</span>
+                  <span className="study-quick-detail-value">
+                    {currentStudy?.site || currentStudy?.location || "-"}
+                  </span>
+                </span> */}
                 <span className="study-quick-detail">
                   <span className="study-quick-detail-label">
                     Principal Investigator
@@ -779,7 +787,18 @@ window.dispatchEvent(new Event("studies-updated"));
                 Integration point only: routing, study context and the subject
                 business logic in `StudySubjects` are all left as they were,
                 and that component still backs the Overview section above. */}
-            {activeTab === "Subjects" && <StudySubjectsWorkspace studyId={id} />}
+            {activeTab === "Subjects" && (
+              id ? (
+                <StudySubjectsWorkspace
+                  studyId={id}
+                  readOnly={currentStudy?.status === STUDY_STATUS_COMPLETED}
+                />
+              ) : (
+                <div className="dashboard-loading">
+                  No study selected. Please select a study from the Studies list.
+                </div>
+              )
+            )}
 
             {activeTab === "Study Milestone" && <StudyPlanning />}
 

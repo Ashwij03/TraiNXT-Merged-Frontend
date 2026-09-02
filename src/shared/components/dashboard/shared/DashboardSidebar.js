@@ -28,9 +28,11 @@ import {
   FiFileText,
   FiLayers,
   FiCpu,
+  FiGift,
 } from "react-icons/fi";
 import { getRoleExtraMenuItems } from "../../../constants/roleMenus";
 import { canViewFinancials } from "../../../pages/studies/StudyWorkspaceTabsConfig";
+import { resolveStudyKey as getStudyKey, getSubjectsForStudy } from "../../../services/subjectService";
 
 const STUDY_SECTIONS = [
   { key: "overview", label: "Overview" },
@@ -72,29 +74,6 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     }
   };
 
-  const getAllSubjectsByStudy = () => {
-    try {
-      return JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
-    } catch {
-      return {};
-    }
-  };
-
-  // Use `||` rather than `??` here: studyService.normalizeStudy() always
-  // gives `code` a string value (defaulting to ""), so `??` would never
-  // fall through to `id`/`studyId` for a study whose code hasn't been set
-  // yet — every codeless study would collide under the same "" key in
-  // subjectsByStudy, leaking subjects across studies.
-  const getStudyKey = (study) =>
-    String(
-      study?.code ||
-        study?.id ||
-        study?.studyId ||
-        study?.title ||
-        study?.name ||
-        "",
-    );
-
   const getStudyDisplayName = (study) =>
     study?.name ||
     study?.title ||
@@ -115,33 +94,9 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     return name && code !== name ? code : "";
   };
 
-  const normalizeKey = (value) => String(value ?? "").trim().toLowerCase();
-
-  // A2 (Study-Scoped Subject Visibility): don't trust the bucket key alone —
-  // cross-check each subject's own `studyId` against the study being
-  // rendered so subjects misfiled under this study's key (e.g. from a
-  // stale/renamed study code) never leak into this study's sidebar list.
-  const getStudySubjects = (study) => {
-    const subjectsByStudy = getAllSubjectsByStudy();
-    const studyKey = getStudyKey(study);
-    const subjects = subjectsByStudy[studyKey];
-
-    if (!Array.isArray(subjects)) {
-      return [];
-    }
-
-    const normalizedStudyKey = normalizeKey(studyKey);
-
-    return subjects.filter((subject) => {
-      const subjectStudyId = subject?.studyId;
-
-      if (subjectStudyId === undefined || subjectStudyId === null || subjectStudyId === "") {
-        return true;
-      }
-
-      return normalizeKey(subjectStudyId) === normalizedStudyKey;
-    });
-  };
+  // All subject data now flows through subjectService — the single source
+  // of truth. No more direct localStorage access or duplicated filtering.
+  const getStudySubjects = (study) => getSubjectsForStudy(getStudyKey(study));
 
   const [studyBinderOpen, setStudyBinderOpen] = useState(false);
 
@@ -911,6 +866,16 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         >
           <FiSettings size={16} />
           <span>Settings</span>
+        </div>
+      )}
+
+      {sidebarItems.some((item) => item.key === "settings") && (
+        <div
+          className={getLinkClass(pathname.includes("/referral"))}
+          onClick={() => handleNav("/referral")}
+        >
+          <FiGift size={16} />
+          <span>Referral Program</span>
         </div>
       )}
 

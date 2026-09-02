@@ -31,6 +31,7 @@ import {
   isSupportedExtension,
   SUPPORTED_EXTENSIONS_LABEL,
 } from "./fileTypes";
+import { formatDateUTC, formatDateTimeUTC } from "../../utils/dateTime";
 
 /* ==================================================================
    CONSTANTS
@@ -39,8 +40,19 @@ import {
 /** Legacy flat key (pre-study-scoping). */
 const LEGACY_FILES_KEY = "trianxtSubjectFiles";
 
-/** Study-scoped localStorage key factory. */
+/**
+ * Study-scoped localStorage key factory.
+ *
+ * GUARD: if studyId is falsy, logs an error to catch silent leaks.
+ */
 export function subjectFilesKey(studyId) {
+  if (!studyId) {
+    // eslint-disable-next-line no-console
+    console.error(
+      "[TriaNXT] subjectFilesKey called with falsy studyId.",
+      "This would cause all studies to share the 'global' bucket."
+    );
+  }
   return `trianxtSubjectFiles:${studyId || "global"}`;
 }
 
@@ -100,9 +112,11 @@ function normalizeFile(file, folderId) {
     uploadedAt: file.uploadedAt || now,
     modifiedAt: file.modifiedAt || file.uploadedAt || now,
     uploadedBy: file.uploadedBy || "Unknown user",
+    modifiedBy: file.modifiedBy || file.uploadedBy || "Unknown user",
     status: file.status || "Final",
     hasContent: Boolean(file.hasContent && file.dataUrl),
     ...(file.dataUrl ? { dataUrl: file.dataUrl } : {}),
+    ...(Array.isArray(file.auditTrail) ? { auditTrail: file.auditTrail } : {}),
   };
 }
 
@@ -160,10 +174,19 @@ function migrateLegacyFiles() {
       return;
     }
 
-    // Read subjectsByStudy to figure out which study each folder belongs to
+    // Use subjectService to figure out which study each folder belongs to.
+    // subjectService is the single source of truth for subjectsByStudy.
     let allByStudy = {};
     try {
-      allByStudy = JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
+      const subjectService = require("../../services/subjectService");
+      const allSubjects = subjectService.getAllSubjects();
+      // Rebuild the bucket map from getAllSubjects() for the legacy migration
+      allSubjects.forEach((subject) => {
+        const studyId = subject.studyId;
+        if (!studyId) return;
+        if (!allByStudy[studyId]) allByStudy[studyId] = [];
+        allByStudy[studyId].push(subject);
+      });
     } catch {
       // ignore
     }
@@ -635,7 +658,7 @@ function readFileContent(file) {
  * Resolves with:
  *   { ok, store, added: File[], rejected: [{ name, error }], warning? }
  */
-export async function uploadFiles(studyId, store, folderId, fileList) {
+export async function uploadFiles(studyId, store, folderId, fileList, uploadedBy) {
   const incoming = Array.from(fileList || []);
 
   if (!folderId) {
@@ -695,10 +718,18 @@ export async function uploadFiles(studyId, store, folderId, fileList) {
         modifiedAt: raw.lastModified
           ? new Date(raw.lastModified).toISOString()
           : now,
-        uploadedBy: "Unknown user",
+        uploadedBy: uploadedBy || "Unknown user",
         status: "Pending Review",
         hasContent: Boolean(dataUrl),
         ...(dataUrl ? { dataUrl } : {}),
+        auditTrail: [
+          {
+            date: now,
+            user: uploadedBy || "Unknown user",
+            action: "Uploaded",
+            remarks: `File uploaded: ${raw.name.trim()}`,
+          },
+        ],
       },
       folderId
     );
@@ -733,7 +764,7 @@ export async function uploadFiles(studyId, store, folderId, fileList) {
 }
 
 /** Rename a file inside its folder (requirement 4). */
-export function renameFile(studyId, store, folderId, fileId, name) {
+export function renameFile(studyId, store, folderId, fileId, name, modifiedBy) {
   const files = listFiles(store, folderId);
   const target = files.find((file) => file.id === fileId);
 
@@ -744,10 +775,21 @@ export function renameFile(studyId, store, folderId, fileId, name) {
   const check = validateFileName(store, folderId, name, { excludeId: fileId });
   if (!check.valid) return { ok: false, store, error: check.error };
 
+  const now = new Date().toISOString();
   const renamed = {
     ...target,
     name: String(name).trim(),
-    modifiedAt: new Date().toISOString(),
+    modifiedAt: now,
+    modifiedBy: modifiedBy || target.modifiedBy || "Unknown user",
+    auditTrail: [
+      ...(Array.isArray(target.auditTrail) ? target.auditTrail : []),
+      {
+        date: now,
+        user: modifiedBy || "Unknown user",
+        action: "Renamed",
+        remarks: `Renamed from "${target.name}" to "${String(name).trim()}"`,
+      },
+    ],
   };
 
   const working = {
@@ -830,6 +872,153 @@ export function downloadFile(file) {
   };
 }
 
+/**
+ * Duplicate a file within the same folder, appending " (copy)" to the name.
+ * Respects the same validation rules as renameFile.
+ */
+export function duplicateFile(studyId, store, folderId, fileId, user) {
+  const files = listFiles(store, folderId);
+  const target = files.find((f) => f.id === fileId);
+
+  if (!target) {
+    return { ok: false, store, error: "This file no longer exists." };
+  }
+
+  // Build candidate name with " (copy)" suffix
+  const ext = getExtension(target.name);
+  const baseName = ext ? target.name.slice(0, -(ext.length + 1)) : target.name;
+  const copyName = ext ? `${baseName} (copy).${ext}` : `${baseName} (copy)`;
+
+  const nameCheck = validateFileName(store, folderId, copyName);
+  if (!nameCheck.valid) {
+    // If " (copy)" already exists, try " (copy 2)", etc.
+    let attempt = 2;
+    let candidateName;
+    do {
+      candidateName = ext
+        ? `${baseName} (copy ${attempt}).${ext}`
+        : `${baseName} (copy ${attempt})`;
+      attempt++;
+    } while (
+      attempt < 20 &&
+      !validateFileName(store, folderId, candidateName).valid
+    );
+    if (!validateFileName(store, folderId, candidateName).valid) {
+      return { ok: false, store, error: "Unable to create a unique copy name." };
+    }
+    return duplicateFileWith(studyId, store, folderId, target, candidateName, user);
+  }
+
+  return duplicateFileWith(studyId, store, folderId, target, copyName, user);
+}
+
+function duplicateFileWith(studyId, store, folderId, target, newName, user) {
+  const now = new Date().toISOString();
+  const copy = normalizeFile(
+    {
+      ...target,
+      id: createId(),
+      name: newName,
+      uploadedAt: now,
+      modifiedAt: now,
+      uploadedBy: user || "Unknown user",
+      modifiedBy: user || "Unknown user",
+      auditTrail: [
+        ...(Array.isArray(target.auditTrail) ? target.auditTrail : []),
+        {
+          date: now,
+          user: user || "Unknown user",
+          action: "Duplicated",
+          remarks: `Duplicated from "${target.name}"`,
+        },
+      ],
+    },
+    folderId
+  );
+
+  const working = {
+    ...store,
+    [folderId]: [copy, ...(store[folderId] || [])],
+  };
+
+  const saved = saveFileStore(studyId, working, "duplicate", folderId);
+  if (!saved.ok) return { ok: false, store, error: saved.error };
+
+  return { ok: true, store: saved.store, file: copy };
+}
+
+/**
+ * Move a file to a different folder within the same study.
+ */
+export function moveFile(studyId, store, sourceFolderId, fileId, targetFolderId, user) {
+  const sourceFiles = listFiles(store, sourceFolderId);
+  const target = sourceFiles.find((f) => f.id === fileId);
+
+  if (!target) {
+    return { ok: false, store, error: "This file no longer exists." };
+  }
+
+  if (sourceFolderId === targetFolderId) {
+    return { ok: false, store, error: "File is already in that folder." };
+  }
+
+  // Check for name conflict in target folder
+  const targetFiles = listFiles(store, targetFolderId);
+  const conflict = targetFiles.find(
+    (f) => f.name.toLowerCase() === target.name.toLowerCase()
+  );
+  if (conflict) {
+    return { ok: false, store, error: `A file named "${target.name}" already exists in the destination folder.` };
+  }
+
+  const now = new Date().toISOString();
+  const moved = {
+    ...target,
+    folderId: targetFolderId,
+    modifiedAt: now,
+    modifiedBy: user || "Unknown user",
+    auditTrail: [
+      ...(Array.isArray(target.auditTrail) ? target.auditTrail : []),
+      {
+        date: now,
+        user: user || "Unknown user",
+        action: "Moved",
+        remarks: `Moved from "${sourceFolderId}" to "${targetFolderId}"`,
+      },
+    ],
+  };
+
+  const working = {
+    ...store,
+    [sourceFolderId]: sourceFiles.filter((f) => f.id !== fileId),
+    [targetFolderId]: [moved, ...targetFiles],
+  };
+
+  const saved = saveFileStore(studyId, working, "move", targetFolderId);
+  if (!saved.ok) return { ok: false, store, error: saved.error };
+
+  return { ok: true, store: saved.store, file: moved };
+}
+
+/**
+ * Retrieve the audit trail for a file. Falls back to a single-entry
+ * trail for legacy records that have no auditTrail array.
+ */
+export function getFileAuditTrail(file) {
+  if (!file) return [];
+  if (Array.isArray(file.auditTrail) && file.auditTrail.length > 0) {
+    return file.auditTrail;
+  }
+  return [
+    {
+      date: file.uploadedAt || "",
+      user: file.uploadedBy || "Unknown user",
+      action: "Uploaded",
+      remarks: `Status: ${file.status || "Final"}`,
+    },
+  ];
+}
+
 /* ==================================================================
    FORMATTERS (shared by table, preview and messages)
 ================================================================== */
@@ -850,30 +1039,14 @@ export function formatFileSize(bytes) {
   return `${scaled.toFixed(decimals)} ${units[index]}`;
 }
 
-/** ISO -> "12-Jan-2026" (matches the date style used across the app). */
+/** ISO -> "12-Jan-2026" in UTC (delegates to shared utility). */
 export function formatDate(iso) {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "—";
-
-  const months = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-  ];
-
-  return `${String(date.getDate()).padStart(2, "0")}-${
-    months[date.getMonth()]
-  }-${date.getFullYear()}`;
+  return formatDateUTC(iso);
 }
 
-/** ISO -> "12-Jan-2026, 14:05". */
+/** ISO -> "12-Jan-2026, 14:05 UTC" in UTC (delegates to shared utility). */
 export function formatDateTime(iso) {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "—";
-
-  return `${formatDate(iso)}, ${String(date.getHours()).padStart(
-    2,
-    "0"
-  )}:${String(date.getMinutes()).padStart(2, "0")}`;
+  return formatDateTimeUTC(iso);
 }
 
 const FileService = {
@@ -896,6 +1069,9 @@ const FileService = {
   renameFile,
   deleteFile,
   downloadFile,
+  duplicateFile,
+  moveFile,
+  getFileAuditTrail,
   formatFileSize,
   formatDate,
   formatDateTime,

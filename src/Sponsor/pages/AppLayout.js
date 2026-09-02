@@ -12,6 +12,7 @@ import {
   MdAssessment,
   MdNotifications,
   MdSettings,
+  MdCardGiftcard,
 } from "react-icons/md";
 import "../styles/AppLayout.css";
 import SponsorNavbar from "../components/SponsorNavbar";
@@ -33,6 +34,7 @@ const MENU_ITEMS = [
   { name: "Reports", path: "/reports", icon: MdAssessment },
   { name: "Notifications", path: "/notifications", icon: MdNotifications },
   { name: "Settings", path: "/settings", icon: MdSettings },
+  { name: "Referral Program", path: "/referral", icon: MdCardGiftcard },
 ];
 
 const AppLayout = ({ children }) => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 /**
  * Read ICF/consent data dynamically from subjectsByStudy.
@@ -9,28 +9,23 @@ import React, { useEffect, useMemo, useState } from "react";
  */
 function readIcfRecords() {
   try {
-    const subjectsByStudy = JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
-    const records = [];
-    for (const [studyCode, subjects] of Object.entries(subjectsByStudy)) {
-      if (!Array.isArray(subjects)) continue;
-      subjects.forEach((subject) => {
-        const id = subject.id || subject.subjectId || "";
-        if (!id) return;
-        records.push({
-          id,
-          study: studyCode,
-          status: subject.status || "Screened",
-          consentDate: subject.enrollmentDate || "-",
-          consentStatus:
-            subject.status === "Active" || subject.status === "Enrolled"
-              ? "Signed"
-              : subject.status === "Screen Failed" || subject.status === "Withdrawn"
-              ? "Expired"
-              : "Pending",
-        });
-      });
-    }
-    return records;
+    const { getAllSubjects } = require("../../shared/services/subjectService");
+    const allSubjects = getAllSubjects();
+    return allSubjects.map((subject) => {
+      const id = subject.id || subject.subjectId || "";
+      return {
+        id,
+        study: subject.studyId,
+        status: subject.status || "Screened",
+        consentDate: subject.enrollmentDate || "-",
+        consentStatus:
+          subject.status === "Active" || subject.status === "Enrolled"
+            ? "Signed"
+            : subject.status === "Screen Failed" || subject.status === "Withdrawn"
+            ? "Expired"
+            : "Pending",
+      };
+    }).filter((r) => r.id);
   } catch {
     return [];
   }

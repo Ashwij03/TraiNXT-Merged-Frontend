@@ -76,8 +76,8 @@ export function getStudyProgressSummary(studyCode) {
 
   let subjects = [];
   try {
-    const byStudy = readJson("subjectsByStudy", {});
-    subjects = Array.isArray(byStudy[code]) ? byStudy[code] : [];
+    const { getSubjectsForStudy } = require("./subjectService");
+    subjects = getSubjectsForStudy(code);
   } catch {
     subjects = [];
   }
@@ -353,8 +353,8 @@ function buildDynamicSitePerformance(study, user, studyCode) {
 
   let studySubjects = [];
   try {
-    const byStudy = readJson("subjectsByStudy", {});
-    studySubjects = Array.isArray(byStudy[code]) ? byStudy[code] : [];
+    const { getSubjectsForStudy } = require("./subjectService");
+    studySubjects = getSubjectsForStudy(code);
   } catch {
     studySubjects = [];
   }
@@ -471,8 +471,8 @@ export function getStudyScopedSitePerformance(studyCode, user = getCurrentUser()
   if (scoped && scoped.length) {
     let studySubjects = [];
     try {
-      const byStudy = readJson("subjectsByStudy", {});
-      studySubjects = Array.isArray(byStudy[code]) ? byStudy[code] : [];
+      const { getSubjectsForStudy } = require("./subjectService");
+      studySubjects = getSubjectsForStudy(code);
     } catch {
       studySubjects = [];
     }

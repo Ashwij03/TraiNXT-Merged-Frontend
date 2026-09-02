@@ -30,17 +30,17 @@ function getSharedStudies() {
 
 function getSharedSubjects() {
   try {
-    const subjectsByStudy =
-      JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
-
+    const { getAllSubjects } = require("../../shared/services/subjectService");
+    const allSubjects = getAllSubjects();
     const studiesByCode = new Map(
       getStudies().map((study) => [String(study.code), study]),
     );
 
-    return Object.entries(subjectsByStudy).flatMap(([studyCode, list]) => {
+    return allSubjects.map((subject, index) => {
+      const studyCode = subject.studyId;
       const study = studiesByCode.get(String(studyCode));
 
-      return (Array.isArray(list) ? list : []).map((subject, index) => ({
+      return {
         ...subject,
         id:
           subject.id ||
@@ -55,7 +55,7 @@ function getSharedSubjects() {
         studyName: study?.name || studyCode,
         site: subject.site || study?.site || study?.location || "",
         status: subject.status || "Active",
-      }));
+      };
     });
   } catch {
     return [];

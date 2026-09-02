@@ -8,11 +8,10 @@ const DEFAULT_USER = "Current User";
 export const EISF_DOCUMENTS_EVENT = "trianxt-eisf-documents-updated";
 
 function formatDate(date = new Date()) {
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).replace(/ /g, "-");
+  const d = date instanceof Date ? date : new Date(date);
+  if (Number.isNaN(d.getTime())) return "—";
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${String(d.getUTCDate()).padStart(2, "0")}-${months[d.getUTCMonth()]}-${d.getUTCFullYear()}`;
 }
 
 function safeFileName(value = "Document") {

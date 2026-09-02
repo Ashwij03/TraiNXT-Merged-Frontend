@@ -10,6 +10,9 @@ import DeleteFolderDialog from "./DeleteFolderDialog";
 import SubjectFormModal from "./SubjectFormModal";
 import DeleteSubjectDialog from "./DeleteSubjectDialog";
 import SubjectRecordsService from "./subjectRecordsService";
+import { saveSubject } from "../../services/subjectService";
+import { getSubjectStudyDefaults } from "../../services/studyService";
+import { broadcastSubjectAdded } from "../../services/notificationService";
 import {
   filterTree,
   collectExpandableIds,
@@ -103,6 +106,7 @@ function SubjectExplorer({
      this explorer without a study, in which case the modal creates/renames
      the tree node but skips metadata (matching its previous behaviour). */
   studyId = "",
+  readOnly = false,
 }) {
   /* ---------- folder tree (persisted) ---------- */
   // Bug 4 fix: when tree is passed from parent (via useSubjectWorkspace),
@@ -110,7 +114,7 @@ function SubjectExplorer({
   // tree prop), load from the service. This prevents the explorer's tree
   // from drifting out of sync with the file manager's tree.
   const [ownTree, setOwnTree] = useState(() =>
-    FolderTreeService.loadFolderTree(studyId, treeProp)
+    FolderTreeService.loadFolderTree(studyId, treeProp),
   );
   const tree = treeProp.length > 0 ? treeProp : ownTree;
 
@@ -121,7 +125,7 @@ function SubjectExplorer({
     if (treeProp.length > 0 && treeProp !== tree) {
       setOwnTree(treeProp);
     }
-  }, [treeProp]);
+  }, [tree, treeProp]);
 
   // Fixed: subject folders should stay collapsed until the user opens them
   // (or a controlled selection reveals its ancestors below) - previously
@@ -149,7 +153,7 @@ function SubjectExplorer({
       if (isControlled) return; // parent state is updated through onSelect
       setInternalSelectedNode(next);
     },
-    [isControlled]
+    [isControlled],
   );
 
   /* ---------- CRUD dialog + feedback state ---------- */
@@ -173,7 +177,7 @@ function SubjectExplorer({
       FolderTreeService.subscribeFolderTree(studyId, () => {
         setOwnTree(FolderTreeService.loadFolderTree(studyId, treeProp));
       }),
-    [studyId, treeProp]
+    [studyId, treeProp],
   );
 
   /* Transient success/error banner. */
@@ -194,7 +198,10 @@ function SubjectExplorer({
   useEffect(() => {
     if (!controlledSelectedId) return;
 
-    const ancestors = FolderTreeService.getAncestorIds(tree, controlledSelectedId);
+    const ancestors = FolderTreeService.getAncestorIds(
+      tree,
+      controlledSelectedId,
+    );
     if (ancestors.length === 0) return;
 
     setExpandedIds((prev) => {
@@ -206,13 +213,13 @@ function SubjectExplorer({
   /* ---------- filtering ---------- */
   const visibleTree = useMemo(
     () => filterTree(tree, filterTerm),
-    [tree, filterTerm]
+    [tree, filterTerm],
   );
 
   // While filtering, auto-expand so matches deeper in the tree are visible.
   const matchExpandedIds = useMemo(
     () => collectExpandableIds(visibleTree),
-    [visibleTree]
+    [visibleTree],
   );
   const isFiltering = filterTerm.trim().length > 0;
   const effectiveExpandedIds = isFiltering ? matchExpandedIds : expandedIds;
@@ -241,10 +248,10 @@ function SubjectExplorer({
       setExpandedIds((prev) =>
         prev.includes(nodeId)
           ? prev.filter((id) => id !== nodeId)
-          : [...prev, nodeId]
+          : [...prev, nodeId],
       );
     },
-    [isFiltering]
+    [isFiltering],
   );
 
   const handleSelect = useCallback(
@@ -254,12 +261,12 @@ function SubjectExplorer({
       // through `selectedId`, which is what loads the folder's files.
       if (typeof onSelect === "function") onSelect(node);
     },
-    [setSelectedNode, onSelect]
+    [setSelectedNode, onSelect],
   );
 
   const handleExpandAll = useCallback(
     () => setExpandedIds(allExpandableIds),
-    [allExpandableIds]
+    [allExpandableIds],
   );
 
   const handleCollapseAll = useCallback(() => setExpandedIds([]), []);
@@ -272,6 +279,7 @@ function SubjectExplorer({
    */
   const handleNodeAction = useCallback(
     (action, node) => {
+      if (readOnly) return;
       setSubmitError("");
 
       // Update 7: defense in depth - the ICF row never renders these menu
@@ -286,7 +294,7 @@ function SubjectExplorer({
         const parentId =
           node.type === "subject"
             ? node.id
-            : FolderTreeService.findParentOf(tree, node.id)?.id ?? null;
+            : (FolderTreeService.findParentOf(tree, node.id)?.id ?? null);
 
         setDialog({ mode: "create", variant: "folder", parentId, node });
         return;
@@ -308,7 +316,7 @@ function SubjectExplorer({
         setDialog(
           node.type === "subject"
             ? { mode: "edit-subject", node }
-            : { mode: "rename", node }
+            : { mode: "rename", node },
         );
         return;
       }
@@ -317,18 +325,19 @@ function SubjectExplorer({
         setDialog(
           node.type === "subject"
             ? { mode: "delete-subject", node }
-            : { mode: "delete", node }
+            : { mode: "delete", node },
         );
       }
     },
-    [tree]
+    [tree, readOnly],
   );
 
   /** Update 6: "Add Subject" toolbar action - always root-level, no node. */
   const openCreateSubject = useCallback(() => {
+    if (readOnly) return;
     setSubmitError("");
     setDialog({ mode: "create-subject" });
-  }, []);
+  }, [readOnly]);
 
   const closeDialog = useCallback(() => {
     setDialog(NO_DIALOG);
@@ -340,22 +349,21 @@ function SubjectExplorer({
     dialog?.mode === "create"
       ? dialog.parentId
       : dialog?.node
-      ? FolderTreeService.findParentOf(tree, dialog.node.id)?.id ?? null
-      : null;
+        ? (FolderTreeService.findParentOf(tree, dialog.node.id)?.id ?? null)
+        : null;
 
   const dialogParentName = dialogParentId
-    ? FolderTreeService.findNodeById(tree, dialogParentId)?.name ?? ""
+    ? (FolderTreeService.findNodeById(tree, dialogParentId)?.name ?? "")
     : "";
 
   const dialogParentType = dialogParentId
-    ? FolderTreeService.findNodeById(tree, dialogParentId)?.type ?? null
+    ? (FolderTreeService.findNodeById(tree, dialogParentId)?.type ?? null)
     : null;
 
   /* Live validators handed to the modals (single rule set, one source). */
   const validateCreate = useCallback(
-    (name) =>
-      FolderTreeService.validateFolderName(tree, dialogParentId, name),
-    [tree, dialogParentId]
+    (name) => FolderTreeService.validateFolderName(tree, dialogParentId, name),
+    [tree, dialogParentId],
   );
 
   const validateRename = useCallback(
@@ -363,13 +371,13 @@ function SubjectExplorer({
       FolderTreeService.validateFolderName(tree, dialogParentId, name, {
         excludeId: dialog?.node?.id,
       }),
-    [tree, dialogParentId, dialog]
+    [tree, dialogParentId, dialog],
   );
 
   /* Update 6: subject validators - uniqueness is root-level, not per-parent. */
   const validateCreateSubject = useCallback(
     (name) => FolderTreeService.validateSubjectName(tree, name),
-    [tree]
+    [tree],
   );
 
   const validateEditSubject = useCallback(
@@ -377,13 +385,18 @@ function SubjectExplorer({
       FolderTreeService.validateSubjectName(tree, name, {
         excludeId: dialog?.node?.id,
       }),
-    [tree, dialog]
+    [tree, dialog],
   );
 
   /* ---------- CRUD: create ---------- */
   const submitCreate = (name) => {
     const parentId = dialog.parentId;
-    const result = FolderTreeService.createFolder(studyId, tree, parentId, name);
+    const result = FolderTreeService.createFolder(
+      studyId,
+      tree,
+      parentId,
+      name,
+    );
 
     if (!result.ok) {
       setSubmitError(result.error);
@@ -411,7 +424,12 @@ function SubjectExplorer({
 
   /* ---------- CRUD: rename ---------- */
   const submitRename = (name) => {
-    const result = FolderTreeService.renameFolder(studyId, tree, dialog.node.id, name);
+    const result = FolderTreeService.renameFolder(
+      studyId,
+      tree,
+      dialog.node.id,
+      name,
+    );
 
     if (!result.ok) {
       setSubmitError(result.error);
@@ -422,7 +440,7 @@ function SubjectExplorer({
 
     // Keep the selection pointing at the renamed node's new label.
     setSelectedNode((prev) =>
-      prev?.id === result.node.id ? result.node : prev
+      prev?.id === result.node.id ? result.node : prev,
     );
     if (typeof onSelect === "function" && selectedNode?.id === result.node.id) {
       onSelect(result.node);
@@ -446,7 +464,9 @@ function SubjectExplorer({
 
     // Drop deleted ids from expansion, and clear the selection when the
     // selected node was inside the removed subtree.
-    setExpandedIds((prev) => prev.filter((id) => !result.removedIds.includes(id)));
+    setExpandedIds((prev) =>
+      prev.filter((id) => !result.removedIds.includes(id)),
+    );
 
     if (selectedNode && result.removedIds.includes(selectedNode.id)) {
       setSelectedNode(null);
@@ -481,12 +501,40 @@ function SubjectExplorer({
     // the KPI cards / All Subjects table show them immediately. Skipped on
     // the standalone Subjects page, which has no study context.
     if (studyId) {
-      SubjectRecordsService.updateSubjectRecord(studyId, result.node.id, {
+      const defaults = getSubjectStudyDefaults(studyId);
+      saveSubject({
+        id: result.node.id,
+        subjectId: fields.id,
+        studyId,
         initials: fields.initials || "",
-        status: fields.status || "",
-        screeningDate: fields.screeningDate || "",
+        principalInvestigator:
+          fields.principalInvestigator ||
+          defaults.principalInvestigator ||
+          defaults.pi ||
+          "",
+        pi:
+          fields.principalInvestigator ||
+          defaults.principalInvestigator ||
+          defaults.pi ||
+          "",
+        site: fields.site || defaults.site || "",
+        siteName: defaults.siteName || defaults.site || "",
+        siteNo: fields.siteNo || defaults.siteNumber || "",
+        status: fields.status || "Screened",
+        screeningDate:
+          fields.screeningDate || new Date().toISOString().split("T")[0],
         enrollmentDate: fields.enrollmentDate || "",
-        currentVisit: fields.currentVisit || "",
+        currentVisit: fields.currentVisit || "Screening",
+      });
+
+      // Dispatch multi-role notification for the new subject
+      broadcastSubjectAdded({
+        subjectId: result.node.id,
+        studyId,
+        studyCode: studyId,
+        status: fields.status || "Screened",
+        site: fields.site || defaults.site || "",
+        siteName: defaults.siteName || defaults.site || "",
       });
     }
 
@@ -500,12 +548,16 @@ function SubjectExplorer({
      fields always go through the metadata bridge. */
   const submitEditSubject = (fields) => {
     const nodeId = dialog.node.id;
-    const nameChanged =
-      fields.id.trim() !== (dialog.node.name || "").trim();
+    const nameChanged = fields.id.trim() !== (dialog.node.name || "").trim();
 
     let node = dialog.node;
     if (nameChanged) {
-      const result = FolderTreeService.renameSubject(studyId, tree, nodeId, fields.id);
+      const result = FolderTreeService.renameSubject(
+        studyId,
+        tree,
+        nodeId,
+        fields.id,
+      );
 
       if (!result.ok) {
         setSubmitError(result.error);
@@ -517,8 +569,22 @@ function SubjectExplorer({
     }
 
     if (studyId) {
+      const defaults = getSubjectStudyDefaults(studyId);
       SubjectRecordsService.updateSubjectRecord(studyId, nodeId, {
         initials: fields.initials || "",
+        principalInvestigator:
+          fields.principalInvestigator ||
+          defaults.principalInvestigator ||
+          defaults.pi ||
+          "",
+        pi:
+          fields.principalInvestigator ||
+          defaults.principalInvestigator ||
+          defaults.pi ||
+          "",
+        site: fields.site || defaults.site || "",
+        siteName: defaults.siteName || defaults.site || "",
+        siteNo: fields.siteNo || defaults.siteNumber || "",
         status: fields.status || "",
         screeningDate: fields.screeningDate || "",
         enrollmentDate: fields.enrollmentDate || "",
@@ -554,7 +620,9 @@ function SubjectExplorer({
 
     setOwnTree(result.tree);
 
-    setExpandedIds((prev) => prev.filter((id) => !result.removedIds.includes(id)));
+    setExpandedIds((prev) =>
+      prev.filter((id) => !result.removedIds.includes(id)),
+    );
 
     if (selectedNode && result.removedIds.includes(selectedNode.id)) {
       setSelectedNode(null);
@@ -569,7 +637,7 @@ function SubjectExplorer({
   const deleteDescendantCount =
     dialog?.mode === "delete" || dialog?.mode === "delete-subject"
       ? FolderTreeService.countDescendantFolders(
-          FolderTreeService.findNodeById(tree, dialog.node.id)
+          FolderTreeService.findNodeById(tree, dialog.node.id),
         )
       : 0;
 
@@ -590,6 +658,8 @@ function SubjectExplorer({
           type="button"
           className="sx-add-subject-btn"
           onClick={openCreateSubject}
+          disabled={readOnly}
+          title={readOnly ? "This completed study is view only." : undefined}
         >
           <MdPersonAdd size={15} aria-hidden="true" />
           <span>Add Subject</span>
@@ -640,6 +710,7 @@ function SubjectExplorer({
                 onToggle={handleToggle}
                 onSelect={handleSelect}
                 onNodeAction={handleNodeAction}
+                readOnly={readOnly}
               />
             ))}
           </ul>

@@ -3,7 +3,7 @@ import { MdVisibility, MdDownload } from "react-icons/md";
 
 import FileContextMenu from "./FileContextMenu";
 import { getFileTypeMeta } from "./fileTypes";
-import { formatFileSize, formatDate, formatDateTime } from "./fileService";
+import { formatFileSize, formatDateTime } from "./fileService";
 
 /**
  * Subject Explorer - one file row (Phase 4, requirement 3).
@@ -121,11 +121,11 @@ function SubjectFileRow({ file, isActive = false, onAction, locked = false }) {
       <td className="sf-cell-size">{formatFileSize(file.size)}</td>
 
       <td title={formatDateTime(file.uploadedAt)}>
-        {formatDate(file.uploadedAt)}
+        {formatDateTime(file.uploadedAt)}
       </td>
 
       <td title={formatDateTime(file.modifiedAt)}>
-        {formatDate(file.modifiedAt)}
+        {formatDateTime(file.modifiedAt)}
       </td>
 
       <td className="sf-cell-user">{file.uploadedBy}</td>

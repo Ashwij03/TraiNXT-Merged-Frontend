@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
 import "./Auth.css";
+import { redeemReferralCode } from "../services/referralService";
 
 function Register() {
 
@@ -10,6 +11,10 @@ function Register() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
+
+  // Task 6 (Ashwij): optional referral code entered at signup. Purely
+  // additive — leaving this blank never blocks registration.
+  const [referralCodeInput, setReferralCodeInput] = useState("");
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
 
@@ -380,7 +385,7 @@ function Register() {
 
  // newly added Create new user object
 
-    users.push({
+    const newUser = {
       id: Date.now(),
 
       email,
@@ -427,12 +432,21 @@ function Register() {
             
         lastPermissionUpdate:
           null
-    });  // newly added till here
+    };  // newly added till here
+
+    users.push(newUser);
 
     localStorage.setItem(
       "users",
       JSON.stringify(users)
     );
+
+    // Task 6 (Ashwij): optional referral code redemption. Runs AFTER the
+    // new account is already saved, so a bad/invalid code can never block
+    // registration itself — it only silently fails to grant the bonus.
+    if (referralCodeInput.trim()) {
+      redeemReferralCode(newUser.id, referralCodeInput.trim());
+    }
 
     alert("Registration successful!");
 
@@ -763,6 +777,27 @@ function Register() {
               </p>
             )
           }
+
+        </div>
+
+        </div>
+
+        {/* REFERRAL CODE (Task 6 — Ashwij) — optional, never blocks signup */}
+        <div className="form-row">
+
+        <div className="input-group">
+
+          <label>
+            Referral Code (optional)
+          </label>
+
+          <input
+            value={referralCodeInput}
+            placeholder="Have a referral code? Enter it here"
+            onChange={(e) =>
+              setReferralCodeInput(e.target.value)
+            }
+          />
 
         </div>
 

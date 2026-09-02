@@ -248,6 +248,58 @@
   font-weight: 700;
 }
 
+/* Per-status color variants */
+.sat-status-screened {
+  background: #eef4fe;
+  color: #2f80ed;
+}
+
+.sat-status-enrolled {
+  background: #e8f8ef;
+  color: #1a9a5a;
+}
+
+.sat-status-ongoing,
+.sat-status-in-progress {
+  background: #fef6e7;
+  color: #c77a00;
+}
+
+.sat-status-completed {
+  background: #e8f8ef;
+  color: #15803d;
+}
+
+.sat-status-withdrawn,
+.sat-status-dropout,
+.sat-status-discontinued {
+  background: #fef0f0;
+  color: #dc2626;
+}
+
+/* Last Modified column: date/time on top, the acting role underneath as a
+   small muted label - same two-line pattern used elsewhere in the app for
+   a primary value + its metadata (e.g. site + site number). */
+.sat-modified-cell {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.25;
+}
+
+.sat-modified-datetime {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.sat-modified-role {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
 .sat-empty-cell {
   text-align: center;
   padding: 2.75rem var(--tnxt-space-lg);

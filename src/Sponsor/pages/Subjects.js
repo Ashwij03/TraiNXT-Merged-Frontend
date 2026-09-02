@@ -33,39 +33,25 @@ import "../../shared/components/SubjectExplorer/WorkspaceIntegration.css";
  */
 function readSubjectsFromStore(studyId) {
   try {
-    const allByStudy = JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
+    const { getSubjectsForStudy, getAllSubjects } = require("../../shared/services/subjectService");
+    
+    const mapSubject = (r, sid) => ({
+      id: r.id || r.subjectId || "",
+      study: r.studyId || sid || "",
+      site: r.site || "",
+      pi: r.pi || "",
+      status: r.status || "Screened",
+      screeningDate: r.screeningDate || "-",
+      enrollmentDate: r.enrollmentDate || "-",
+      visit: r.currentVisit || "Screening",
+      visitStatus: r.visitStatus || "Pending",
+    });
+    
     if (studyId) {
-      const records = allByStudy[studyId];
-      return Array.isArray(records)
-        ? records.map((r) => ({
-            id: r.id || r.subjectId || "",
-            study: r.studyId || studyId || "",
-            site: r.site || "",
-            pi: r.pi || "",
-            status: r.status || "Screened",
-            screeningDate: r.screeningDate || "-",
-            enrollmentDate: r.enrollmentDate || "-",
-            visit: r.currentVisit || "Screening",
-            visitStatus: r.visitStatus || "Pending",
-          }))
-        : [];
+      return getSubjectsForStudy(studyId).map((r) => mapSubject(r, studyId));
     }
     // All studies
-    return Object.entries(allByStudy).flatMap(([sid, records]) =>
-      Array.isArray(records)
-        ? records.map((r) => ({
-            id: r.id || r.subjectId || "",
-            study: r.studyId || sid || "",
-            site: r.site || "",
-            pi: r.pi || "",
-            status: r.status || "Screened",
-            screeningDate: r.screeningDate || "-",
-            enrollmentDate: r.enrollmentDate || "-",
-            visit: r.currentVisit || "Screening",
-            visitStatus: r.visitStatus || "Pending",
-          }))
-        : []
-    );
+    return getAllSubjects().map((r) => mapSubject(r, r.studyId));
   } catch {
     return [];
   }

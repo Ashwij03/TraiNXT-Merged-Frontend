@@ -6,21 +6,19 @@ import { getAccessibleStudies, getCurrentUser } from "../../shared/services/role
 
 function readEnrollmentRecords() {
   try {
-    const subjectsByStudy = JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
-    return Object.entries(subjectsByStudy).flatMap(([studyCode, subjects]) =>
-      (Array.isArray(subjects) ? subjects : [])
-        .filter((subject) =>
-          ["Active", "Completed", "Enrolled", "Randomized"].includes(subject.status),
-        )
-        .map((subject, index) => ({
-          id: subject.id || subject.subjectId || `${studyCode}-${index}`,
-          subjectId: subject.subjectId || subject.id || `${studyCode}-${index}`,
-          subjectName: subject.name || subject.subjectId || subject.id,
-          study: studyCode,
-          enrollmentDate: subject.enrollment || subject.createdAt || "—",
-          status: subject.status || "Enrolled",
-        })),
-    );
+    const { getAllSubjects } = require("../../shared/services/subjectService");
+    return getAllSubjects()
+      .filter((subject) =>
+        ["Active", "Completed", "Enrolled", "Randomized"].includes(subject.status),
+      )
+      .map((subject, index) => ({
+        id: subject.id || subject.subjectId || `${subject.studyId}-${index}`,
+        subjectId: subject.subjectId || subject.id || `${subject.studyId}-${index}`,
+        subjectName: subject.name || subject.subjectId || subject.id,
+        study: subject.studyId,
+        enrollmentDate: subject.enrollment || subject.createdAt || "—",
+        status: subject.status || "Enrolled",
+      }));
   } catch {
     return [];
   }

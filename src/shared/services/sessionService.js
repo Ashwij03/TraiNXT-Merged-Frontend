@@ -1,6 +1,6 @@
 import { readJson } from "../utils/storageHelpers";
 import ROLES from "../constants/roles";
-import { getCurrentUser } from "./roleService";
+import { formatUserDisplayName, getCurrentUser } from "./roleService";
 
 const SESSION_KEY = "userSessionMeta";
 const SESSION_HISTORY_KEY = "userSessionHistory";
@@ -39,11 +39,11 @@ function upsertActiveSessionRegistry(session) {
 
   const registry = readActiveSessionsRegistry();
   const index = registry.findIndex(
-    (entry) => entry.sessionId === session.sessionId
+    (entry) => entry.sessionId === session.sessionId,
   );
   const nextEntry = {
     ...registry[index],
-    ...session
+    ...session,
   };
 
   if (index >= 0) {
@@ -66,7 +66,7 @@ function markRegistrySessionEnded(sessionId, endedAt) {
   registry[index] = {
     ...registry[index],
     active: false,
-    endedAt
+    endedAt,
   };
   writeActiveSessionsRegistry(registry);
 }
@@ -77,15 +77,18 @@ function readKnownUsers() {
 
 function buildRoleSessionSnapshot(user, offsetHours = 1) {
   const startedAt = new Date(
-    Date.now() - offsetHours * 60 * 60 * 1000
+    Date.now() - offsetHours * 60 * 60 * 1000,
   ).toISOString();
+
+  const displayName = formatUserDisplayName(user);
 
   return {
     sessionId: `SES-ROLE-${String(user.role).replace(/\s+/g, "")}-${String(
-      user.id || user.email
+      user.id || user.email,
     ).replace(/[^a-zA-Z0-9]/g, "")}`,
     userEmail: user.email,
     userName: user.name,
+    displayName,
     role: user.role,
     startedAt,
     lastActivityAt: startedAt,
@@ -93,7 +96,7 @@ function buildRoleSessionSnapshot(user, offsetHours = 1) {
     device: offsetHours % 2 ? "Mobile Browser" : "Desktop Browser",
     browser: "Chrome",
     active: true,
-    isRoleSnapshot: true
+    isRoleSnapshot: true,
   };
 }
 
@@ -130,9 +133,9 @@ function ensureSessionsForAllRoles(sessions) {
       {
         email: `${String(role).toLowerCase()}@trianxt.local`,
         name: role,
-        role
+        role,
       },
-      offset
+      offset,
     );
     activeByRole.set(role, snapshot);
     merged.push(snapshot);
@@ -144,7 +147,7 @@ function ensureSessionsForAllRoles(sessions) {
     .sort(
       (a, b) =>
         new Date(b.lastActivityAt || b.startedAt) -
-        new Date(a.lastActivityAt || a.startedAt)
+        new Date(a.lastActivityAt || a.startedAt),
     );
 }
 
@@ -163,6 +166,7 @@ export function initializeUserSession(user = getCurrentUser()) {
     sessionId: createSessionId(),
     userEmail: user.email,
     userName: user.name,
+    displayName: formatUserDisplayName(user),
     role: user.role,
     startedAt: new Date().toISOString(),
     lastActivityAt: new Date().toISOString(),
@@ -171,7 +175,7 @@ export function initializeUserSession(user = getCurrentUser()) {
       ? "Mobile Browser"
       : "Desktop Browser",
     browser: navigator.userAgent.split(" ").slice(-2).join(" ") || "Unknown",
-    active: true
+    active: true,
   };
 
   writeJson(SESSION_KEY, session);
@@ -186,7 +190,7 @@ export function initializeUserSession(user = getCurrentUser()) {
     startedAt: session.startedAt,
     endedAt: null,
     device: session.device,
-    ipAddress: session.ipAddress
+    ipAddress: session.ipAddress,
   });
   writeJson(SESSION_HISTORY_KEY, history.slice(0, 20));
 
@@ -202,14 +206,21 @@ export function touchUserSession(user = getCurrentUser()) {
 
   const now = Date.now();
   const lastTouchedAt = new Date(
-    session.lastActivityAt || session.startedAt || 0
+    session.lastActivityAt || session.startedAt || 0,
   ).getTime();
 
   const nextUserName = user?.name || session.userName;
   const nextRole = user?.role || session.role;
+  const nextDisplayName = formatUserDisplayName({
+    ...user,
+    role: nextRole,
+    name: nextUserName,
+  });
 
   const identityChanged =
-    nextUserName !== session.userName || nextRole !== session.role;
+    nextUserName !== session.userName ||
+    nextRole !== session.role ||
+    nextDisplayName !== session.displayName;
 
   if (!identityChanged && now - lastTouchedAt < 30000) {
     return session;
@@ -218,9 +229,10 @@ export function touchUserSession(user = getCurrentUser()) {
   const updated = {
     ...session,
     userName: nextUserName,
+    displayName: nextDisplayName,
     role: nextRole,
     lastActivityAt: new Date(now).toISOString(),
-    active: true
+    active: true,
   };
 
   writeJson(SESSION_KEY, updated);
@@ -240,18 +252,21 @@ export function getCurrentSession(user = getCurrentUser()) {
 
 export function getSessionHistory(user = getCurrentUser()) {
   return readJson(SESSION_HISTORY_KEY, []).filter(
-    (entry) => !user?.email || entry.userEmail === user.email || !entry.userEmail
+    (entry) =>
+      !user?.email || entry.userEmail === user.email || !entry.userEmail,
   );
 }
 
 export function getAllActiveSessions() {
-  const registry = readActiveSessionsRegistry().filter((session) => session.active);
+  const registry = readActiveSessionsRegistry().filter(
+    (session) => session.active,
+  );
   const current = readJson(SESSION_KEY, null);
   const withCurrent = [...registry];
 
   if (current?.active) {
     const index = withCurrent.findIndex(
-      (session) => session.sessionId === current.sessionId
+      (session) => session.sessionId === current.sessionId,
     );
 
     if (index >= 0) {
@@ -284,19 +299,21 @@ export function terminateCurrentSession() {
   const ended = {
     ...session,
     active: false,
-    endedAt: new Date().toISOString()
+    endedAt: new Date().toISOString(),
   };
 
   writeJson(SESSION_KEY, ended);
   markRegistrySessionEnded(session.sessionId, ended.endedAt);
 
   const history = readJson(SESSION_HISTORY_KEY, []);
-  const index = history.findIndex((item) => item.sessionId === session.sessionId);
+  const index = history.findIndex(
+    (item) => item.sessionId === session.sessionId,
+  );
 
   if (index >= 0) {
     history[index] = {
       ...history[index],
-      endedAt: ended.endedAt
+      endedAt: ended.endedAt,
     };
     writeJson(SESSION_HISTORY_KEY, history);
   }

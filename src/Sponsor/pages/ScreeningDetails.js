@@ -10,28 +10,27 @@ import { getStudies } from "../../shared/services/studyService";
  */
 function findScreeningRecord(screeningId) {
   try {
-    const subjectsByStudy = JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
-    for (const [studyCode, subjects] of Object.entries(subjectsByStudy)) {
-      if (!Array.isArray(subjects)) continue;
-      for (const subject of subjects) {
-        const sid = subject.id || subject.subjectId || "";
-        if (sid === screeningId || (subject.screeningId || `SCR-${studyCode}-${sid}`) === screeningId) {
-          return {
-            id: subject.screeningId || `SCR-${studyCode}-${sid}`,
-            subjectId: sid,
-            study: studyCode,
-            site: subject.site || "",
-            pi: subject.pi || "",
-            status: subject.status || "Pending",
-            screeningDate: subject.screeningDate || subject.createdAt || "—",
-            eligibility:
-              subject.status === "Screen Failed" || subject.status === "Withdrawn"
-                ? "Not Eligible"
-                : subject.status === "Active" || subject.status === "Enrolled"
-                ? "Eligible"
-                : "Under Review",
-          };
-        }
+    const { getAllSubjects } = require("../../shared/services/subjectService");
+    const allSubjects = getAllSubjects();
+    for (const subject of allSubjects) {
+      const studyCode = subject.studyId;
+      const sid = subject.id || subject.subjectId || "";
+      if (sid === screeningId || (subject.screeningId || `SCR-${studyCode}-${sid}`) === screeningId) {
+        return {
+          id: subject.screeningId || `SCR-${studyCode}-${sid}`,
+          subjectId: sid,
+          study: studyCode,
+          site: subject.site || "",
+          pi: subject.pi || "",
+          status: subject.status || "Pending",
+          screeningDate: subject.screeningDate || subject.createdAt || "—",
+          eligibility:
+            subject.status === "Screen Failed" || subject.status === "Withdrawn"
+              ? "Not Eligible"
+              : subject.status === "Active" || subject.status === "Enrolled"
+              ? "Eligible"
+              : "Under Review",
+        };
       }
     }
   } catch {

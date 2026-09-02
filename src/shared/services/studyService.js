@@ -15,7 +15,6 @@ import {
 } from "./auditService";
 
 const STUDIES_STORAGE_KEY = "trianxtStudies";
-const SUBJECTS_STORAGE_KEY = "subjectsByStudy";
 
 function getStoredStudies() {
   if (typeof window === "undefined") {
@@ -327,28 +326,26 @@ export function updateStudy(studyCode, updates) {
 export const COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE =
   "Subjects cannot be added because this study is completed.";
 
+/**
+ * Internal subject storage helpers — delegated to subjectService.
+ * These use dynamic require() to avoid a circular dependency:
+ *   subjectService imports from studyService (for getStudyByCode etc.)
+ *   studyService needs subjectService for subject persistence.
+ *
+ * subjectService.js is the ONLY module in the codebase allowed to call
+ * localStorage.getItem("subjectsByStudy") / localStorage.setItem("subjectsByStudy").
+ * These wrappers call into subjectService's exported readSubjectsByStudy /
+ * writeSubjectsByStudy functions so there is exactly ONE physical implementation
+ * of the storage key.
+ */
 function readSubjectsByStudy() {
-  if (typeof window === "undefined") {
-    return {};
-  }
-
-  try {
-    return JSON.parse(localStorage.getItem(SUBJECTS_STORAGE_KEY)) || {};
-  } catch {
-    return {};
-  }
+  // eslint-disable-next-line global-require
+  return require("./subjectService").readSubjectsByStudy();
 }
+
 function saveSubjectsByStudy(subjectsByStudy) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  localStorage.setItem(
-    SUBJECTS_STORAGE_KEY,
-    JSON.stringify(subjectsByStudy)
-  );
-
-  window.dispatchEvent(new Event("subjects-updated"));
+  // eslint-disable-next-line global-require
+  return require("./subjectService").writeSubjectsByStudy(subjectsByStudy);
 }
 
 export function createSubject(studyCode, subject) {
@@ -411,14 +408,9 @@ export function createSubject(studyCode, subject) {
     siteId: inheritedStudyFields.siteId,
   };
 
-  const nextSubjectsByStudy = {
-    ...subjectsByStudy,
-    [studyCode]: [...currentSubjectsForStudy, subjectToStore],
-  };
-
-  saveSubjectsByStudy(nextSubjectsByStudy);
-
-  return subjectToStore;
+  // Keep normalization and the study-scoped write in the canonical service.
+  // eslint-disable-next-line global-require
+  return require("./subjectService").saveSubject(subjectToStore);
 }
 
 /*
@@ -455,28 +447,11 @@ export function updateSubject(studyCode, subjectId, updatedFields) {
     throw new Error(COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE);
   }
 
-  const subjectsByStudy = readSubjectsByStudy();
-  const currentSubjectsForStudy = Array.isArray(subjectsByStudy[studyCode])
-    ? subjectsByStudy[studyCode]
-    : [];
-
-  const normalizedId = String(subjectId).trim().toLowerCase();
-
-  const nextSubjectsForStudy = currentSubjectsForStudy.map((existing) =>
-    String(existing.id || "").trim().toLowerCase() === normalizedId
-      ? { ...existing, ...updatedFields }
-      : existing
-  );
-
-  const nextSubjectsByStudy = {
-    ...subjectsByStudy,
-    [studyCode]: nextSubjectsForStudy,
-  };
-
-  saveSubjectsByStudy(nextSubjectsByStudy);
-
-  return nextSubjectsForStudy.find(
-    (item) => String(item.id || "").trim().toLowerCase() === normalizedId
+  // eslint-disable-next-line global-require
+  return require("./subjectService").updateSubject(
+    studyCode,
+    subjectId,
+    { ...updatedFields, studyId: studyCode },
   );
 }
 
@@ -517,16 +492,17 @@ export function deleteStudy(studyCode, deletionDetails = {}) {
 
   saveStoredStudies(updatedStudies);
 
-  const subjectsByStudy =
-    JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
-
-  if (subjectsByStudy[studyCode]) {
-    delete subjectsByStudy[studyCode];
-
-    localStorage.setItem(
-      "subjectsByStudy",
-      JSON.stringify(subjectsByStudy)
-    );
+  // Delegate subject deletion to subjectService (single source of truth)
+  try {
+    const subjectService = require("./subjectService");
+    subjectService.deleteStudySubjects(studyCode);
+  } catch {
+    // Fallback: read/write through the wrappers (which themselves call subjectService)
+    const subjectsByStudy = readSubjectsByStudy();
+    if (subjectsByStudy[studyCode]) {
+      delete subjectsByStudy[studyCode];
+      saveSubjectsByStudy(subjectsByStudy);
+    }
   }
 
   addAuditLog("STUDY_DELETED", {
@@ -544,8 +520,7 @@ export function deleteStudy(studyCode, deletionDetails = {}) {
 }
 
 export function deleteSubject(studyCode, subjectId, deletionDetails = {}) {
-  const subjectsByStudy =
-    JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
+  const subjectsByStudy = readSubjectsByStudy();
 
   const existingSubject = Array.isArray(subjectsByStudy[studyCode])
     ? subjectsByStudy[studyCode].find(
@@ -558,10 +533,7 @@ export function deleteSubject(studyCode, subjectId, deletionDetails = {}) {
       (subject) => String(subject.id) !== String(subjectId)
     );
 
-    localStorage.setItem(
-      "subjectsByStudy",
-      JSON.stringify(subjectsByStudy)
-    );
+    saveSubjectsByStudy(subjectsByStudy);
   }
 
   addAuditLog("SUBJECT_DELETED", {
@@ -576,150 +548,10 @@ export function deleteSubject(studyCode, subjectId, deletionDetails = {}) {
   return true;
 }
 
-/*
-  One-time data-repair utility (A2 follow-up): earlier builds could file a
-  subject under the wrong `subjectsByStudy` bucket key — most commonly
-  because `getStudyKey()` used `??` instead of `||`, so every study without
-  a `code` yet collapsed onto the same "" bucket and subjects from
-  different studies ended up mixed together (e.g. SUB-B1/B2/B3 leaking
-  into a different study's sidebar list).
-
-  The sidebar/table now filter defensively at render time using each
-  subject's own `studyId`, so the UI is already correct. This function
-  additionally repairs the underlying localStorage data itself:
-    - subjects whose `studyId` matches the bucket they're already in are
-      left alone
-    - subjects whose `studyId` points to a *different*, still-existing
-      study are moved into that study's bucket (never deleted)
-    - subjects with no `studyId` are kept in their current bucket only if
-      that bucket key still belongs to a real study
-    - anything left with no known home is preserved (not deleted) in a
-      separate "orphanedSubjects" bucket, so no data is ever silently lost
-
-  Runs once automatically (guarded by CLEANUP_FLAG_KEY); pass
-  `{ force: true }` to re-run manually, e.g. from the browser console:
-    window.__trianxtCleanupSubjects = cleanupCrossStudySubjectData
-*/
-const ORPHANED_SUBJECTS_KEY = "orphanedSubjects";
-const CLEANUP_FLAG_KEY = "subjectsByStudyCleanupV1";
-
-function normalizeCleanupKey(value) {
-  return String(value ?? "").trim().toLowerCase();
-}
-
-export function cleanupCrossStudySubjectData({ force = false } = {}) {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  if (!force && localStorage.getItem(CLEANUP_FLAG_KEY) === "done") {
-    return null;
-  }
-
-  try {
-    const studies = getStoredStudies();
-
-    const codeByNormalizedCode = new Map();
-    studies.forEach((study) => {
-      if (study?.code) {
-        codeByNormalizedCode.set(normalizeCleanupKey(study.code), study.code);
-      }
-    });
-
-    const subjectsByStudy = readSubjectsByStudy();
-    const orphaned = readJson(ORPHANED_SUBJECTS_KEY, []);
-    const nextBuckets = {};
-
-    let movedCount = 0;
-    let orphanedCount = 0;
-    let keptCount = 0;
-
-    Object.entries(subjectsByStudy).forEach(([bucketKey, subjects]) => {
-      if (!Array.isArray(subjects)) {
-        return;
-      }
-
-      const normalizedBucketKey = normalizeCleanupKey(bucketKey);
-
-      subjects.forEach((subject) => {
-        const subjectStudyId = subject?.studyId;
-        const normalizedSubjectId = normalizeCleanupKey(subjectStudyId);
-
-        let destinationKey = null;
-
-        if (!subjectStudyId) {
-          // No provenance recorded on the subject itself — trust the
-          // bucket it's already in, but only if that bucket still maps
-          // to a real, existing study.
-          destinationKey = codeByNormalizedCode.has(normalizedBucketKey)
-            ? bucketKey
-            : null;
-        } else if (normalizedSubjectId === normalizedBucketKey) {
-          // Already filed correctly.
-          destinationKey = bucketKey;
-        } else if (codeByNormalizedCode.has(normalizedSubjectId)) {
-          // Misfiled, but we know exactly which real study owns it.
-          destinationKey = codeByNormalizedCode.get(normalizedSubjectId);
-          movedCount += 1;
-        } else {
-          destinationKey = null;
-        }
-
-        if (destinationKey) {
-          if (!nextBuckets[destinationKey]) {
-            nextBuckets[destinationKey] = [];
-          }
-
-          const normalizedSubjectRecordId = normalizeCleanupKey(subject?.id);
-          const alreadyPresent = nextBuckets[destinationKey].some(
-            (existing) =>
-              normalizeCleanupKey(existing?.id) === normalizedSubjectRecordId,
-          );
-
-          if (!alreadyPresent) {
-            nextBuckets[destinationKey].push(subject);
-            keptCount += 1;
-          }
-        } else {
-          orphaned.push({
-            ...subject,
-            _orphanedFromBucket: bucketKey,
-            _orphanedAt: new Date().toISOString(),
-          });
-          orphanedCount += 1;
-        }
-      });
-    });
-
-    saveSubjectsByStudy(nextBuckets);
-
-    if (orphanedCount > 0) {
-      localStorage.setItem(ORPHANED_SUBJECTS_KEY, JSON.stringify(orphaned));
-    }
-
-    localStorage.setItem(CLEANUP_FLAG_KEY, "done");
-
-    const summary = {
-      bucketsBefore: Object.keys(subjectsByStudy).length,
-      bucketsAfter: Object.keys(nextBuckets).length,
-      subjectsKept: keptCount,
-      subjectsMoved: movedCount,
-      subjectsOrphaned: orphanedCount,
-    };
-
-    // eslint-disable-next-line no-console
-    console.info("[TriaNXT] subjectsByStudy cleanup complete:", summary);
-
-    return summary;
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error("[TriaNXT] subjectsByStudy cleanup failed:", error);
-    return null;
-  }
-}
-
-// Read-only visibility into anything the cleanup couldn't place, so it's
-// never truly lost and can be reviewed/restored manually if needed.
-export function getOrphanedSubjects() {
-  return readJson(ORPHANED_SUBJECTS_KEY, []);
-}
+// cleanupCrossStudySubjectData and getOrphanedSubjects have been moved
+// to subjectService.js as the single source of truth for all subject
+// data access. They are re-exported here for backward compatibility.
+export {
+  cleanupCrossStudySubjectData,
+  getOrphanedSubjects,
+} from "./subjectService";

@@ -43,7 +43,9 @@
  *   { id: string, name: string, type: "subject" | "folder", children: node[] }
  */
 
-import { readStorage } from "../../utils/storageHelpers";
+import { getSubjectsForStudy as getSubjectsForStudyFromService } from "../../services/subjectService";
+
+/** Legacy flat key (pre-study-scoping). Ignored going forward. */
 
 /* ==================================================================
    CONSTANTS
@@ -52,8 +54,21 @@ import { readStorage } from "../../utils/storageHelpers";
 /** Legacy flat key (pre-study-scoping). Ignored going forward. */
 const LEGACY_FLAT_KEY = "trianxtSubjectExplorerTree";
 
-/** Study-scoped localStorage key factory. */
+/**
+ * Study-scoped localStorage key factory.
+ *
+ * GUARD: if studyId is falsy (undefined, null, empty string), logs an
+ * error and falls back to "global" — but never silently shares the
+ * global bucket. Callers must always pass a resolved study code.
+ */
 export function subjectExplorerTreeKey(studyId) {
+  if (!studyId) {
+    // eslint-disable-next-line no-console
+    console.error(
+      "[TriaNXT] subjectExplorerTreeKey called with falsy studyId.",
+      "This would cause all studies to share the 'global' bucket."
+    );
+  }
   return `trianxtSubjectExplorerTree:${studyId || "global"}`;
 }
 
@@ -292,22 +307,16 @@ function checkLegacyMigration() {
     }
 
     // Read subjectsByStudy to figure out which study each subject belongs to
-    const allByStudy = readStorage("subjectsByStudy", {});
+    // Use subjectService.getAllSubjects() to find which study each subject belongs to.
+    const allSubjects = require("../../services/subjectService").getAllSubjects();
     const studySubjectMap = new Map(); // studyId -> [subject tree nodes]
 
     legacyTree.forEach((node) => {
       if (node.type !== "subject") return;
 
-      // Try to find which study this subject belongs to by checking
-      // every study's subjectsByStudy records
-      let matchedStudy = null;
-      for (const [studyId, records] of Object.entries(allByStudy)) {
-        if (!Array.isArray(records)) continue;
-        if (records.some((r) => r?.id === node.id)) {
-          matchedStudy = studyId;
-          break;
-        }
-      }
+      // Find which study this subject belongs to via subjectService
+      const match = allSubjects.find((s) => s.id === node.id);
+      const matchedStudy = match ? match.studyId : null;
 
       if (matchedStudy) {
         if (!studySubjectMap.has(matchedStudy)) {
@@ -352,30 +361,9 @@ function cleanupMockSubjectsFromMetadata() {
   if (!hasStorage()) return;
 
   try {
-    const allByStudy = readStorage("subjectsByStudy", {});
-    let changed = false;
-
-    const cleaned = { ...allByStudy };
-    for (const [studyId, records] of Object.entries(cleaned)) {
-      if (!Array.isArray(records)) continue;
-      const filtered = records.filter(
-        (r) => r?.id && !LEGACY_MOCK_SUBJECT_IDS.has(r.id)
-      );
-      if (filtered.length !== records.length) {
-        cleaned[studyId] = filtered;
-        changed = true;
-      }
-    }
-
-    if (changed) {
-      window.localStorage.setItem(
-        "subjectsByStudy",
-        JSON.stringify(cleaned)
-      );
-      window.dispatchEvent(
-        new CustomEvent("subjects-updated", { detail: cleaned })
-      );
-    }
+    // Mock subject cleanup is now handled centrally by subjectService.js
+    // on module load (cleanupMockSubjectsFromMetadata). No need to do it
+    // here — this function now only needs to handle legacy tree migration.
   } catch {
     // Best-effort: leave data intact if anything fails.
   }
@@ -409,10 +397,9 @@ function reconcileWithSubjectsByStudy(studyId, tree) {
   if (!studyId || !Array.isArray(tree)) return { tree: tree || [], changed: false };
 
   try {
-    const allByStudy = readStorage("subjectsByStudy", {});
-    const records = allByStudy[studyId];
-
-    const normalizedRecords = Array.isArray(records) ? records : null;
+    // Use subjectService for cross-checked reads
+    const records = getSubjectsForStudyFromService(studyId);
+    const normalizedRecords = records.length > 0 ? records : null;
 
     let changed = false;
     let next = [...tree];

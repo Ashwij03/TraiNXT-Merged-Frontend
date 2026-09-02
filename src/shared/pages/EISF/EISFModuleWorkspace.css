@@ -44,6 +44,7 @@
   flex: 1 1 auto;
   min-width: 0;
   margin-bottom: 0;
+  margin-top: 5px;
 }
 
 .eisf-module-title-row .dashboard-cards-reference {
@@ -55,7 +56,7 @@
 
 .eisf-module-title-row .dashboard-cards-reference .dashboard-card {
   min-height: 5.25rem;
-  height: 100%;
+  height: 4.25rem;
 }
 
 .eisf-module-title-row .dashboard-cards-reference .dashboard-card-body {
@@ -73,7 +74,7 @@
 }
 
 .eisf-module-title-row .dashboard-cards-reference .dashboard-card-title {
-  font-size: var(--tnxt-space-md);
+  font-size: 10px;
 }
 
 .eisf-module-title-row .dashboard-cards-reference .dashboard-card-value {
@@ -83,7 +84,7 @@
 
 .eisf-module-title-row .dashboard-card-detail {
   margin-top: 0.1875rem;
-  font-size: 0.6875rem;
+  font-size: 8px;
 }
 
 .eisf-module-title-row .dashboard-completion-row {
@@ -102,12 +103,12 @@
 }
 
 .eisf-module-title-row .dashboard-completion-ring span {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
 }
 
 .eisf-module-title-row .dashboard-completion-row small {
   margin-top: 0.1875rem;
-  font-size: 0.6875rem;
+  font-size: 8px;
 }
 
 .eisf-breadcrumb {
@@ -116,8 +117,7 @@
   flex-wrap: wrap;
   gap: 0.5625rem;
   color: #475569;
-  font-size: 0.8125rem;
-  margin-bottom: 1.125rem;
+  font-size: 10px;
 }
 
 .eisf-breadcrumb strong {
@@ -130,6 +130,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+  margin-right: 5px;
 }
 
 .eisf-module-header p {

@@ -61,10 +61,10 @@ function SubjectFormModal({
   const [form, setForm] = useState(() => ({
     id: isEdit ? subject?.name || "" : suggestedName || "",
     initials: record?.initials || "",
-    screeningDate: record?.screeningDate || "",
+    screeningDate: record?.screeningDate || (!isEdit ? new Date().toISOString().split("T")[0] : ""),
     enrollmentDate: record?.enrollmentDate || "",
-    status: record?.status || "",
-    currentVisit: record?.currentVisit || "",
+    status: record?.status || (!isEdit ? "Screened" : ""),
+    currentVisit: record?.currentVisit || (!isEdit ? "Screening" : ""),
   }));
   const [touched, setTouched] = useState(false);
   const inputRef = useRef(null);
@@ -124,10 +124,13 @@ function SubjectFormModal({
     onSubmit?.({
       id: form.id.trim(),
       initials: form.initials.trim(),
-      screeningDate: form.screeningDate,
-      enrollmentDate: form.enrollmentDate,
-      status: form.status,
-      currentVisit: form.currentVisit.trim(),
+      principalInvestigator: defaults.principalInvestigator || defaults.pi || "",
+      site: defaults.site || "",
+      siteNo: defaults.siteNumber || "",
+      screeningDate: form.screeningDate || new Date().toISOString().split("T")[0],
+      enrollmentDate: form.enrollmentDate || "",
+      status: form.status || "Screened",
+      currentVisit: form.currentVisit.trim() || "Screening",
     });
   };
 

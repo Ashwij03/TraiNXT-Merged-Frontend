@@ -90,7 +90,7 @@ function resolveActorDisplay({ actorName, actorRole } = {}) {
     getEffectiveRole(currentUser) ||
     "System";
 
-  return `${resolvedName} (${resolvedRole})`;
+  return `${resolvedName} - ${resolvedRole}`;
 }
 
 // Generic writer — every public notify* helper below funnels through here so
@@ -262,7 +262,23 @@ export function notifySubjectCreated(subject) {
       actorRole: subject?.addedByRole,
     })}.`,
     studyCode: subject?.studyCode,
-    targetRoles: OPERATIONAL_ROLES,
+    targetRoles: [...OPERATIONAL_ROLES, ROLES.CRO, ROLES.SPONSOR],
+  });
+}
+
+/**
+ * Broadcast a subject-added notification to all role dashboards.
+ * Designed for the Subject Explorer sidebar's "Add Subject" flow where
+ * the caller wants comprehensive multi-role coverage (ADMIN, PI, CRO,
+ * SITE_STAFF, SPONSOR).
+ */
+export function broadcastSubjectAdded(subjectData) {
+  return createNotification({
+    title: "New Subject Added",
+    message: `Subject ${subjectData?.subjectId || ""} (${subjectData?.status || "Screened"}) has been added to Study ${subjectData?.studyId || subjectData?.studyCode || ""} at ${subjectData?.site || subjectData?.siteName || ""} by ${resolveActorDisplay({ actorName: subjectData?.addedByName, actorRole: subjectData?.addedByRole })}.`,
+    type: "SUBJECT_ADDED",
+    studyCode: subjectData?.studyId || subjectData?.studyCode || "",
+    targetRoles: [ROLES.ADMIN, ROLES.PI, ROLES.CRO, ROLES.SITE_STAFF, ROLES.SPONSOR],
   });
 }
 

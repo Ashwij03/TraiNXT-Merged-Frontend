@@ -49,17 +49,47 @@ export default function useSubjectWorkspace({
   seedTree = [],
   persist = true,
 } = {}) {
+  /* ---------- hard guard: falsy studyId would silently share the "global" bucket */
+  useEffect(() => {
+    if (!studyId) {
+      console.error(
+        "[TriaNXT] useSubjectWorkspace: studyId is falsy. " +
+          "This would cause subjects to leak across studies via the 'global' bucket. " +
+          "Ensure studyId is resolved before mounting the Subject Explorer.",
+      );
+    }
+  }, [studyId]);
+
   /* ---------- persisted domains ---------- */
   const [tree, setTree] = useState(() =>
-    FolderTreeService.loadFolderTree(studyId, seedTree)
+    FolderTreeService.loadFolderTree(studyId, seedTree),
   );
   const [store, setStore] = useState(() => FileService.loadFileStore(studyId));
+
+  /**
+   * BUG FIX: the two lines above only run their `useState` initializer on
+   * the very first mount. When the workspace is reused for a *different*
+   * study - e.g. the parent page stays mounted and only its `studyId` prop
+   * changes because the user clicked another study in the sidebar - `tree`
+   * and `store` kept holding the previous study's data. The subject list
+   * then showed the last-opened study's subjects instead of the newly
+   * selected study's, until a full page reload re-ran the initializers.
+   *
+   * Re-load both domains explicitly whenever `studyId` changes so the
+   * workspace always reflects the study currently being viewed, with no
+   * reload required.
+   */
+  useEffect(() => {
+    setTree(FolderTreeService.loadFolderTree(studyId, seedTree));
+    setStore(FileService.loadFileStore(studyId));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studyId]);
 
   /* ---------- shared selection ---------- */
   // Restored from storage on the very first render so there is no flash of
   // "no folder selected" before an effect runs.
   const [selectedId, setSelectedId] = useState(() =>
-    persist ? WorkspaceSelectionService.loadSelectedFolderId() : null
+    persist ? WorkspaceSelectionService.loadSelectedFolderId() : null,
   );
 
   /* ==============================================================
@@ -76,7 +106,7 @@ export default function useSubjectWorkspace({
       FolderTreeService.subscribeFolderTree(studyId, () => {
         setTree(FolderTreeService.loadFolderTree(studyId, seedTree));
       }),
-    [studyId, seedTree]
+    [studyId, seedTree],
   );
 
   /**
@@ -100,16 +130,18 @@ export default function useSubjectWorkspace({
       FileService.subscribeFiles(studyId, () => {
         setStore(FileService.loadFileStore(studyId));
       }),
-    []
+    [studyId],
   );
 
   /** Selection changed in another tab. */
   useEffect(() => {
     if (!persist) return undefined;
 
-    return WorkspaceSelectionService.subscribeSelection(({ folderId, source }) => {
-      if (source === "storage") setSelectedId(folderId || null);
-    });
+    return WorkspaceSelectionService.subscribeSelection(
+      ({ folderId, source }) => {
+        if (source === "storage") setSelectedId(folderId || null);
+      },
+    );
   }, [persist]);
 
   /* ==============================================================
@@ -120,34 +152,34 @@ export default function useSubjectWorkspace({
      deleted folder resolves to null. */
   const selectedFolder = useMemo(
     () => WorkspaceSelectionService.resolveSelection(tree, selectedId),
-    [tree, selectedId]
+    [tree, selectedId],
   );
 
   const trail = useMemo(
     () => WorkspaceSelectionService.getSelectionTrail(tree, selectedId),
-    [tree, selectedId]
+    [tree, selectedId],
   );
 
   const breadcrumb = useMemo(
     () => WorkspaceSelectionService.buildBreadcrumb(tree, selectedId),
-    [tree, selectedId]
+    [tree, selectedId],
   );
 
   const folderPath = useMemo(
     () => WorkspaceSelectionService.formatSelectionPath(tree, selectedId),
-    [tree, selectedId]
+    [tree, selectedId],
   );
 
   /* Files in the selected folder only (requirement 2). */
   const folderFiles = useMemo(
     () => FileService.listFiles(store, selectedFolder?.id || null),
-    [store, selectedFolder]
+    [store, selectedFolder],
   );
 
   const fileCount = folderFiles.length;
   const totalSize = useMemo(
     () => FileService.totalSize(folderFiles),
-    [folderFiles]
+    [folderFiles],
   );
 
   /* ==============================================================
@@ -207,7 +239,9 @@ export default function useSubjectWorkspace({
    */
   const selectFolder = useCallback((nodeOrId) => {
     const id =
-      typeof nodeOrId === "string" || nodeOrId === null || nodeOrId === undefined
+      typeof nodeOrId === "string" ||
+      nodeOrId === null ||
+      nodeOrId === undefined
         ? nodeOrId || null
         : nodeOrId.id || null;
 

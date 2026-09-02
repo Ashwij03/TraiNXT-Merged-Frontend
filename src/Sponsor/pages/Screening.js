@@ -13,9 +13,10 @@ import { getStudies } from "../../shared/services/studyService";
  */
 function readScreeningRecords() {
   try {
-    const subjectsByStudy = JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
-    return Object.entries(subjectsByStudy).flatMap(([studyCode, subjects]) =>
-      (Array.isArray(subjects) ? subjects : []).map((subject, index) => ({
+    const { getAllSubjects } = require("../../shared/services/subjectService");
+    return getAllSubjects().map((subject, index) => {
+      const studyCode = subject.studyId;
+      return {
         id: subject.screeningId || `SCR-${studyCode}-${subject.id || index}`,
         subjectId: subject.id || subject.subjectId || "",
         study: studyCode,
@@ -29,8 +30,8 @@ function readScreeningRecords() {
             : subject.status === "Active" || subject.status === "Enrolled"
             ? "Eligible"
             : "Under Review",
-      }))
-    );
+      };
+    });
   } catch {
     return [];
   }

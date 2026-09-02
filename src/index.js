@@ -12,6 +12,7 @@ import { initializeUpcomingVisitReminderSynchronization } from "./shared/service
 import { CommentsProvider } from "./shared/comments/CommentsContext";
 import { CROProvider } from "./CRO/pages/CRODATAContext";
 import { FolderProvider } from "./shared/context/FolderContext";
+import { AuthProvider } from "./shared/context/AuthContext";
 
 // UPDATED: seed admin and studies localStorage data on app startup
 initializeAdminData();
@@ -25,13 +26,15 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <CommentsProvider>
-        <CROProvider>
-          <FolderProvider>
-            <App />
-          </FolderProvider>
-        </CROProvider>
-      </CommentsProvider>
+      <AuthProvider>
+        <CommentsProvider>
+          <CROProvider>
+            <FolderProvider>
+              <App />
+            </FolderProvider>
+          </CROProvider>
+        </CommentsProvider>
+      </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

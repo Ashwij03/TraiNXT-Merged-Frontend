@@ -94,7 +94,7 @@ export default function DashboardCards({
                   style={{
                     color: variant === "reference" ? "#0f172a" : card.color || "#2563eb",
                   }}
-                >
+                  >
                   {card.value}
                   {card.suffix || ""}
                 </div>

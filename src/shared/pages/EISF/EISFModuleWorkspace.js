@@ -400,9 +400,9 @@ export default function EISFModuleWorkspace({
           <div className="eisf-module-title-row">
             <div className="eisf-module-heading">
               <h2>{moduleConfig.title}</h2>
+              <DashboardCards documents={documents} cards={dashboardCards} variant="reference" />
             </div>
 
-            <DashboardCards documents={documents} cards={dashboardCards} variant="reference" />
           </div>
         </div>
 

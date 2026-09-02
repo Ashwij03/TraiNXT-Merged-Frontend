@@ -1,9 +1,15 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   MdSearch,
   MdClose,
   MdFolderOff,
-  MdInsertDriveFile,
+  MdFolderOpen,
   MdCheckCircle,
   MdErrorOutline,
   MdWarningAmber,
@@ -20,6 +26,8 @@ import FilePreviewModal from "./FilePreviewModal";
 import RenameFileModal from "./RenameFileModal";
 import DeleteFileDialog from "./DeleteFileDialog";
 import CreateFolderModal from "./CreateFolderModal";
+import MoveFileDialog from "./MoveFileDialog";
+import PermissionsModal from "./PermissionsModal";
 import FolderStatsBar from "./FolderStatsBar";
 import FileFilterBar from "./FileFilterBar";
 import PaginationFooter from "./PaginationFooter";
@@ -27,8 +35,9 @@ import FileService from "./fileService";
 import FolderTreeService from "./folderTreeService";
 import FolderStatsService from "./folderStatsService";
 import FileFilterService, { DEFAULT_FILTERS } from "./fileFilterService";
-import { formatFileSize, formatDate } from "./fileService";
+import { formatFileSize, formatDateTime } from "./fileService";
 import { getExtension } from "./fileTypes";
+import { useAuth } from "../../context/AuthContext";
 import { downloadCsvReport } from "../../utils/exportReport";
 import "./SubjectFiles.css";
 import "./DocumentExperience.css";
@@ -65,9 +74,23 @@ const SORT_OPTIONS = [
 ];
 
 /** Default direction per key: newest/largest first feels right for those. */
-const DEFAULT_DIRECTION = { name: "asc", type: "asc", date: "desc", size: "desc" };
+const DEFAULT_DIRECTION = {
+  name: "asc",
+  type: "asc",
+  date: "desc",
+  size: "desc",
+};
 
-function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, studyId = "" }) {
+function SubjectFileManager({
+  selectedFolder,
+  onSelectFolder,
+  tree: treeProp,
+  studyId = "",
+  readOnly = false,
+}) {
+  const { user } = useAuth();
+  const currentUser = user?.displayName || user?.name || "Unknown user";
+
   /* ---------- persisted stores ---------- */
   const [store, setStore] = useState(() => FileService.loadFileStore(studyId));
   /* Bug 4 fix: receive the tree from the parent (useSubjectWorkspace) via
@@ -124,7 +147,7 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
       FileService.subscribeFiles(studyId, () => {
         setStore(FileService.loadFileStore(studyId));
       }),
-    []
+    [studyId],
   );
 
   /* All folder ids currently present in the tree. */
@@ -159,11 +182,11 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
     const result = FileService.pruneOrphanFolders(
       studyId,
       storeRef.current,
-      existingFolderIds
+      existingFolderIds,
     );
 
     if (result.changed) setStore(result.store);
-  }, [existingFolderIds]);
+  }, [existingFolderIds, studyId]);
 
   /* Reset the per-folder view state when the selection changes. */
   const previousFolderId = useRef(folderId);
@@ -254,11 +277,12 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
   /* Re-resolve the node from the tree so a Phase 3 rename is reflected. */
   const folderNode = useMemo(
     () => (folderId ? FolderTreeService.findNodeById(tree, folderId) : null),
-    [tree, folderId]
+    [tree, folderId],
   );
 
   const folderName = folderNode?.name || selectedFolder?.name || "";
-  const isSubjectNode = (folderNode?.type || selectedFolder?.type) === "subject";
+  const isSubjectNode =
+    (folderNode?.type || selectedFolder?.type) === "subject";
 
   /* One-level-up navigation target for the header's Back button. A subject
      node sits at the root of the tree (no parent), so the button only shows
@@ -267,7 +291,7 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
      never further. */
   const parentNode = useMemo(
     () => (folderId ? FolderTreeService.findParentOf(tree, folderId) : null),
-    [tree, folderId]
+    [tree, folderId],
   );
 
   const handleBackOneLevel = useCallback(() => {
@@ -282,8 +306,9 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
      the workspace (which only showed files, making subjects with only
      subfolders look empty). */
   const childFolders = useMemo(
-    () => (folderNode?.children || []).filter((child) => child.type !== "subject"),
-    [folderNode]
+    () =>
+      (folderNode?.children || []).filter((child) => child.type !== "subject"),
+    [folderNode],
   );
 
   /* Breadcrumb path from the root down to the selected folder. */
@@ -300,7 +325,7 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
 
   const folderFiles = useMemo(
     () => FileService.listFiles(store, folderId),
-    [store, folderId]
+    [store, folderId],
   );
 
   /**
@@ -311,7 +336,7 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
    */
   const filteredFiles = useMemo(
     () => FileFilterService.applyFilters(folderFiles, filters),
-    [folderFiles, filters]
+    [folderFiles, filters],
   );
 
   const visibleFiles = useMemo(
@@ -319,9 +344,9 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
       FileService.sortFiles(
         FileService.searchFiles(filteredFiles, search),
         sortKey,
-        sortDir
+        sortDir,
       ),
-    [filteredFiles, search, sortKey, sortDir]
+    [filteredFiles, search, sortKey, sortDir],
   );
 
   /* Task 1.7: paginate the already filtered/searched/sorted rows. Reset to
@@ -332,18 +357,18 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
   const safePage = Math.min(page, totalPages);
   const pagedFiles = useMemo(
     () => visibleFiles.slice((safePage - 1) * pageSize, safePage * pageSize),
-    [visibleFiles, safePage, pageSize]
+    [visibleFiles, safePage, pageSize],
   );
 
   const activeFilterCount = useMemo(
     () => FileFilterService.countActiveFilters(filters),
-    [filters]
+    [filters],
   );
 
   /* Requirement 2: folders / files / storage for the selected subtree. */
   const stats = useMemo(
     () => FolderStatsService.getFolderStats(folderNode, store),
-    [folderNode, store]
+    [folderNode, store],
   );
 
   /* ==============================================================
@@ -353,6 +378,7 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
   /** Requirement 1 + 8: upload with per-file validation. */
   const handleUpload = useCallback(
     async (fileList) => {
+      if (readOnly) return;
       if (!folderId) {
         setFeedback({
           tone: "error",
@@ -364,7 +390,13 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
       setUploading(true);
 
       try {
-        const result = await FileService.uploadFiles(studyId, store, folderId, fileList);
+        const result = await FileService.uploadFiles(
+          studyId,
+          store,
+          folderId,
+          fileList,
+          currentUser,
+        );
 
         if (!result.ok) {
           setFeedback({
@@ -388,15 +420,15 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
                   result.rejected.length === 1 ? "file was" : "files were"
                 } skipped.`
               : result.warning
-              ? `${base} ${result.warning}`
-              : base,
+                ? `${base} ${result.warning}`
+                : base,
           details: result.rejected,
         });
       } finally {
         setUploading(false);
       }
     },
-    [store, folderId, folderName]
+    [studyId, store, folderId, folderName, readOnly, currentUser],
   );
 
   /**
@@ -417,7 +449,7 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
       setSortKey(key);
       setSortDir(DEFAULT_DIRECTION[key] || "asc");
     },
-    [sortKey, sortDir]
+    [sortKey, sortDir],
   );
 
   /* ---------- Phase 6: advanced filters ---------- */
@@ -453,7 +485,7 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
       file.name,
       getExtension(file.name).toUpperCase(),
       formatFileSize(file.size || 0),
-      formatDate(file.uploadedAt || ""),
+      formatDateTime(file.uploadedAt || ""),
     ]);
     downloadCsvReport(`${folderName || "files"}-files`, [header, ...rows]);
   }, [visibleFiles, folderName]);
@@ -461,24 +493,31 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
   /* Stable callbacks handed to the memoised table (Phase 7). */
   const clearSearch = useCallback(() => setSearch(""), []);
   const openCreateFolder = useCallback(() => {
+    if (readOnly) return;
     setSubmitError("");
     setCreatingFolder(true);
-  }, []);
+  }, [readOnly]);
   const dismissFeedback = useCallback(() => setFeedback(null), []);
   const toggleFilters = useCallback(() => setShowFilters((prev) => !prev), []);
   const flipSortDir = useCallback(
     () => setSortDir((prev) => (prev === "asc" ? "desc" : "asc")),
-    []
+    [],
   );
 
   /* ---------- Phase 6: create a subfolder from the empty state ---------- */
   const validateNewFolder = useCallback(
     (name) => FolderTreeService.validateFolderName(tree, folderId, name),
-    [tree, folderId]
+    [tree, folderId],
   );
 
   const submitCreateFolder = (name) => {
-    const result = FolderTreeService.createFolder(studyId, tree, folderId, name);
+    if (readOnly) return;
+    const result = FolderTreeService.createFolder(
+      studyId,
+      tree,
+      folderId,
+      name,
+    );
 
     if (!result.ok) {
       setSubmitError(result.error);
@@ -507,7 +546,7 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
               ? `"${file.name}" has no stored contents - a details summary was downloaded instead.`
               : `"${file.name}" downloaded.`,
           }
-        : { tone: "error", message: result.error }
+        : { tone: "error", message: result.error },
     );
   }, []);
 
@@ -524,15 +563,50 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
       // Root-cause enforcement (not just hiding the menu item): a file
       // inside a locked system folder (ICF) can never be renamed or
       // deleted, regardless of how the action reaches this handler.
-      if ((action === "rename" || action === "delete") && folderNode?.locked) {
+      if (
+        (action === "rename" || action === "delete") &&
+        (readOnly || folderNode?.locked)
+      ) {
         return;
       }
 
       if (action === "view" || action === "rename" || action === "delete") {
         setDialog({ mode: action === "view" ? "preview" : action, file });
+        return;
+      }
+
+      if (action === "audit-trail") {
+        setDialog({ mode: "audit-trail", file });
+        return;
+      }
+
+      if (action === "duplicate") {
+        const result = FileService.duplicateFile(studyId, store, folderId, file.id, currentUser);
+        if (!result.ok) {
+          setFeedback({ tone: "error", message: result.error });
+        } else {
+          setStore(result.store);
+          setFeedback({ tone: "success", message: `"${result.file.name}" created as a duplicate.` });
+        }
+        return;
+      }
+
+      if (action === "move") {
+        setDialog({ mode: "move", file });
+        return;
+      }
+
+      if (action === "permissions") {
+        setDialog({ mode: "permissions", file });
+        return;
+      }
+
+      if (action === "global-view") {
+        setDialog({ mode: "preview", file });
+        return;
       }
     },
-    [handleDownload, folderNode]
+    [handleDownload, folderNode, readOnly, studyId, store, folderId, currentUser],
   );
 
   const closeDialog = useCallback(() => {
@@ -546,19 +620,26 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
       FileService.validateFileName(store, folderId, name, {
         excludeId: dialog?.file?.id,
       }),
-    [store, folderId, dialog]
+    [store, folderId, dialog],
   );
 
   const submitRename = (name) => {
     // Final root-cause guard: even if a rename dialog were ever opened for
     // a file in a locked folder (ICF) by some path other than the ones
     // already refused above, the actual mutation still cannot happen.
-    if (folderNode?.locked) {
+    if (readOnly || folderNode?.locked) {
       setSubmitError("This folder is view-only. Files cannot be renamed.");
       return;
     }
 
-    const result = FileService.renameFile(studyId, store, folderId, dialog.file.id, name);
+    const result = FileService.renameFile(
+      studyId,
+      store,
+      folderId,
+      dialog.file.id,
+      name,
+      currentUser,
+    );
 
     if (!result.ok) {
       setSubmitError(result.error);
@@ -566,12 +647,15 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
     }
 
     setStore(result.store);
-    setFeedback({ tone: "success", message: `Renamed to "${result.file.name}".` });
+    setFeedback({
+      tone: "success",
+      message: `Renamed to "${result.file.name}".`,
+    });
     closeDialog();
   };
 
   const submitDelete = () => {
-    if (folderNode?.locked) {
+    if (readOnly || folderNode?.locked) {
       setSubmitError("This folder is view-only. Files cannot be deleted.");
       return;
     }
@@ -615,8 +699,8 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
     feedback?.tone === "success"
       ? MdCheckCircle
       : feedback?.tone === "warning"
-      ? MdWarningAmber
-      : MdErrorOutline;
+        ? MdWarningAmber
+        : MdErrorOutline;
 
   return (
     <section className="sf-panel" aria-label={`Files in ${folderName}`}>
@@ -701,7 +785,11 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
           role="status"
           aria-live="polite"
         >
-          <FeedbackIcon size={16} className="sf-alert-icon" aria-hidden="true" />
+          <FeedbackIcon
+            size={16}
+            className="sf-alert-icon"
+            aria-hidden="true"
+          />
 
           <div className="sf-alert-body">
             <span className="sf-alert-message">{feedback.message}</span>
@@ -748,7 +836,11 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
           {folderFiles.length > 0 && (
             <div className="sf-toolbar" role="search">
               <div className="sf-search">
-                <MdSearch size={17} className="sf-search-icon" aria-hidden="true" />
+                <MdSearch
+                  size={17}
+                  className="sf-search-icon"
+                  aria-hidden="true"
+                />
                 <input
                   type="text"
                   className="sf-search-input"
@@ -802,7 +894,11 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
                   <span>{sortDir === "asc" ? "Asc" : "Desc"}</span>
                 </button>
 
-                <span className="sf-result-count" role="status" aria-live="polite">
+                <span
+                  className="sf-result-count"
+                  role="status"
+                  aria-live="polite"
+                >
                   {visibleFiles.length} of {folderFiles.length}
                 </span>
 
@@ -854,7 +950,8 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
             <div className="sf-child-folders">
               <div className="sf-child-folders-header">
                 <span className="sf-child-folders-label">
-                  {childFolders.length} folder{childFolders.length !== 1 ? "s" : ""}
+                  {childFolders.length} folder
+                  {childFolders.length !== 1 ? "s" : ""}
                 </span>
               </div>
               <div className="sf-child-folders-grid">
@@ -873,7 +970,7 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
                     }}
                   >
                     <span className="sf-child-folder-icon">
-                      <MdInsertDriveFile size={18} aria-hidden="true" />
+                      <MdFolderOpen size={18} aria-hidden="true" />
                     </span>
                     <span className="sf-child-folder-name" title={child.name}>
                       {child.name}
@@ -909,8 +1006,8 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
             hasSearch={search.trim().length > 0}
             hasFilters={activeFilterCount > 0}
             uploading={uploading}
-            canUpload={Boolean(folderId)}
-            locked={Boolean(folderNode?.locked)}
+            canUpload={Boolean(folderId) && !readOnly}
+            locked={readOnly || Boolean(folderNode?.locked)}
           />
 
           {/* Task 1.7/1.9: pagination footer - rows per page, prev/next,
@@ -936,17 +1033,17 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
             <FilePreviewModal
               file={dialog.file}
               folderName={folderPath.join(" / ")}
-              locked={Boolean(folderNode?.locked)}
+              locked={readOnly || Boolean(folderNode?.locked)}
               onRename={() => {
                 // Root-cause guard (not just hiding the button): this panel
                 // can no longer render the Rename button when locked, but
                 // refuse the action here too regardless of how it's called.
-                if (folderNode?.locked) return;
+                if (readOnly || folderNode?.locked) return;
                 setDialog({ mode: "rename", file: dialog.file });
               }}
               onDownload={() => handleDownload(dialog.file)}
               onDelete={() => {
-                if (folderNode?.locked) return;
+                if (readOnly || folderNode?.locked) return;
                 setDialog({ mode: "delete", file: dialog.file });
               }}
               onClose={closeDialog}
@@ -973,6 +1070,67 @@ function SubjectFileManager({ selectedFolder, onSelectFolder, tree: treeProp, st
           folderName={folderName}
           submitError={submitError}
           onConfirm={submitDelete}
+          onClose={closeDialog}
+        />
+      )}
+
+      {dialog?.mode === "audit-trail" && (
+        <div className="audit-overlay tnxt-compact" onClick={closeDialog}>
+          <div className="audit-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="audit-header">
+              <h3>Audit Trail — {dialog.file?.name}</h3>
+              <button type="button" onClick={closeDialog}>✕</button>
+            </div>
+            <table className="audit-table ctms-standard-table">
+              <thead>
+                <tr>
+                  <th>Date (UTC)</th>
+                  <th>User</th>
+                  <th>Action</th>
+                  <th>Remarks</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(FileService.getFileAuditTrail(dialog.file)).map((item, index) => (
+                  <tr key={`${item.action}-${index}`}>
+                    <td>{formatDateTime(item.date || "-")}</td>
+                    <td>{item.user || "Unknown user"}</td>
+                    <td>{item.action || "Updated"}</td>
+                    <td>{item.remarks || "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {dialog?.mode === "move" && (
+        <MoveFileDialog
+          file={dialog.file}
+          tree={tree}
+          currentFolderId={folderId}
+          onSubmit={(targetFolderId) => {
+            if (readOnly || folderNode?.locked) return;
+            const result = FileService.moveFile(
+              studyId, store, folderId, dialog.file.id, targetFolderId, currentUser
+            );
+            if (!result.ok) {
+              setSubmitError(result.error);
+              return;
+            }
+            setStore(result.store);
+            setFeedback({ tone: "success", message: `"${dialog.file.name}" moved successfully.` });
+            closeDialog();
+          }}
+          submitError={submitError}
+          onClose={closeDialog}
+        />
+      )}
+
+      {dialog?.mode === "permissions" && (
+        <PermissionsModal
+          file={dialog.file}
           onClose={closeDialog}
         />
       )}

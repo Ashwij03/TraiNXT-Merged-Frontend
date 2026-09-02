@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { getAccessibleStudies, getCurrentUser, hasPermission, PERMISSIONS } from "../services/roleService";
 import { FOLDER_TREE_EVENT } from "../services/folderService";
 import { canViewFinancials } from "../pages/studies/StudyWorkspaceTabsConfig";
+import { resolveStudyKey as getCanonicalStudyKey, getSubjectsForStudy, getStudyDisplayName as getCanonicalStudyDisplayName, getStudyMeta as getCanonicalStudyMeta } from "../services/subjectService";
 
 export const STUDY_SECTIONS = [
   { key: "overview", label: "Overview" },
@@ -35,90 +36,16 @@ export function getVisibleStudySections(currentUser = getCurrentUser()) {
   });
 }
 
-function getAllSubjectsByStudy() {
-  try {
-    const savedSubjects = JSON.parse(localStorage.getItem("subjectsByStudy"));
+// Re-export canonical implementations from subjectService for backward
+// compatibility (PIDashboard.js imports getStudyKey from here).
+export const getStudyKey = getCanonicalStudyKey;
+export const getStudyDisplayName = getCanonicalStudyDisplayName;
+export const getStudyMeta = getCanonicalStudyMeta;
 
-    return savedSubjects && typeof savedSubjects === "object"
-      ? savedSubjects
-      : {};
-  } catch {
-    return {};
-  }
-}
-
-export function getStudyKey(study) {
-  // Use `||` rather than `??` here: studyService.normalizeStudy() always
-  // gives `code` a string value (defaulting to ""), so `??` would never
-  // fall through to `id`/`studyId` for a study whose code hasn't been set
-  // yet — every codeless study would collide under the same "" key in
-  // subjectsByStudy, leaking subjects across studies.
-  return String(
-    study?.code ||
-      study?.id ||
-      study?.studyId ||
-      study?.title ||
-      study?.name ||
-      "",
-  ).trim();
-}
-
-export function getStudyDisplayName(study) {
-  return (
-    study?.name ||
-    study?.title ||
-    study?.studyName ||
-    study?.protocolTitle ||
-    study?.protocol ||
-    "Untitled Study"
-  );
-}
-
-export function getStudyMeta(study) {
-  const code = study?.code || study?.id || study?.studyId;
-
-  if (!code) {
-    return "";
-  }
-
-  const studyName = getStudyDisplayName(study);
-
-  return String(code) !== String(studyName) ? String(code) : "";
-}
-
-function normalizeKey(value) {
-  return String(value ?? "").trim().toLowerCase();
-}
-
-// A2 (Study-Scoped Subject Visibility): the raw bucket in `subjectsByStudy`
-// can end up holding subjects that don't actually belong to this study
-// (e.g. left behind by a study code change, or written under a stale key
-// before this study had a code assigned). Every subject created through
-// studyService.createSubject carries its own authoritative `studyId`, so
-// cross-check each entry against the study we're rendering and drop any
-// that don't match, instead of trusting the bucket key alone.
+// All subject data now flows through subjectService — the single source
+// of truth. No more direct localStorage access or duplicated filtering.
 function getStudySubjects(study) {
-  const subjectsByStudy = getAllSubjectsByStudy();
-  const studyKey = getStudyKey(study);
-  const subjects = subjectsByStudy[studyKey];
-
-  if (!Array.isArray(subjects)) {
-    return [];
-  }
-
-  const normalizedStudyKey = normalizeKey(studyKey);
-
-  return subjects.filter((subject) => {
-    const subjectStudyId = subject?.studyId;
-
-    // Older records may not carry a studyId; keep those rather than
-    // silently dropping legitimate data.
-    if (subjectStudyId === undefined || subjectStudyId === null || subjectStudyId === "") {
-      return true;
-    }
-
-    return normalizeKey(subjectStudyId) === normalizedStudyKey;
-  });
+  return getSubjectsForStudy(getCanonicalStudyKey(study));
 }
 
 function readStudies() {

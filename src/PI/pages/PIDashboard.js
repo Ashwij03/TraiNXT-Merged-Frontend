@@ -163,36 +163,25 @@ function PIDashboard({ embeddedInLayout = false }) {
     sharedStudies = [];
   }
 
-  let subjectsByStudy = {};
-
-  try {
-    const storedSubjects = JSON.parse(
-      localStorage.getItem("subjectsByStudy") || "{}",
-    );
-
-    subjectsByStudy =
-      storedSubjects && typeof storedSubjects === "object"
-        ? storedSubjects
-        : {};
-  } catch {
-    subjectsByStudy = {};
-  }
-
-  const realSubjects = sharedStudies.flatMap((study) => {
-    const studyKey = getStudyKey(study);
-    const subjects = subjectsByStudy[studyKey];
-
-    if (!Array.isArray(subjects)) {
+  const realSubjects = (() => {
+    try {
+      const { getAllSubjects } = require("../../shared/services/subjectService");
+      const allSubjects = getAllSubjects();
+      // Tag each subject with study metadata from the studies list
+      return allSubjects.map((subject) => {
+        const studyKey = subject.studyId;
+        const study = sharedStudies.find((s) => getStudyKey(s) === studyKey);
+        return {
+          ...subject,
+          studyKey,
+          studyCode: study?.code || studyKey,
+          studyName: study?.name || study?.title || studyKey,
+        };
+      });
+    } catch {
       return [];
     }
-
-    return subjects.map((subject) => ({
-      ...subject,
-      studyKey,
-      studyCode: study.code || studyKey,
-      studyName: study.name || study.title || studyKey,
-    }));
-  });
+  })();
 
   const activeSubjectsCount = realSubjects.filter((subject) => {
     const status = String(subject.status || "")
@@ -309,10 +298,12 @@ function PIDashboard({ embeddedInLayout = false }) {
   const navigateToSubjects = () => {
     const firstStudyWithSubjects = sharedStudies.find((study) => {
       const studyKey = getStudyKey(study);
-      return (
-        Array.isArray(subjectsByStudy[studyKey]) &&
-        subjectsByStudy[studyKey].length > 0
-      );
+      try {
+        const { getSubjectsForStudy } = require("../../shared/services/subjectService");
+        return getSubjectsForStudy(studyKey).length > 0;
+      } catch {
+        return false;
+      }
     });
 
     const targetStudy = firstStudyWithSubjects || sharedStudies[0];

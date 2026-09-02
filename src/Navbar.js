@@ -1,11 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "./shared/context/AuthContext";
 import "./Dashboard.css";
 import "./Navbar.css";
 
 function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
 
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -31,6 +33,8 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("adminPreviewRole");
+    localStorage.removeItem("currentUser");
+    logout();
     navigate("/login");
   };
 

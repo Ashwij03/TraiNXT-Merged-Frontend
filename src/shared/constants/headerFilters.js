@@ -18,6 +18,10 @@ export const HEADER_FILTERS_EVENT = "headerFiltersChange";
 // is currently mounted (Admin/SiteStaff/PI/CRO/Sponsor) can collapse its
 // own sidebar. Every other tab/page leaves the sidebar exactly as the
 // user last left it.
+//
+// Also fired for the Subjects tab (see StudyDashboard.js) so opening
+// Subjects collapses the sidebar the same way opening eISF does, without
+// a second event/listener pair.
 export const EISF_SIDEBAR_COLLAPSE_EVENT = "eisfSidebarAutoCollapse";
 
 function dispatchFilterEvent(detail = {}) {

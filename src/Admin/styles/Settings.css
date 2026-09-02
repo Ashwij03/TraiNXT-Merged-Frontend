@@ -870,3 +870,86 @@
     padding: var(--settings-gap-sm);
   }
 }
+/* ===== START: Task 6 (Ashwij) — Referral Program admin panel styles =====
+   Additive only — nothing above this block was changed. Reuses the same
+   --tnxt-* design tokens as the rest of this file. */
+
+.referral-admin-toggle-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--tnxt-space-lg, 1rem);
+  padding-bottom: var(--tnxt-space-md, 0.75rem);
+  border-bottom: 1px solid var(--tnxt-border-light, #f0f0f0);
+  margin-bottom: var(--tnxt-space-md, 0.75rem);
+}
+
+.referral-admin-toggle-desc {
+  margin: 0.25rem 0 0;
+  font-size: var(--tnxt-font-size-xs, 0.75rem);
+  color: var(--tnxt-text-secondary, #6b7280);
+  max-width: 34rem;
+}
+
+.referral-admin-toggle {
+  flex-shrink: 0;
+  border: none;
+  border-radius: 999px;
+  padding: 0.5rem 1.25rem;
+  font-weight: 700;
+  font-size: var(--tnxt-font-size-xs, 0.75rem);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  color: var(--tnxt-text-inverse, #ffffff);
+}
+
+.referral-admin-toggle.on {
+  background: var(--tnxt-success, #16a34a);
+}
+
+.referral-admin-toggle.off {
+  background: var(--tnxt-text-muted, #9ca3af);
+}
+
+.referral-admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--tnxt-space-md, 0.75rem);
+  margin-bottom: var(--tnxt-space-lg, 1rem);
+}
+
+.referral-admin-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: var(--tnxt-space-md, 0.75rem);
+  background: var(--tnxt-bg-alt, #f8f9fa);
+  border-radius: 0.5rem;
+}
+
+.referral-admin-stat span {
+  font-size: var(--tnxt-font-size-xs, 0.75rem);
+  color: var(--tnxt-text-secondary, #6b7280);
+}
+
+.referral-admin-stat strong {
+  font-size: var(--tnxt-font-size-xl, 1.1875rem);
+  color: var(--tnxt-text, #111827);
+}
+
+.referral-admin-table-wrap {
+  margin-top: var(--tnxt-space-lg, 1rem);
+}
+
+.referral-admin-table-wrap h4 {
+  margin: 0 0 var(--tnxt-space-sm, 0.5rem);
+  font-size: var(--tnxt-font-size-sm, 0.9375rem);
+}
+
+.referral-admin-empty {
+  text-align: center;
+  color: var(--tnxt-text-muted, #9ca3af);
+  padding: var(--tnxt-space-lg, 1rem);
+}
+
+/* ===== END: Task 6 (Ashwij) — Referral Program admin panel styles ===== */

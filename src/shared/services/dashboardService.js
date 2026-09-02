@@ -72,16 +72,20 @@ export function getStudiesDashboard() {
       value: Number(study.enrolled || 0)
     })),
 
-    recentSubjects: Object.entries(
-      JSON.parse(localStorage.getItem("subjectsByStudy") || "{}")
-    )
-      .flatMap(([, subjects]) => (Array.isArray(subjects) ? subjects : []))
-      .slice(0, 5)
-      .map((subject) => ({
-        id: subject.subjectId || subject.id,
-        study: subject.study || "N/A",
-        status: subject.status || "Unknown"
-      })),
+    recentSubjects: (() => {
+      try {
+        const { getAllSubjects } = require("./subjectService");
+        return getAllSubjects()
+          .slice(0, 5)
+          .map((subject) => ({
+            id: subject.subjectId || subject.id,
+            study: subject.studyId || subject.study || "N/A",
+            status: subject.status || "Unknown"
+          }));
+      } catch {
+        return [];
+      }
+    })(),
 
     upcomingVisits: getUpcomingVisitsWindow(schedules, 30).slice(0, 8).map((item) => ({
       subject: item.subjectId,

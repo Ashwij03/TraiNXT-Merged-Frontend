@@ -414,11 +414,14 @@ export function shouldPromptNextVisit(studyId, subjectId) {
 }
 
 export function buildSchedulesFromSubjects() {
-  const subjectsByStudy = readJson("subjectsByStudy", {});
   const generated = [];
 
-  Object.entries(subjectsByStudy).forEach(([studyKey, subjects]) => {
-    (Array.isArray(subjects) ? subjects : []).forEach((subject) => {
+  try {
+    const { getAllSubjects } = require("./subjectService");
+    const allSubjects = getAllSubjects();
+
+    allSubjects.forEach((subject) => {
+      const studyKey = subject.studyId;
       const subjectId = String(subject.subjectId || subject.id);
       const details = readSubjectDetails(studyKey, subjectId);
 
@@ -476,7 +479,9 @@ export function buildSchedulesFromSubjects() {
         }
       });
     });
-  });
+  } catch {
+    // ignore — schedules will be empty if subjectService fails
+  }
 
   return generated;
 }

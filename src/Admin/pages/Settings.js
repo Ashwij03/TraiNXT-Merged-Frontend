@@ -6,6 +6,7 @@ import DashboardCard from "../../shared/components/dashboard/shared/DashboardCar
 import ProfileSettingsSection from "../../shared/pages/profile/ProfileSettingsSection";
 import SecuritySettingsSection from "../../shared/pages/profile/SecuritySettingsSection";
 import { getSettings, saveSettings } from "../../shared/services/adminService";
+// Task 6 (Ashwij): Referral & Limited Free License Model.
 import ROLES from "../../shared/constants/roles";
 import {
   getAllRoles,
@@ -197,6 +198,8 @@ function Settings() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUserKey]);
+
+
 
   const activeSessions = useMemo(() => {
     void sessionsVersion;
@@ -805,6 +808,8 @@ function Settings() {
             </DashboardCard>
           </section>
         )}
+
+
       </div>
     </DashboardLayout>
   );

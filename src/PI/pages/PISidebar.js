@@ -9,6 +9,7 @@ import {
   FaChartPie,
   FaBell,
   FaCog,
+  FaGift,
 } from "react-icons/fa";
 import "../styles/PISidebar.css";
 import { getSidebarMenuData } from "./piDashboardService";
@@ -24,6 +25,7 @@ const ICON_MAP = {
   pie: FaChartPie,
   bell: FaBell,
   cog: FaCog,
+  gift: FaGift,
 };
 
 function PISidebar({
@@ -74,6 +76,7 @@ function PISidebar({
       reports: "/pi-reports",
       notifications: "/pi-notifications",
       settings: "/pi-settings",
+      referral: "/pi-referral",
     };
 
     const route = routeMap[page];
@@ -166,6 +169,16 @@ function PISidebar({
             </div>
           );
         })}
+
+        {/* Referral Program — always shown directly below Settings, as the
+            very last item in the PI sidebar. */}
+        <div
+          className={getMenuClass("referral")}
+          onClick={() => handleMenuClick("referral")}
+        >
+          <FaGift />
+          {!collapsed && <span>Referral Program</span>}
+        </div>
       </div>
     </>
   );

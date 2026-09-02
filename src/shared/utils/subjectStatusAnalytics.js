@@ -27,17 +27,17 @@ export function getSubjectStatusAnalytics(subjects = []) {
   }));
 }
 
+/**
+ * Get all subjects from the canonical subjectService (single source of truth).
+ * Each subject is tagged with its owning studyKey.
+ */
 export function getAllSubjectsFromStorage() {
   try {
-    const subjectsByStudy =
-      JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
-
-    return Object.entries(subjectsByStudy).flatMap(([studyKey, subjects]) =>
-      (Array.isArray(subjects) ? subjects : []).map((subject) => ({
-        ...subject,
-        studyKey
-      }))
-    );
+    const { getAllSubjects } = require("../services/subjectService");
+    return getAllSubjects().map((subject) => ({
+      ...subject,
+      studyKey: subject.studyId,
+    }));
   } catch {
     return [];
   }

@@ -29,6 +29,7 @@ import useSubjectWorkspace from "./useSubjectWorkspace";
 import FolderStatsService from "./folderStatsService";
 import FolderTreeService from "./folderTreeService";
 import SubjectRecordsService from "./subjectRecordsService";
+import { syncSubjectSchedules } from "../../services/visitScheduleService";
 import { formatFileSize } from "./fileService";
 import { getCurrentUser } from "../../services/roleService";
 import { canEditSubjectContent } from "../../utils/contentAccess";
@@ -176,7 +177,7 @@ const DETAIL_FIELD_ICONS = {
   currentVisit: MdEvent,
 };
 
-function StudySubjectsWorkspace({ studyId = "", persist = false }) {
+function StudySubjectsWorkspace({ studyId = "", persist = false, readOnly = false }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const subjectParam = searchParams.get("subject");
 
@@ -190,7 +191,7 @@ function StudySubjectsWorkspace({ studyId = "", persist = false }) {
   } = useSubjectWorkspace({ studyId, persist });
 
   const currentUser = getCurrentUser();
-  const canModify = canEditSubjectContent(currentUser);
+  const canModify = canEditSubjectContent(currentUser) && !readOnly;
 
   /* ==============================================================
      SUBJECT METADATA (Task 1.5/1.6) - bridged from `subjectsByStudy`,
@@ -245,23 +246,6 @@ function StudySubjectsWorkspace({ studyId = "", persist = false }) {
     () => (Array.isArray(tree) ? tree.filter((node) => node.type === "subject") : []),
     [tree]
   );
-
-  /* A subject created through the sidebar has no metadata record yet - seed
-     a blank one (PI/Site inherited from the study) so it appears in the KPI
-     cards / All Subjects table immediately, exactly like a subject added
-     through StudySubjects.js would. Runs only for ids that don't already
-     have a record, so it never overwrites existing metadata. */
-  useEffect(() => {
-    if (!studyId || subjectNodes.length === 0) return;
-
-    const existingIds = new Set(subjectRecords.map((record) => record.id));
-    const missing = subjectNodes.filter((node) => !existingIds.has(node.id));
-    if (missing.length === 0) return;
-
-    missing.forEach((node) => SubjectRecordsService.ensureSubjectRecord(studyId, node.id));
-    // The ensure calls above dispatch "subjects-updated", which the effect
-    // above picks up and refreshes `subjectRecords` from - no state set here.
-  }, [studyId, subjectNodes, subjectRecords]);
 
   /* Rows for the "All Subjects" table (Task 1.6, State A): every top-level
      subject in the live tree, merged with its metadata record if one
@@ -354,12 +338,36 @@ function StudySubjectsWorkspace({ studyId = "", persist = false }) {
       }
 
       /* Update the clinical metadata record (same service StudySubjects uses). */
-      SubjectRecordsService.updateSubjectRecord(studyId, nodeId, {
+      const { getSubjectStudyDefaults: getStudyDefaults } = require("../../services/studyService");
+      const defaults = getStudyDefaults(studyId);
+      const finalSubjectId = nameChanged ? fields.id.trim() : nodeId;
+      const updatedRecord = {
         initials: fields.initials || "",
+        principalInvestigator: fields.principalInvestigator || defaults.principalInvestigator || defaults.pi || "",
+        pi: fields.principalInvestigator || defaults.principalInvestigator || defaults.pi || "",
+        site: fields.site || defaults.site || "",
+        siteName: defaults.siteName || defaults.site || "",
+        siteNo: fields.siteNo || defaults.siteNumber || "",
         status: fields.status || "",
         screeningDate: fields.screeningDate || "",
         enrollmentDate: fields.enrollmentDate || "",
         currentVisit: fields.currentVisit || "",
+      };
+      SubjectRecordsService.updateSubjectRecord(studyId, nodeId, updatedRecord);
+
+      /* BUG FIX: this form is the only place the Subjects tab lets a user
+         set Screening Date / Enrollment Date / Current Visit, but it never
+         pushed those dates into the visit-schedule store. Calendar and
+         Upcoming Visits both read exclusively from that store (via
+         `useVisitSchedules`), so anything entered here silently never
+         appeared there. `syncSubjectSchedules` is the same call
+         `StudySubjects.js` already makes after its own edits - it
+         regenerates this subject's Screening/Enrollment/visit entries and
+         dispatches the change event the calendar listens for. */
+      syncSubjectSchedules(studyId, finalSubjectId, {
+        ...updatedRecord,
+        id: finalSubjectId,
+        subjectId: finalSubjectId,
       });
 
       closeSubjectDialog();
@@ -558,25 +566,25 @@ function StudySubjectsWorkspace({ studyId = "", persist = false }) {
                   <span>Back to Subjects</span>
                 </button>
               )}
+              {/* Task 1.5: subject-detail cards (8, single row, never wraps)
+                  once a subject is in scope; otherwise the pre-existing
+                  workspace/folder totals (4 cards). */}
+              {subjectDetailCards ? (
+                <div className="ssw-kpi-cards ssw-kpi-cards--subject">
+                  {subjectDetailCards.map((card) => (
+                    <SubjectsKpiCard card={card} key={card.key} />
+                  ))}
+                </div>
+              ) : (
+                <div className="ssw-kpi-cards">
+                  {kpiCards.map((card) => (
+                    <SubjectsKpiCard card={card} key={card.key} />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Task 1.5: subject-detail cards (8, single row, never wraps)
-              once a subject is in scope; otherwise the pre-existing
-              workspace/folder totals (4 cards). */}
-          {subjectDetailCards ? (
-            <div className="ssw-kpi-cards ssw-kpi-cards--subject">
-              {subjectDetailCards.map((card) => (
-                <SubjectsKpiCard card={card} key={card.key} />
-              ))}
-            </div>
-          ) : (
-            <div className="ssw-kpi-cards">
-              {kpiCards.map((card) => (
-                <SubjectsKpiCard card={card} key={card.key} />
-              ))}
-            </div>
-          )}
         </div>
       </header>
 
@@ -616,6 +624,7 @@ function StudySubjectsWorkspace({ studyId = "", persist = false }) {
             onSelect={handleSelect}
             onNavigateToAllSubjects={handleBackToSubjects}
             studyId={studyId}
+            readOnly={readOnly}
           />
         </div>
 
@@ -631,6 +640,7 @@ function StudySubjectsWorkspace({ studyId = "", persist = false }) {
                 onSelectFolder={handleSelect}
                 tree={tree}
                 studyId={studyId}
+                readOnly={readOnly}
               />
             </>
           ) : (
@@ -644,6 +654,8 @@ function StudySubjectsWorkspace({ studyId = "", persist = false }) {
               onOpen={(row) => handleSelect(row.node)}
               onEdit={openEditSubjectDetails}
               onDelete={openDeleteSubject}
+              tree={tree}
+              fileStore={store}
             />
           )}
         </div>

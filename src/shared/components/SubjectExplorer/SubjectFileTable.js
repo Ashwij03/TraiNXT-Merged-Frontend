@@ -79,13 +79,13 @@ import FolderEmptyState from "./FolderEmptyState";
  * Modified and Uploaded By each give up the difference; File Name is
  * untouched. Percentages still sum to 100. */
 const COLUMNS = [
-  { key: "name", label: "File Name", sortKey: "name", width: "22%" },
-  { key: "type", label: "Type", sortKey: "type", width: "9%" },
-  { key: "size", label: "Size", sortKey: "size", width: "9%" },
-  { key: "uploaded", label: "Uploaded", sortKey: "date", width: "12%" },
-  { key: "modified", label: "Last Modified", sortKey: null, width: "7%" },
-  { key: "uploadedBy", label: "Uploaded By", sortKey: null, width: "9%" },
-  { key: "status", label: "Status", sortKey: null, width: "12%" },
+  { key: "name", label: "File Name", sortKey: "name", width: "20%" },
+  { key: "type", label: "Type", sortKey: "type", width: "7%" },
+  { key: "size", label: "Size", sortKey: "size", width: "8%" },
+  { key: "uploaded", label: "Uploaded", sortKey: "date", width: "14%" },
+  { key: "modified", label: "Last Modified", sortKey: null, width: "14%" },
+  { key: "uploadedBy", label: "Uploaded By", sortKey: null, width: "10%" },
+  { key: "status", label: "Status", sortKey: null, width: "7%" },
   { key: "actions", label: "Actions", sortKey: null, width: "20%" },
 ];
 

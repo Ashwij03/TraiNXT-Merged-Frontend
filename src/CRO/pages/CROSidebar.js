@@ -13,6 +13,7 @@ import {
   FaShieldAlt,
   FaUserFriends,
   FaTimes,
+  FaGift,
 } from "react-icons/fa";
 import TriaNXTLogo from "../../shared/components/TriaNXTLogo";
 import RoleStudiesSidebarTree from "../../shared/components/RoleStudiesSidebarTree";
@@ -40,6 +41,7 @@ const MAIN_ITEMS = [
   { to: "/cro-reports", icon: FaFileAlt, label: "Reports" },
   { to: "/cro-notifications", icon: FaBell, label: "Notifications" },
   { to: "/cro-settings", icon: FaCog, label: "Settings" },
+  { to: "/cro-referral", icon: FaGift, label: "Referral Program" },
 ];
 
 function SidebarItem({ to, icon: Icon, label, onNavigate }) {

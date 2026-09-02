@@ -2,52 +2,17 @@ import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from
 import { createPortal } from "react-dom";
 import {
   MdMoreVert,
-  MdAdd,
   MdCreateNewFolder,
   MdFolderSpecial,
   MdDriveFileRenameOutline,
   MdDeleteOutline,
   MdEdit,
+  MdDownload,
+  MdHistory,
+  MdContentCopy,
+  MdDriveFileMoveOutline,
+  MdLockOutline,
 } from "react-icons/md";
-
-/**
- * Subject Explorer - folder three-dot context menu (Phase 3).
- *
- * Presentational: it only reports the chosen action upward; the explorer
- * owns the tree and opens the matching modal.
- *
- * Actions
- *   create-folder    -> new folder as a SIBLING of this node
- *                       (for a subject row: a new folder INSIDE the subject)
- *   create-subfolder -> new folder INSIDE this folder (unlimited nesting)
- *   rename           -> rename this folder (or, on a subject row, edit the
- *                       subject - SubjectExplorer routes by node.type)
- *   delete           -> delete this folder and its children (or, on a
- *                       subject row, delete the subject and its folders)
- *
- * Update 6 (Subject CRUD): subject rows now also expose "Edit Subject" and
- * "Delete Subject", reusing the same `rename` / `delete` action keys the
- * folder menu already sends - SubjectExplorer looks at `node.type` to
- * decide whether that opens the folder dialog or the subject dialog, so
- * this menu stays a thin, presentational reporter of intent. Only the
- * item labels/icons differ here between a subject and a folder row.
- *
- * The dropdown is rendered through a portal with fixed positioning so the
- * sidebar's `overflow: auto` cannot clip it.
- *
- * Phase 11 - eISF "+" interaction pattern:
- * Subject rows also get a small, ALWAYS-VISIBLE "+" button next to the
- * "..." trigger (unlike the trigger, it is never opacity-hidden behind
- * hover/focus). It fires the exact same `create-folder` action as the
- * dropdown's own "Create Folder" item - it is purely an additional, more
- * discoverable entry point, so the dropdown keeps working unchanged.
- *
- * This directly fixes the SUB-003 case: a subject with zero folders has no
- * caret and, before this change, its only "add a folder" affordance was a
- * three-dot trigger that stays invisible until the row is hovered/focused -
- * easy to miss on an otherwise-empty row. The persistent "+" removes that
- * gap for every subject, empty or not.
- */
 
 const MENU_WIDTH = 194;
 const MENU_MARGIN = 8;
@@ -60,25 +25,27 @@ function FolderContextMenu({ node, onAction, onOpenChange }) {
 
   const isSubject = node?.type === "subject";
 
-  /* Phase 11: quick "+" action - subjects only, creates a folder inside
-     the subject in one click (same key/target as the menu's own item). */
-  const handleQuickCreate = useCallback(
-    (event) => {
-      event.preventDefault();
-      // Keep the row's click handler from firing (which would otherwise
-      // toggle/select the node underneath the button).
-      event.stopPropagation();
-      if (typeof onAction === "function") onAction("create-folder", node);
-    },
-    [onAction, node]
-  );
-
   const items = isSubject
     ? [
         {
           key: "create-folder",
           label: "Create Folder",
           Icon: MdCreateNewFolder,
+        },
+        {
+          key: "import-folder-structure",
+          label: "Import Folder Structure",
+          Icon: MdCreateNewFolder,
+        },
+        {
+          key: "audit-trail",
+          label: "Audit Trail",
+          Icon: MdHistory,
+        },
+        {
+          key: "permissions",
+          label: "Permissions",
+          Icon: MdLockOutline,
         },
         {
           key: "rename",
@@ -106,8 +73,38 @@ function FolderContextMenu({ node, onAction, onOpenChange }) {
           hint: "Inside",
         },
         {
+          key: "import-folder-structure",
+          label: "Import Folder Structure",
+          Icon: MdCreateNewFolder,
+        },
+        {
+          key: "audit-trail",
+          label: "Audit Trail",
+          Icon: MdHistory,
+        },
+        {
+          key: "download",
+          label: "Download (ZIP)",
+          Icon: MdDownload,
+        },
+        {
+          key: "duplicate",
+          label: "Duplicate",
+          Icon: MdContentCopy,
+        },
+        {
+          key: "move",
+          label: "Move",
+          Icon: MdDriveFileMoveOutline,
+        },
+        {
+          key: "permissions",
+          label: "Permissions",
+          Icon: MdLockOutline,
+        },
+        {
           key: "rename",
-          label: "Rename",
+          label: "Rename / Update",
           Icon: MdDriveFileRenameOutline,
         },
         {
@@ -223,18 +220,6 @@ function FolderContextMenu({ node, onAction, onOpenChange }) {
 
   return (
     <>
-      {isSubject && (
-        <button
-          type="button"
-          className="sx-quick-add"
-          aria-label={`Create folder in ${node?.name || "subject"}`}
-          title="Create Folder"
-          onClick={handleQuickCreate}
-        >
-          <MdAdd size={16} />
-        </button>
-      )}
-
       <button
         type="button"
         ref={triggerRef}

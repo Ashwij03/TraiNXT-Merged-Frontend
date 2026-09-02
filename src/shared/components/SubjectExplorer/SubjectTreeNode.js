@@ -85,6 +85,7 @@ function SubjectTreeNode({
   onToggle,
   onSelect,
   onNodeAction,
+  readOnly = false,
 }) {
   // Keeps the row's action button visible while its menu is open.
   const [menuOpen, setMenuOpen] = useState(false);
@@ -262,7 +263,7 @@ function SubjectTreeNode({
 
           {/* Update 7: locked folders (ICF) get no context menu - view/open
               (the row click itself) is the only available action. */}
-          {!isLocked && (
+          {!isLocked && !readOnly && (
             <FolderContextMenu
               node={node}
               onAction={onNodeAction}
@@ -292,6 +293,7 @@ function SubjectTreeNode({
                 onToggle={onToggle}
                 onSelect={onSelect}
                 onNodeAction={onNodeAction}
+                readOnly={readOnly}
               />
             ))}
           </ul>
@@ -322,6 +324,7 @@ export default React.memo(SubjectTreeNode, (prev, next) => {
     prev.onToggle === next.onToggle &&
     prev.onSelect === next.onSelect &&
     prev.onNodeAction === next.onNodeAction &&
+    prev.readOnly === next.readOnly &&
     sameIdList(prev.expandedIds, next.expandedIds) &&
     sameIdList(prev.activePathIds, next.activePathIds)
   );

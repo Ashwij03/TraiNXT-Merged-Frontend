@@ -25,9 +25,23 @@ const DEFAULT_SPONSORS = [
   "Intercept Pharmaceuticals"
 ];
 
+/**
+ * Subject data access via subjectService — the single source of truth.
+ */
 function readSubjectsByStudy() {
   try {
-    return JSON.parse(localStorage.getItem("subjectsByStudy")) || {};
+    // Use getAllSubjects() from subjectService which handles cross-checking
+    const { getAllSubjects } = require("./subjectService");
+    const all = getAllSubjects();
+    // Rebuild bucket map for backward compatibility with existing filter logic
+    const bucketMap = {};
+    all.forEach((subject) => {
+      const studyId = subject.studyId;
+      if (!studyId) return;
+      if (!bucketMap[studyId]) bucketMap[studyId] = [];
+      bucketMap[studyId].push(subject);
+    });
+    return bucketMap;
   } catch {
     return {};
   }

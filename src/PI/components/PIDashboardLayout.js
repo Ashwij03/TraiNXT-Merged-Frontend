@@ -35,6 +35,8 @@ export const PI_PAGE_ROUTES = {
 
   settings: "/pi-settings",
 
+  referral: "/pi-referral",
+
   eisf: "/pi-eisf-dashboard",
 
   icf: "/pi-icf-dashboard",

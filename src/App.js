@@ -44,6 +44,7 @@ import {
   RoleAwareRegulatory,
   RoleAwareReports,
   RoleAwareSettings,
+  RoleAwareReferral,
   RoleAwareSitePerformance,
   RoleAwareStudies,
   RoleAwareSubjects,
@@ -83,6 +84,7 @@ import PIRegulatory from "./PI/pages/PIRegulatory";
 import PIReports from "./PI/pages/PIReports";
 import PINotifications from "./PI/pages/PINotifications";
 import PISettings from "./PI/pages/PISettings";
+import PIReferral from "./PI/pages/PIReferral";
 import PISubjectsDashboard from "./PI/pages/PISubjectsDashboard";
 import PIStudyFolderDashboard from "./PI/pages/PIStudyFolderDashboard";
 import PIStudySubjectsProfile from "./PI/pages/PIStudySubjectsProfile";
@@ -103,11 +105,12 @@ import CroSitePerformance from "./CRO/pages/CROSitePerformance";
 import CroReports from "./CRO/pages/CROReports";
 import CroNotifications from "./CRO/pages/CRONotifications";
 import CroSettings from "./CRO/pages/CROSettings";
+import CROReferral from "./CRO/pages/CROReferral";
 import CroRegulatoryDocuments from "./CRO/pages/CRORegulatoryDocuments";
-import AdminLiveChat from "./Admin/pages/LiveChat";
-import SiteStaffLiveChat from "./SiteStaff/pages/LiveChat";
 import CROLiveChat from "./CRO/pages/CROLiveChat";
 import SponsorLiveChat from "./Sponsor/pages/LiveChat";
+import AdminLiveChat from "./Admin/pages/LiveChat";
+import SiteStaffLiveChat from "./SiteStaff/pages/LiveChat";
 
 // ===== START: Safety / AI Review / eTMF imports =====
 import SafetyCenter from "./shared/pages/safety/SafetyCenter";
@@ -466,6 +469,15 @@ function App() {
         }
       />
 
+      <Route
+        path="/referral"
+        element={
+          <ProtectedRoute>
+            <RoleAwareReferral />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Sponsor-specific routes */}
       <Route
         path="/screening"
@@ -740,6 +752,16 @@ function App() {
         }
       />
       <Route
+        path="/pi-referral"
+        element={
+          <ProtectedRoute allowedRoles={PI_ROLES}>
+            <PIPageLayout>
+              <PIReferral />
+            </PIPageLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/pi-subjects-dashboard"
         element={
           <ProtectedRoute allowedRoles={PI_ROLES}>
@@ -896,6 +918,14 @@ function App() {
         element={
           <ProtectedRoute allowedRoles={CRO_ROLES}>
             <CroSettings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/cro-referral"
+        element={
+          <ProtectedRoute allowedRoles={CRO_ROLES}>
+            <CROReferral />
           </ProtectedRoute>
         }
       />

@@ -49,6 +49,7 @@ import {
   getEffectiveRole,
   ROLE_LABELS,
 } from "../services/roleService";
+import { formatDateTimeUTC } from "../utils/dateTime";
 import "./DocumentFolderManager.css";
 import FolderColumnView from "./FolderColumnView";
 
@@ -1541,7 +1542,7 @@ function DocumentFolderManager({
 
                 <small>
                   PDF • {formatSize(document.size)} •{" "}
-                  {new Date(document.uploadedAt).toLocaleString()}
+                  {formatDateTimeUTC(document.uploadedAt)}
                 </small>
               </div>
 

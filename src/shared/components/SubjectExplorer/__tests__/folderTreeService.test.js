@@ -11,13 +11,15 @@
  */
 
 // Use Jest's built-in jsdom localStorage (no custom mock needed).
-// Suppress console.warn from checkLegacyMigration.
+// The invalid-study-id test deliberately exercises the runtime guard.
 beforeEach(() => {
   window.localStorage.clear();
   jest.spyOn(console, "warn").mockImplementation(() => {});
+  jest.spyOn(console, "error").mockImplementation(() => {});
 });
 afterEach(() => {
   console.warn.mockRestore();
+  console.error.mockRestore();
 });
 
 const {

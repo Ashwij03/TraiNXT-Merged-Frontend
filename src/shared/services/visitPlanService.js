@@ -5,6 +5,18 @@ import {
   SCHEDULES_EVENT,
 } from "./visitScheduleService";
 
+/**
+ * Subject data access via subjectService — the single source of truth.
+ */
+function getSubjectsForVisitStudy(studyCode) {
+  try {
+    const { getSubjectsForStudy } = require("./subjectService");
+    return getSubjectsForStudy(String(studyCode || ""));
+  } catch {
+    return [];
+  }
+}
+
 export const VISIT_PLANS_KEY = "visitPlansByStudy";
 export const VISIT_PLAN_VISITS_KEY = "visitPlanVisitsByPlan";
 export const VISIT_PLAN_PROCEDURES_KEY = "visitPlanProceduresByPlan";
@@ -244,13 +256,7 @@ export function getVisitScheduleMatrix(studyCode, planId) {
   const visits = getVisitPlanVisits(planId);
   const procedures = getVisitPlanProcedures(planId);
 
-  let subjects = [];
-  try {
-    const byStudy = readJson("subjectsByStudy", {});
-    subjects = Array.isArray(byStudy[String(studyCode)]) ? byStudy[String(studyCode)] : [];
-  } catch {
-    subjects = [];
-  }
+  const subjects = getSubjectsForVisitStudy(studyCode);
 
   return {
     visits,
@@ -271,13 +277,7 @@ export function getVisitScheduleMatrix(studyCode, planId) {
 
 export function syncVisitPlanToSchedule(studyCode, planId) {
   const visits = getVisitPlanVisits(planId);
-  let subjects = [];
-  try {
-    const byStudy = readJson("subjectsByStudy", {});
-    subjects = Array.isArray(byStudy[String(studyCode)]) ? byStudy[String(studyCode)] : [];
-  } catch {
-    subjects = [];
-  }
+  const subjects = getSubjectsForVisitStudy(studyCode);
 
   subjects.forEach((subject) => {
     const subjectId = String(subject.subjectId || subject.id);
