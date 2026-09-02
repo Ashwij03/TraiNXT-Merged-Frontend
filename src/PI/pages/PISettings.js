@@ -4,7 +4,6 @@ import { FaUser, FaBell, FaLock, FaCog } from "react-icons/fa";
 import PIKpiCard from "./PIKpiCard";
 import PIAccountSecurity from "./PIAccountSecurity";
 import ProfilePhotoCard from "../../shared/pages/profile/ProfilePhotoCard";
-
 import { getUserProfile } from "../../shared/services/roleService";
 import {
   getSettingsData,

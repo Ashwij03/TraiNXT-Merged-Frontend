@@ -1207,4 +1207,4 @@ export function getSubjectsForAnalytics(user = getCurrentUser()) {
 export function getReferralProgramSettings() {
   const settings = getSettings();
   return settings.referralProgram || { referrerBonusEnabled: false };
-}
+}

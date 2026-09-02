@@ -3,7 +3,6 @@ import DataTable from "../../components/dashboard/shared/DataTable";
 import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
 import { canWriteComments, canViewComment } from "../../services/commentService";
 import { getCurrentUser } from "../../services/roleService";
-
 import { useComments } from "../../comments/CommentsContext";
 import CommentModal from "../../comments/CommentModal";
 import "./SubjectComments.css";

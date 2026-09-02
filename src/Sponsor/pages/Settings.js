@@ -4,7 +4,6 @@ import EnterpriseModal from './EnterpriseModal';
 import '../styles/Settings.css';
 import '../styles/SponsorShared.css';
 import { MdPerson, MdNotifications, MdSecurity, MdScience, MdChevronRight } from 'react-icons/md';
-
 import { loadSettings, saveSettings } from '../data/sponsorDataStore';
 import { useLocation } from "react-router-dom";
 import { clearProfilePhoto, getCurrentUser, syncProfilePhoto } from "../../shared/services/roleService";
