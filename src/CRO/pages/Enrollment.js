@@ -68,7 +68,7 @@ function Enrollment() {
               alignItems: "center",
               marginBottom: "1.25rem",
             }}
-          >
+
             <h1>Enrollment</h1>
             <div style={{ display: "flex", gap: "0.625rem", alignItems: "center" }}>
               <select
@@ -76,7 +76,7 @@ function Enrollment() {
                 onChange={(event) => setStudyCode(event.target.value)}
                 aria-label="Select study for new enrollment"
                 style={{ padding: "0.5rem" }}
-              >
+
                 <option value="">Select study…</option>
                 {studies.map((study) => (
                   <option key={study.code} value={study.code}>

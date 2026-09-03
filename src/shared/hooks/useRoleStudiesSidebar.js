@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { getAccessibleStudies, getCurrentUser } from "../services/roleService";
 import { getAccessibleStudies, getCurrentUser, hasPermission, PERMISSIONS } from "../services/roleService";
 import { FOLDER_TREE_EVENT } from "../services/folderService";
 import { canViewFinancials } from "../pages/studies/StudyWorkspaceTabsConfig";

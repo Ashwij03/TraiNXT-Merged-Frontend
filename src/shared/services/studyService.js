@@ -3,13 +3,11 @@ import {
   STUDY_STATUS_COMPLETED,
 } from "../constants/studyStatus";
 import { notifyStudyCompleted } from "./notificationService";
-import {
   formatSiteOption,
   getSiteDisplayName,
   resolveSiteNumber,
   resolveSiteRecord,
 } from "../utils/siteDisplay";
-import {
   addAuditLog as recordCanonicalAuditLog,
   getRecentActivityLogs as getCanonicalRecentActivityLogs
 } from "./auditService";

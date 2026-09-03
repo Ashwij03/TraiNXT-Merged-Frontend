@@ -28,6 +28,12 @@
 
 .ctms-table-toolbar {
   display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: var(--tnxt-space-md, 14px);
+
   gap: 0.75rem;
   align-items: center;
   justify-content: space-between;
@@ -39,6 +45,10 @@
 .ctms-table-filter select,
 .ctms-table-pagination select {
   border: 1px solid var(--tnxt-border, #d9dee7);
+  border-radius: 8px;
+  padding: 9px 11px;
+  font-size: 13px;
+
   border-radius: 0.5rem;
   padding: 0.5625rem 0.6875rem;
   font-size: 0.8125rem;
@@ -47,12 +57,17 @@
 }
 
 .ctms-table-search {
+  min-width: 240px;
+  flex: 1 1 260px;
+
   min-width: 15rem;
   flex: 1 1 16.25rem;
 }
 
 .ctms-table-filters {
   display: flex;
+  gap: 10px;
+
   gap: 0.625rem;
   align-items: center;
   flex-wrap: wrap;
@@ -61,6 +76,10 @@
 .ctms-table-filter,
 .ctms-table-pagination label {
   display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+
   gap: 0.5rem;
   align-items: center;
   font-size: 0.75rem;
@@ -107,6 +126,14 @@
   border-top-right-radius: 0.5rem;
 }
 
+.ctms-table th:first-child {
+  border-top-left-radius: 8px;
+}
+
+.ctms-table th:last-child {
+  border-top-right-radius: 8px;
+}
+
 .ctms-table th,
 .ctms-table td {
   white-space: nowrap;
@@ -133,6 +160,12 @@
   color: var(--tnxt-text);
   background: #fff;
   border: 1px solid #d9dee7;
+}
+
+.ctms-table tbody tr:hover {
+  background: var(--tnxt-bg-alt);
+}
+
 }
 
 .ctms-table tbody tr:hover {
@@ -177,6 +210,38 @@
   color: var(--tnxt-text, #0f172a);
   border-radius: 0.5rem;
   padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+.ctms-table-pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.ctms-table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  color: var(--tnxt-text-secondary, #64748b);
+  font-size: 13px;
+}
+
+.ctms-table-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ctms-table-pagination button {
+  border: 1px solid var(--tnxt-border, #d9dee7);
+  background: #fff;
+  color: var(--tnxt-text, #0f172a);
+  border-radius: 8px;
+  padding: 8px 12px;
   cursor: pointer;
 }
 
@@ -247,6 +312,12 @@
 }
 
 .upcoming-visits-table tbody tr {
+  height: auto !important;
+}
+
+.upcoming-visits-table tbody td.empty-row {
+  padding: 12px !important;
+
   height: auto;
 }
 
@@ -256,6 +327,16 @@
 
 /* Scoped variant: upcoming visits full-width layout */
 .upcoming-visits-full-width .ctms-table-header {
+  border-bottom: none !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.upcoming-visits-full-width .ctms-table-card {
+  border: none !important;
+  box-shadow: none !important;
+  padding-top: 0 !important;
+
   border-bottom: none;
   margin-bottom: 0;
   padding-bottom: 0;

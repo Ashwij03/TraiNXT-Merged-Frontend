@@ -14,7 +14,6 @@ import {
   FiMail
 } from "react-icons/fi";
 
-import {
   ResponsiveContainer,
   LineChart,
   Line,
@@ -37,7 +36,6 @@ const CROReport = () => {
   { month: "May", performance: 90 },
   { month: "Jun", performance: 92 }
 ];
-
 
 const enrollmentData = [
   { cro: "IQVIA", enrollment: 92 },
@@ -84,7 +82,7 @@ const complianceData = [
         cursor: "pointer",
         marginBottom: "1.25rem"
       }}
-    >
+
        Back
     </button>
 
@@ -202,10 +200,10 @@ const complianceData = [
   />
 
 </div>
-<div
+div
   className="sponsor-chart-card"
   style={{ marginTop: "1.5rem" }}
->
+
   <h3>Enrollment Performance by CRO</h3>
 
   <ResponsiveContainer width="100%" height={300}>
@@ -222,10 +220,10 @@ const complianceData = [
   </ResponsiveContainer>
 </div>
 
-<div
+div
   className="action-btn-group"
   style={{ marginTop: "1.25rem" }}
->
+
   <button className="view-btn">
     <FiDownload /> Export PDF
   </button>

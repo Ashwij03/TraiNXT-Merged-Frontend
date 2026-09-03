@@ -67,7 +67,7 @@ export default function DocumentViewer({
                 type="button"
                 className="secondary-btn"
                 onClick={() => onDownload?.(document)}
-              >
+
                 Download
               </button>
 
@@ -76,7 +76,7 @@ export default function DocumentViewer({
                   type="button"
                   className="secondary-btn"
                   onClick={() => onHistory(document)}
-                >
+
                   Version History
                 </button>
               )}
@@ -86,7 +86,7 @@ export default function DocumentViewer({
                   type="button"
                   className="secondary-btn"
                   onClick={() => onAudit(document)}
-                >
+
                   Audit Trail
                 </button>
               )}
@@ -98,7 +98,7 @@ export default function DocumentViewer({
                   onClick={onClose}
                   aria-label="Close preview"
                   title="Close preview"
-                >
+
                   ✕
                 </button>
               )}
@@ -186,7 +186,7 @@ export default function DocumentViewer({
             type="button"
             className="viewer-close"
             onClick={onClose}
-          >
+
             ✕
           </button>
 
@@ -255,7 +255,7 @@ export default function DocumentViewer({
             type="button"
             className="secondary-btn"
             onClick={() => onDownload?.(document)}
-          >
+
             Download
           </button>
 
@@ -263,7 +263,7 @@ export default function DocumentViewer({
             type="button"
             className="primary-btn"
             onClick={onClose}
-          >
+
             Close
           </button>
 

@@ -34,7 +34,7 @@ import {
   COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE,
   getStudies,
 } from "../../services/studyService";
-import { getSubjectsForStudy, subscribeSubjects } from "../../services/subjectService";
+import { getSubjectsForStudy, subscribeSubjects, deleteSubject } from "../../services/subjectService";
 import { STUDY_STATUS_COMPLETED } from "../../constants/studyStatus";
 import { resolveSiteDisplay } from "../../utils/siteDisplay";
 import "./StudySubjects.css";
@@ -82,20 +82,16 @@ function getSearchableSubjectText(subject) {
   return searchableValues.join(" ").toLowerCase();
 }
 
-// A2 (Study-Scoped Subject Visibility): all subject data now flows through
-// subjectService.getSubjectsForStudy() which performs cross-checking
-// automatically. No more local filtering needed.
-
 function getSubjectDetailCards(subject, siteSources = []) {
   const latestSite =
-  getSubjectStudyDefaults(subject?.studyId).site || subject?.site;
+    getSubjectStudyDefaults(subject?.studyId).site || subject?.site;
 
-const siteDisplay = latestSite
-  ? resolveSiteDisplay(latestSite, {
-      sources: siteSources,
-      fallback: latestSite,
-    })
-  : "—";
+  const siteDisplay = latestSite
+    ? resolveSiteDisplay(latestSite, {
+        sources: siteSources,
+        fallback: latestSite,
+      })
+    : "—";
 
   return [
     {
@@ -106,13 +102,13 @@ const siteDisplay = latestSite
       label: "Status",
       value: subject?.status || "—",
     },
-   {
-  label: "Principal Investigator",
-  value:
-    getSubjectStudyDefaults(subject?.studyId).pi ||
-    subject?.pi ||
-    "—",
-},
+    {
+      label: "Principal Investigator",
+      value:
+        getSubjectStudyDefaults(subject?.studyId).pi ||
+        subject?.pi ||
+        "—",
+    },
     {
       label: "Study ID",
       value: subject?.studyId || "—",
@@ -206,29 +202,29 @@ function StudySubjects({
   }, []);
 
   useEffect(() => {
-  const loadSelectedSubject = () => {
-    const savedSubject = readStorage(SELECTED_SUBJECT_STORAGE_KEY, null);
+    const loadSelectedSubject = () => {
+      const savedSubject = readStorage(SELECTED_SUBJECT_STORAGE_KEY, null);
 
-    if (
-      savedSubject?.id &&
-      normalizeValue(savedSubject.studyId) === normalizeValue(studyId)
-    ) {
-      setSelectedSubjectId(savedSubject.id);
-    } else {
-      setSelectedSubjectId(null);
-    }
-  };
+      if (
+        savedSubject?.id &&
+        normalizeValue(savedSubject.studyId) === normalizeValue(studyId)
+      ) {
+        setSelectedSubjectId(savedSubject.id);
+      } else {
+        setSelectedSubjectId(null);
+      }
+    };
 
-  // Load on first render
-  loadSelectedSubject();
+    // Load on first render
+    loadSelectedSubject();
 
-  // Update whenever the sidebar selects a subject
-  window.addEventListener("subject-selected", loadSelectedSubject);
+    // Update whenever the sidebar selects a subject
+    window.addEventListener("subject-selected", loadSelectedSubject);
 
-  return () => {
-    window.removeEventListener("subject-selected", loadSelectedSubject);
-  };
-}, [studyId]);
+    return () => {
+      window.removeEventListener("subject-selected", loadSelectedSubject);
+    };
+  }, [studyId]);
 
   const subjectsData = useMemo(() => {
     // subjectService.getSubjectsForStudy() returns cross-checked, study-scoped data
@@ -456,6 +452,21 @@ function StudySubjects({
 
     const subject = subjectToDelete;
 
+    // Delete through subjectService — the single owner of subjectsByStudy —
+    // so the sidebar, Subject Explorer and every other consumer refresh
+    // from one place. The service guards completed studies; surface that
+    // through the existing notice modal instead of failing silently.
+    try {
+      deleteSubject(studyId, subject.id);
+    } catch (error) {
+      setSubjectNotice({
+        title: "Delete Subject Unavailable",
+        message: (error && error.message) || COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE,
+      });
+      setSubjectToDelete(null);
+      return;
+    }
+
     saveSubjects();
 
     if (
@@ -652,19 +663,17 @@ function StudySubjects({
                     <td>{subject.status || "—"}</td>
                     <td>{getSubjectStudyDefaults(studyId).pi || subject.pi || "—"}</td>
                     <td>
-                     {
-  (() => {
-    const latestSite =
-      getSubjectStudyDefaults(studyId).site || subject.site;
+                      {(() => {
+                        const latestSite =
+                          getSubjectStudyDefaults(studyId).site || subject.site;
 
-    return latestSite
-      ? resolveSiteDisplay(latestSite, {
-          sources: getStudies(),
-          fallback: latestSite,
-        })
-      : "—";
-  })()
-}
+                        return latestSite
+                          ? resolveSiteDisplay(latestSite, {
+                              sources: getStudies(),
+                              fallback: latestSite,
+                            })
+                          : "—";
+                      })()}
                     </td>
                     <td>{subject.screeningDate || "—"}</td>
                     <td>{subject.enrollmentDate || "—"}</td>
@@ -926,4 +935,3 @@ function StudySubjects({
 }
 
 export default StudySubjects;
-

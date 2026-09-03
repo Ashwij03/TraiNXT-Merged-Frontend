@@ -97,9 +97,9 @@
   background: var(--tnxt-card);
 }
 
-/* =========================================
+/* ======
    HEADER BUTTONS
-========================================= */
+====== */
 
 .header-menu-toggle,
 .header-filter-toggle {
@@ -134,9 +134,9 @@
   font-size: 1.125rem;
 }
 
-/* =========================================
+/* ======
    HEADER IDENTITY
-========================================= */
+====== */
 
 /* Brand shown between the hamburger and the welcome text, only while the
    sidebar is collapsed (see EnterpriseNavbarBase). */
@@ -206,9 +206,79 @@
   color: var(--tnxt-text-secondary);
 }
 
-/* =========================================
+/* ======
    STUDY CONTEXT HEADER (A9)
-========================================= */
+====== */
+
+.header-study-context {
+  align-items: center;
+  background: var(--tnxt-bg-alt);
+  border: 1px solid var(--tnxt-border);
+  border-radius: var(--tnxt-radius-full);
+  display: flex;
+  flex-shrink: 1;
+  gap: 6px;
+  max-width: 320px;
+  min-width: 0;
+  padding: 4px 12px;
+}
+
+.header-study-context--empty {
+  background: transparent;
+  border-style: dashed;
+}
+
+.header-study-context-label {
+  color: var(--tnxt-text-secondary);
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.header-study-context-value {
+  color: var(--tnxt-text);
+  font-size: var(--tnxt-font-size-sm);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-study-context-value--muted {
+  color: var(--tnxt-text-secondary);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.enterprise-header--role-branded .header-study-context {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.enterprise-header--role-branded .header-study-context-label {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.enterprise-header--role-branded .header-study-context-value {
+  color: var(--tnxt-text-inverse);
+}
+
+.enterprise-header--role-branded .header-study-context-value--muted {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+@media (max-width: 768px) {
+  .header-study-context {
+    max-width: 160px;
+  }
+}
+
+/* ======
+   FILTERS
+
+====== */
 
 .header-study-context {
   align-items: center;
@@ -275,7 +345,7 @@
   }
 }
 
-/* =========================================
+/* ======
    FILTERS
    At 100% browser zoom (or zoomed further out — a wide effective
    viewport) every filter control sits directly in the header row via
@@ -284,7 +354,7 @@
    (zoomed in beyond 100%, or a genuinely narrow window), the inline row
    hides and .header-filters-wrap (the "Filters" toggle + floating
    dropdown panel) takes over instead.
-========================================= */
+====== */
 
 .header-filters-inline {
   align-items: flex-end;
@@ -520,9 +590,9 @@
   z-index: 1300;
 }
 
-/* =========================================
+/* ======
    HEADER RIGHT SIDE
-========================================= */
+====== */
 
 .header-right {
   align-items: center;
@@ -604,9 +674,9 @@
   font-size: 1.125rem;
 }
 
-/* =========================================
+/* ======
    NOTIFICATION BADGE
-========================================= */
+====== */
 
 .notification-badge {
   cursor: pointer;
@@ -629,9 +699,9 @@
   width: var(--tnxt-space-lg);
 }
 
-/* =========================================
+/* ======
    PROFILE AREA
-========================================= */
+====== */
 
 .profile-section {
   align-items: center;
@@ -699,9 +769,9 @@
   line-height: 1.2;
 }
 
-/* =========================================
+/* ======
    PROFILE DROPDOWN - UPDATED
-========================================= */
+====== */
 
 .profile-dropdown {
   background: #ffffff;
@@ -775,9 +845,9 @@
   color: #b91c1c;
 }
 
-/* =========================================
+/* ======
    SEARCH
-========================================= */
+====== */
 
 .header-search-wrap {
   align-items: center;
@@ -860,9 +930,9 @@
   font-size: var(--tnxt-font-size-xs);
 }
 
-/* =========================================
+/* ======
    QUICK ACTIONS
-========================================= */
+====== */
 
 .header-quick-actions-wrap {
   position: relative;
@@ -904,11 +974,11 @@
   color: var(--tnxt-primary);
 }
 
-/* =========================================
+/* ======
    RESPONSIVE
    Note: the Filters inline row / toggle+panel swap is handled in the
    FILTERS section above via FILTERS_INLINE_BREAKPOINT, not here.
-========================================= */
+====== */
 
 /* These two breakpoints (formerly 1200px / 1300px) used to hide the
    "Home" / "Live Chat" labels and the profile name/role at completely

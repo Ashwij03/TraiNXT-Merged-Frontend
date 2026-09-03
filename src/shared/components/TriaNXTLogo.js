@@ -18,7 +18,7 @@ function TriaNXTLogo({ className = "", onClick, size = "default" }) {
             }
           : undefined
       }
-    >
+
       <img src={trianxtLogo} alt="TriaNXT" className="trianxt-logo-img" />
     </div>
   );

@@ -37,7 +37,7 @@ export default function DocumentStatusWidget({
             <div
               className="status-row"
               key={status}
-            >
+
               <div className="status-info">
                 <span
                   className="status-dot"

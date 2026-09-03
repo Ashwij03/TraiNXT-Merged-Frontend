@@ -211,3 +211,24 @@
     font-size:var(--tnxt-font-size-base);
     font-weight:600;
 }
+
+.save-btn:disabled{
+    opacity:.6;
+    cursor:not-allowed;
+}
+
+/* Staged single-file upload progress (reads the real file before Save). */
+.upload-progress-block{
+    display:grid;
+    gap:0.5rem;
+    padding:0.75rem;
+    border:1px solid #e2e8f0;
+    border-radius:var(--tnxt-radius-sm);
+    background:#f8fafc;
+}
+.upload-single-progress-label{
+    font-size:var(--tnxt-font-size-sm);
+    font-weight:600;
+    color:#334155;
+}
+

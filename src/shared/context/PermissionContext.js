@@ -36,7 +36,7 @@ export const PermissionProvider = ({
         permissions,
         hasPermission,
       }}
-    >
+
       {children}
     </PermissionContext.Provider>
   );

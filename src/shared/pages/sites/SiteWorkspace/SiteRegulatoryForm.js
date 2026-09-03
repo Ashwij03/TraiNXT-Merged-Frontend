@@ -90,7 +90,7 @@ export default function SiteRegulatoryForm({
               gap: "0.5rem",
               marginTop: "0.625rem",
             }}
-          >
+
             <input
               type="checkbox"
               name="completed"
@@ -106,14 +106,14 @@ export default function SiteRegulatoryForm({
               type="button"
               className="secondary-btn"
               onClick={onCancel}
-            >
+
               Cancel
             </button>
 
             <button
               type="submit"
               className="primary-btn"
-            >
+
               Save
             </button>
 

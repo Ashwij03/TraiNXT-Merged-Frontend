@@ -64,7 +64,7 @@ function SubjectsKpiCard({ card }) {
         <div
           className="ssw-kpi-card-icon"
           style={{ "--card-color": card.color || "#2563eb" }}
-        >
+
           <Icon aria-hidden="true" focusable="false" />
         </div>
         <div className="ssw-kpi-card-text">
@@ -530,7 +530,7 @@ function StudySubjectsWorkspace({ studyId = "", persist = false, readOnly = fals
       }
       data-study-id={studyId || ""}
       data-selected-folder={selectedFolder?.id || ""}
-    >
+
       {/* Two-column header, one row:
             LEFT  "SUBJECTS / <selected section>" wayfinder.
             RIGHT panel title + KPI cards, side by side on the same row. */}
@@ -550,7 +550,7 @@ function StudySubjectsWorkspace({ studyId = "", persist = false, readOnly = fals
                   type="button"
                   className="ssw-comments-btn"
                   onClick={() => setShowComments(true)}
-                >
+
                   <MdChatBubbleOutline size={14} aria-hidden="true" />
                   <span>Comments</span>
                 </button>
@@ -561,7 +561,7 @@ function StudySubjectsWorkspace({ studyId = "", persist = false, readOnly = fals
                   type="button"
                   className="ssw-back-btn"
                   onClick={handleBackToSubjects}
-                >
+
                   <MdArrowBack size={15} aria-hidden="true" />
                   <span>Back to Subjects</span>
                 </button>
@@ -600,7 +600,7 @@ function StudySubjectsWorkspace({ studyId = "", persist = false, readOnly = fals
           className="ssw-sidebar-toggle"
           onClick={() => setSidebarCollapsed((prev) => !prev)}
           aria-expanded={!sidebarCollapsed}
-        >
+
           {sidebarCollapsed ? (
             <MdMenuOpen size={16} aria-hidden="true" />
           ) : (
@@ -617,7 +617,7 @@ function StudySubjectsWorkspace({ studyId = "", persist = false, readOnly = fals
               ? "ssw-sidebar-wrap ssw-sidebar-wrap--collapsed"
               : "ssw-sidebar-wrap"
           }
-        >
+
           <SubjectExplorer
             tree={tree}
             selectedId={selectedId}

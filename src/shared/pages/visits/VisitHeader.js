@@ -6,7 +6,7 @@ export default function VisitHeader() {
         padding: "12px 0",
         marginBottom: "0.75rem",
       }}
-    >
+
       <select
         style={{
           width: "100%",
@@ -28,7 +28,7 @@ export default function VisitHeader() {
 
           boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
         }}
-      >
+
         <option>VISIT 2 : Screening 2</option>
       </select>
     </div>

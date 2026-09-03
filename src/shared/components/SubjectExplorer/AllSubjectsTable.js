@@ -191,7 +191,7 @@ function SubjectActionsMenu({ subject, onAction }) {
           event.stopPropagation();
           onAction?.("edit");
         }}
-      >
+
         <MdEdit size={15} />
       </button>
       <button
@@ -206,7 +206,7 @@ function SubjectActionsMenu({ subject, onAction }) {
           event.stopPropagation();
           setOpen((prev) => !prev);
         }}
-      >
+
         <MdMoreVert size={15} />
       </button>
 
@@ -219,7 +219,7 @@ function SubjectActionsMenu({ subject, onAction }) {
             aria-label={`Actions for subject ${subject.id}`}
             style={{ top: position.top, left: position.left, width: SAT_MENU_WIDTH }}
             onClick={(event) => event.stopPropagation()}
-          >
+
             <div className="sf-menu-heading" title={subject.record?.subjectId || subject.id}>
               {subject.record?.subjectId || subject.id}
             </div>
@@ -230,7 +230,7 @@ function SubjectActionsMenu({ subject, onAction }) {
                 role="menuitem"
                 className={`sf-menu-item${danger ? " is-danger" : ""}`}
                 onClick={(event) => runAction(event, key)}
-              >
+
                 <Icon size={15} aria-hidden="true" />
                 <span className="sf-menu-item-label">{label}</span>
               </button>
@@ -301,6 +301,7 @@ function AuditTrailOverlay({ subject, onClose }) {
     document.body
   );
 }
+
 
 function AllSubjectsTable({
   subjects = [],
@@ -418,7 +419,7 @@ function AllSubjectsTable({
                 setSearch("");
                 setPage(1);
               }}
-            >
+
               <MdClose size={14} />
             </button>
           )}
@@ -434,7 +435,7 @@ function AllSubjectsTable({
                 setPage(1);
               }}
               aria-label="Filter by status"
-            >
+
               <option value={STATUS_ALL}>All statuses</option>
               {statusOptions.map((option) => (
                 <option key={option} value={option}>
@@ -486,7 +487,7 @@ function AllSubjectsTable({
                   key={subject.id}
                   className="sat-row"
                   onClick={() => onOpen?.(subject)}
-                >
+
                   <td className="sat-cell-id">
                     <span className="sat-cell-id-inner">
                       <MdFolderOpen size={15} aria-hidden="true" />
@@ -636,7 +637,7 @@ function AllSubjectsTable({
                   }
                   setSubjectActionDialog(null);
                 }}
-              >
+
                 Duplicate
               </button>
             </div>

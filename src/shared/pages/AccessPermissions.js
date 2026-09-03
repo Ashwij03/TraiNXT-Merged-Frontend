@@ -1,6 +1,7 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
 import DashboardLayout from "../components/dashboard/shared/DashboardLayout";
 import DataTable from "../components/dashboard/shared/DataTable";
+import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import {
   acceptAccessRequest,
   getAccessRequestHistory,
@@ -8,12 +9,10 @@ import {
   revokeAccessRequest,
   PERMISSION_REQUESTS_UPDATED,
 } from "../services/accessPermissionService";
-import {
   approveSignupRequest,
   getPendingSignupRequests,
   rejectSignupRequest,
 } from "../services/adminService";
-import {
   getUserAccessLevel,
   setUserAccessLevel,
   ACCESS_LEVELS_UPDATED,
@@ -172,7 +171,7 @@ function AccessPermissions() {
           type="button"
           className="access-action-link"
           onClick={() => handleAccept(request.id)}
-        >
+
           Approve
         </button>
 
@@ -180,7 +179,7 @@ function AccessPermissions() {
           type="button"
           className="access-action-link revoke"
           onClick={() => handleRevoke(request.id)}
-        >
+
           Reject
         </button>
       </>
@@ -253,7 +252,7 @@ function AccessPermissions() {
             type="button"
             className="access-action-link"
             onClick={() => handleApproveSignup(user.email)}
-          >
+
             Approve
           </button>
 
@@ -261,7 +260,7 @@ function AccessPermissions() {
             type="button"
             className="access-action-link revoke"
             onClick={() => handleRejectSignup(user.email)}
-          >
+
             Reject
           </button>
         </>
@@ -282,7 +281,7 @@ function AccessPermissions() {
             type="button"
             className={`access-tab${activeTab === "signup" ? " active" : ""}`}
             onClick={() => setActiveTab("signup")}
-          >
+
             Signup Approvals
             <span className="access-tab-badge">
               {pendingSignupRequests.length}
@@ -293,7 +292,7 @@ function AccessPermissions() {
             type="button"
             className={`access-tab${activeTab === "pending" ? " active" : ""}`}
             onClick={() => setActiveTab("pending")}
-          >
+
             Pending Requests
             <span className="access-tab-badge">
               {pendingRequests.length}
@@ -304,7 +303,7 @@ function AccessPermissions() {
             type="button"
             className={`access-tab${activeTab === "history" ? " active" : ""}`}
             onClick={() => setActiveTab("history")}
-          >
+
             Request History
             <span className="access-tab-badge">
               {requestHistory.length}

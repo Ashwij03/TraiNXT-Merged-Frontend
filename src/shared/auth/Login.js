@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
 import { initializeUserSession } from "../services/sessionService";
+
 import { settleLicenseEntitlementOnLogin } from "../services/referralService";
 import {
   setPIPreviewRole,
   setAdminPreviewRole
 } from "../services/roleService";
+
 import { useAuth } from "../context/AuthContext";
 function Login() {
   const navigate = useNavigate();
@@ -124,7 +126,6 @@ localStorage.removeItem("adminPreviewRole");
     
   
 
-
     // newly added
 
 	  if (user.role === "Admin") {
@@ -196,7 +197,7 @@ localStorage.removeItem("adminPreviewRole");
               fontWeight: "500"
             }}
             onClick={() => navigate("/register")}
-          >
+
             Sign Up
           </span>
         </p>
@@ -263,7 +264,7 @@ localStorage.removeItem("adminPreviewRole");
                   !showPassword
                 )
               }
-            >
+
               {showPassword
                 ? "Hide"
                 : "Show"}
@@ -276,7 +277,7 @@ localStorage.removeItem("adminPreviewRole");
             onClick={() =>
               navigate("/forgot-password")
             }
-          >
+
             Forgot Password?
           </p>
           
@@ -286,7 +287,7 @@ localStorage.removeItem("adminPreviewRole");
                 color: "red",
                 fontSize: "0.75rem",
               }}
-            >
+
               {passwordError}
             </p>
           )}
@@ -311,7 +312,7 @@ localStorage.removeItem("adminPreviewRole");
           onClick={() => {
             // TODO: wire up Google OAuth once it's configured for this project
           }}
-        >
+
           <svg className="google-icon" viewBox="0 0 48 48" aria-hidden="true">
             <path
               fill="#FFC107"

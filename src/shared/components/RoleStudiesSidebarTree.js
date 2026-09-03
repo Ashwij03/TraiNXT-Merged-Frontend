@@ -48,7 +48,7 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
             studyBinderOpen ? "Collapse Study Binder" : "Expand Study Binder"
           }
           onClick={handleStudyBinderClick}
-        >
+
           {studyBinderOpen ? "−" : "+"}
         </button>
 
@@ -56,7 +56,7 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
           type="button"
           className="sidebar-tree-label sidebar-tree-label--strong sidebar-tree-label-button"
           onClick={handleStudyBinderClick}
-        >
+
           Study Binder
         </button>
       </div>
@@ -89,7 +89,7 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                           : `Expand ${studyName}`
                       }
                       onClick={(event) => toggleStudyNode(studyKey, event)}
-                    >
+
                       {isStudyOpen ? "−" : "+"}
                     </button>
 
@@ -99,7 +99,7 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                       onClick={(event) =>
                         handleStudyNameClick(studyKey, event)
                       }
-                    >
+
                       <span className="study-label-name">{studyName}</span>
 
                       {studyMeta && (
@@ -141,7 +141,7 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                                       event,
                                     )
                                   }
-                                >
+
                                   {isSectionOpen ? "−" : "+"}
                                 </button>
 
@@ -155,7 +155,7 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                                       event,
                                     )
                                   }
-                                >
+
                                   {displayLabel}
                                 </button>
                               </div>
@@ -193,7 +193,7 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                                               subject,
                                             )
                                           }
-                                        >
+
                                           <span className="sidebar-tree-label">
                                             {subjectKey}
                                           </span>
@@ -215,7 +215,7 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
                             onClick={() =>
                               navigateToStudySection(studyKey, sectionKey)
                             }
-                          >
+
                             <span
                               className="sidebar-tree-spacer"
                               aria-hidden="true"
@@ -242,7 +242,7 @@ function RoleStudiesSidebarTree({ onNavigate, className = "" }) {
           isCommentsRoute ? " active" : ""
         }`}
         onClick={handleStudiesCommentsClick}
-      >
+
         <span className="sidebar-tree-spacer" aria-hidden="true" />
         <span className="sidebar-tree-label">Comments</span>
       </button>

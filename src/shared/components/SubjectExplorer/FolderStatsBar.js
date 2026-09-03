@@ -80,7 +80,7 @@ function FolderStatsBar({ stats, scope = "workspace", label = "", loading = fals
           ? `Document statistics for ${label}`
           : "Workspace document statistics"
       }
-    >
+
       {tiles.map(({ key, Icon, tone, value, label: tileLabel, caption, bar }) => (
         <article
           key={key}
@@ -91,7 +91,7 @@ function FolderStatsBar({ stats, scope = "workspace", label = "", loading = fals
              than reading the value and label as two unrelated fragments. */
           aria-label={loading ? `${tileLabel}, loading` : `${value} ${tileLabel}`}
           aria-busy={loading ? "true" : undefined}
-        >
+
           <span className="sf-stat-icon" aria-hidden="true">
             <Icon size={17} />
           </span>
@@ -110,7 +110,7 @@ function FolderStatsBar({ stats, scope = "workspace", label = "", loading = fals
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-label="Storage used"
-              >
+
                 <span
                   className="sf-stat-bar-fill"
                   style={{ width: `${Math.min(100, bar)}%` }}

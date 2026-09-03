@@ -60,7 +60,7 @@ export default function PermissionsModal({ file, onClose }) {
         role="dialog"
         aria-label="File permissions"
         style={{ maxWidth: "32rem" }}
-      >
+
         <div className="sxm-header">
           <h3>Permissions — {file?.name}</h3>
           <button type="button" className="sxm-close" onClick={onClose}>✕</button>
@@ -104,7 +104,7 @@ export default function PermissionsModal({ file, onClose }) {
             type="button"
             className="sxm-btn sxm-btn--primary"
             onClick={onClose}
-          >
+
             Done
           </button>
         </div>

@@ -80,7 +80,7 @@ function QuickActionsWidget({
             type="button"
             className="quick-actions-widget-item"
             onClick={action.onClick}
-          >
+
             <span className="quick-actions-widget-icon">{action.icon}</span>
             <span className="quick-actions-widget-label">{action.label}</span>
           </button>

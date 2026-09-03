@@ -35,9 +35,15 @@ import FileService from "./fileService";
 import FolderTreeService from "./folderTreeService";
 import FolderStatsService from "./folderStatsService";
 import FileFilterService, { DEFAULT_FILTERS } from "./fileFilterService";
-import { formatFileSize, formatDateTime } from "./fileService";
+import {
+  formatFileSize,
+  formatDateTime,
+  readFileWithProgress,
+} from "./fileService";
 import { getExtension } from "./fileTypes";
 import { useAuth } from "../../context/AuthContext";
+import { hasPermission } from "../../services/roleService";
+import PERMISSIONS from "../../constants/permissions";
 import { downloadCsvReport } from "../../utils/exportReport";
 import "./SubjectFiles.css";
 import "./DocumentExperience.css";
@@ -91,6 +97,10 @@ function SubjectFileManager({
   const { user } = useAuth();
   const currentUser = user?.displayName || user?.name || "Unknown user";
 
+  /* Document approval is gated on the existing admin permission system:
+     only a user holding APPROVE_REGULATORY_DOCS sees/executes Approve. */
+  const canApproveDocs = hasPermission(PERMISSIONS.APPROVE_REGULATORY_DOCS);
+
   /* ---------- persisted stores ---------- */
   const [store, setStore] = useState(() => FileService.loadFileStore(studyId));
   /* Bug 4 fix: receive the tree from the parent (useSubjectWorkspace) via
@@ -118,6 +128,12 @@ function SubjectFileManager({
   /* ---------- interaction state ---------- */
   const [uploading, setUploading] = useState(false);
   const [feedback, setFeedback] = useState(null); // { tone, message, details? }
+  /* Staged single-file upload (parity with the shared document managers):
+     the chosen file is read for real (progress 0-100%), then an explicit
+     Save persists it through FileService. Multi-file picks skip the stage
+     and keep the existing direct bulk upload behaviour. */
+  const [stagedUpload, setStagedUpload] = useState(null); // { file, progress }
+  const [savingStaged, setSavingStaged] = useState(false);
   const [dialog, setDialog] = useState(null); // { mode, file }
   const [submitError, setSubmitError] = useState("");
   /* Phase 6: create-subfolder from the empty state. */
@@ -197,6 +213,8 @@ function SubjectFileManager({
     setFeedback(null);
     setDialog(null);
     setSubmitError("");
+    setStagedUpload(null);
+    setSavingStaged(false);
     // Phase 6: filters are per-folder too - carrying a PDF filter into a
     // folder with no PDFs would look like an empty folder.
     setFilters(DEFAULT_FILTERS);
@@ -375,7 +393,125 @@ function SubjectFileManager({
      HANDLERS
   ============================================================== */
 
-  /** Requirement 1 + 8: upload with per-file validation. */
+  /** Requirement 1 + 8: persist files through FileService + report feedback. */
+  const persistFiles = useCallback(
+    async (filesArray) => {
+      const result = await FileService.uploadFiles(
+        studyId,
+        store,
+        folderId,
+        filesArray,
+        currentUser,
+      );
+
+      if (!result.ok) {
+        setFeedback({
+          tone: "error",
+          message: result.error,
+          details: result.rejected,
+        });
+        return result;
+      }
+
+      setStore(result.store);
+
+      const count = result.added.length;
+      const base = `${count} ${count === 1 ? "file" : "files"} uploaded to "${folderName}".`;
+
+      setFeedback({
+        tone: result.rejected.length > 0 ? "warning" : "success",
+        message:
+          result.rejected.length > 0
+            ? `${base} ${result.rejected.length} ${
+                result.rejected.length === 1 ? "file was" : "files were"
+              } skipped.`
+            : result.warning
+              ? `${base} ${result.warning}`
+              : base,
+        details: result.rejected,
+      });
+
+      return result;
+    },
+    [studyId, store, folderId, folderName, currentUser],
+  );
+
+  /**
+   * Stage a single file: validate immediately, then read the real bytes off
+   * disk (progress 0-99%). Progress reaches 100% only after the whole file
+   * has been read, at which point the Save action appears. Nothing is
+   * persisted until Save is clicked.
+   */
+  const startStagedUpload = useCallback(
+    async (file) => {
+      if (savingStaged) return;
+
+      const candidate = FileService.validateUploadCandidate(file);
+      if (!candidate.valid) {
+        setFeedback({ tone: "error", message: candidate.error });
+        return;
+      }
+
+      const nameCheck = FileService.validateFileName(store, folderId, file.name);
+      if (!nameCheck.valid) {
+        setFeedback({ tone: "error", message: nameCheck.error });
+        return;
+      }
+
+      setStagedUpload({ file, progress: 0 });
+
+      try {
+        await readFileWithProgress(file, (progress) => {
+          setStagedUpload((current) =>
+            current && current.file === file
+              ? { ...current, progress }
+              : current,
+          );
+        });
+      } catch (error) {
+        setStagedUpload(null);
+        setFeedback({
+          tone: "error",
+          message:
+            (error && error.message) || "The file could not be read.",
+        });
+        return;
+      }
+
+      // Whole file read -> real 100%. The Save button appears only now.
+      setStagedUpload((current) =>
+        current && current.file === file
+          ? { ...current, progress: 100 }
+          : current,
+      );
+    },
+    [store, folderId, savingStaged],
+  );
+
+  const handleCancelStaged = useCallback(() => {
+    if (savingStaged) return;
+    setStagedUpload(null);
+  }, [savingStaged]);
+
+  const handleSaveStaged = useCallback(async () => {
+    if (!stagedUpload || stagedUpload.progress < 100 || savingStaged) return;
+
+    setSavingStaged(true);
+    try {
+      const result = await persistFiles([stagedUpload.file]);
+      if (result?.ok) setStagedUpload(null);
+    } finally {
+      setSavingStaged(false);
+    }
+  }, [stagedUpload, savingStaged, persistFiles]);
+
+  /**
+   * Requirement 1 + 8: upload entry point.
+   *
+   * A single selected file is staged first (real progress to 100%, then an
+   * explicit Save) for parity with the shared document managers' upload UX.
+   * Multiple files keep the existing direct bulk upload behaviour.
+   */
   const handleUpload = useCallback(
     async (fileList) => {
       if (readOnly) return;
@@ -387,48 +523,64 @@ function SubjectFileManager({
         return;
       }
 
+      const filesArray = Array.from(fileList || []);
+      if (filesArray.length === 0) return;
+
+      if (filesArray.length === 1 && filesArray[0]) {
+        await startStagedUpload(filesArray[0]);
+        return;
+      }
+
       setUploading(true);
-
       try {
-        const result = await FileService.uploadFiles(
-          studyId,
-          store,
-          folderId,
-          fileList,
-          currentUser,
-        );
-
-        if (!result.ok) {
-          setFeedback({
-            tone: "error",
-            message: result.error,
-            details: result.rejected,
-          });
-          return;
-        }
-
-        setStore(result.store);
-
-        const count = result.added.length;
-        const base = `${count} ${count === 1 ? "file" : "files"} uploaded to "${folderName}".`;
-
-        setFeedback({
-          tone: result.rejected.length > 0 ? "warning" : "success",
-          message:
-            result.rejected.length > 0
-              ? `${base} ${result.rejected.length} ${
-                  result.rejected.length === 1 ? "file was" : "files were"
-                } skipped.`
-              : result.warning
-                ? `${base} ${result.warning}`
-                : base,
-          details: result.rejected,
-        });
+        await persistFiles(filesArray);
       } finally {
         setUploading(false);
       }
     },
-    [studyId, store, folderId, folderName, readOnly, currentUser],
+    [readOnly, folderId, persistFiles, startStagedUpload],
+  );
+
+  /**
+   * Approve a Pending Review file. Gated on the APPROVE_REGULATORY_DOCS
+   * permission and on the file actually being in Pending Review - both are
+   * enforced here and again in FileService.approveFile.
+   */
+  const handleApprove = useCallback(
+    (file) => {
+      if (!file || !canApproveDocs) return;
+
+      if (String(file.status || "").trim().toLowerCase() !== "pending review") {
+        return;
+      }
+
+      const result = FileService.approveFile(
+        studyId,
+        store,
+        folderId,
+        file.id,
+        currentUser,
+      );
+
+      if (!result.ok) {
+        setFeedback({ tone: "error", message: result.error });
+        return;
+      }
+
+      setStore(result.store);
+      setFeedback({
+        tone: "success",
+        message: `"${result.file.name}" approved.`,
+      });
+
+      // Keep the open details panel in sync with the approved record.
+      setDialog((current) =>
+        current?.mode === "preview" && current.file?.id === file.id
+          ? { ...current, file: result.file }
+          : current,
+      );
+    },
+    [canApproveDocs, studyId, store, folderId, currentUser],
   );
 
   /**
@@ -560,6 +712,13 @@ function SubjectFileManager({
         return;
       }
 
+      // Document approval (Pending Review -> Approved) is permission-gated
+      // inside handleApprove / FileService.approveFile.
+      if (action === "approve") {
+        handleApprove(file);
+        return;
+      }
+
       // Root-cause enforcement (not just hiding the menu item): a file
       // inside a locked system folder (ICF) can never be renamed or
       // deleted, regardless of how the action reaches this handler.
@@ -606,7 +765,16 @@ function SubjectFileManager({
         return;
       }
     },
-    [handleDownload, folderNode, readOnly, studyId, store, folderId, currentUser],
+    [
+      handleDownload,
+      handleApprove,
+      folderNode,
+      readOnly,
+      studyId,
+      store,
+      folderId,
+      currentUser,
+    ],
   );
 
   const closeDialog = useCallback(() => {
@@ -721,7 +889,7 @@ function SubjectFileManager({
               onClick={handleBackOneLevel}
               title={`Back to "${parentNode.name}"`}
               aria-label={`Back to "${parentNode.name}"`}
-            >
+
               <MdArrowBack size={16} aria-hidden="true" />
             </button>
           )}
@@ -761,14 +929,14 @@ function SubjectFileManager({
             aria-expanded={showFilters}
             aria-controls="sf-filterbar"
             title="Advanced filters"
-          >
+
             <MdTune size={16} aria-hidden="true" />
             <span>Filters</span>
             {activeFilterCount > 0 && (
               <span
                 className="sf-filter-badge"
                 aria-label={`${activeFilterCount} active`}
-              >
+
                 {activeFilterCount}
               </span>
             )}
@@ -778,13 +946,66 @@ function SubjectFileManager({
         </div>
       </header>
 
+      {/* ================= STAGED SINGLE-FILE UPLOAD =================
+          Parity with the shared document managers: the chosen file is read
+          for real (progress to 100%), then an explicit Save persists it.
+          The Save action only renders once the whole file was read. */}
+      {stagedUpload && (
+        <div className="sf-upload-stage" role="status" aria-live="polite">
+          <div className="sf-upload-stage-head">
+            <span
+              className="sf-upload-stage-name"
+              title={stagedUpload.file?.name || "Uploading…"}
+            >
+              {stagedUpload.file?.name || "Uploading…"}
+            </span>
+            <span className="sf-upload-stage-pct">
+              {stagedUpload.progress}%
+            </span>
+          </div>
+
+          <div className="sf-upload-stage-track" aria-hidden="true">
+            <div
+              className="sf-upload-stage-fill"
+              style={{ width: `${stagedUpload.progress}%` }}
+            />
+          </div>
+
+          <div className="sf-upload-stage-actions">
+            {stagedUpload.progress >= 100 ? (
+              <button
+                type="button"
+                className="sf-btn sf-btn--primary"
+                onClick={handleSaveStaged}
+                disabled={savingStaged}
+              >
+                {savingStaged ? "Saving…" : "Save"}
+              </button>
+            ) : (
+              <span className="sf-upload-stage-status">
+                Uploading… {stagedUpload.progress}%
+              </span>
+            )}
+
+            <button
+              type="button"
+              className="sf-btn sf-btn--ghost"
+              onClick={handleCancelStaged}
+              disabled={savingStaged}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ================= FEEDBACK / VALIDATION ================= */}
       {feedback && (
         <div
           className={`sf-alert sf-alert--${feedback.tone}`}
           role="status"
           aria-live="polite"
-        >
+
           <FeedbackIcon
             size={16}
             className="sf-alert-icon"
@@ -813,7 +1034,7 @@ function SubjectFileManager({
             className="sf-alert-close"
             aria-label="Dismiss message"
             onClick={dismissFeedback}
-          >
+
             <MdClose size={15} />
           </button>
         </div>
@@ -830,7 +1051,7 @@ function SubjectFileManager({
           visible in the left pane the entire time. */}
       <div
         className={`sf-body${dialog?.mode === "preview" ? " sf-body--split" : ""}`}
-      >
+
         <div className="sf-body-list">
           {/* ================= TOOLBAR: SEARCH + SORT ================= */}
           {folderFiles.length > 0 && (
@@ -855,7 +1076,7 @@ function SubjectFileManager({
                     className="sf-search-clear"
                     aria-label="Clear file search"
                     onClick={clearSearch}
-                  >
+
                     <MdClose size={14} />
                   </button>
                 )}
@@ -872,7 +1093,7 @@ function SubjectFileManager({
                       setSortKey(key);
                       setSortDir(DEFAULT_DIRECTION[key] || "asc");
                     }}
-                  >
+
                     {SORT_OPTIONS.map(({ key, label }) => (
                       <option key={key} value={key}>
                         {label}
@@ -889,7 +1110,7 @@ function SubjectFileManager({
                   aria-label={`Sort direction: ${
                     sortDir === "asc" ? "ascending" : "descending"
                   }`}
-                >
+
                   <MdSwapVert size={16} aria-hidden="true" />
                   <span>{sortDir === "asc" ? "Asc" : "Desc"}</span>
                 </button>
@@ -898,7 +1119,7 @@ function SubjectFileManager({
                   className="sf-result-count"
                   role="status"
                   aria-live="polite"
-                >
+
                   {visibleFiles.length} of {folderFiles.length}
                 </span>
 
@@ -910,7 +1131,7 @@ function SubjectFileManager({
                   className="sf-btn sf-btn--ghost sf-export-btn"
                   onClick={handleExportFiles}
                   title="Export visible files to CSV"
-                >
+
                   <MdFileDownload size={16} aria-hidden="true" />
                   <span>Export</span>
                 </button>
@@ -968,7 +1189,7 @@ function SubjectFileManager({
                         onSelectFolder(child);
                       }
                     }}
-                  >
+
                     <span className="sf-child-folder-icon">
                       <MdFolderOpen size={18} aria-hidden="true" />
                     </span>
@@ -1008,6 +1229,7 @@ function SubjectFileManager({
             uploading={uploading}
             canUpload={Boolean(folderId) && !readOnly}
             locked={readOnly || Boolean(folderNode?.locked)}
+            canApprove={canApproveDocs}
           />
 
           {/* Task 1.7/1.9: pagination footer - rows per page, prev/next,
@@ -1046,6 +1268,8 @@ function SubjectFileManager({
                 if (readOnly || folderNode?.locked) return;
                 setDialog({ mode: "delete", file: dialog.file });
               }}
+              canApprove={canApproveDocs}
+              onApprove={() => handleApprove(dialog.file)}
               onClose={closeDialog}
             />
           </div>

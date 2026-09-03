@@ -1209,7 +1209,7 @@ function ClinicalSitesMap({ sites = [] }) {
           justifyContent: "center",
           color: "#666",
         }}
-      >
+
         No countries available.
       </div>
     );

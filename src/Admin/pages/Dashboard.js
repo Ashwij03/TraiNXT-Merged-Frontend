@@ -15,7 +15,6 @@ import {
   getSubjectsForAnalytics
 } from "../../shared/services/adminService";
 import { useComments } from "../../shared/comments/CommentsContext";
-import {
   ALL_HEADER_FILTER_KEYS,
   HEADER_FILTERS_EVENT,
   INSTITUTION_FILTER_EVENT,

@@ -15,14 +15,15 @@ import {
   MdCardGiftcard,
   MdCreditCard,
 } from "react-icons/md";
+import "../../shared/components/dashboard/shared/DashboardLayout.css";
 import "../styles/AppLayout.css";
+import "./AppLayout.js";
+import LiveChatFab from "../../shared/components/LiveChatFab";
+import RoleStudiesSidebarTree from "../../shared/components/RoleStudiesSidebarTree";
 import SponsorNavbar from "../components/SponsorNavbar";
 import TriaNXTLogo from "../../shared/components/TriaNXTLogo";
-import RoleStudiesSidebarTree from "../../shared/components/RoleStudiesSidebarTree";
-import { useRoleStudiesSidebar } from "../../shared/hooks/useRoleStudiesSidebar";
 import { useEnterpriseDashboardShell } from "../../shared/hooks/useEnterpriseDashboardShell";
-import LiveChatFab from "../../shared/components/LiveChatFab";
-import "../../shared/components/dashboard/shared/DashboardLayout.css";
+import { useRoleStudiesSidebar } from "../../shared/hooks/useRoleStudiesSidebar";
 
 const MENU_ITEMS = [
   { name: "Dashboard", path: "/sponsor-dashboard", icon: MdDashboard },
@@ -96,7 +97,7 @@ const AppLayout = ({ children }) => {
           className={`sidebar sponsor-enterprise-sidebar${
             collapsed ? " is-collapsed" : ""
           }`}
-        >
+
           {/* Kept in the DOM (just made invisible) while collapsed, so its
               exact same box/height keeps reserving space and the icons
               below don't jump up into the header row. The same brand is
@@ -106,7 +107,7 @@ const AppLayout = ({ children }) => {
             className={`sidebar-logo${
               collapsed ? " sidebar-logo--hidden" : ""
             }`}
-          >
+
             <TriaNXTLogo
               size="sidebar"
               onClick={() => handleNav("/sponsor-dashboard")}
@@ -121,7 +122,7 @@ const AppLayout = ({ children }) => {
               onClick={() => handleNav("/sponsor-dashboard")}
               role="button"
               tabIndex={0}
-            >
+
               <MdDashboard className="sidebar-icon" size={20} />
               {!collapsed && <span>Dashboard</span>}
             </div>
@@ -136,7 +137,7 @@ const AppLayout = ({ children }) => {
               }}
               role="button"
               tabIndex={0}
-            >
+
               <MdMenuBook className="sidebar-icon" size={20} />
               {!collapsed && <span>Studies ({studyCount})</span>}
             </div>
@@ -160,7 +161,7 @@ const AppLayout = ({ children }) => {
                   onClick={() => handleNav(item.path)}
                   role="button"
                   tabIndex={0}
-                >
+
                   <Icon className="sidebar-icon" size={20} />
                   {!collapsed && <span>{item.name}</span>}
                 </div>

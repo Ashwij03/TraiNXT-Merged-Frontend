@@ -25,7 +25,7 @@ function Referral() {
         <section
           id="settings-referral"
           className="settings-page-section settings-page-section-active"
-        >
+
           <div className="settings-section-heading">
             <h2>Referral Program</h2>
             <p>

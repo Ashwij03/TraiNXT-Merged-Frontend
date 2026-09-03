@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  FiCheck,
   FiDownload,
   FiEdit2,
   FiEye,
@@ -10,8 +11,8 @@ import {
   FiMessageSquare,
   FiTrash2,
   FiUpload,
+  FiX,
 } from "react-icons/fi";
-import {
   FOLDER_TREE_EVENT,
   collectFolderSubtree,
   createFolder,
@@ -24,7 +25,6 @@ import {
   renameFolder,
   saveDocumentsForFolder,
 } from "../services/folderService";
-import {
   buildFolderZip,
   parseUploadedFolderFiles,
   triggerBlobDownload,
@@ -32,7 +32,6 @@ import {
 } from "../utils/folderZipUtils";
 import FolderOptionsMenu from "./FolderOptionsMenu";
 import FolderTemplateModal from "./FolderTemplateModal";
-import {
   addCommentRecord,
   canResolveComments,
   canWriteComments,
@@ -43,13 +42,14 @@ import {
 import { getStudyByCode } from "../services/studyService";
 import { VISIT_STAGES } from "../services/visitScheduleService";
 import { notifyDocumentAdded } from "../services/notificationService";
-import {
-  getCurrentUser,
+import { getCurrentUser,
   getAssignedSite,
   getEffectiveRole,
+  hasPermission,
   ROLE_LABELS,
 } from "../services/roleService";
 import { formatDateTimeUTC } from "../utils/dateTime";
+import PERMISSIONS from "../constants/permissions";
 import "./DocumentFolderManager.css";
 import FolderColumnView from "./FolderColumnView";
 
@@ -161,14 +161,14 @@ function FolderTreeNode({
           isICFFolder(node) ? " is-icf" : ""
         }`}
         style={{ paddingLeft: `${8 + depth * 14}px` }}
-      >
+
         {hasChildren ? (
           <button
             type="button"
             className="dfm-folder-toggle"
             onClick={() => onToggle(node.id)}
             aria-label={isExpanded ? "Collapse folder" : "Expand folder"}
-          >
+
             {isExpanded ? "▾" : "▸"}
           </button>
         ) : (
@@ -180,7 +180,7 @@ function FolderTreeNode({
             type="button"
             className="dfm-folder-label"
             onClick={() => onSelect(node.id)}
-          >
+
             <FiFolder className="dfm-folder-icon" />
             <span>{node.name}</span>
             {isICFFolder(node) && <FiLock className="dfm-icf-lock" />}
@@ -336,7 +336,7 @@ function DocumentCommentsPanel({
             <div className="dfm-comment-meta">
               <span
                 className={`dfm-status dfm-status--${comment.status?.toLowerCase()}`}
-              >
+
                 {comment.status}
               </span>
 
@@ -499,6 +499,9 @@ function DocumentFolderManager({
   const [dragOverEmpty, setDragOverEmpty] = useState(false);
   const [viewDoc, setViewDoc] = useState(null);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
+
+  // Task 1 — Document review/approval
+  const canApproveDocs = useMemo(() => hasPermission(PERMISSIONS.APPROVE_REGULATORY_DOCS), []);
 
   selectedFolderIdRef.current = selectedFolderId;
 
@@ -872,7 +875,7 @@ function DocumentFolderManager({
         size: Number(file.size) || 0,
         uploadedAt: new Date(now + index).toISOString(),
         uploadedBy: uploader,
-        status: "Submitted",
+        status: "Pending Review",
         documentType: "General",
         studyCode: studyCode || "",
         subjectId: subjectId || "",
@@ -1045,7 +1048,7 @@ function DocumentFolderManager({
       size: Number(pendingUpload.size) || 0,
       uploadedAt: new Date().toISOString(),
       uploadedBy: localStorage.getItem("currentUserName") || "Current User",
-      status: pendingUpload.status || "Submitted",
+      status: "Pending Review",
       documentType: pendingUpload.documentType || "General",
       studyCode: studyCode || "",
       subjectId: subjectId || "",
@@ -1186,6 +1189,33 @@ function DocumentFolderManager({
     link.click();
   };
 
+  // Task 1 — Document approval handler
+  const handleApproveDoc = (docId) => {
+    if (!canApproveDocs) return;
+
+    const doc = documents.find((d) => d.id === docId);
+    if (!doc) return;
+
+    if (
+      window.confirm(
+        `Approve "${doc.name}"? This will change its status to Approved.`
+      )
+    ) {
+      persistDocuments(
+        documents.map((d) =>
+          d.id === docId
+            ? {
+                ...d,
+                status: "Approved",
+                approvedBy: localStorage.getItem("currentUserName") || "Current User",
+                approvedAt: new Date().toISOString(),
+              }
+            : d
+        )
+      );
+    }
+  };
+
   const handleDragStart = (index) => {
     setDragDocIndex(index);
   };
@@ -1222,7 +1252,7 @@ function DocumentFolderManager({
   };
 
   return (
-    <div className={`dfm-container dfm-layout-${viewLayout}`}>
+    <div className={`dfm-container dfm-layout-${viewLayout}${viewDoc ? " dfm-with-viewer" : ""}`}>
       {!isExplorerLayout && !isColumnLayout && (
         <aside className="dfm-sidebar">
           <div className="dfm-sidebar-header">
@@ -1278,12 +1308,12 @@ function DocumentFolderManager({
             className="dfm-view-switcher"
             role="tablist"
             aria-label="Folder view"
-          >
+
             <button
               type="button"
               className={viewLayout === "vertical" ? "active" : ""}
               onClick={() => setViewLayout("vertical")}
-            >
+
               Tree View
             </button>
 
@@ -1291,7 +1321,7 @@ function DocumentFolderManager({
               type="button"
               className={viewLayout === "explorer" ? "active" : ""}
               onClick={() => setViewLayout("explorer")}
-            >
+
               Explorer View
             </button>
 
@@ -1299,7 +1329,7 @@ function DocumentFolderManager({
               type="button"
               className={viewLayout === "column" ? "active" : ""}
               onClick={() => setViewLayout("column")}
-            >
+
               Column View
             </button>
           </div>
@@ -1309,7 +1339,7 @@ function DocumentFolderManager({
               type="button"
               className="dfm-template-btn"
               onClick={() => setShowTemplateModal(true)}
-            >
+
               Folder Templates
             </button>
           )}
@@ -1323,7 +1353,7 @@ function DocumentFolderManager({
                   type="button"
                   className="dfm-back-btn"
                   onClick={handleBackToSubjects}
-                >
+
                   ← Back to Subjects
                 </button>
               )}
@@ -1333,7 +1363,7 @@ function DocumentFolderManager({
                   type="button"
                   className="dfm-back-btn"
                   onClick={goUpOneLevel}
-                >
+
                   ← Back
                 </button>
               )}
@@ -1351,7 +1381,7 @@ function DocumentFolderManager({
                           : "dfm-breadcrumb-link"
                       }
                       onClick={() => goToBreadcrumbIndex(index)}
-                    >
+
                       {node.name}
                     </button>
                   </span>
@@ -1412,7 +1442,7 @@ function DocumentFolderManager({
                 type="button"
                 className="dfm-upload-btn"
                 onClick={() => fileInputRef.current?.click()}
-              >
+
                 <FiUpload />
                 Upload Files
               </button>
@@ -1422,7 +1452,7 @@ function DocumentFolderManager({
                   type="button"
                   className="dfm-add-folder-btn"
                   onClick={() => handleAddFolder()}
-                >
+
                   <FiFolderPlus />
                   Add Folder
                 </button>
@@ -1433,7 +1463,7 @@ function DocumentFolderManager({
                   type="button"
                   className="dfm-complete-visit-btn"
                   onClick={() => onVisitStageComplete(matchedVisitStage)}
-                >
+
                   Complete {matchedVisitStage}
                 </button>
               )}
@@ -1459,7 +1489,7 @@ function DocumentFolderManager({
                 type="button"
                 className="dfm-save-btn"
                 onClick={handleSaveUpload}
-              >
+
                 Save
               </button>
             )}
@@ -1478,12 +1508,12 @@ function DocumentFolderManager({
                   className={`dfm-explorer-folder-wrap${
                     isICFFolder(folder) ? " is-icf" : ""
                   }`}
-                >
+
                   <button
                     type="button"
                     className="dfm-explorer-folder"
                     onClick={() => enterFolder(folder.id)}
-                  >
+
                     <FiFolder className="dfm-explorer-folder-icon" />
                     <span>{folder.name}</span>
 
@@ -1534,7 +1564,7 @@ function DocumentFolderManager({
               onDragStart={() => handleDragStart(index)}
               onDragOver={(event) => event.preventDefault()}
               onDrop={() => handleDrop(index)}
-            >
+
               <FiFile className="dfm-doc-icon" />
 
               <div className="dfm-doc-info">
@@ -1544,6 +1574,12 @@ function DocumentFolderManager({
                   PDF • {formatSize(document.size)} •{" "}
                   {formatDateTimeUTC(document.uploadedAt)}
                 </small>
+
+                {document.status && (
+                  <span className={`dfm-doc-status dfm-status--${(document.status || "").toLowerCase().replace(/\s+/g, "-")}`}>
+                    {document.status}
+                  </span>
+                )}
               </div>
 
               <div className="dfm-doc-actions">
@@ -1551,7 +1587,7 @@ function DocumentFolderManager({
                   type="button"
                   title="View"
                   onClick={() => setViewDoc(document)}
-                >
+
                   <FiEye />
                 </button>
 
@@ -1559,7 +1595,7 @@ function DocumentFolderManager({
                   type="button"
                   title="Download"
                   onClick={() => handleDownloadDoc(document)}
-                >
+
                   <FiDownload />
                 </button>
 
@@ -1569,7 +1605,7 @@ function DocumentFolderManager({
                       type="button"
                       title="Rename"
                       onClick={() => handleRenameDoc(document.id)}
-                    >
+
                       <FiEdit2 />
                     </button>
 
@@ -1577,7 +1613,7 @@ function DocumentFolderManager({
                       type="button"
                       title="Replace"
                       onClick={() => handleReplaceDoc(document.id)}
-                    >
+
                       <FiUpload />
                     </button>
 
@@ -1585,7 +1621,7 @@ function DocumentFolderManager({
                       type="button"
                       title="Delete"
                       onClick={() => handleDeleteDoc(document.id)}
-                    >
+
                       <FiTrash2 />
                     </button>
                   </>
@@ -1621,7 +1657,7 @@ function DocumentFolderManager({
                     : event.dataTransfer.files
                 );
               }}
-            >
+
               <FiUpload className="dfm-drop-zone-icon" />
               <p className="dfm-drop-zone-title">
                 Drag and drop PDF files here
@@ -1631,22 +1667,85 @@ function DocumentFolderManager({
           ) : (
             <p className="dfm-empty">No documents in this folder.</p>
           ))}
-      </section>
-
+      </section>      {/* Right-side Document Viewer panel */}
       {viewDoc && (
-        <div className="dfm-viewer-overlay" onClick={() => setViewDoc(null)}>
-          <div
-            className="dfm-viewer-modal"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="dfm-viewer-header">
-              <h4>{viewDoc.name}</h4>
+        <section className="dfm-viewer-panel">
+          <div className="dfm-viewer-panel-header">
+            <h4>{viewDoc.name}</h4>
 
-              <button type="button" onClick={() => setViewDoc(null)}>
-                Close
+            <div className="dfm-viewer-panel-actions">
+              <span className={`dfm-doc-status dfm-status--${(viewDoc.status || "").toLowerCase().replace(/\s+/g, "-")}`}>
+                {viewDoc.status || "Unknown"}
+              </span>
+
+              {canApproveDocs && viewDoc.status === "Pending Review" && (
+                <button
+                  type="button"
+                  className="dfm-approve-btn"
+                  onClick={() => handleApproveDoc(viewDoc.id)}
+                  title="Approve document"
+                >
+                  <FiCheck /> Approve
+                </button>
+              )}
+
+              <button type="button" className="dfm-viewer-close" onClick={() => setViewDoc(null)} title="Close preview">
+                <FiX />
               </button>
             </div>
+          </div>
 
+          <div className="dfm-viewer-panel-meta">
+            <div className="dfm-viewer-panel-grid">
+              <div>
+                <label>Document Name</label>
+                <span>{viewDoc.name}</span>
+              </div>
+
+              <div>
+                <label>Type</label>
+                <span>{viewDoc.documentType || "General"}</span>
+              </div>
+
+              <div>
+                <label>Status</label>
+                <span className={`dfm-doc-status dfm-status--${(viewDoc.status || "").toLowerCase().replace(/\s+/g, "-")}`}>
+                  {viewDoc.status || "Unknown"}
+                </span>
+              </div>
+
+              <div>
+                <label>Uploaded By</label>
+                <span>{viewDoc.uploadedBy || "—"}</span>
+              </div>
+
+              <div>
+                <label>Date</label>
+                <span>{viewDoc.uploadedAt ? new Date(viewDoc.uploadedAt).toLocaleDateString() : "—"}</span>
+              </div>
+
+              <div>
+                <label>Size</label>
+                <span>{formatSize(viewDoc.size)}</span>
+              </div>
+
+              {viewDoc.approvedBy && (
+                <div>
+                  <label>Approved By</label>
+                  <span>{viewDoc.approvedBy}</span>
+                </div>
+              )}
+
+              {viewDoc.approvedAt && (
+                <div>
+                  <label>Approved Date</label>
+                  <span>{new Date(viewDoc.approvedAt).toLocaleDateString()}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="dfm-viewer-panel-preview">
             {(() => {
               const previewUrl =
                 viewDoc.fileUrl || sessionFileUrlsRef.current.get(viewDoc.id);
@@ -1658,24 +1757,23 @@ function DocumentFolderManager({
                   className="dfm-viewer-frame"
                 />
               ) : (
-                <p>
-                  Preview unavailable. This document's file data isn't kept
-                  in browser storage (only its metadata is), and it wasn't
-                  uploaded/replaced in this browser session, so there's
-                  nothing left to render.
-                </p>
+                <div className="dfm-viewer-placeholder">
+                  <span className="dfm-pdf-icon">PDF</span>
+                  <h4>PDF Preview</h4>
+                  <p>Preview unavailable. Only document metadata is stored.</p>
+                </div>
               );
             })()}
-
-            <DocumentCommentsPanel
-              documentId={viewDoc.id}
-              documentName={viewDoc.name}
-              studyCode={studyCode || contextKey.split("::")[0]}
-              subjectId={subjectId || contextKey.split("::")[1]}
-              sectionId={sectionId}
-            />
           </div>
-        </div>
+
+          <DocumentCommentsPanel
+            documentId={viewDoc.id}
+            documentName={viewDoc.name}
+            studyCode={studyCode || contextKey.split("::")[0]}
+            subjectId={subjectId || contextKey.split("::")[1]}
+            sectionId={sectionId}
+          />
+        </section>
       )}
 
       {showTemplateModal && (

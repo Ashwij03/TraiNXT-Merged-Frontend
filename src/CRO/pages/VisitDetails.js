@@ -4,10 +4,10 @@ import { useParams } from "react-router-dom";
 import VisitHeader from "./VisitHeader";
 import VisitProcedures from "./VisitProcedures";
 
-import { useComments } from "../../shared/comments/CommentsContext";
 import CommentModal from "../../shared/comments/CommentModal";
+import { useComments } from "../../shared/comments/CommentsContext";
 
-import "../styles/VisitDetails.css";
+import "./VisitDetails.js";
 
 export default function VisitDetails() {
 
@@ -57,7 +57,7 @@ export default function VisitDetails() {
           <button
             className="procedure-plus"
             onClick={() => setShowModal(true)}
-          >
+
             +
           </button>
 
@@ -68,7 +68,6 @@ export default function VisitDetails() {
           <div
             key={c.id}
             className="comment-inline"
-          >
 
             <div className="avatar">
 

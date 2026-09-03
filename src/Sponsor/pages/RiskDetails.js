@@ -16,7 +16,6 @@ const [riskStatus, setRiskStatus] = useState(
   docData?.status || "Open"
 );
 
-
   const risk = location.state;
 
   if (!risk) {
@@ -86,7 +85,7 @@ const handleResolveRisk = () => {
         <button
           className="back-btn"
           onClick={() => navigate(-1)}
-        >
+
           ← Back
         </button>
 
@@ -336,7 +335,7 @@ const handleResolveRisk = () => {
             <button
   onClick={handleResolveRisk}
   disabled={riskStatus === "Resolved"}
->
+
   {riskStatus === "Resolved"
     ? "Risk Resolved"
     : "Resolve Risk"}

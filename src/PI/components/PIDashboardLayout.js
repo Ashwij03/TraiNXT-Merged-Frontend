@@ -1,20 +1,27 @@
-import { useEnterpriseDashboardShell } from "../../shared/hooks/useEnterpriseDashboardShell";
+import { useEnterpriseDashboardShell } from "../../../hooks/useEnterpriseDashboardShell";
 
-import PINavbar from "../pages/PINavbar";
+import PINavbar from "../pages/PINavbar.js";
 
-import PISidebar from "../pages/PISidebar";
+import PISidebar from "../pages/PISidebar.js";
 
-import LiveChatFab from "../../shared/components/LiveChatFab";
+import LiveChatFab from "../../shared/components/LiveChatFab.js";
 
-import { getDashboardData } from "../pages/piDashboardService";
+import { getDashboardData } from "../pages/piDashboardService.js";
 
 import { useLocation, useNavigate } from "react-router-dom";
 
-import "../styles/PIDashboard.css";
+import "../pages/PIDashboard.js";
 
 import "../../shared/components/dashboard/shared/DashboardLayout.css";
 
 import "../../shared/components/dashboard/shared/dashboard.css";
+
+
+
+
+
+
+import "../styles/PIDashboard.css";
 
 import React from "react";
 
@@ -141,7 +148,7 @@ function PIDashboardLayout({ children }) {
           <div
             className="dashboard-content pi-dashboard-content"
             ref={contentRef}
-          >
+
             {children}
           </div>
         </div>

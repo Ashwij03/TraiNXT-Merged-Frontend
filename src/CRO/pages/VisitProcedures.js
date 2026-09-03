@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "../styles/VisitProcedures.css";
+import "./VisitProcedures.js";
 
 export default function VisitProcedures() {
   const [activeProcedure, setActiveProcedure] = useState("inclusion");
@@ -13,49 +13,49 @@ export default function VisitProcedures() {
         <div
           className={`procedure-item ${activeProcedure === "inclusion" ? "active" : ""}`}
           onClick={() => setActiveProcedure("inclusion")}
-        >
+
           ✓ Inclusion Criteria
         </div>
 
         <div
           className={`procedure-item ${activeProcedure === "exclusion" ? "active" : ""}`}
           onClick={() => setActiveProcedure("exclusion")}
-        >
+
           ✓ Exclusion Criteria
         </div>
 
         <div
           className={`procedure-item ${activeProcedure === "demographics" ? "active" : ""}`}
           onClick={() => setActiveProcedure("demographics")}
-        >
+
           Demographics
         </div>
 
         <div
           className={`procedure-item ${activeProcedure === "medical" ? "active" : ""}`}
           onClick={() => setActiveProcedure("medical")}
-        >
+
           ✓ Medical History
         </div>
 
         <div
           className={`procedure-item ${activeProcedure === "surgical" ? "active" : ""}`}
           onClick={() => setActiveProcedure("surgical")}
-        >
+
           Surgical History
         </div>
 
         <div
           className={`procedure-item ${activeProcedure === "adverse" ? "active" : ""}`}
           onClick={() => setActiveProcedure("adverse")}
-        >
+
           ! Adverse Events
         </div>
 
         <div
           className={`procedure-item ${activeProcedure === "bmi" ? "active" : ""}`}
           onClick={() => setActiveProcedure("bmi")}
-        >
+
           Ht/Wt/BMI (ins/lbs)
         </div>
 
@@ -88,7 +88,7 @@ export default function VisitProcedures() {
       background: "#fff",
       border: "1px solid #ddd",
     }}
-  >
+
     {/* Instructions Row */}
     <div
       style={{
@@ -97,7 +97,7 @@ export default function VisitProcedures() {
         background: "#fafafa",
         fontWeight: "600",
       }}
-    >
+
       Instructions
     </div>
 
@@ -110,7 +110,7 @@ export default function VisitProcedures() {
         borderBottom: "1px solid #eee",
         alignItems: "center",
       }}
-    >
+
       <div style={{ fontSize: "1.0625rem" }}>
         Date of Birth
       </div>
@@ -126,7 +126,7 @@ export default function VisitProcedures() {
             fontSize: "0.8125rem",
             marginTop: "0.25rem",
           }}
-        >
+
           Raymond Nomizu, 08-FEB-2017 9:29 AM
         </div>
 
@@ -137,7 +137,7 @@ export default function VisitProcedures() {
             marginTop: "0.25rem",
             cursor: "pointer",
           }}
-        >
+
           view audit trail (2)
         </div>
       </div>
@@ -156,13 +156,12 @@ export default function VisitProcedures() {
           cursor: "pointer",
           marginLeft: "0.9375rem",
         }}
-      >
+
         +
       </div>
     </div>
   </div>
 )}
-
 
       </div>
     </div>

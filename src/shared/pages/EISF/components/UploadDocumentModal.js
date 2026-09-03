@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { DOCUMENT_TYPE_OPTIONS } from "../Constants/documentTypes";
+import { readFileWithProgress } from "../../../utils/fileReadProgress";
 import "./UploadDocumentModal.css";
 
 /**
@@ -36,6 +37,11 @@ export default function UploadDocumentModal({
   const [isUploading, setIsUploading] = useState(false);
   const [batchProgress, setBatchProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  /* Single-file staged upload: after Upload is clicked the chosen file is
+     read for real (progress 0-100%), and only after the whole file has been
+     read does the footer switch to Save, which persists the document through
+     the existing onUpload service call. { file, progress, done } */
+  const [stage, setStage] = useState(null);
 
   const folderInputRef = useRef(null);
   const filesInputRef = useRef(null);
@@ -58,6 +64,7 @@ export default function UploadDocumentModal({
       setIsUploading(false);
       setBatchProgress(0);
       setIsDragging(false);
+      setStage(null);
     }
   }, [open, defaultCategory]);
 
@@ -170,6 +177,7 @@ export default function UploadDocumentModal({
     setIsUploading(false);
     setBatchProgress(0);
     setError("");
+    setStage(null);
   };
 
   const submit = async () => {
@@ -239,24 +247,61 @@ export default function UploadDocumentModal({
       return;
     }
 
-    // Legacy single-file path — unchanged behavior.
+    // Legacy single-file path. Upload is now staged like the shared
+    // document managers: the chosen file is read for real (progress to
+    // 100%), and only then does Save persist it via the existing
+    // onUpload service call.
     if (!form.documentName || !form.category || !form.file) {
       setError("Please fill all mandatory fields.");
       return;
     }
 
+    // Save after the staged read completed at 100%.
+    if (stage?.done) {
+      // The user re-picked the file mid-stage (inputs are disabled while a
+      // stage is active, but guard anyway): restart the stage rather than
+      // persisting a file that was never read.
+      if (stage.file !== form.file) {
+        setStage(null);
+        setIsUploading(false);
+        setError("The selected file changed. Please upload it again.");
+        return;
+      }
+
+      setError("");
+      onUpload(form);
+      resetAll();
+      onClose();
+      return;
+    }
+
+    // Already reading this file - ignore repeated clicks.
+    if (stage) return;
+
     setError("");
-    onUpload(form);
+    setIsUploading(true);
+    setStage({ file: form.file, progress: 0 });
 
-    setForm({
-      documentName: "",
-      category: defaultCategory || "",
-      version: "",
-      comments: "",
-      file: null
-    });
-
-    onClose();
+    readFileWithProgress(form.file, (progress) => {
+      setStage((current) =>
+        current ? { ...current, progress } : current
+      );
+    })
+      .then(() => {
+        // Whole file read -> real 100%. Save appears only now.
+        setStage((current) =>
+          current ? { ...current, progress: 100, done: true } : current
+        );
+        setIsUploading(false);
+      })
+      .catch(() => {
+        setStage(null);
+        setIsUploading(false);
+        setError(
+          "The file could not be read. Please choose it again and retry."
+        );
+      });
+    return;
   };
 
   return (
@@ -275,6 +320,7 @@ export default function UploadDocumentModal({
                 onChange={(e) =>
                   setForm({ ...form, documentName: e.target.value })
                 }
+                disabled={Boolean(stage)}
               />
             </>
           )}
@@ -283,6 +329,7 @@ export default function UploadDocumentModal({
           <select
             value={form.category}
             onChange={(e) => setForm({ ...form, category: e.target.value })}
+            disabled={Boolean(stage)}
           >
             <option value="">Select</option>
             {categories.map((category) => (
@@ -296,12 +343,17 @@ export default function UploadDocumentModal({
           <input
             value={form.version}
             onChange={(e) => setForm({ ...form, version: e.target.value })}
+            disabled={Boolean(stage)}
           />
 
           {!isMultiMode && (
             <>
               <label>Select File *</label>
-              <input type="file" onChange={handleLegacyFileChange} />
+              <input
+                type="file"
+                onChange={handleLegacyFileChange}
+                disabled={Boolean(stage)}
+              />
             </>
           )}
 
@@ -312,7 +364,7 @@ export default function UploadDocumentModal({
             onDragEnter={onDragOver}
             onDragLeave={onDragLeave}
             onDrop={onDrop}
-          >
+
             <p className="upload-dropzone-text">
               Drag &amp; drop files or a folder here, or use the buttons below.
             </p>
@@ -321,7 +373,7 @@ export default function UploadDocumentModal({
                 type="button"
                 className="cancel-btn"
                 onClick={() => filesInputRef.current?.click()}
-                disabled={isUploading}
+                disabled={isUploading || Boolean(stage)}
               >
                 Add Files
               </button>
@@ -329,7 +381,7 @@ export default function UploadDocumentModal({
                 type="button"
                 className="cancel-btn"
                 onClick={() => folderInputRef.current?.click()}
-                disabled={isUploading}
+                disabled={isUploading || Boolean(stage)}
               >
                 Add Folder
               </button>
@@ -339,7 +391,7 @@ export default function UploadDocumentModal({
                   className="cancel-btn"
                   onClick={clearQueue}
                   disabled={isUploading}
-                >
+
                   Clear
                 </button>
               )}
@@ -359,6 +411,27 @@ export default function UploadDocumentModal({
               onChange={handleFolderChange}
             />
           </div>
+
+          {!isMultiMode && stage && (
+            <div
+              className="upload-progress-block"
+              role="status"
+              aria-live="polite"
+            >
+              <span className="upload-single-progress-label">
+                {form.documentName || stage.file?.name || "Uploading…"} —{" "}
+                {stage.progress}%
+              </span>
+              <div className="upload-progress-track" aria-hidden="true">
+                <div
+                  className={`upload-progress-fill ${
+                    stage.done ? "status-done" : "status-uploading"
+                  }`}
+                  style={{ width: `${stage.progress}%` }}
+                />
+              </div>
+            </div>
+          )}
 
           {isMultiMode && (
             <div className="upload-queue">
@@ -399,7 +472,7 @@ export default function UploadDocumentModal({
                           className="upload-queue-remove"
                           onClick={() => removeQueued(item.id)}
                           aria-label={`Remove ${item.relativePath}`}
-                        >
+
                           ×
                         </button>
                       )}
@@ -430,7 +503,7 @@ export default function UploadDocumentModal({
             className="cancel-btn"
             onClick={onClose}
             disabled={isUploading}
-          >
+
             Cancel
           </button>
           <button
@@ -439,10 +512,12 @@ export default function UploadDocumentModal({
             onClick={submit}
             disabled={isUploading}
           >
-            {isUploading
-              ? "Uploading…"
-              : isMultiMode
+            {isMultiMode
               ? `Upload ${queue.length} File${queue.length === 1 ? "" : "s"}`
+              : stage?.done
+              ? "Save"
+              : isUploading
+              ? "Uploading…"
               : "Upload"}
           </button>
         </div>

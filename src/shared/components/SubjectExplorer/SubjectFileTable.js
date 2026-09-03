@@ -123,6 +123,7 @@ function SubjectFileTable({
   uploading = false,
   canUpload = true,
   locked = false,
+  canApprove = false,
 }) {
   const isFolderEmpty = totalInFolder === 0;
   const isNarrowedEmpty = totalInFolder > 0 && files.length === 0;
@@ -228,7 +229,7 @@ function SubjectFileTable({
                         : "descending"
                       : undefined
                   }
-                >
+
                   {columnSortKey ? (
                     <button
                       type="button"
@@ -242,7 +243,7 @@ function SubjectFileTable({
                             }. Activate to reverse.`
                           : `Sort by ${label.toLowerCase()}`
                       }
-                    >
+
                       <span>{label}</span>
                       {isActive && <SortIcon size={13} aria-hidden="true" />}
                     </button>
@@ -263,6 +264,7 @@ function SubjectFileTable({
               isActive={file.id === activeFileId}
               onAction={onAction}
               locked={locked}
+              canApprove={canApprove}
             />
           ))}
         </tbody>

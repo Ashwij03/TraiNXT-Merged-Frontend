@@ -90,14 +90,14 @@ export default function SiteContactForm({
               type="button"
               className="secondary-btn"
               onClick={onCancel}
-            >
+
               Cancel
             </button>
 
             <button
               type="submit"
               className="primary-btn"
-            >
+
               Save
             </button>
 

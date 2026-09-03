@@ -31,7 +31,7 @@ function EISFHub() {
               type="button"
               className={activeTab === tab.id ? "active" : ""}
               onClick={() => setActiveTab(tab.id)}
-            >
+
               {tab.label}
             </button>
           ))}

@@ -225,7 +225,7 @@ function ClinicalSitesDashboard({ study }) {
             name="clinicalSiteCountry"
             value={selectedCountry}
             onChange={(e) => setSelectedCountry(e.target.value)}
-          >
+
             {countries.map((country) => (
               <option key={country} value={country}>
                 {country}
@@ -238,7 +238,7 @@ function ClinicalSitesDashboard({ study }) {
             name="clinicalSiteStatus"
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-          >
+
             {statuses.map((status) => (
               <option key={status} value={status}>
                 {status}
@@ -251,7 +251,7 @@ function ClinicalSitesDashboard({ study }) {
             name="clinicalSiteFilter"
             value={selectedSite}
             onChange={(e) => setSelectedSite(e.target.value)}
-          >
+
             {siteFilterOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -264,7 +264,7 @@ function ClinicalSitesDashboard({ study }) {
             name="clinicalSiteSortDirection"
             value={sortDirection}
             onChange={(e) => setSortDirection(e.target.value)}
-          >
+
             <option value="asc">Ascending</option>
             <option value="desc">Descending</option>
           </select>
@@ -318,7 +318,7 @@ function ClinicalSitesDashboard({ study }) {
                       type="button"
                       className="sponsor-btn-secondary"
                       onClick={() => setQuickViewSite(site)}
-                    >
+
                       View
                     </button>
                   </td>
@@ -331,7 +331,7 @@ function ClinicalSitesDashboard({ study }) {
                           state: site,
                         })
                       }
-                    >
+
                       Open
                     </button>
                   </td>
@@ -347,7 +347,7 @@ function ClinicalSitesDashboard({ study }) {
               value={rowsPerPage}
               onChange={(event) => setRowsPerPage(Number(event.target.value))}
               aria-label="Rows per page"
-            >
+
               {CLINICAL_SITES_PAGE_SIZE_OPTIONS.map((option) => (
                 <option key={option} value={option}>
                   {option}
@@ -362,7 +362,7 @@ function ClinicalSitesDashboard({ study }) {
               type="button"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((page) => page - 1)}
-            >
+
               ← Previous
             </button>
 
@@ -375,7 +375,7 @@ function ClinicalSitesDashboard({ study }) {
               type="button"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((page) => page + 1)}
-            >
+
               Next →
             </button>
           </div>
@@ -421,7 +421,7 @@ function ClinicalSitesDashboard({ study }) {
                   setRankingRowsPerPage(Number(event.target.value))
                 }
                 aria-label="Rows per page"
-              >
+
                 {CLINICAL_SITES_PAGE_SIZE_OPTIONS.map((option) => (
                   <option key={option} value={option}>
                     {option}
@@ -436,7 +436,7 @@ function ClinicalSitesDashboard({ study }) {
                 type="button"
                 disabled={rankingPage === 1}
                 onClick={() => setRankingPage((page) => page - 1)}
-              >
+
                 ← Previous
               </button>
 
@@ -449,7 +449,7 @@ function ClinicalSitesDashboard({ study }) {
                 type="button"
                 disabled={rankingPage === rankingTotalPages}
                 onClick={() => setRankingPage((page) => page + 1)}
-              >
+
                 Next →
               </button>
             </div>

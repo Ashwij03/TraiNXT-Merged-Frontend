@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import "../styles/PIEISFDashboard.css";
+import "./PIEISFDashboard.js";
 import DelegationLog from "../../shared/components/DelegationLog";
 import TrainingLog from "../../shared/components/TrainingLog";
-import "../styles/PIEISFDashboard.css";
+import DocumentFolderManager from "../../shared/components/DocumentFolderManager";
 function PIEISFDashboard() {
   const [eisfTab, setEisfTab] = useState("delegation");
 
@@ -43,33 +45,40 @@ function PIEISFDashboard() {
           marginTop: "1.25rem",
           marginBottom: "1.25rem"
         }}
-      >
+
         <button
           className={eisfTab === "delegation" ? "active-tab" : ""}
           onClick={() => setEisfTab("delegation")}
-        >
+
           Delegation Log
         </button>
 
         <button
           className={eisfTab === "training" ? "active-tab" : ""}
           onClick={() => setEisfTab("training")}
-        >
+
           Training Log
         </button>
 
         <button
           className={eisfTab === "cvs" ? "active-tab" : ""}
           onClick={() => setEisfTab("cvs")}
-        >
+
           CVs
         </button>
 
         <button
           className={eisfTab === "licenses" ? "active-tab" : ""}
           onClick={() => setEisfTab("licenses")}
-        >
+
           Licenses
+        </button>
+
+        <button
+          className={eisfTab === "eisf-docs" ? "active-tab" : ""}
+          onClick={() => setEisfTab("eisf-docs")}
+        >
+          eISF Documents
         </button>
       </div>
 
@@ -178,6 +187,15 @@ function PIEISFDashboard() {
 
         </table>
       </div>
+
+      {eisfTab === "eisf-docs" && (
+        <DocumentFolderManager
+          sectionId="eISF"
+          contextKey="pi-global"
+          title="eISF Documents"
+          layout="explorer"
+        />
+      )}
 
     </div>
   );

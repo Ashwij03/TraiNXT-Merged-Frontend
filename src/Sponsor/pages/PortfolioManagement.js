@@ -197,7 +197,7 @@ const PortfolioManagement = () => {
   onClick={() =>
   navigate(`/study-dashboard/${study.studyId}?tab=Subjects`)
 }
->
+
   View
 </button>
                     <button type="button" className="edit-btn" onClick={() => openEdit(study)}>Edit</button>
@@ -217,7 +217,7 @@ const PortfolioManagement = () => {
       <button
         className="close-btn"
         onClick={() => setSelectedStudy(null)}
-      >
+
         ✕
       </button>
     </div>
@@ -270,11 +270,10 @@ const PortfolioManagement = () => {
 
     <div className="study-action-buttons">
 
-
       <button
         className="edit-btn"
         onClick={() => openEdit(selectedStudy)}
-      >
+
         Edit Study
       </button>
 

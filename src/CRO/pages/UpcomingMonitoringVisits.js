@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useCROData } from "./CRODATAContext";
 import CROStatusBadge from "./CROStatusBadge";
 import EmptyState from "./EmptyState";
-import { resolveSiteDisplay } from "../../shared/utils/siteDisplay";
-import { getStudies } from "../../shared/services/studyService";
-import { formatScheduleDisplayDate } from "../../shared/utils/formatScheduleDisplayDate";
 import "../styles/UpcomingMonitoringVisits.css";
+import "./UpcomingMonitoringVisits.js";
+import { formatScheduleDisplayDate } from "../../shared/utils/formatScheduleDisplayDate";
+import { getStudies } from "../../shared/services/studyService";
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay";
 
 function UpcomingMonitoringVisits() {
   const { upcomingVisits } = useCROData();
@@ -29,7 +30,7 @@ function UpcomingMonitoringVisits() {
           type="button"
           className="upcoming-visits-view-all"
           onClick={() => navigate("/cro-monitoring")}
-        >
+
           View All
         </button>
       </div>
@@ -67,7 +68,7 @@ function UpcomingMonitoringVisits() {
                       type="button"
                       className="upcoming-visits-action-btn"
                       onClick={() => navigate("/cro-monitoring")}
-                    >
+
                       View
                     </button>
                   </td>

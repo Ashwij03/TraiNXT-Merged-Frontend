@@ -5,8 +5,8 @@ import CROStatusBadge from "./CROStatusBadge";
 import EmptyState from "./EmptyState";
 import RequestPermissionButton from "../../shared/components/RequestPermissionButton";
 import { downloadCsvReport } from "../../shared/utils/exportReport";
-import { getReportsForStudy } from "../../shared/services/reportService";
 import { getCurrentUser, getAccessibleStudies } from "../../shared/services/roleService";
+import { getReportsForStudy } from "../../shared/services/reportService";
 
 // Reads reports through reportService's own study-scoped, permission-aware
 // getter rather than a raw shared array. getReportsForStudy() already
@@ -151,7 +151,7 @@ function CROReports() {
                         type="button"
                         className="cro-btn-sm"
                         onClick={() => handleViewReport(report)}
-                      >
+
                         View
                       </button>
                       <button
@@ -159,7 +159,7 @@ function CROReports() {
                         className="cro-btn-sm"
                         onClick={() => handleDownloadReport(report)}
                         style={{ marginLeft: "0.5rem" }}
-                      >
+
                         Download
                       </button>
                     </td>

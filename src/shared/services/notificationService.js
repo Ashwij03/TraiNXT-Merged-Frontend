@@ -156,6 +156,7 @@ export function createNotification({
     createdAt: createdAt ? String(createdAt) : new Date().toISOString(),
     read: false,
   };
+  
 
   const next = [record, ...existing].slice(0, MAX_STORED_NOTIFICATIONS);
 

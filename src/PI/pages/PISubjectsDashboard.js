@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+
 import "../styles/PISubjectsDashboard.css";
 // Phase 7 — IMP-MOD-2: reuse the standardized Subject Modal styles so the PI
 // Subject create flow matches the shared standardized modal layout, spacing,
@@ -259,7 +260,7 @@ function PISubjectsDashboard({ onProfileClick }) {
             value={selectedStudyId}
             onChange={(e) => setSelectedStudyId(e.target.value)}
             style={{ padding: "0.4rem", borderRadius: "4px" }}
-          >
+
             <option value="">All Studies</option>
             {studyOptions.map((study) => (
               <option key={study.code} value={study.code}>
@@ -282,7 +283,7 @@ function PISubjectsDashboard({ onProfileClick }) {
                   ? "No non-completed studies are available for subject creation."
                   : undefined
             }
-          >
+
             + Add Subject
           </button>
         </div>
@@ -298,7 +299,7 @@ function PISubjectsDashboard({ onProfileClick }) {
         <select
           value={selectedStatus}
           onChange={(e) => setSelectedStatus(e.target.value)}
-        >
+
           <option>All</option>
           <option>Screening</option>
           <option>Enrolled</option>
@@ -360,7 +361,7 @@ function PISubjectsDashboard({ onProfileClick }) {
                 <td>
                   <span
                     className={`status-badge ${subject.status.toLowerCase()}`}
-                  >
+
                     {subject.status}
                   </span>
                 </td>
@@ -399,7 +400,7 @@ function PISubjectsDashboard({ onProfileClick }) {
             role="dialog"
             aria-labelledby="pi-subject-modal-title"
             aria-modal="true"
-          >
+
             <div className="subject-modal-header">
               <div>
                 <h3 id="pi-subject-modal-title">Add Subject</h3>
@@ -415,7 +416,7 @@ function PISubjectsDashboard({ onProfileClick }) {
                   setSubjectModalError("");
                 }}
                 aria-label="Close modal"
-              >
+
                 ×
               </button>
             </div>
@@ -424,7 +425,7 @@ function PISubjectsDashboard({ onProfileClick }) {
               className="subject-modal-form"
               onSubmit={handleAddSubject}
               noValidate
-            >
+
               <div className="form-group">
                 <label htmlFor="pi-subject-id">Subject ID</label>
                 <input
@@ -472,7 +473,7 @@ function PISubjectsDashboard({ onProfileClick }) {
                     })
                   }
                   required
-                >
+
                   <option value="">Select active study</option>
                   {studyOptions.map((study) => (
                     <option key={study.code} value={study.code}>
@@ -551,7 +552,7 @@ function PISubjectsDashboard({ onProfileClick }) {
                       status: e.target.value,
                     })
                   }
-                >
+
                   <option>Screening</option>
                   <option>Enrolled</option>
                   <option>Completed</option>
@@ -573,7 +574,7 @@ function PISubjectsDashboard({ onProfileClick }) {
                     setShowModal(false);
                     setSubjectModalError("");
                   }}
-                >
+
                   Cancel
                 </button>
                 <button type="submit">Save Subject</button>
@@ -617,7 +618,7 @@ function PISubjectsDashboard({ onProfileClick }) {
 
                 <span
                   className={`status-badge ${selectedSubject.status.toLowerCase()}`}
-                >
+
                   {selectedSubject.status}
                 </span>
               </div>

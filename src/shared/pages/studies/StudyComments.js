@@ -81,7 +81,7 @@ function StudyComments() {
               wordBreak: "break-word",
               maxWidth: "15.625rem",
             }}
-          >
+
             {comment.description || "—"}
           </div>
         ),
@@ -159,7 +159,7 @@ function StudyComments() {
             type="button"
             onClick={handleAddComment}
             disabled={!studyCode}
-          >
+
             Add Comment
           </button>
         </div>
@@ -183,7 +183,7 @@ function StudyComments() {
           flexWrap: "wrap",
           marginBottom: "1.25rem",
         }}
-      >
+
         <input
           type="text"
           placeholder="Search comments, subjects, users..."
@@ -203,7 +203,7 @@ function StudyComments() {
             minWidth: "11.25rem",
             padding: "10px 12px",
           }}
-        >
+
           <option value="All">All Comments</option>
           <option value="Open">Open / Unresolved</option>
           <option value="Resolved">Resolved</option>
@@ -215,7 +215,7 @@ function StudyComments() {
           width: "100%",
           overflowX: "auto",
         }}
-      >
+
         <DataTable
           title={`Comments — ${study?.name || studyCode}`}
           columns={[

@@ -660,7 +660,7 @@ function SubjectExplorer({
           onClick={openCreateSubject}
           disabled={readOnly}
           title={readOnly ? "This completed study is view only." : undefined}
-        >
+
           <MdPersonAdd size={15} aria-hidden="true" />
           <span>Add Subject</span>
         </button>
@@ -689,7 +689,7 @@ function SubjectExplorer({
               type="button"
               className="sx-empty-action"
               onClick={() => setFilterTerm("")}
-            >
+
               Clear search
             </button>
           </div>
@@ -698,7 +698,7 @@ function SubjectExplorer({
             className="sx-node-list sx-node-list--root"
             role="tree"
             aria-label="Subjects and folders"
-          >
+
             {visibleTree.map((node) => (
               <SubjectTreeNode
                 key={node.id}

@@ -1,4 +1,4 @@
-import "../styles/ProgressNotes.css";
+import "./ProgressNotes.js";
 
 export default function ProgressNotes() {
   return (

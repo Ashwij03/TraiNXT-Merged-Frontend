@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FaUser, FaBell, FaLock, FaCog } from "react-icons/fa";
-import DashboardLayout from "../../shared/components/dashboard/shared/DashboardLayout";
 import DashboardCard from "../../shared/components/dashboard/shared/DashboardCard";
+import DashboardLayout from "../../shared/components/dashboard/shared/DashboardLayout";
 import ProfileSettingsSection from "../../shared/pages/profile/ProfileSettingsSection";
+import ROLES from "../../shared/constants/roles";
 import SecuritySettingsSection from "../../shared/pages/profile/SecuritySettingsSection";
 import { getSettings, saveSettings } from "../../shared/services/adminService";
-// Task 6 (Ashwij): Referral & Limited Free License Model.
-import ROLES from "../../shared/constants/roles";
 import {
   getAllRoles,
   getAssignedSite,
@@ -22,7 +21,6 @@ import {
   setAdminPreviewRole,
   SWITCHABLE_ROLE_DASHBOARDS,
 } from "../../shared/services/roleService";
-import {
   formatSessionTimestamp,
   getAllActiveSessions,
   getCurrentSession,
@@ -199,8 +197,6 @@ function Settings() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUserKey]);
 
-
-
   const activeSessions = useMemo(() => {
     void sessionsVersion;
     return adminMode ? getAllActiveSessions() : [];
@@ -353,12 +349,12 @@ function Settings() {
                     ? "settings-nav-card is-active"
                     : "settings-nav-card"
                 }
-              >
+
                 <div
                   className={`settings-nav-card-icon icon-${
                     CARD_COLORS[i % CARD_COLORS.length]
                   }`}
-                >
+
                   <Icon />
                 </div>
                 <div className="settings-nav-card-title">{section.label}</div>
@@ -377,7 +373,7 @@ function Settings() {
           <section
             id="settings-profile"
             className="settings-page-section settings-page-section-active"
-          >
+
             <ProfileSettingsSection showTitle />
           </section>
         )}
@@ -386,7 +382,7 @@ function Settings() {
           <section
             id="settings-notifications"
             className="settings-page-section settings-page-section-active"
-          >
+
             <div className="settings-section-heading">
               <h2>Notification Preferences</h2>
               <p>Choose which alerts you want to receive, and how often.</p>
@@ -407,7 +403,7 @@ function Settings() {
                         toggleUserSetting(item.key);
                       }
                     }}
-                  >
+
                     <div>
                       <strong>{item.label}</strong>
                       <p>{item.desc}</p>
@@ -416,7 +412,7 @@ function Settings() {
                       className={`pi-toggle ${
                         userSettings[item.key] ? "on" : "off"
                       }`}
-                    >
+
                       {userSettings[item.key] ? "ON" : "OFF"}
                     </span>
                   </div>
@@ -430,7 +426,7 @@ function Settings() {
                   onChange={(event) =>
                     handleUserChange("digestFrequency", event.target.value)
                   }
-                >
+
                   <option>Real-time</option>
                   <option>Daily</option>
                   <option>Weekly</option>
@@ -444,7 +440,7 @@ function Settings() {
                   onChange={(event) =>
                     handleUserChange("dashboardRefresh", event.target.value)
                   }
-                >
+
                   <option value="realtime">Real-time</option>
                   <option value="hourly">Hourly</option>
                   <option value="daily">Daily</option>
@@ -456,7 +452,7 @@ function Settings() {
                 className="export-btn"
                 style={{ marginTop: "1rem" }}
                 onClick={handleSave}
-              >
+
                 Save Notification Settings
               </button>
 
@@ -473,7 +469,7 @@ function Settings() {
           <section
             id="settings-security"
             className="settings-page-section settings-page-section-active"
-          >
+
             <SecuritySettingsSection showTitle />
           </section>
         )}
@@ -482,7 +478,7 @@ function Settings() {
           <section
             id="settings-account"
             className="settings-page-section settings-page-section-active"
-          >
+
             <div className="settings-section-heading">
               <h2>Account</h2>
               <p>
@@ -517,7 +513,7 @@ function Settings() {
                         onChange={(event) =>
                           handleSystemChange("timezone", event.target.value)
                         }
-                      >
+
                         <option value="Asia/Kolkata">Asia/Kolkata</option>
                         <option value="UTC">UTC</option>
                         <option value="America/New_York">
@@ -533,7 +529,7 @@ function Settings() {
                         onChange={(event) =>
                           handleSystemChange("dateFormat", event.target.value)
                         }
-                      >
+
                         <option value="DD-MMM-YYYY">DD-MMM-YYYY</option>
                         <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                         <option value="YYYY-MM-DD">YYYY-MM-DD</option>
@@ -550,7 +546,7 @@ function Settings() {
                             event.target.value
                           )
                         }
-                      >
+
                         <option value="Active">Active</option>
                         <option value="On Hold">On Hold</option>
                         <option value="Closed">Closed</option>
@@ -580,7 +576,7 @@ function Settings() {
               <DashboardCard
                 title="Active Sessions"
                 className="settings-active-sessions-card"
-              >
+
                 <p className="settings-section-help">
                   Monitor active sessions across all roles and preview
                   dashboards as another role.
@@ -626,7 +622,7 @@ function Settings() {
                       onChange={(event) =>
                         handlePreviewRoleChange(event.target.value)
                       }
-                    >
+
                       {roleOptions.map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
@@ -682,7 +678,7 @@ function Settings() {
                                   onClick={() =>
                                     handlePreviewSessionRole(session.role)
                                   }
-                                >
+
                                   View as{" "}
                                   {ROLE_LABELS[session.role] || session.role}
                                 </button>
@@ -720,7 +716,7 @@ function Settings() {
                       onChange={(event) =>
                         handleUserChange("preferredLanguage", event.target.value)
                       }
-                    >
+
                       <option>English</option>
                       <option>Hindi</option>
                       <option>Tamil</option>
@@ -737,7 +733,7 @@ function Settings() {
                           event.target.value
                         )
                       }
-                    >
+
                       <option value="dashboard">Dashboard</option>
                       <option value="studies">Studies</option>
                       <option value="subjects">Subjects</option>
@@ -765,7 +761,7 @@ function Settings() {
                     <p
                       className="full-width"
                       style={{ color: "#6b7280", margin: 0 }}
-                    >
+
                       Settings apply to site: <strong>{assignedSite}</strong>
                     </p>
                   )}
@@ -778,7 +774,7 @@ function Settings() {
                     <p
                       className="full-width"
                       style={{ color: "#059669", margin: 0 }}
-                    >
+
                       {savedMessage}
                     </p>
                   )}
@@ -808,7 +804,6 @@ function Settings() {
             </DashboardCard>
           </section>
         )}
-
 
       </div>
     </DashboardLayout>

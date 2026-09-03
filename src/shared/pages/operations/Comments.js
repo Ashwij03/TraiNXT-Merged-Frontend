@@ -165,7 +165,7 @@ export default function CommentsPage({ embedded = false }) {
             type="button"
             onClick={handleAddComment}
             disabled={!studyCode}
-          >
+
             Add Comment
           </button>
         </div>
@@ -200,7 +200,7 @@ export default function CommentsPage({ embedded = false }) {
           flexWrap: "wrap",
           marginBottom: "1.25rem",
         }}
-      >
+
         <input
           type="text"
           placeholder="Search comments, subjects, users..."
@@ -220,7 +220,7 @@ export default function CommentsPage({ embedded = false }) {
             minWidth: "11.25rem",
             padding: "10px 12px",
           }}
-        >
+
           <option value="all">All Comments</option>
           <option value="unresolved">Open / Unresolved</option>
           <option value="resolved">Resolved</option>
@@ -234,7 +234,7 @@ export default function CommentsPage({ embedded = false }) {
           cellPadding="10"
           width="100%"
           style={{ borderCollapse: "collapse" }}
-        >
+
           <thead>
             <tr>
               <th>ID</th>
@@ -285,7 +285,7 @@ export default function CommentsPage({ embedded = false }) {
                         padding: "5px 10px",
                         borderRadius: "0.3125rem",
                       }}
-                    >
+
                       {comment.status === "Resolved"
                         ? "Resolved"
                         : "Open"}
@@ -308,7 +308,7 @@ export default function CommentsPage({ embedded = false }) {
           flexWrap: "wrap",
           gap: "0.75rem",
         }}
-      >
+
         <div>
           Showing {totalRows === 0 ? 0 : startIndex + 1}–
           {Math.min(endIndex, totalRows)} of {totalRows}
@@ -321,7 +321,7 @@ export default function CommentsPage({ embedded = false }) {
               setRowsPerPage(Number(event.target.value));
               setCurrentPage(1);
             }}
-          >
+
             <option value={5}>5 rows</option>
             <option value={10}>10 rows</option>
             <option value={25}>25 rows</option>
@@ -333,7 +333,7 @@ export default function CommentsPage({ embedded = false }) {
               setCurrentPage((page) => Math.max(1, page - 1))
             }
             disabled={currentPage === 1}
-          >
+
             Previous
           </button>
 
@@ -349,7 +349,7 @@ export default function CommentsPage({ embedded = false }) {
               )
             }
             disabled={currentPage === totalPages}
-          >
+
             Next
           </button>
         </div>

@@ -4,15 +4,13 @@ import { BrowserRouter } from "react-router-dom";
 
 import "./index.css";
 import App from "./App";
+import { AuthProvider } from "./shared/context/AuthContext";
+import { CROProvider } from "./CRO/pages/CRODATAContext";
+import { CommentsProvider } from "./shared/comments/CommentsContext";
+import { FolderProvider } from "./shared/context/FolderContext";
 import { initializeAdminData } from "./shared/services/adminService";
 import { initializeStudies } from "./shared/services/studyService";
 import { initializeUpcomingVisitReminderSynchronization } from "./shared/services/visitScheduleService";
-
-// Friend imports
-import { CommentsProvider } from "./shared/comments/CommentsContext";
-import { CROProvider } from "./CRO/pages/CRODATAContext";
-import { FolderProvider } from "./shared/context/FolderContext";
-import { AuthProvider } from "./shared/context/AuthContext";
 
 // ===== START: Dynamic Subscription & Plan Catalog — pre-fetch provider =====
 // Mounted above App so subscription/plan data is fetched from the billing
