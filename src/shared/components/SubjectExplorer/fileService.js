@@ -38,9 +38,7 @@ import { formatDateUTC, formatDateTimeUTC } from "../../utils/dateTime";
 ================================================================== */
 
 /** Legacy flat key (pre-study-scoping). */
-const LEGACY_FILES_KEY = "trianxtSubjectFiles";
-
-/**
+const LEGACY_FILES_KEY = "trianxtSubjectFiles";/**
  * Study-scoped localStorage key factory.
  *
  * GUARD: if studyId is falsy, logs an error to catch silent leaks.
@@ -117,6 +115,10 @@ function normalizeFile(file, folderId) {
     hasContent: Boolean(file.hasContent && file.dataUrl),
     ...(file.dataUrl ? { dataUrl: file.dataUrl } : {}),
     ...(Array.isArray(file.auditTrail) ? { auditTrail: file.auditTrail } : {}),
+    // Approval metadata survives the normalize round-trip so "Approved"
+    // records keep who approved and when (Subject File Manager approve flow).
+    ...(file.approvedBy ? { approvedBy: file.approvedBy } : {}),
+    ...(file.approvedAt ? { approvedAt: file.approvedAt } : {}),
   };
 }
 
@@ -186,8 +188,7 @@ function migrateLegacyFiles() {
         if (!studyId) return;
         if (!allByStudy[studyId]) allByStudy[studyId] = [];
         allByStudy[studyId].push(subject);
-      });
-    } catch {
+      });    } catch {
       // ignore
     }
 
@@ -658,8 +659,7 @@ function readFileContent(file) {
  * Resolves with:
  *   { ok, store, added: File[], rejected: [{ name, error }], warning? }
  */
-export async function uploadFiles(studyId, store, folderId, fileList, uploadedBy) {
-  const incoming = Array.from(fileList || []);
+export async function uploadFiles(studyId, store, folderId, fileList, uploadedBy) {  const incoming = Array.from(fileList || []);
 
   if (!folderId) {
     return {
@@ -718,8 +718,7 @@ export async function uploadFiles(studyId, store, folderId, fileList, uploadedBy
         modifiedAt: raw.lastModified
           ? new Date(raw.lastModified).toISOString()
           : now,
-        uploadedBy: uploadedBy || "Unknown user",
-        status: "Pending Review",
+        uploadedBy: uploadedBy || "Unknown user",        status: "Pending Review",
         hasContent: Boolean(dataUrl),
         ...(dataUrl ? { dataUrl } : {}),
         auditTrail: [
@@ -763,9 +762,13 @@ export async function uploadFiles(studyId, store, folderId, fileList, uploadedBy
   };
 }
 
+// Staged single-file upload progress (Subject File Manager). The reader
+// lives in shared/utils so the eISF upload modal reuses the same one - a
+// single implementation for real byte-progress, never a timer.
+export { readFileWithProgress } from "../../utils/fileReadProgress";
+
 /** Rename a file inside its folder (requirement 4). */
-export function renameFile(studyId, store, folderId, fileId, name, modifiedBy) {
-  const files = listFiles(store, folderId);
+export function renameFile(studyId, store, folderId, fileId, name, modifiedBy) {  const files = listFiles(store, folderId);
   const target = files.find((file) => file.id === fileId);
 
   if (!target) {
@@ -821,6 +824,64 @@ export function deleteFile(studyId, store, folderId, fileId) {
   if (!saved.ok) return { ok: false, store, error: saved.error };
 
   return { ok: true, store: saved.store, file: target };
+}
+
+/**
+ * Approve a file whose status is "Pending Review" (document approval flow).
+ *
+ * Approval is recorded through the existing persistence + audit machinery:
+ * the record keeps who approved and when, an audit-trail entry is appended,
+ * and listeners are notified so every open view refreshes from one place.
+ *
+ * Only files currently in "Pending Review" can be approved - anything else
+ * returns an error so the caller (and any UI reachable by another path)
+ * cannot silently change a non-pending document.
+ */
+export function approveFile(studyId, store, folderId, fileId, approver) {
+  const files = listFiles(store, folderId);
+  const target = files.find((file) => file.id === fileId);
+
+  if (!target) {
+    return { ok: false, store, error: "This file no longer exists." };
+  }
+
+  if (String(target.status || "").trim().toLowerCase() !== "pending review") {
+    return {
+      ok: false,
+      store,
+      error:
+        "Only files in Pending Review status can be approved. This file is not pending review.",
+    };
+  }
+
+  const now = new Date().toISOString();
+  const approved = {
+    ...target,
+    status: "Approved",
+    approvedBy: approver || target.approvedBy || target.uploadedBy || "Unknown user",
+    approvedAt: now,
+    modifiedAt: now,
+    modifiedBy: approver || target.modifiedBy || "Unknown user",
+    auditTrail: [
+      ...(Array.isArray(target.auditTrail) ? target.auditTrail : []),
+      {
+        date: now,
+        user: approver || "Unknown user",
+        action: "Approved",
+        remarks: `Status changed from "Pending Review" to "Approved"`,
+      },
+    ],
+  };
+
+  const working = {
+    ...store,
+    [folderId]: files.map((file) => (file.id === fileId ? approved : file)),
+  };
+
+  const saved = saveFileStore(studyId, working, "approve", folderId);
+  if (!saved.ok) return { ok: false, store, error: saved.error };
+
+  return { ok: true, store: saved.store, file: approved };
 }
 
 /**
@@ -1068,6 +1129,7 @@ const FileService = {
   uploadFiles,
   renameFile,
   deleteFile,
+  approveFile,
   downloadFile,
   duplicateFile,
   moveFile,

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import DelegationLog from "../../shared/components/DelegationLog";
 import TrainingLog from "../../shared/components/TrainingLog";
+import DocumentFolderManager from "../../shared/components/DocumentFolderManager";
 import "../styles/PIEISFDashboard.css";
 function PIEISFDashboard() {
   const [eisfTab, setEisfTab] = useState("delegation");
@@ -70,6 +71,13 @@ function PIEISFDashboard() {
           onClick={() => setEisfTab("licenses")}
         >
           Licenses
+        </button>
+
+        <button
+          className={eisfTab === "eisf-docs" ? "active-tab" : ""}
+          onClick={() => setEisfTab("eisf-docs")}
+        >
+          eISF Documents
         </button>
       </div>
 
@@ -178,6 +186,15 @@ function PIEISFDashboard() {
 
         </table>
       </div>
+
+      {eisfTab === "eisf-docs" && (
+        <DocumentFolderManager
+          sectionId="eISF"
+          contextKey="pi-global"
+          title="eISF Documents"
+          layout="explorer"
+        />
+      )}
 
     </div>
   );

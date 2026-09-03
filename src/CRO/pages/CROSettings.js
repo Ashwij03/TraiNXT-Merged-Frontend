@@ -5,7 +5,6 @@ import CROLayout from "./CROLayout";
 import { useCROData } from "./CRODATAContext";
 import { CRO_STORAGE_KEYS, loadFromStorage } from "./croStorage";
 import { getCurrentUser, getAssignedSite } from "../../shared/services/roleService";
-
 import "../styles/CROSettings.css";
 import "../../shared/styles/AdminPage.css";
 

@@ -37,7 +37,13 @@ const STATUS_CLASS = {
   Superseded: "sf-status--superseded",
 };
 
-function SubjectFileRow({ file, isActive = false, onAction, locked = false }) {
+function SubjectFileRow({
+  file,
+  isActive = false,
+  onAction,
+  locked = false,
+  canApprove = false,
+}) {
   // Keeps the row's action button visible while its menu is open.
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -182,6 +188,7 @@ function SubjectFileRow({ file, isActive = false, onAction, locked = false }) {
             onAction={onAction}
             onOpenChange={setMenuOpen}
             locked={locked}
+            canApprove={canApprove}
           />
         </span>
       </td>

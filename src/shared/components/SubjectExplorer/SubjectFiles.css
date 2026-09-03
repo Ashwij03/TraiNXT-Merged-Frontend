@@ -896,7 +896,9 @@
   display: inline-block;
   padding: 0.1875rem 0.5625rem;
   border-radius: var(--tnxt-radius-full, 999px);
-  font-size: 10.0.3125rem;
+  /* Fix: previously corrupted to "10.0.3125rem" by a bad merge, which made
+     the declaration invalid and left badges at the browser default size. */
+  font-size: 0.6875rem;
   font-weight: 600;
   line-height: 1.5;
   white-space: nowrap;
@@ -925,6 +927,68 @@
 .sf-status--superseded {
   background: #fee2e2;
   color: #991b1b;
+}
+
+/* ================= STAGED SINGLE-FILE UPLOAD =================
+   Upload progress + Save action, matching the shared document managers'
+   upload UX: the file is read for real (progress to 100%), and the Save
+   action only appears after the whole file was read. */
+.sf-upload-stage {
+  margin: 0 var(--tnxt-font-size-xl) var(--tnxt-space-md);
+  padding: 0.625rem var(--tnxt-space-md);
+  border: 1px solid var(--tnxt-border, #e5e7eb);
+  border-radius: var(--tnxt-radius-md, var(--tnxt-space-sm));
+  background: #f8fafc;
+}
+
+.sf-upload-stage-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tnxt-space-md);
+  margin-bottom: 0.4375rem;
+}
+
+.sf-upload-stage-name {
+  font-weight: 600;
+  color: #334155;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sf-upload-stage-pct {
+  flex: 0 0 auto;
+  font-weight: 700;
+  color: var(--tnxt-primary, #2563eb);
+}
+
+.sf-upload-stage-track {
+  height: 0.5rem;
+  border-radius: var(--tnxt-radius-full, 999px);
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.sf-upload-stage-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--tnxt-primary, #2563eb);
+  transition: width 0.15s ease;
+}
+
+.sf-upload-stage-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4375rem;
+  margin-top: 0.5625rem;
+}
+
+.sf-upload-stage-status {
+  font-size: var(--tnxt-space-md);
+  font-weight: 600;
+  color: #64748b;
 }
 
 /* ================= ROW ACTION MENU =================

@@ -16,6 +16,7 @@ import {
   MdPublic,
   MdDriveFileMoveOutline,
   MdLockOutline,
+  MdCheckCircle,
 } from "react-icons/md";
 
 /**
@@ -36,6 +37,8 @@ import {
  *   onOpenChange  (open) => void - lets the row stay visually active
  *   locked        true to render nothing (view-only folder - no secondary
  *                 actions apply)
+ *   canApprove    holder of APPROVE_REGULATORY_DOCS - adds an Approve item
+ *                 for files currently in Pending Review
  */
 
 const MENU_WIDTH = 194;
@@ -52,13 +55,27 @@ const ALL_ITEMS = [
   { key: "delete", label: "Delete", Icon: MdDeleteOutline, danger: true },
 ];
 
-function FileContextMenu({ file, onAction, onOpenChange, locked = false }) {
+function FileContextMenu({
+  file,
+  onAction,
+  onOpenChange,
+  locked = false,
+  canApprove = false,
+}) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const triggerRef = useRef(null);
   const menuRef = useRef(null);
 
-  const items = locked ? [] : ALL_ITEMS;
+  // Approve only exists for files still in Pending Review and only for a
+  // user whose permission set includes APPROVE_REGULATORY_DOCS.
+  const approveItem =
+    canApprove &&
+    String(file?.status || "").trim().toLowerCase() === "pending review"
+      ? [{ key: "approve", label: "Approve", Icon: MdCheckCircle }]
+      : [];
+
+  const items = locked ? [] : [...approveItem, ...ALL_ITEMS];
 
   const closeMenu = useCallback(() => setOpen(false), []);
 

@@ -1,0 +1,694 @@
+name: Frontend CI/CD (TriaNXT-Merged-Frontend)
+
+# Task 5 — CI/CD Pipeline for Infra and Code
+#
+# Complete pipeline:
+#
+#   CODE → VALIDATE → TEST → SECURITY GATES → BUILD →
+#   STAGING DEPLOY → STAGING INTEGRATION TESTS → SMOKE TESTS →
+#   DAST (OWASP ZAP) → MANUAL PRODUCTION APPROVAL →
+#   PRODUCTION DEPLOYMENT → POST-DEPLOYMENT VERIFICATION →
+#   NOTIFICATION
+#
+# The frontend is a static React build deployed to S3/CloudFront
+# (per the CTMS development plan), not a Docker container.
+#
+# Job graph:
+#
+#            +-- secret-scan
+#   validate -+-- sast
+#            +-- dependency-scan
+#       |
+#       v
+#     test
+#       |
+#       v  (needs: test, secret-scan, sast, dependency-scan)
+#     build
+#       |
+#       v
+#   staging-deploy
+#       |
+#       +---> staging-integration-tests
+#       +---> smoke-tests
+#             |
+#             v
+#           dast
+#             |
+#             v
+#      production-approval
+#             |
+#             v
+#      production-deploy
+#             |
+#             v
+#      post-deploy-verify
+#             |
+#             v
+#      notify-pipeline-result
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: frontend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+  GITLEAKS_VERSION: "8.21.2"
+
+jobs:
+  # ==================================================================
+  # CI — VALIDATION
+  # ==================================================================
+  validate:
+    name: Validate (install)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+  # ==================================================================
+  # SECURITY GATE 1 — Secret scanning
+  # ==================================================================
+  secret-scan:
+    name: "Security: secret scan (gitleaks)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install gitleaks
+        run: |
+          curl -sSL -o gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          tar -xzf gitleaks.tar.gz gitleaks
+          sudo mv gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
+      - name: Run gitleaks (fails on any detected secret)
+        run: |
+          gitleaks detect \
+            --source . \
+            --redact \
+            --report-format json \
+            --report-path gitleaks-report.json \
+            --exit-code 1
+
+      - name: Upload gitleaks report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-report
+          path: gitleaks-report.json
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # ==================================================================
+  # SECURITY GATE 2 — SAST
+  # ==================================================================
+  sast:
+    name: "Security: SAST (semgrep)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install semgrep
+        run: pip install semgrep
+
+      - name: Semgrep - full report (informational)
+        run: |
+          semgrep scan \
+            --config p/security-audit --config p/react --config p/javascript \
+            --metrics=off src || true
+
+      - name: Semgrep - fail on ERROR severity
+        run: |
+          semgrep scan \
+            --config p/security-audit --config p/react --config p/javascript \
+            --metrics=off --severity ERROR --error src
+
+  # ==================================================================
+  # SECURITY GATE 3 — Dependency vulnerability scanning
+  # ==================================================================
+  dependency-scan:
+    name: "Security: dependency scan (npm audit)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: npm audit - full report (informational)
+        run: npm audit || true
+
+      - name: npm audit - fail on high/critical
+        run: npm audit --audit-level=high
+
+  # ==================================================================
+  # CI — FRONTEND TESTS
+  # ==================================================================
+  # Known issue: App.test.js fails with "TextEncoder is not defined"
+  # due to jspdf/fast-png import chain in Jest's jsdom environment.
+  # This is a pre-existing application test environment configuration
+  # issue, not a CI/CD problem. The pipeline correctly reports this
+  # as a test failure.
+  test:
+    name: Frontend tests
+    runs-on: ubuntu-latest
+    needs: validate
+    env:
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run frontend test suite
+        run: npm test -- --watchAll=false
+
+  # ==================================================================
+  # CI — PRODUCTION BUILD
+  # ==================================================================
+  build:
+    name: Frontend production build
+    runs-on: ubuntu-latest
+    needs: [test, secret-scan, sast, dependency-scan]
+    env:
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: build/
+          retention-days: 7
+
+  # ==================================================================
+  # STAGING/UAT DEPLOYMENT
+  # ==================================================================
+  staging-deploy:
+    name: Deploy to Staging/UAT
+    runs-on: ubuntu-latest
+    needs: [build]
+    environment:
+      name: staging
+      url: ${{ secrets.STAGING_URL }}
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: build/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+
+      - name: Deploy to S3 (staging)
+        run: |
+          echo "Deploying frontend build to s3://${{ secrets.STAGING_FRONTEND_BUCKET }}"
+          aws s3 sync build/ "s3://${{ secrets.STAGING_FRONTEND_BUCKET }}" \
+            --delete \
+            --cache-control "public,max-age=300"
+
+      - name: Invalidate CloudFront cache (staging)
+        if: ${{ secrets.STAGING_CLOUDFRONT_ID }}
+        run: |
+          echo "Invalidating CloudFront distribution ${{ secrets.STAGING_CLOUDFRONT_ID }}"
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.STAGING_CLOUDFRONT_ID }} \
+            --paths "/*"
+
+  # ==================================================================
+  # STAGING INTEGRATION TESTS
+  # ==================================================================
+  # These tests run AGAINST the deployed staging application via HTTP.
+  # They verify the deployed frontend is serving correct content.
+  #
+  # This is NOT the same as the CI `test` job (Jest unit tests).
+  #
+  # NOT LOCALLY VERIFIABLE — requires deployed staging infrastructure.
+  staging-integration-tests:
+    name: "Staging: Integration Tests"
+    runs-on: ubuntu-latest
+    needs: [staging-deploy]
+    env:
+      STAGING_BASE_URL: ${{ secrets.STAGING_URL }}
+    steps:
+      - name: Verify frontend is alive
+        run: |
+          echo "=== Staging Integration: Frontend Health ==="
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 30 "${STAGING_BASE_URL}/")
+          echo "GET / → HTTP ${HTTP_STATUS}"
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "FAIL: Frontend not reachable at staging"
+            exit 1
+          fi
+          echo "PASS: Frontend is alive"
+
+      - name: Verify React app is rendered
+        run: |
+          echo "=== Staging Integration: React App Rendering ==="
+          RESPONSE=$(curl -s --max-time 30 "${STAGING_BASE_URL}/")
+          if echo "$RESPONSE" | grep -q 'id="root"'; then
+            echo "PASS: React root element found in HTML"
+          else
+            echo "FAIL: React root element not found"
+            exit 1
+          fi
+
+          # Verify it contains the expected app name/metadata
+          if echo "$RESPONSE" | grep -qi "tria\|ctms\|clinical"; then
+            echo "PASS: App-specific content found"
+          else
+            echo "WARN: No app-specific content detected in HTML (may be rendered by JS)"
+          fi
+
+      - name: Verify static assets are served
+        run: |
+          echo "=== Staging Integration: Static Asset Verification ==="
+          RESPONSE=$(curl -s --max-time 30 "${STAGING_BASE_URL}/")
+
+          # Find JS bundle URL from HTML
+          SCRIPT_SRC=$(echo "$RESPONSE" | grep -oP 'src="(/static/js/[^"]+)' | head -1 | sed 's/src="//')
+          if [ -n "$SCRIPT_SRC" ]; then
+            echo "Found script: ${SCRIPT_SRC}"
+            JS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              --max-time 30 "${STAGING_BASE_URL}${SCRIPT_SRC}")
+            echo "GET ${SCRIPT_SRC} → HTTP ${JS_STATUS}"
+            if [ "$JS_STATUS" = "200" ]; then
+              echo "PASS: Static JS asset served correctly"
+            else
+              echo "FAIL: Static JS asset returned HTTP ${JS_STATUS}"
+              exit 1
+            fi
+          else
+            echo "WARN: No script tag found in HTML (inline scripts)"
+          fi
+
+          # Find CSS bundle URL from HTML
+          CSS_SRC=$(echo "$RESPONSE" | grep -oP 'href="(/static/css/[^"]+)' | head -1 | sed 's/href="//')
+          if [ -n "$CSS_SRC" ]; then
+            echo "Found CSS: ${CSS_SRC}"
+            CSS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              --max-time 30 "${STAGING_BASE_URL}${CSS_SRC}")
+            echo "GET ${CSS_SRC} → HTTP ${CSS_STATUS}"
+            if [ "$CSS_STATUS" = "200" ]; then
+              echo "PASS: Static CSS asset served correctly"
+            else
+              echo "WARN: CSS asset returned HTTP ${CSS_STATUS}"
+            fi
+          fi
+
+  # ==================================================================
+  # SMOKE TESTS
+  # ==================================================================
+  smoke-tests:
+    name: Smoke Tests (staging)
+    runs-on: ubuntu-latest
+    needs: [staging-integration-tests]
+    env:
+      STAGING_URL: ${{ secrets.STAGING_URL }}
+    steps:
+      - name: Smoke test — Frontend main page
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 30 "${STAGING_URL}/")
+          echo "GET / → HTTP ${HTTP_STATUS}"
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "PASS"
+          else
+            echo "FAIL"
+            exit 1
+          fi
+
+      - name: Smoke test — React root element
+        run: |
+          RESPONSE=$(curl -s --max-time 30 "${STAGING_URL}/")
+          if echo "$RESPONSE" | grep -q 'id="root"'; then
+            echo "PASS: React root element found"
+          else
+            echo "FAIL: React root element not found"
+            exit 1
+          fi
+
+      - name: Smoke test — Static JS accessible
+        run: |
+          RESPONSE=$(curl -s --max-time 30 "${STAGING_URL}/")
+          SCRIPT_SRC=$(echo "$RESPONSE" | grep -oP 'src="(/static/js/[^"]+)' | head -1 | sed 's/src="//')
+          if [ -n "$SCRIPT_SRC" ]; then
+            JS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              --max-time 30 "${STAGING_URL}${SCRIPT_SRC}")
+            if [ "$JS_STATUS" = "200" ]; then
+              echo "PASS: JS bundle accessible"
+            else
+              echo "FAIL: JS bundle returned HTTP ${JS_STATUS}"
+              exit 1
+            fi
+          fi
+
+  # ==================================================================
+  # DAST — OWASP ZAP
+  # ==================================================================
+  # SECURITY POLICY:
+  #
+  #   Tool:     OWASP ZAP baseline scan
+  #   Flag:     -l WARN
+  #   Blocking: fail_action: true
+  #
+  #   -l WARN sets the MINIMUM alert level to WARN. In ZAP baseline
+  #   mode, the recognized levels are (ascending): PASS, IGNORE,
+  #   INFO, WARN, FAIL. With -l WARN, alerts at WARN level or higher
+  #   are reported. With fail_action: true, any alert at WARN level
+  #   or above causes this job to fail, blocking production promotion.
+  #
+  #   This means ALL reported ZAP findings block the pipeline —
+  #   there is no severity-based filtering (e.g., "block only High").
+  #   To achieve severity-based gating, a custom ZAP report parser
+  #   would be needed. The current configuration is intentionally
+  #   strict: any finding blocks.
+  #
+  #   The ZAP report is always uploaded as an artifact for manual
+  #   review regardless of outcome.
+  #
+  # NOT LOCALLY VERIFIABLE — requires deployed staging infrastructure.
+  dast:
+    name: "Security: DAST (OWASP ZAP)"
+    runs-on: ubuntu-latest
+    needs: [smoke-tests]
+    env:
+      STAGING_URL: ${{ secrets.STAGING_URL }}
+    steps:
+      - name: OWASP ZAP Baseline Scan
+        id: zap
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: ${{ secrets.STAGING_URL }}
+          cmd_options: >-
+            -a
+            -j
+            -l WARN
+            -r zap-report.html
+          allow_issue_writing: true
+          fail_action: true
+
+      - name: Upload ZAP report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-dast-report
+          path: zap-report.html
+          retention-days: 30
+
+      - name: DAST result summary
+        if: always()
+        run: |
+          echo "============================================"
+          echo "OWASP ZAP DAST — Frontend Result"
+          echo "============================================"
+          echo "Target: ${STAGING_URL}"
+          echo "ZAP step outcome: ${{ steps.zap.outcome }}"
+          echo ""
+          echo "Security policy:"
+          echo "  -l WARN with fail_action: true"
+          echo "  Any ZAP alert at WARN level or above"
+          echo "  causes this job to fail and blocks promotion."
+          echo ""
+          if [ "${{ steps.zap.outcome }}" = "success" ]; then
+            echo "RESULT: No ZAP findings — pipeline continues"
+          else
+            echo "RESULT: ZAP found issues — pipeline blocked"
+            echo "Review the zap-dast-report artifact"
+          fi
+          echo "============================================"
+
+      - name: Fail pipeline on ZAP findings
+        if: steps.zap.outcome == 'failure'
+        run: |
+          echo "FAIL: OWASP ZAP detected findings at WARN level or above"
+          exit 1
+
+  # ==================================================================
+  # PRODUCTION APPROVAL
+  # ==================================================================
+  production-approval:
+    name: "Production: Manual Approval Gate"
+    runs-on: ubuntu-latest
+    needs: [dast]
+    environment:
+      name: production
+    steps:
+      - name: Confirm approval
+        run: |
+          echo "============================================"
+          echo "MANUAL PRODUCTION APPROVAL GRANTED"
+          echo "============================================"
+          echo "All gates passed:"
+          echo "  ✓ Validation"
+          echo "  ✓ Tests"
+          echo "  ✓ Secret scan"
+          echo "  ✓ SAST"
+          echo "  ✓ Dependency scan"
+          echo "  ✓ Build"
+          echo "  ✓ Staging deployed"
+          echo "  ✓ Staging integration tests"
+          echo "  ✓ Smoke tests"
+          echo "  ✓ DAST (OWASP ZAP)"
+          echo "  ✓ Manual approval"
+          echo "============================================"
+
+  # ==================================================================
+  # PRODUCTION DEPLOYMENT
+  # ==================================================================
+  production-deploy:
+    name: "Production: Deploy"
+    runs-on: ubuntu-latest
+    needs: [production-approval]
+    environment:
+      name: production
+      url: ${{ secrets.PROD_URL }}
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: build/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+
+      - name: Deploy to S3 (production)
+        run: |
+          echo "Deploying frontend build to s3://${{ secrets.PROD_FRONTEND_BUCKET }}"
+          aws s3 sync build/ "s3://${{ secrets.PROD_FRONTEND_BUCKET }}" \
+            --delete \
+            --cache-control "public,max-age=300"
+
+      - name: Invalidate CloudFront cache (production)
+        if: ${{ secrets.PROD_CLOUDFRONT_ID }}
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.PROD_CLOUDFRONT_ID }} \
+            --paths "/*"
+
+      - name: Verify production deployment
+        run: |
+          sleep 30
+          for i in 1 2 3 4 5; do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              --max-time 30 "${{ secrets.PROD_URL }}/")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "Production deployment verified (HTTP ${HTTP_STATUS})"
+              exit 0
+            fi
+            echo "Attempt $i/5: HTTP ${HTTP_STATUS} — retrying in 15s..."
+            sleep 15
+          done
+          echo "CRITICAL: Production frontend health check failed"
+          exit 1
+
+  # ==================================================================
+  # POST-DEPLOYMENT VERIFICATION
+  # ==================================================================
+  post-deploy-verify:
+    name: "Production: Post-Deploy Verification"
+    runs-on: ubuntu-latest
+    needs: [production-deploy]
+    env:
+      PROD_URL: ${{ secrets.PROD_URL }}
+    steps:
+      - name: Verify — Frontend main page
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 30 "${PROD_URL}/")
+          echo "GET / → HTTP ${HTTP_STATUS}"
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "PASS"
+          else
+            echo "FAIL"
+            exit 1
+          fi
+
+      - name: Verify — React app markup
+        run: |
+          RESPONSE=$(curl -s --max-time 30 "${PROD_URL}/")
+          if echo "$RESPONSE" | grep -q 'id="root"'; then
+            echo "PASS: React root element found"
+          else
+            echo "FAIL: React root element not found"
+            exit 1
+          fi
+
+      - name: Verify — Static JS accessible
+        run: |
+          RESPONSE=$(curl -s --max-time 30 "${PROD_URL}/")
+          SCRIPT_SRC=$(echo "$RESPONSE" | grep -oP 'href="(/static/js/[^"]+)' | head -1 | sed 's/href="//')
+          if [ -z "$SCRIPT_SRC" ]; then
+            SCRIPT_SRC=$(echo "$RESPONSE" | grep -oP 'src="(/static/js/[^"]+)' | head -1 | sed 's/src="//')
+          fi
+          if [ -n "$SCRIPT_SRC" ]; then
+            JS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              --max-time 30 "${PROD_URL}${SCRIPT_SRC}")
+            if [ "$JS_STATUS" = "200" ]; then
+              echo "PASS: JS bundle accessible"
+            else
+              echo "FAIL: JS bundle returned HTTP ${JS_STATUS}"
+              exit 1
+            fi
+          else
+            echo "WARN: Could not find JS bundle in HTML"
+          fi
+
+      - name: Deployment summary
+        run: |
+          echo "============================================"
+          echo "PRODUCTION DEPLOYMENT COMPLETE"
+          echo "============================================"
+          echo "URL: ${{ secrets.PROD_URL }}"
+          echo "============================================"
+
+  # ==================================================================
+  # NOTIFICATION
+  # ==================================================================
+  notify-pipeline-result:
+    name: "Notifications: Pipeline Result"
+    runs-on: ubuntu-latest
+    needs: [validate, test, secret-scan, sast, dependency-scan, build, staging-deploy, staging-integration-tests, smoke-tests, dast, production-approval, production-deploy, post-deploy-verify]
+    if: always()
+    steps:
+      - name: Determine pipeline result
+        id: result
+        run: |
+          if [ "${{ needs.post-deploy-verify.result }}" = "success" ]; then
+            echo "status=SUCCESS" >> "$GITHUB_OUTPUT"
+            echo "message=Production deployment completed successfully" >> "$GITHUB_OUTPUT"
+          elif [ "${{ needs.production-deploy.result }}" = "failure" ]; then
+            echo "status=PROD_DEPLOY_FAILED" >> "$GITHUB_OUTPUT"
+            echo "message=Production deployment failed" >> "$GITHUB_OUTPUT"
+          elif [ "${{ needs.staging-deploy.result }}" = "failure" ]; then
+            echo "status=STAGING_FAILED" >> "$GITHUB_OUTPUT"
+            echo "message=Staging deployment failed" >> "$GITHUB_OUTPUT"
+          elif [ "${{ needs.test.result }}" = "failure" ]; then
+            echo "status=TESTS_FAILED" >> "$GITHUB_OUTPUT"
+            echo "message=Application tests failed" >> "$GITHUB_OUTPUT"
+          elif [ "${{ needs.secret-scan.result }}" = "failure" ] || [ "${{ needs.sast.result }}" = "failure" ] || [ "${{ needs.dependency-scan.result }}" = "failure" ]; then
+            echo "status=SECURITY_FAILED" >> "$GITHUB_OUTPUT"
+            echo "message=Security gate failed" >> "$GITHUB_OUTPUT"
+          elif [ "${{ needs.dast.result }}" = "failure" ]; then
+            echo "status=DAST_FAILED" >> "$GITHUB_OUTPUT"
+            echo "message=DAST scan found blocking issues" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=PIPELINE_ENDED" >> "$GITHUB_OUTPUT"
+            echo "message=Pipeline completed with mixed results" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Console notification summary
+        run: |
+          echo "============================================"
+          echo "CI/CD PIPELINE NOTIFICATION"
+          echo "============================================"
+          echo "Repository: ${{ github.repository }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Status: ${{ steps.result.outputs.status }}"
+          echo "Message: ${{ steps.result.outputs.message }}"
+          echo ""
+          echo "Job Results:"
+          echo "  validate: ${{ needs.validate.result || 'skipped' }}"
+          echo "  test: ${{ needs.test.result || 'skipped' }}"
+          echo "  secret-scan: ${{ needs.secret-scan.result || 'skipped' }}"
+          echo "  sast: ${{ needs.sast.result || 'skipped' }}"
+          echo "  dependency-scan: ${{ needs.dependency-scan.result || 'skipped' }}"
+          echo "  build: ${{ needs.build.result || 'skipped' }}"
+          echo "  staging-deploy: ${{ needs.staging-deploy.result || 'skipped' }}"
+          echo "  staging-integration-tests: ${{ needs.staging-integration-tests.result || 'skipped' }}"
+          echo "  smoke-tests: ${{ needs.smoke-tests.result || 'skipped' }}"
+          echo "  dast: ${{ needs.dast.result || 'skipped' }}"
+          echo "  production-approval: ${{ needs.production-approval.result || 'skipped' }}"
+          echo "  production-deploy: ${{ needs.production-deploy.result || 'skipped' }}"
+          echo "  post-deploy-verify: ${{ needs.post-deploy-verify.result || 'skipped' }}"
+          echo ""
+          echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "============================================"
+
+      - name: Notify Slack (if configured)
+        if: ${{ env.SLACK_WEBHOOK_URL != '' }}
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          payload: '{"text":"[${{ steps.result.outputs.status }}] ${{ github.repository }} ${{ github.ref_name }} — ${{ steps.result.outputs.message }} — ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

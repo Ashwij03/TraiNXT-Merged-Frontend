@@ -5,6 +5,7 @@ import {
   MdDriveFileRenameOutline,
   MdDeleteOutline,
   MdInfoOutline,
+  MdCheckCircle,
 } from "react-icons/md";
 
 import { getFileTypeMeta, isPreviewableImage, getExtension } from "./fileTypes";
@@ -72,6 +73,8 @@ function FilePreviewModal({
   onDelete,
   onClose,
   locked = false,
+  canApprove = false,
+  onApprove,
 }) {
   const closeRef = useRef(null);
 
@@ -125,6 +128,12 @@ function FilePreviewModal({
     { label: "Last Modified", value: formatDateTime(file.modifiedAt) },
     { label: "Uploaded By", value: file.uploadedBy },
     { label: "Status", value: file.status },
+    ...(file.approvedBy
+      ? [{ label: "Approved By", value: file.approvedBy }]
+      : []),
+    ...(file.approvedAt
+      ? [{ label: "Approved On", value: formatDateTime(file.approvedAt) }]
+      : []),
   ];
 
   return (
@@ -151,6 +160,19 @@ function FilePreviewModal({
           </div>
 
           <div className="sf-details-panel-actions">
+            {canApprove &&
+              String(file.status || "").trim().toLowerCase() ===
+                "pending review" && (
+                <button
+                  type="button"
+                  className="sf-btn sf-btn--primary"
+                  onClick={() => onApprove?.()}
+                >
+                  <MdCheckCircle size={14} aria-hidden="true" />
+                  <span>Approve</span>
+                </button>
+              )}
+
             <button
               type="button"
               className="sf-btn sf-btn--ghost"
