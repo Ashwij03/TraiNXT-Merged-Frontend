@@ -76,7 +76,7 @@ function StudyMilestoneTimeline({
                     onChange={(e) =>
                       handleUpdate(milestone.id, "status", e.target.value)
                     }
-                  >
+
                     <option>Pending</option>
                     <option>In Progress</option>
                     <option>Completed</option>
@@ -93,7 +93,7 @@ function StudyMilestoneTimeline({
                     className="icon-btn danger"
                     onClick={() => handleDelete(milestone.id)}
                     aria-label="Delete milestone"
-                  >
+
                     <FiTrash2 />
                   </button>
                 </div>

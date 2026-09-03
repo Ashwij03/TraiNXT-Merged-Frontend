@@ -1,12 +1,12 @@
 // UPDATED: Recruitment page with dynamic funnel data from adminService
 
-import DashboardLayout from "../../shared/components/dashboard/shared/DashboardLayout";
-import KPICard from "../../shared/components/dashboard/shared/KPICard";
+import "../../shared/styles/AdminPage.css";
 import DashboardBarChart from "../../shared/components/dashboard/shared/DashboardBarChart";
 import DashboardCard from "../../shared/components/dashboard/shared/DashboardCard";
+import DashboardLayout from "../../shared/components/dashboard/shared/DashboardLayout";
 import DataTable from "../../shared/components/dashboard/shared/DataTable";
+import KPICard from "../../shared/components/dashboard/shared/KPICard";
 import { getRecruitment } from "../../shared/services/adminService";
-import "../../shared/styles/AdminPage.css";
 
 function Recruitment() {
   const recruitment = getRecruitment();

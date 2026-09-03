@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./DashboardHeader.css";
+<import SearchableDropdown from "../../common/SearchableDropdown";
+import RoleSwitcherDropdown from "../../RoleSwitcherDropdown.js";
+import NavbarNotificationsDropdown from "../../NavbarNotificationsDropdown.css";
+
 import TriaNXTLogo from "../../TriaNXTLogo";
 import SearchableDropdown from "../../SearchableDropdown";
 import RoleSwitcherDropdown from "../../RoleSwitcherDropdown";
@@ -14,14 +18,12 @@ import {
   FiSettings,
 } from "react-icons/fi";
 import { useAdminNavbarNotifications } from "../../../hooks/useAdminNavbarNotifications";
-import {
   FILTER_ORDERS,
   FILTER_LABELS,
   ROLE_BADGE_CLASSES,
 } from "./enterpriseHeaderConfig";
 import { getStudyByCode } from "../../../services/studyService";
 import ROLES from "../../../constants/roles";
-import {
   formatUserDisplayName,
   getCurrentUser,
   getDashboardPath,
@@ -31,11 +33,9 @@ import {
   setAdminPreviewRole,
 } from "../../../services/roleService";
 import { PROFILE_PHOTO_EVENT } from "../../../constants/profileEvents";
-import {
   terminateCurrentSession,
   touchUserSession,
 } from "../../../services/sessionService";
-import {
   ADMIN_PREVIEW_ROLE_EVENT,
   clearDependentFilters,
   getDependentFilterKeys,
@@ -62,7 +62,6 @@ import {
   setStoredStudyFilter,
   setStoredSubjectFilter,
 } from "../../../constants/headerFilters";
-import {
   getCROOptions,
   getDefaultInstitution,
   getIndicationOptions,
@@ -76,6 +75,7 @@ import {
   getSubjectOptions,
 } from "../../../services/filterService";
 import useLiveChatNavigation from "../../../hooks/useLiveChatNavigation";
+
 import { useAuth } from "../../../context/AuthContext";
 
 // Task 8 (Dashboard Data Reset Bug) + Task 15 (Dashboard Must Show All
@@ -212,6 +212,18 @@ function EnterpriseNavbarBase({
 
     return base;
   }, [userIsAdmin, effectiveRole, croOptions.length]);
+
+  // ---------------------------------------------------------------------
+  // A9 — Study Context Header
+  //
+  // The header's own Study dropdown (selectedStudyCode/SELECTED_STUDY_FILTER_KEY)
+  // is only one way a Study gets selected. Sidebar links, Quick Actions, and
+  // deep links all navigate straight to /study-dashboard/:code without ever
+  // touching that dropdown. Without this, the header could show one Study
+  // while the page underneath was showing another. Reading the code out of
+  // the route keeps every module — Admin, PI, CRO, Sponsor, Site Staff —
+  // showing the same Study context, since they all render this same header.
+  // ---------------------------------------------------------------------
 
   const routeStudyCode = useMemo(() => {
     const match = location.pathname.match(/^\/study-dashboard\/([^/?]+)/);
@@ -810,7 +822,7 @@ function EnterpriseNavbarBase({
           onClick={onToggleSidebar}
           aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
           aria-expanded={sidebarOpen}
-        >
+
           <FiMenu />
         </button>
 
@@ -843,7 +855,7 @@ function EnterpriseNavbarBase({
             onClick={() => setFiltersOpen((previousValue) => !previousValue)}
             aria-label="Toggle filters"
             aria-expanded={filtersOpen}
-          >
+
             <FiSliders />
             <span>Filters</span>
             <FiChevronDown className="header-filter-toggle-chevron" />
@@ -851,7 +863,7 @@ function EnterpriseNavbarBase({
 
           <div
             className={`header-filters-grid${filtersOpen ? " is-open" : ""}`}
-          >
+
             <div className="header-filters-grid-heading">
               <span>Filters</span>
               <button
@@ -859,7 +871,7 @@ function EnterpriseNavbarBase({
                 className="header-filters-grid-close"
                 onClick={() => setFiltersOpen(false)}
                 aria-label="Close filters"
-              >
+
                 &times;
               </button>
             </div>
@@ -874,7 +886,7 @@ function EnterpriseNavbarBase({
               type="button"
               className="header-action-btn header-action-btn--outline"
               onClick={handleHomeNavigation}
-            >
+
               <FiHome />
               <span>Home</span>
             </button>
@@ -883,7 +895,7 @@ function EnterpriseNavbarBase({
               type="button"
               className="header-action-btn header-action-btn--outline"
               onClick={openLiveChat}
-            >
+
               <FiMessageSquare />
               <span>Live Chat</span>
             </button>
@@ -902,7 +914,7 @@ function EnterpriseNavbarBase({
               className="header-icon-btn"
               aria-label="Settings"
               onClick={() => navigateToSettingsSection("profile")}
-            >
+
               <FiSettings />
             </button>
           </div>
@@ -919,7 +931,7 @@ function EnterpriseNavbarBase({
                 setProfileOpen((previousValue) => !previousValue);
               }
             }}
-          >
+
             <div className="profile-avatar">
               {profilePhoto ? (
                 <img src={profilePhoto} alt="" className="profile-avatar-img" />
@@ -941,25 +953,25 @@ function EnterpriseNavbarBase({
               <div
                 className="profile-dropdown"
                 onClick={(event) => event.stopPropagation()}
-              >
+
                 <button
                   type="button"
                   onClick={() => navigateToSettingsSection("profile")}
-                >
+
                   Profile
                 </button>
 
                 <button
                   type="button"
                   onClick={() => navigateToSettingsSection("account")}
-                >
+
                   Account Settings
                 </button>
 
                 <button
                   type="button"
                   onClick={() => navigateToSettingsSection("security")}
-                >
+
                   Security
                 </button>
 
@@ -976,3 +988,4 @@ function EnterpriseNavbarBase({
 }
 
 export default EnterpriseNavbarBase;
+

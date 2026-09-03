@@ -17,7 +17,6 @@ import {
 } from "recharts";
 import EnterpriseModal from "./EnterpriseModal";
 import { downloadCsvReport } from "../../shared/utils/exportReport";
-import {
   DOCUMENT_REPORTS_EVENT,
   getComplianceAnalytics,
   getDocumentCompletionReport,
@@ -219,7 +218,7 @@ Diabetes,900,Delayed
                   onChange={(event) =>
                     setFilters({ ...filters, study: event.target.value })
                   }
-                >
+
                   {filterOptions.studies.map((option) => (
                     <option key={option} value={option}>
                       {option}
@@ -234,7 +233,7 @@ Diabetes,900,Delayed
                   onChange={(event) =>
                     setFilters({ ...filters, site: event.target.value })
                   }
-                >
+
                   {filterOptions.sites.map((option) => (
                     <option key={option} value={option}>
                       {option}
@@ -249,7 +248,7 @@ Diabetes,900,Delayed
                   onChange={(event) =>
                     setFilters({ ...filters, folder: event.target.value })
                   }
-                >
+
                   {filterOptions.folders.map((option) => (
                     <option key={option} value={option}>
                       {option}
@@ -264,7 +263,7 @@ Diabetes,900,Delayed
                   onChange={(event) =>
                     setFilters({ ...filters, status: event.target.value })
                   }
-                >
+
                   {filterOptions.statuses.map((option) => (
                     <option key={option} value={option}>
                       {option}
@@ -315,7 +314,7 @@ Diabetes,900,Delayed
                       cy="50%"
                       outerRadius={90}
                       label
-                    >
+
                       {statusSummary.map((entry, index) => (
                         <Cell
                           key={entry.name}
@@ -446,7 +445,7 @@ Diabetes,900,Delayed
               <button
                 type="button"
                 onClick={() => setShowSubscriptionModal(true)}
-              >
+
                 Edit Report Subscription
               </button>
             )}
@@ -463,7 +462,7 @@ Diabetes,900,Delayed
           onClose={() => setShowSubscriptionModal(false)}
           onSave={handleSaveSubscription}
           saveLabel="Save Subscription"
-        >
+
           <label>
             Frequency
             <select
@@ -474,7 +473,7 @@ Diabetes,900,Delayed
                   frequency: event.target.value
                 })
               }
-            >
+
               <option>Daily</option>
               <option>Weekly</option>
               <option>Monthly</option>

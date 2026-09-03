@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/dashboard/shared/DashboardLayout";
-import { submitAccessRequest } from "../services/accessPermissionService";
 import { getCurrentUser } from "../services/roleService";
+import { submitAccessRequest } from "../services/accessPermissionService";
 import "./AccessPermissions.css";
 
 function AccessRequestForm() {
@@ -67,7 +67,7 @@ function AccessRequestForm() {
               name="accessType"
               value={form.accessType}
               onChange={handleChange}
-            >
+
               {accessTypes.map((type) => (
                 <option key={type} value={type}>
                   {type}

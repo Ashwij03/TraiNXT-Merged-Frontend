@@ -1,6 +1,6 @@
-import SiteStaffDashboardLayout from "../components/SiteStaffDashboardLayout";
-import RoleLiveChatPage from "../../shared/components/RoleLiveChatPage";
 import ROLES from "../../shared/constants/roles";
+import RoleLiveChatPage from "../../shared/components/RoleLiveChatPage";
+import SiteStaffDashboardLayout from "../components/SiteStaffDashboardLayout";
 import useLiveChatNavigation from "../../shared/hooks/useLiveChatNavigation";
 
 function SiteStaffLiveChat() {

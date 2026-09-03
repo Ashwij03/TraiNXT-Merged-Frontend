@@ -4,8 +4,8 @@ import { useParams } from "react-router-dom";
 import VisitHeader from "./VisitHeader";
 import VisitProcedures from "./VisitProcedures";
 
-import { useComments } from "../../comments/CommentsContext";
 import CommentModal from "../../comments/CommentModal";
+import { useComments } from "../../comments/CommentsContext";
 
 import "./VisitDetails.css";
 
@@ -56,7 +56,7 @@ export default function VisitDetails() {
           onClick={() =>
             setActiveTab("procedures")
           }
-        >
+
           Procedures
         </button>
         
@@ -69,7 +69,7 @@ export default function VisitDetails() {
           onClick={() =>
             setActiveTab("documents")
           }
-        >
+
           Documents
         </button>
         
@@ -82,7 +82,7 @@ export default function VisitDetails() {
           onClick={() =>
             setActiveTab("comments")
           }
-        >
+
           Comments
         </button> */}
         
@@ -95,7 +95,7 @@ export default function VisitDetails() {
           onClick={() =>
             setActiveTab("audit")
           }
-        >
+
           Audit Trail
         </button> */}
         
@@ -113,7 +113,7 @@ export default function VisitDetails() {
 
           <button
             className="add-doc-btn"
-          >
+
             + Upload Document
           </button>
 
@@ -236,7 +236,7 @@ export default function VisitDetails() {
             <button
               className="procedure-plus"
               onClick={() => setShowModal(true)}
-            >
+
               +
             </button>
 
@@ -247,7 +247,6 @@ export default function VisitDetails() {
             <div
               key={c.id}
               className="comment-inline"
-            >
 
               <div className="avatar">
 

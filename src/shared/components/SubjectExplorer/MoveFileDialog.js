@@ -68,13 +68,13 @@ export default function MoveFileDialog({
       ref={overlayRef}
       className="sxm-overlay"
       onClick={onClose}
-    >
+
       <div
         className="sxm-modal"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-label="Move file"
-      >
+
         <div className="sxm-header">
           <h3>Move "{file?.name}"</h3>
           <button type="button" className="sxm-close" onClick={onClose}>✕</button>
@@ -87,7 +87,7 @@ export default function MoveFileDialog({
               value={selectedId || ""}
               onChange={(e) => setSelectedId(e.target.value || null)}
               aria-label="Destination folder"
-            >
+
               <option value="">— Choose a folder —</option>
               {folders.map((folder) => (
                 <option key={folder.id} value={folder.id}>
@@ -113,7 +113,7 @@ export default function MoveFileDialog({
             className="sxm-btn sxm-btn--primary"
             disabled={!selectedId}
             onClick={handleSubmit}
-          >
+
             Move
           </button>
         </div>

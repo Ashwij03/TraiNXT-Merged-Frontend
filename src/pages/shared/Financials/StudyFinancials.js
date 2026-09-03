@@ -4,12 +4,11 @@ import {
   getStudyFinancials,
   saveStudyFinancials,
 } from "../../../services/financialService";
-import {
   formatSiteOption,
   resolveSiteRecord,
   MISSING_SITE_DISPLAY,
-} from "../../../utils/siteDisplay";
-import { readStorageArray } from "../../../utils/storageHelpers";
+} from "../../../shared/utils/siteDisplay.js";
+import { readStorageArray } from "../../../shared/utils/storageHelpers.js";
 
 const FINANCIALS_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 
@@ -931,7 +930,7 @@ function StudyFinancials({ study } = {}) {
             id="financial-status-filter"
             value={selectedFilter}
             onChange={(event) => setSelectedFilter(event.target.value)}
-          >
+
             <option value="All">All</option>
             <option value="Paid">Paid</option>
             <option value="Pending">Pending</option>
@@ -965,7 +964,7 @@ function StudyFinancials({ study } = {}) {
                 ? "financial-status-active"
                 : "financial-status-pending"
             }`}
-          >
+
             {remainingBudget >= 0 ? "Healthy" : "Exceeded"}
           </span>
           <p>Budgets created: {budgets.length}</p>
@@ -1040,14 +1039,14 @@ function StudyFinancials({ study } = {}) {
             setSubjectCostForm(INITIAL_SUBJECT_COST_FORM);
             setShowSubjectCostModal(true);
           }}
-        >
+
           + New Subject Cost
         </button>
 
         <button
           type="button"
           onClick={() => setShowAllData((currentValue) => !currentValue)}
-        >
+
           {showAllData ? "Hide Summary" : "View Summary"}
         </button>
 
@@ -1300,7 +1299,7 @@ function StudyFinancials({ study } = {}) {
                           className={`financial-status ${getStatusClassName(
                             budget.status,
                           )}`}
-                        >
+
                           {budget.status}
                         </span>
                       </td>
@@ -1312,7 +1311,7 @@ function StudyFinancials({ study } = {}) {
                           type="button"
                           className="financial-action-btn"
                           onClick={() => handleEditBudget(budget)}
-                        >
+
                           Edit
                         </button>
 
@@ -1320,7 +1319,7 @@ function StudyFinancials({ study } = {}) {
                           type="button"
                           className="financial-action-btn"
                           onClick={() => handleBudgetPreview(budget)}
-                        >
+
                           Preview
                         </button>
 
@@ -1328,7 +1327,7 @@ function StudyFinancials({ study } = {}) {
                           type="button"
                           className="financial-delete-btn"
                           onClick={() => openDeleteModal("budget", budget.id)}
-                        >
+
                           Delete
                         </button>
                       </td>
@@ -1351,7 +1350,7 @@ function StudyFinancials({ study } = {}) {
                   setCurrentPage(1);
                 }}
                 aria-label="Rows per page"
-              >
+
                 {FINANCIALS_PAGE_SIZE_OPTIONS.map((option) => (
                   <option key={option} value={option}>
                     {option}
@@ -1364,7 +1363,7 @@ function StudyFinancials({ study } = {}) {
               type="button"
               disabled={safeCurrentPage === 1}
               onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
-            >
+
               Previous
             </button>
 
@@ -1378,7 +1377,7 @@ function StudyFinancials({ study } = {}) {
               onClick={() =>
                 setCurrentPage((page) => Math.min(page + 1, totalPages))
               }
-            >
+
               Next
             </button>
           </div>
@@ -1486,14 +1485,14 @@ function StudyFinancials({ study } = {}) {
                       <button
                         className="financial-action-btn"
                         onClick={() => handleEditSubjectCost(item)}
-                      >
+
                         Edit
                       </button>
 
                       <button
                         className="financial-delete-btn"
                         onClick={() => handleDeleteSubjectCost(item.id)}
-                      >
+
                         Delete
                       </button>
                     </td>
@@ -1537,7 +1536,7 @@ function StudyFinancials({ study } = {}) {
                       className={`financial-status ${getStatusClassName(
                         payment.status,
                       )}`}
-                    >
+
                       {payment.status}
                     </span>
                   </td>
@@ -1546,7 +1545,7 @@ function StudyFinancials({ study } = {}) {
                       type="button"
                       className="financial-action-btn"
                       onClick={() => handleEditPayment(payment)}
-                    >
+
                       Edit
                     </button>
 
@@ -1554,7 +1553,7 @@ function StudyFinancials({ study } = {}) {
                       type="button"
                       className="financial-delete-btn"
                       onClick={() => openDeleteModal("payment", payment.id)}
-                    >
+
                       Delete
                     </button>
                   </td>
@@ -1597,7 +1596,7 @@ function StudyFinancials({ study } = {}) {
                       className={`financial-status ${getStatusClassName(
                         receivable.status,
                       )}`}
-                    >
+
                       {receivable.status}
                     </span>
                   </td>
@@ -1607,7 +1606,7 @@ function StudyFinancials({ study } = {}) {
                         type="button"
                         className="financial-receivable-edit-btn"
                         onClick={() => handleEditReceivable(receivable)}
-                      >
+
                         Edit
                       </button>
 
@@ -1617,7 +1616,7 @@ function StudyFinancials({ study } = {}) {
                         onClick={() =>
                           openDeleteModal("receivable", receivable.id)
                         }
-                      >
+
                         Delete
                       </button>
                     </div>
@@ -1665,7 +1664,7 @@ function StudyFinancials({ study } = {}) {
                       className={`financial-status ${getStatusClassName(
                         invoice.status,
                       )}`}
-                    >
+
                       {invoice.status}
                     </span>
                   </td>
@@ -1675,7 +1674,7 @@ function StudyFinancials({ study } = {}) {
                         type="button"
                         className="financial-receivable-edit-btn"
                         onClick={() => handleEditInvoice(invoice)}
-                      >
+
                         Edit
                       </button>
 
@@ -1683,7 +1682,7 @@ function StudyFinancials({ study } = {}) {
                         type="button"
                         className="financial-receivable-delete-btn"
                         onClick={() => openDeleteModal("invoice", invoice.id)}
-                      >
+
                         Delete
                       </button>
                     </div>
@@ -1730,7 +1729,7 @@ function StudyFinancials({ study } = {}) {
                 onChange={(event) =>
                   updateBudgetField("category", event.target.value)
                 }
-              >
+
                 <option value="">Select Category</option>
                 {BUDGET_CATEGORY_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -1789,7 +1788,7 @@ function StudyFinancials({ study } = {}) {
                     unitType: event.target.value,
                   }))
                 }
-              >
+
                 <option value="Subjects">Subjects</option>
                 <option value="Visits">Visits</option>
                 <option value="Sites">Sites</option>
@@ -1806,7 +1805,7 @@ function StudyFinancials({ study } = {}) {
                 onChange={(event) =>
                   updateBudgetField("currency", event.target.value)
                 }
-              >
+
                 <option>USD</option>
 
                 <option>INR</option>
@@ -1841,7 +1840,7 @@ function StudyFinancials({ study } = {}) {
                 onChange={(event) =>
                   updateBudgetField("status", event.target.value)
                 }
-              >
+
                 <option value="Active">Active</option>
                 <option value="Draft">Draft</option>
                 <option value="Closed">Closed</option>
@@ -1922,7 +1921,7 @@ function StudyFinancials({ study } = {}) {
                     status: event.target.value,
                   }))
                 }
-              >
+
                 <option value="Paid">Paid</option>
                 <option value="Pending">Pending</option>
                 <option value="Upcoming">Upcoming</option>
@@ -2008,7 +2007,7 @@ function StudyFinancials({ study } = {}) {
                     status: event.target.value,
                   }))
                 }
-              >
+
                 <option value="Pending">Pending</option>
                 <option value="Received">Received</option>
                 <option value="Overdue">Overdue</option>
@@ -2106,7 +2105,7 @@ function StudyFinancials({ study } = {}) {
                     status: event.target.value,
                   }))
                 }
-              >
+
                 <option value="Pending">Pending</option>
                 <option value="Paid">Paid</option>
                 <option value="Overdue">Overdue</option>
@@ -2211,7 +2210,7 @@ function StudyFinancials({ study } = {}) {
                     status: e.target.value,
                   })
                 }
-              >
+
                 <option>Pending</option>
                 <option>Completed</option>
               </select>
@@ -2255,7 +2254,7 @@ function StudyFinancials({ study } = {}) {
                 type="button"
                 className="financial-receivable-delete-btn"
                 onClick={confirmDelete}
-              >
+
                 Delete
               </button>
             </div>

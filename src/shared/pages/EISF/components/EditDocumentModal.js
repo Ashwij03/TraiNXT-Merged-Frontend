@@ -68,7 +68,7 @@ export default function EditDocumentModal({
             onChange={(e) =>
               handleChange("status", e.target.value)
             }
-          >
+
             {DOCUMENT_STATUS_OPTIONS.map((status) => (
               <option key={status} value={status}>
                 {status}
@@ -84,7 +84,7 @@ export default function EditDocumentModal({
             type="button"
             className="cancel-btn"
             onClick={onClose}
-          >
+
             Cancel
           </button>
 
@@ -92,7 +92,7 @@ export default function EditDocumentModal({
             type="button"
             className="save-btn"
             onClick={() => onSave(form)}
-          >
+
             Save
           </button>
 

@@ -26,7 +26,7 @@ function VisitDetails({ setActiveTab }) {
           onClick={() =>
             setActiveTab("Visits")
           }
-        >
+
           ← Back To Visits
         </button>
 
@@ -61,7 +61,7 @@ function VisitDetails({ setActiveTab }) {
               "overview"
             )
           }
-        >
+
           Overview
         </button>
 
@@ -76,7 +76,7 @@ function VisitDetails({ setActiveTab }) {
               "procedures"
             )
           }
-        >
+
           Procedures
         </button>
 
@@ -91,7 +91,7 @@ function VisitDetails({ setActiveTab }) {
               "documents"
             )
           }
-        >
+
           Documents
         </button>
 
@@ -106,7 +106,7 @@ function VisitDetails({ setActiveTab }) {
               "comments"
             )
           }
-        >
+
           Comments
         </button>
 
@@ -121,7 +121,7 @@ function VisitDetails({ setActiveTab }) {
               "audit"
             )
           }
-        >
+
           Audit Trail
         </button>
 

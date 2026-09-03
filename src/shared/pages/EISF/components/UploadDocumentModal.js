@@ -283,7 +283,7 @@ export default function UploadDocumentModal({
           <select
             value={form.category}
             onChange={(e) => setForm({ ...form, category: e.target.value })}
-          >
+
             <option value="">Select</option>
             {categories.map((category) => (
               <option key={category} value={category}>
@@ -312,7 +312,7 @@ export default function UploadDocumentModal({
             onDragEnter={onDragOver}
             onDragLeave={onDragLeave}
             onDrop={onDrop}
-          >
+
             <p className="upload-dropzone-text">
               Drag &amp; drop files or a folder here, or use the buttons below.
             </p>
@@ -322,7 +322,7 @@ export default function UploadDocumentModal({
                 className="cancel-btn"
                 onClick={() => filesInputRef.current?.click()}
                 disabled={isUploading}
-              >
+
                 Add Files
               </button>
               <button
@@ -330,7 +330,7 @@ export default function UploadDocumentModal({
                 className="cancel-btn"
                 onClick={() => folderInputRef.current?.click()}
                 disabled={isUploading}
-              >
+
                 Add Folder
               </button>
               {isMultiMode && (
@@ -339,7 +339,7 @@ export default function UploadDocumentModal({
                   className="cancel-btn"
                   onClick={clearQueue}
                   disabled={isUploading}
-                >
+
                   Clear
                 </button>
               )}
@@ -399,7 +399,7 @@ export default function UploadDocumentModal({
                           className="upload-queue-remove"
                           onClick={() => removeQueued(item.id)}
                           aria-label={`Remove ${item.relativePath}`}
-                        >
+
                           ×
                         </button>
                       )}
@@ -430,7 +430,7 @@ export default function UploadDocumentModal({
             className="cancel-btn"
             onClick={onClose}
             disabled={isUploading}
-          >
+
             Cancel
           </button>
           <button
@@ -438,7 +438,7 @@ export default function UploadDocumentModal({
             className="save-btn"
             onClick={submit}
             disabled={isUploading}
-          >
+
             {isUploading
               ? "Uploading…"
               : isMultiMode

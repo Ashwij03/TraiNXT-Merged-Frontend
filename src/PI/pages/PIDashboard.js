@@ -16,7 +16,6 @@ import {
   FaFileMedical,
   FaClock,
 } from "react-icons/fa";
-import {
   BarChart,
   Bar,
   XAxis,
@@ -46,7 +45,6 @@ import StudyFolderDashboard from "./PIStudyFolderDashboard";
 import VisitCalendarSection from "../../shared/components/dashboard/shared/VisitCalendarSection";
 import useVisitSchedules from "../../shared/hooks/useVisitSchedules";
 
-import {
   getDashboardData,
   saveDashboardData,
   syncKpisFromData,
@@ -56,11 +54,12 @@ import {
 import { useComments } from "../../shared/comments/CommentsContext";
 
 import { getStudies } from "../../shared/services/studyService";
-import {
   addOrUpdateVisitSchedule,
   SCHEDULES_EVENT,
 } from "../../shared/services/visitScheduleService";
-import {
+  addOrUpdateVisitSchedule,
+  SCHEDULES_EVENT
+} from "../../services/visitScheduleService";
   getStudyKey,
   useRoleStudiesSidebar,
 } from "../../shared/hooks/useRoleStudiesSidebar";
@@ -601,7 +600,7 @@ function PIDashboard({ embeddedInLayout = false }) {
               onClick={() => navigateToPage("recruitment")}
               role="button"
               tabIndex={0}
-            >
+
               <div className="card-header">
                 <div className="icon-circle blue">
                   <FaUsers />
@@ -629,7 +628,7 @@ function PIDashboard({ embeddedInLayout = false }) {
                   navigateToSubjects();
                 }
               }}
-            >
+
               <div className="card-header">
                 <div className="icon-circle green">
                   <FaUser />
@@ -654,7 +653,7 @@ function PIDashboard({ embeddedInLayout = false }) {
                   navigateToStudies();
                 }
               }}
-            >
+
               <div className="card-header">
                 <div className="icon-circle orange">
                   <FaClipboardList />
@@ -672,7 +671,7 @@ function PIDashboard({ embeddedInLayout = false }) {
               onClick={() => navigateToPage("comments")}
               role="button"
               tabIndex={0}
-            >
+
               <div className="card-header">
                 <div className="icon-circle red">
                   <FaFileAlt />
@@ -692,7 +691,7 @@ function PIDashboard({ embeddedInLayout = false }) {
               onClick={() => navigateToPage("site-performance")}
               role="button"
               tabIndex={0}
-            >
+
               <div className="card-header">
                 <div className="icon-circle purple">
                   <FaChartBar />
@@ -712,7 +711,7 @@ function PIDashboard({ embeddedInLayout = false }) {
               onClick={() => navigateToPage("regulatory")}
               role="button"
               tabIndex={0}
-            >
+
               <div className="card-header">
                 <div className="icon-circle teal">
                   <FaShieldAlt />
@@ -758,7 +757,7 @@ function PIDashboard({ embeddedInLayout = false }) {
                       label={({ name, value }) =>
                         value > 0 ? `${name}: ${value}` : ""
                       }
-                    >
+
                       {consentChartData.map((entry, index) => (
                         <Cell
                           key={`${entry.name}-${index}`}
@@ -795,7 +794,7 @@ function PIDashboard({ embeddedInLayout = false }) {
                       cx="52%"
                       cy="50%"
                       paddingAngle={2}
-                    >
+
                       <Cell fill="#22c55e" />
                       <Cell fill="#3b82f6" />
                       <Cell fill="#a855f7" />
@@ -817,7 +816,7 @@ function PIDashboard({ embeddedInLayout = false }) {
                       dominantBaseline="middle"
                       fontSize="28"
                       fontWeight="700"
-                    >
+
                       {realSubjects.length}
                     </text>
 
@@ -827,7 +826,7 @@ function PIDashboard({ embeddedInLayout = false }) {
                       textAnchor="middle"
                       dominantBaseline="middle"
                       fontSize="13"
-                    >
+
                       Total
                     </text>
                   </PieChart>
@@ -881,7 +880,7 @@ function PIDashboard({ embeddedInLayout = false }) {
                       handleAlertClick(alert);
                     }
                   }}
-                >
+
                   <div className="alert-left">
                     <div className={`alert-icon ${alert.type}`}>
                       {getAlertIcon(alert.type)}
@@ -894,7 +893,7 @@ function PIDashboard({ embeddedInLayout = false }) {
                         {alert.priority && (
                           <span
                             className={`pi-priority-badge ${alert.priority.toLowerCase()}`}
-                          >
+
                             <FaClipboardList
                               className="alert-field-icon"
                               aria-hidden="true"
@@ -920,7 +919,7 @@ function PIDashboard({ embeddedInLayout = false }) {
                 onClick={() => setShowAlertsModal(true)}
                 role="button"
                 tabIndex={0}
-              >
+
                 View All Alerts →
               </div>
             </div>
@@ -937,7 +936,7 @@ function PIDashboard({ embeddedInLayout = false }) {
                   onClick={item.action}
                   role="button"
                   tabIndex={0}
-                >
+
                   <div className="action-icon">{item.icon}</div>
                   <p>{item.title}</p>
                   <span className="action-count">{item.count}</span>
@@ -1033,7 +1032,7 @@ function PIDashboard({ embeddedInLayout = false }) {
                     status: event.target.value,
                   })
                 }
-              >
+
                 <option>Open</option>
                 <option>Answered</option>
                 <option>Closed</option>
@@ -1057,14 +1056,14 @@ function PIDashboard({ embeddedInLayout = false }) {
                 <div
                   key={`${alert.title}-modal-${index}`}
                   className="pi-alert-modal-item"
-                >
+
                   <div className="alert-title-row">
                     <strong>{alert.title}</strong>
 
                     {alert.priority && (
                       <span
                         className={`pi-priority-badge ${alert.priority.toLowerCase()}`}
-                      >
+
                         {alert.priority}
                       </span>
                     )}
@@ -1078,7 +1077,7 @@ function PIDashboard({ embeddedInLayout = false }) {
               <button
                 className="close-alert-btn"
                 onClick={() => setShowAlertsModal(false)}
-              >
+
                 Close
               </button>
             </div>
@@ -1095,7 +1094,7 @@ function PIDashboard({ embeddedInLayout = false }) {
               })
             }
             aria-label="Open live chat"
-          >
+
             <FiMessageSquare size={40} />
           </button>
         )}

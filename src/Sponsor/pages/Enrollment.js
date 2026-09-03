@@ -2,8 +2,8 @@ import React, { useMemo } from 'react';
 import AppLayout from './AppLayout';
 import '../styles/Enrollment.css';
 import { useNavigate } from "react-router-dom";
-import { resolveSiteDisplay } from "../../shared/utils/siteDisplay";
 import { getStudies } from "../../shared/services/studyService";
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay";
 
 const Enrollment = () => {
 
@@ -166,7 +166,7 @@ const Enrollment = () => {
     onClick={() => {
       navigate(`/study/${study.studyId}`);
     }}
-  >
+
     View
   </button>
 </td>

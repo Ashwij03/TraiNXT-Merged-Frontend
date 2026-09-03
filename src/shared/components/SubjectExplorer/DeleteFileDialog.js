@@ -49,13 +49,13 @@ function DeleteFileDialog({
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose?.();
       }}
-    >
+
       <div
         className="sxm-modal sxm-modal--sm"
         role="alertdialog"
         aria-modal="true"
         aria-label="Delete file"
-      >
+
         <div className="sxm-header">
           <div className="sxm-header-title">
             <span className="sxm-header-icon sxm-header-icon--danger">
@@ -72,7 +72,7 @@ function DeleteFileDialog({
             className="sxm-close"
             aria-label="Close"
             onClick={onClose}
-          >
+
             <MdClose size={17} />
           </button>
         </div>
@@ -111,7 +111,7 @@ function DeleteFileDialog({
               ref={confirmRef}
               className="sxm-btn sxm-btn--danger"
               onClick={onConfirm}
-            >
+
               Delete File
             </button>
           </div>

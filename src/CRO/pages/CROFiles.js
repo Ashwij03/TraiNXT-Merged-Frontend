@@ -6,11 +6,8 @@ import { useCROData } from "./CRODATAContext";
 
 import EmptyState from "./EmptyState";
 
-import { resolveSiteDisplay } from "../../shared/utils/siteDisplay";
-
 import { getStudies } from "../../shared/services/studyService";
-
-
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay";
 
 function CROFiles() {
 
@@ -28,22 +25,17 @@ function CROFiles() {
         })
       : "—";
 
-
   const filteredFiles = files.filter((f) =>
 
     f.name.toLowerCase().includes(searchTerm.toLowerCase())
 
   );
 
-
-
   return (
 
     <CROLayout>
 
       <h1 style={{ marginBottom: "1.5625rem" }}>Files</h1>
-
-
 
       <div className="cro-summary-cards">
 
@@ -89,8 +81,6 @@ function CROFiles() {
 
       </div>
 
-
-
       <div className="cro-panel">
 
         <div className="cro-panel-header">
@@ -112,8 +102,6 @@ function CROFiles() {
           <h2>Files List</h2>
 
         </div>
-
-
 
         {filteredFiles.length === 0 ? (
 
@@ -185,8 +173,6 @@ function CROFiles() {
 
                         }
 
-                      >
-
                         View
 
                       </button>
@@ -207,14 +193,10 @@ function CROFiles() {
 
       </div>
 
-
-
     </CROLayout>
 
   );
 
 }
-
-
 
 export default CROFiles;

@@ -9,6 +9,7 @@ import {
   initializeAdminData
 } from "./adminService";
 import { buildCommentCounts, isOpenComment } from "./commentService";
+import { isOpenComment } from "./commentService";
 import { getUpcomingVisitsWindow } from "./visitScheduleService";
 
 export function getStudiesDashboard() {

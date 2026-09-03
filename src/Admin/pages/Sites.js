@@ -1,10 +1,10 @@
 // UPDATED: Dynamic sites page wired to adminService localStorage data
 
-import DashboardLayout from "../../shared/components/dashboard/shared/DashboardLayout";
-import KPICard from "../../shared/components/dashboard/shared/KPICard";
-import DataTable from "../../shared/components/dashboard/shared/DataTable";
-import { getSites } from "../../shared/services/adminService";
 import "../../shared/styles/AdminPage.css";
+import DashboardLayout from "../../shared/components/dashboard/shared/DashboardLayout";
+import DataTable from "../../shared/components/dashboard/shared/DataTable";
+import KPICard from "../../shared/components/dashboard/shared/KPICard";
+import { getSites } from "../../shared/services/adminService";
 
 function Sites() {
   const sites = getSites();

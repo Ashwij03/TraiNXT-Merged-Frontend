@@ -61,11 +61,11 @@ function SelectedFolderBar({
       aria-label={`Selected folder: ${folder.name}, ${fileCount} ${
         fileCount === 1 ? "file" : "files"
       }`}
-    >
+
       <span
         className={`sw-folderbar-icon${isSubject ? " is-subject" : ""}`}
         aria-hidden="true"
-      >
+
         <FolderIcon size={16} />
       </span>
 
@@ -104,7 +104,7 @@ function SelectedFolderBar({
           onClick={onClear}
           aria-label="Clear folder selection"
           title="Clear folder selection"
-        >
+
           <MdClose size={14} />
           <span>Clear</span>
         </button>

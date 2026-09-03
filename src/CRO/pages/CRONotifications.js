@@ -167,7 +167,7 @@ function CRONotifications() {
                             message: notification.message,
                           })
                         }
-                      >
+
                         View
                       </button>
 
@@ -177,7 +177,7 @@ function CRONotifications() {
                           className="cro-btn-sm"
                           onClick={() => handleMarkRead(notification.id)}
                           style={{ marginLeft: "0.5rem" }}
-                        >
+
                           Mark Read
                         </button>
                       )}

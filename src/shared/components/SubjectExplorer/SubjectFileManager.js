@@ -721,7 +721,7 @@ function SubjectFileManager({
               onClick={handleBackOneLevel}
               title={`Back to "${parentNode.name}"`}
               aria-label={`Back to "${parentNode.name}"`}
-            >
+
               <MdArrowBack size={16} aria-hidden="true" />
             </button>
           )}
@@ -761,14 +761,14 @@ function SubjectFileManager({
             aria-expanded={showFilters}
             aria-controls="sf-filterbar"
             title="Advanced filters"
-          >
+
             <MdTune size={16} aria-hidden="true" />
             <span>Filters</span>
             {activeFilterCount > 0 && (
               <span
                 className="sf-filter-badge"
                 aria-label={`${activeFilterCount} active`}
-              >
+
                 {activeFilterCount}
               </span>
             )}
@@ -784,7 +784,7 @@ function SubjectFileManager({
           className={`sf-alert sf-alert--${feedback.tone}`}
           role="status"
           aria-live="polite"
-        >
+
           <FeedbackIcon
             size={16}
             className="sf-alert-icon"
@@ -813,7 +813,7 @@ function SubjectFileManager({
             className="sf-alert-close"
             aria-label="Dismiss message"
             onClick={dismissFeedback}
-          >
+
             <MdClose size={15} />
           </button>
         </div>
@@ -830,7 +830,7 @@ function SubjectFileManager({
           visible in the left pane the entire time. */}
       <div
         className={`sf-body${dialog?.mode === "preview" ? " sf-body--split" : ""}`}
-      >
+
         <div className="sf-body-list">
           {/* ================= TOOLBAR: SEARCH + SORT ================= */}
           {folderFiles.length > 0 && (
@@ -855,7 +855,7 @@ function SubjectFileManager({
                     className="sf-search-clear"
                     aria-label="Clear file search"
                     onClick={clearSearch}
-                  >
+
                     <MdClose size={14} />
                   </button>
                 )}
@@ -872,7 +872,7 @@ function SubjectFileManager({
                       setSortKey(key);
                       setSortDir(DEFAULT_DIRECTION[key] || "asc");
                     }}
-                  >
+
                     {SORT_OPTIONS.map(({ key, label }) => (
                       <option key={key} value={key}>
                         {label}
@@ -889,7 +889,7 @@ function SubjectFileManager({
                   aria-label={`Sort direction: ${
                     sortDir === "asc" ? "ascending" : "descending"
                   }`}
-                >
+
                   <MdSwapVert size={16} aria-hidden="true" />
                   <span>{sortDir === "asc" ? "Asc" : "Desc"}</span>
                 </button>
@@ -898,7 +898,7 @@ function SubjectFileManager({
                   className="sf-result-count"
                   role="status"
                   aria-live="polite"
-                >
+
                   {visibleFiles.length} of {folderFiles.length}
                 </span>
 
@@ -910,7 +910,7 @@ function SubjectFileManager({
                   className="sf-btn sf-btn--ghost sf-export-btn"
                   onClick={handleExportFiles}
                   title="Export visible files to CSV"
-                >
+
                   <MdFileDownload size={16} aria-hidden="true" />
                   <span>Export</span>
                 </button>
@@ -968,7 +968,7 @@ function SubjectFileManager({
                         onSelectFolder(child);
                       }
                     }}
-                  >
+
                     <span className="sf-child-folder-icon">
                       <MdFolderOpen size={18} aria-hidden="true" />
                     </span>

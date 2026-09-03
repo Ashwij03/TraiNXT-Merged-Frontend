@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from "react";
-import CROSidebar from "./CROSidebar";
 import CRONavbar from "./CRONavbar";
+import CROSidebar from "./CROSidebar";
 import CommentModal from "../../shared/comments/CommentModal";
-import { getCurrentUser } from "../../shared/services/roleService";
+import React, { useMemo, useState } from "react";
 import { canViewComment } from "../../shared/services/commentService";
+import { getCurrentUser } from "../../shared/services/roleService";
 import { useCROData } from "./CRODATAContext";
 import { useComments } from "../../shared/comments/CommentsContext";
 

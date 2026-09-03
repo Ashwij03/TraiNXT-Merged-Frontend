@@ -7,7 +7,6 @@ import {
   getFolderCounts,
   initializeModuleDocuments,
 } from "../services/documentService";
-import {
   getSubModuleEnabledMap,
   setSubModuleEnabled,
 } from "../utils/subModuleStateUtils";
@@ -195,7 +194,7 @@ export default function EISFDashboard({ studyCode } = {}) {
                 className={`eisf-menu-item ${
                   selectedModuleId === item.id ? "active" : ""
                 } ${expandedModuleId === item.id ? "expanded" : ""}`}
-              >
+
                 <button
                   type="button"
                   className="eisf-menu-label"
@@ -210,7 +209,7 @@ export default function EISFDashboard({ studyCode } = {}) {
                       ? `${expandedModuleId === item.id ? "Collapse" : "Expand"} ${item.title}`
                       : item.title
                   }
-                >
+
                   <span className="eisf-menu-text">
                     <span className="eisf-module-number">{item.id}</span>
                     <span>{item.title}</span>
@@ -236,7 +235,7 @@ export default function EISFDashboard({ studyCode } = {}) {
                           selected === child.id ? "active" : ""
                         } ${enabled ? "" : "disabled"}`}
                         onClick={() => handleSectionChange(child.id)}
-                      >
+
                         <span className="eisf-child-title">
                           {child.id} {child.title}
                         </span>
@@ -258,7 +257,7 @@ export default function EISFDashboard({ studyCode } = {}) {
                         title={
                           enabled ? "Disable sub-module" : "Enable sub-module"
                         }
-                      >
+
                         <span className="toggle-track" aria-hidden="true">
                           <span className="toggle-thumb" />
                         </span>

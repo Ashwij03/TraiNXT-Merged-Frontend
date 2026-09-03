@@ -228,7 +228,7 @@ function SubjectFileTable({
                         : "descending"
                       : undefined
                   }
-                >
+
                   {columnSortKey ? (
                     <button
                       type="button"
@@ -242,7 +242,7 @@ function SubjectFileTable({
                             }. Activate to reverse.`
                           : `Sort by ${label.toLowerCase()}`
                       }
-                    >
+
                       <span>{label}</span>
                       {isActive && <SortIcon size={13} aria-hidden="true" />}
                     </button>

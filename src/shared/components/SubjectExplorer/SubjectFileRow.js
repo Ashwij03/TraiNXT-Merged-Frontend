@@ -92,7 +92,7 @@ function SubjectFileRow({ file, isActive = false, onAction, locked = false }) {
       }. Press Enter to view details.`}
       onClick={openDetails}
       onKeyDown={handleKeyDown}
-    >
+
       <td className="sf-cell-name">
         {/* The flex layout lives on this inner wrapper rather than the
             <td> itself. A table cell whose own `display` is overridden to
@@ -133,7 +133,7 @@ function SubjectFileRow({ file, isActive = false, onAction, locked = false }) {
       <td className="sf-cell-status">
         <span
           className={`sf-status ${STATUS_CLASS[file.status] || "sf-status--draft"}`}
-        >
+
           {file.status}
         </span>
       </td>
@@ -141,7 +141,7 @@ function SubjectFileRow({ file, isActive = false, onAction, locked = false }) {
       <td
         className="sf-cell-actions"
         onClick={(event) => event.stopPropagation()}
-      >
+
         {/* Fix (this update): View and Download used to be buried inside the
             "..." dropdown, so the whole cell showed only one ambiguous
             trigger and looked empty at a glance. They're now their own
@@ -163,7 +163,7 @@ function SubjectFileRow({ file, isActive = false, onAction, locked = false }) {
             title="View details"
             aria-label={`View details for ${file.name}`}
             onClick={handleView}
-          >
+
             <MdVisibility size={15} />
           </button>
 
@@ -173,7 +173,7 @@ function SubjectFileRow({ file, isActive = false, onAction, locked = false }) {
             title="Download"
             aria-label={`Download ${file.name}`}
             onClick={handleDownload}
-          >
+
             <MdDownload size={15} />
           </button>
 

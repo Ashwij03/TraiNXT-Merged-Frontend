@@ -3,7 +3,6 @@ import AppLayout from "./AppLayout";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
-
 const RegulatoryDetails = () => {
 
   const location = useLocation();
@@ -31,7 +30,7 @@ const RegulatoryDetails = () => {
         <button
           className="back-btn"
           onClick={() => navigate(-1)}
-        >
+
           ← Back
         </button>
 
@@ -44,7 +43,7 @@ const RegulatoryDetails = () => {
     className="kpi-card"
     onClick={() => setActiveSection("approved")}
     style={{ cursor: "pointer" }}
-  >
+
     <h3>Approved</h3>
     <h2>1</h2>
   </div>
@@ -53,7 +52,7 @@ const RegulatoryDetails = () => {
     className="kpi-card"
     onClick={() => setActiveSection("review")}
     style={{ cursor: "pointer" }}
-  >
+
     <h3>In Review</h3>
     <h2>1</h2>
   </div>
@@ -62,7 +61,7 @@ const RegulatoryDetails = () => {
     className="kpi-card"
     onClick={() => setActiveSection("overdue")}
     style={{ cursor: "pointer" }}
-  >
+
     <h3>Overdue</h3>
     <h2>1</h2>
   </div>
@@ -71,7 +70,7 @@ const RegulatoryDetails = () => {
     className="kpi-card"
     onClick={() => setActiveSection("submitted")}
     style={{ cursor: "pointer" }}
-  >
+
     <h3>Submitted</h3>
     <h2>1</h2>
   </div>
@@ -315,7 +314,7 @@ const RegulatoryDetails = () => {
       uploadedDate: "01-May-2026"
     })
   }
->
+
   View
 </button>
 </td>
@@ -336,7 +335,7 @@ const RegulatoryDetails = () => {
       uploadedDate: "05-May-2026"
     })
   }
->
+
   View
 </button>
 </td>
@@ -403,7 +402,7 @@ Uploaded By: ${selectedFile.uploadedBy}`
 
     a.click();
   }}
->
+
   Download
 </button>
      <button
@@ -432,7 +431,7 @@ ${selectedFile.uploadedBy}`;
 
     a.click();
   }}
->
+
   Export
 </button>
       <button onClick={() => setSelectedFile(null)}>

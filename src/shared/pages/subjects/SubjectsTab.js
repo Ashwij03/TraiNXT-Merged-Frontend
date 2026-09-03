@@ -2,8 +2,8 @@
 import { useState } from "react";
 import "./SubjectsTab.css";
 import { Link, useParams } from "react-router-dom";
-import { deleteSubject } from "../../services/studyService";
 import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
+import { deleteSubject } from "../../services/studyService";
 import { FiTrash2 } from "react-icons/fi";
 
 export default function SubjectsTab() {
@@ -98,7 +98,7 @@ export default function SubjectsTab() {
                     onClick={(e) => handleDeleteClick(e, "B-B")}
                     title="Delete subject"
                     aria-label="Delete subject"
-                  >
+
                     <FiTrash2 />
                   </button>
                 </div>
@@ -126,7 +126,7 @@ export default function SubjectsTab() {
                     onClick={(e) => handleDeleteClick(e, "A-T")}
                     title="Delete subject"
                     aria-label="Delete subject"
-                  >
+
                     <FiTrash2 />
                   </button>
                 </div>
@@ -210,7 +210,7 @@ export default function SubjectsTab() {
                   onClick={() =>
                     setOpenPopup(openPopup === "screening1" ? null : "screening1")
                   }
-                >
+
                   ✔
 
                   {openPopup === "screening1" && (
@@ -228,7 +228,7 @@ export default function SubjectsTab() {
   to="/visit/1"
   className="popup-link"
   onClick={(e) => e.stopPropagation()}
->
+
   View Visit Details
 </Link>
 

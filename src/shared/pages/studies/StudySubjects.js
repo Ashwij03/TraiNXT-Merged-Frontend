@@ -1,13 +1,6 @@
-<<<<<<< HEAD
-<<<<<<<< HEAD:src/shared/pages/studies/StudySubjects.js
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { readStorage } from "../../utils/storageHelpers";
-=======
 import { readStorage } from "../../utils/storageHelpers";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
->>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
 import {
   FiArrowLeft,
   FiChevronLeft,
@@ -17,22 +10,19 @@ import {
   FiPlus,
   FiTrash2,
 } from "react-icons/fi";
-import DocumentFolderManager from "../../components/DocumentFolderManager";
 import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
+import DocumentFolderManager from "../../components/DocumentFolderManager";
 import SubjectComments from "../subjects/SubjectComments";
 import SubjectFormModal from "../../components/SubjectExplorer/SubjectFormModal";
-import {
   canAddSubject,
   canEditSubjectContent,
 } from "../../utils/contentAccess";
-import {
   getCurrentUser,
   getEffectiveRole,
   ROLE_LABELS,
 } from "../../services/roleService";
 import { notifySubjectCreated } from "../../services/notificationService";
 import { syncSubjectSchedules } from "../../services/visitScheduleService";
-import {
   getStudyByCode,
   getSubjectStudyDefaults,
   createSubject,
@@ -40,20 +30,11 @@ import {
   COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE,
   COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE,
   getStudies,
-} from "../../services/studyService";
-<<<<<<< HEAD
 import { getSubjectsForStudy, subscribeSubjects } from "../../services/subjectService";
-=======
->>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
 import { STUDY_STATUS_COMPLETED } from "../../constants/studyStatus";
 import { resolveSiteDisplay } from "../../utils/siteDisplay";
 import "./StudySubjects.css";
 
-<<<<<<< HEAD
-const SELECTED_SUBJECT_STORAGE_KEY = "selectedSubject";
-const SUBJECTS_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
-
-=======
 const SUBJECTS_STORAGE_KEY = "subjectsByStudy";
 const SELECTED_SUBJECT_STORAGE_KEY = "selectedSubject";
 const SUBJECTS_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
@@ -70,7 +51,6 @@ function writeStorage(key, value, eventName) {
   }
 }
 
->>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
 function normalizeValue(value) {
   return String(value ?? "")
     .trim()
@@ -111,11 +91,6 @@ function getSearchableSubjectText(subject) {
   return searchableValues.join(" ").toLowerCase();
 }
 
-<<<<<<< HEAD
-// A2 (Study-Scoped Subject Visibility): all subject data now flows through
-// subjectService.getSubjectsForStudy() which performs cross-checking
-// automatically. No more local filtering needed.
-=======
 // A2 (Study-Scoped Subject Visibility): a bucket in `subjectsByStudy` can
 // end up holding subjects that don't actually belong to this study (e.g.
 // left behind by a study code change, or written under a stale key before
@@ -166,7 +141,6 @@ function getSubjectsForStudy(subjectsByStudy, studyId) {
 
   return [];
 }
->>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
 
 function getSubjectDetailCards(subject, siteSources = []) {
   const latestSite =
@@ -178,6 +152,14 @@ const siteDisplay = latestSite
       fallback: latestSite,
     })
   : "—";
+
+function getSubjectDetailCards(subject, siteSources = []) {
+  const siteDisplay = subject?.site
+    ? resolveSiteDisplay(subject.site, {
+        sources: siteSources,
+        fallback: subject.site || "—"
+      })
+    : "—";
 
   return [
     {
@@ -195,6 +177,10 @@ const siteDisplay = latestSite
     subject?.pi ||
     "—",
 },
+    {
+      label: "Study ID",
+      value: subject?.studyId || "—",
+    },
     {
       label: "Study ID",
       value: subject?.studyId || "—",
@@ -230,15 +216,9 @@ function StudySubjects({
     params.id || params.studyId || params.code || ""
   ).trim();
 
-<<<<<<< HEAD
-  // Subject data is now sourced from subjectService (single source of truth).
-  // The local state is kept for UI reactivity but populated via subjectService.
-  const [subjectsVersion, setSubjectsVersion] = useState(0);
-=======
   const [subjectsByStudy, setSubjectsByStudy] = useState(() =>
     readStorage(SUBJECTS_STORAGE_KEY, {})
   );
->>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
   const [showSubjectCommentsModal, setShowSubjectCommentsModal] = useState(false);
@@ -284,15 +264,19 @@ function StudySubjects({
   const isStudyCompleted =
     currentStudy?.status === STUDY_STATUS_COMPLETED;
 
+  const inheritedSubjectFields = getSubjectStudyDefaults(studyId);
+
+  const getStudyDerivedSubjectFormFields = () => {
+    const latestDefaults = getSubjectStudyDefaults(studyId);
+
+    return {
+      pi: latestDefaults.pi || "",
+      site: latestDefaults.site || "",
+    };
+  };
+
   useEffect(() => {
     const refreshSubjects = () => {
-<<<<<<< HEAD
-      setSubjectsVersion((v) => v + 1);
-    };
-
-    const unsub = subscribeSubjects(refreshSubjects);
-    return unsub;
-=======
       setSubjectsByStudy(readStorage(SUBJECTS_STORAGE_KEY, {}));
     };
 
@@ -303,7 +287,6 @@ function StudySubjects({
       window.removeEventListener("subjects-updated", refreshSubjects);
       window.removeEventListener("storage", refreshSubjects);
     };
->>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
   }, []);
 
   useEffect(() => {
@@ -332,15 +315,8 @@ function StudySubjects({
 }, [studyId]);
 
   const subjectsData = useMemo(() => {
-<<<<<<< HEAD
-    // subjectService.getSubjectsForStudy() returns cross-checked, study-scoped data
-    return getSubjectsForStudy(studyId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [studyId, subjectsVersion]);
-=======
     return getSubjectsForStudy(subjectsByStudy, studyId);
   }, [studyId, subjectsByStudy]);
->>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
 
   const filteredSubjects = useMemo(() => {
     const normalizedSearchTerm = normalizeValue(searchTerm);
@@ -396,12 +372,6 @@ function StudySubjects({
     );
   }, [selectedSubjectId, subjectsData]);
 
-<<<<<<< HEAD
-  const saveSubjects = () => {
-    // Trigger a re-read from subjectService — the write already happened
-    // via studyService.createSubject/updateSubject/deleteSubject.
-    setSubjectsVersion((v) => v + 1);
-=======
   const saveSubjects = (updatedSubjectsByStudy) => {
     setSubjectsByStudy(updatedSubjectsByStudy);
 
@@ -410,7 +380,6 @@ function StudySubjects({
       updatedSubjectsByStudy,
       "subjects-updated"
     );
->>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
   };
 
   /** Validate that a subject ID is unique among all subjects. */
@@ -450,6 +419,17 @@ function StudySubjects({
     const now = new Date().toISOString();
     const manualStatus = String(fields.status || "").trim();
 
+    // Item 21: manual status control is limited to terminal workflow actions
+    // (Withdrawn / Dropout). Any other value is ignored and the authoritative
+    // status is derived from the subject's actual lifecycle fields (screening
+    // date, enrollment date, current visit, per-subject visit records). This
+    // prevents an arbitrary manual override from silently regressing an
+    // Ongoing subject back to Enrolled, marking Completed without real
+    // completion evidence, etc.
+    const requestedManualStatus = SUBJECT_TERMINAL_STATES.includes(newSubject.status)
+      ? newSubject.status
+      : "";
+
     if (isEditing) {
       const editingId = formModalSubject.id;
       const updatedSubjectsForStudy = subjectsData.map((subject) => {
@@ -468,13 +448,19 @@ function StudySubjects({
           currentVisit: fields.currentVisit || "",
           updatedAt: now,
         };
-      });
 
-<<<<<<< HEAD
-=======
+        const derived = deriveSubjectLifecycleStatus(
+          { ...merged, status: "" },
+          { studyId }
+        );
+
+        return {
+          ...merged,
+          status: requestedManualStatus || derived || merged.status || "",
+        };
+      });
       saveSubjects({ ...subjectsByStudy, [studyId]: updatedSubjectsForStudy });
 
->>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
       const editedSubject = updatedSubjectsForStudy.find(
         (s) => normalizeValue(s.id) === normalizeValue(subjectId)
       );
@@ -485,11 +471,7 @@ function StudySubjects({
         return;
       }
 
-<<<<<<< HEAD
-      saveSubjects();
-=======
       setSubjectsByStudy((current) => ({ ...current, [studyId]: updatedSubjectsForStudy }));
->>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
       syncSubjectSchedules(studyId, subjectId, editedSubject);
     } else {
       const studyDefaults = getSubjectStudyDefaults(studyId);
@@ -507,24 +489,10 @@ function StudySubjects({
         updatedAt: now,
       };
 
-      let createdSubject;
-      try {
-        createdSubject = createSubject(studyId, subjectToAdd);
-      } catch (error) {
-        setFormModalError(
-          (error && error.message) || COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE
-        );
-        return;
-      }
-
-<<<<<<< HEAD
-      saveSubjects();
-=======
       setSubjectsByStudy((current) => ({
         ...current,
         [studyId]: [...subjectsData, createdSubject],
       }));
->>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
       syncSubjectSchedules(studyId, subjectId, createdSubject);
       notifySubjectCreated({
         subjectId,
@@ -589,9 +557,6 @@ function StudySubjects({
 
     const subject = subjectToDelete;
 
-<<<<<<< HEAD
-    saveSubjects();
-=======
     const updatedSubjectsForStudy = subjectsData.filter(
       (item) => normalizeValue(item.id) !== normalizeValue(subject.id)
     );
@@ -600,7 +565,6 @@ function StudySubjects({
       ...subjectsByStudy,
       [studyId]: updatedSubjectsForStudy,
     });
->>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6
 
     if (
       selectedSubjectId &&
@@ -660,7 +624,7 @@ function StudySubjects({
                 type="button"
                 className="back-btn"
                 onClick={closeSubjectFolder}
-              >
+
                 <FiArrowLeft />
                 Back to Subjects
               </button>
@@ -672,7 +636,7 @@ function StudySubjects({
                 type="button"
                 className="subject-details-comments-btn"
                 onClick={() => setShowSubjectCommentsModal(true)}
-              >
+
                 Comments
               </button>
             </div>
@@ -683,7 +647,7 @@ function StudySubjects({
               <div
                 key={detail.label}
                 className="subject-details-card"
-              >
+
                 <span>{detail.label}</span>
                 <strong>{detail.value}</strong>
               </div>
@@ -723,7 +687,7 @@ function StudySubjects({
           type="button"
           className="back-btn"
           onClick={() => setActiveTab("Overview")}
-        >
+
           <FiArrowLeft />
           Back
         </button>
@@ -750,7 +714,7 @@ function StudySubjects({
                 ? COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE
                 : undefined
             }
-          >
+
             <FiPlus />
             Add Subject
           </button>
@@ -828,7 +792,7 @@ function StudySubjects({
                                 ? COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE
                                 : "Edit subject"
                             }
-                          >
+
                             <FiEdit2 />
                           </button>
                           <button
@@ -837,7 +801,7 @@ function StudySubjects({
                             onClick={() => handleDeleteSubject(subject)}
                             aria-label={`Delete subject ${subject.id}`}
                             title="Delete subject"
-                          >
+
                             <FiTrash2 />
                           </button>
                         </div>
@@ -854,7 +818,7 @@ function StudySubjects({
                       padding: "1.875rem",
                       color: "#64748b",
                     }}
-                  >
+
                     No matching subjects found.
                   </td>
                 </tr>
@@ -880,7 +844,7 @@ function StudySubjects({
                     type="button"
                     className="subjects-folder-item"
                     onClick={() => openSubjectFolder(subject)}
-                  >
+
                     <FiFolder className="subjects-folder-icon" />
 
                     <span className="subjects-folder-name">
@@ -907,7 +871,7 @@ function StudySubjects({
                             ? COMPLETED_STUDY_SUBJECT_EDIT_MESSAGE
                             : "Edit subject"
                         }
-                      >
+
                         <FiEdit2 />
                       </button>
                       <button
@@ -919,7 +883,7 @@ function StudySubjects({
                         }}
                         aria-label={`Delete subject ${subject.id}`}
                         title="Delete subject"
-                      >
+
                         <FiTrash2 />
                       </button>
                     </div>
@@ -948,7 +912,7 @@ function StudySubjects({
                 value={pageSize}
                 onChange={(event) => setPageSize(Number(event.target.value))}
                 aria-label="Rows per page"
-              >
+
                 {SUBJECTS_PAGE_SIZE_OPTIONS.map((option) => (
                   <option key={option} value={option}>
                     {option}
@@ -965,7 +929,7 @@ function StudySubjects({
               }
               disabled={currentPage === 1}
               aria-label="Previous page"
-            >
+
               <FiChevronLeft />
             </button>
 
@@ -978,7 +942,7 @@ function StudySubjects({
                     currentPage === pageNumber ? "active" : ""
                   }`}
                   onClick={() => setCurrentPage(pageNumber)}
-                >
+
                   {pageNumber}
                 </button>
               )
@@ -992,7 +956,7 @@ function StudySubjects({
               }
               disabled={currentPage === totalPages}
               aria-label="Next page"
-            >
+
               <FiChevronRight />
             </button>
           </div>
@@ -1023,7 +987,7 @@ function StudySubjects({
             role="dialog"
             aria-modal="true"
             aria-labelledby="subject-notice-title"
-          >
+
             <div className="subject-modal-header">
               <div>
                 <h3 id="subject-notice-title">{subjectNotice.title}</h3>
@@ -1036,7 +1000,7 @@ function StudySubjects({
                 className="subject-modal-close"
                 onClick={() => setSubjectNotice(null)}
                 aria-label="Close modal"
-              >
+
                 ×
               </button>
             </div>
@@ -1069,10 +1033,5 @@ function StudySubjects({
   );
 }
 
-<<<<<<< HEAD
 export default StudySubjects;
-========
->>>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6:src/pages/shared/studies/StudySubjects.js
-=======
 export default StudySubjects;
->>>>>>> 72420a2c87e8892701a1f7142261d3fb610181d6

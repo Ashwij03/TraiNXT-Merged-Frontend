@@ -9,7 +9,6 @@ import {
   FiCheckCircle,
   FiAlertTriangle,
 } from "react-icons/fi";
-import {
   BarChart,
   Bar,
   XAxis,
@@ -18,7 +17,6 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import {
   getOversightStudies,
   getOversightKPIs,
 } from "../data/sponsorDataStore";
@@ -139,7 +137,7 @@ const StudyOversight = () => {
           <select
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value)}
-          >
+
             <option>All</option>
             <option>On Track</option>
             <option>Delayed</option>
@@ -180,7 +178,7 @@ const StudyOversight = () => {
                         className={`status-badge ${
                           study.status === "Delayed" ? "open" : "active"
                         }`}
-                      >
+
                         {study.status}
                       </span>
                     </td>
@@ -195,7 +193,7 @@ const StudyOversight = () => {
                         type="button"
                         className="view-btn"
                         onClick={() => setViewStudy(study)}
-                      >
+
                         View
                       </button>
                     </td>
@@ -211,7 +209,7 @@ const StudyOversight = () => {
         <EnterpriseModal
           title="Study Oversight Details"
           onClose={() => setViewStudy(null)}
-        >
+
           <div className="study-oversight-details">
             <h2 className="study-modal-title">{viewStudy.studyName}</h2>
 
@@ -314,7 +312,7 @@ const StudyOversight = () => {
                 type="button"
                 className="close-btn"
                 onClick={() => setViewStudy(null)}
-              >
+
                 Close
               </button>
             </div>

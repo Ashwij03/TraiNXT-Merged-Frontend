@@ -431,7 +431,7 @@ const RESPONSIBILITY_MAP = {
         <button
           className="add-delegation-btn"
           onClick={() => setShowModal(true)}
-        >
+
           + Add Delegation
         </button>
       </div>
@@ -471,56 +471,56 @@ const RESPONSIBILITY_MAP = {
           type="button"
           className={activeLog === "delegation" ? "tab active" : "tab"}
           onClick={() => setActiveLog("delegation")}
-        >
+
           Delegation Log
         </button>
         <button
           type="button"
           className={activeLog === "training" ? "tab active" : "tab"}
           onClick={() => setActiveLog("training")}
-        >
+
           Training Log
         </button>
         <button
           type="button"
           className={activeLog === "siteVisit" ? "tab active" : "tab"}
           onClick={() => setActiveLog("siteVisit")}
-        >
+
           Site Visit Log
         </button>
         <button
           type="button"
           className={activeLog === "ntf" ? "tab active" : "tab"}
           onClick={() => setActiveLog("ntf")}
-        >
+
           NTF Log
         </button>
         <button
           type="button"
           className={activeLog === "miscellaneous" ? "tab active" : "tab"}
           onClick={() => setActiveLog("miscellaneous")}
-        >
+
           Miscellaneous Log
         </button>
         <button
           type="button"
           className={activeLog === "ae" ? "tab active" : "tab"}
           onClick={() => setActiveLog("ae")}
-        >
+
           AE/SE Log
         </button>
         <button
           type="button"
           className={activeLog === "pd" ? "tab active" : "tab"}
           onClick={() => setActiveLog("pd")}
-        >
+
           PD Log
         </button>
         <button
           type="button"
           className={activeLog === "temp" ? "tab active" : "tab"}
           onClick={() => setActiveLog("temp")}
-        >
+
           Temperature Log
         </button>
       </div>
@@ -636,7 +636,7 @@ const RESPONSIBILITY_MAP = {
       responsibility: ""
     })
   }
->
+
   <option value="">Select Role</option>
 
   {ROLE_OPTIONS.map((role) => (
@@ -655,7 +655,7 @@ const RESPONSIBILITY_MAP = {
       responsibility: e.target.value
     })
   }
->
+
   <option value="">
     Select Responsibility
   </option>
@@ -675,7 +675,7 @@ const RESPONSIBILITY_MAP = {
                     status: e.target.value,
                   })
                 }
-              >
+
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
               </select>
@@ -685,14 +685,14 @@ const RESPONSIBILITY_MAP = {
               <button
                 className="cancel-btn"
                 onClick={() => setShowModal(false)}
-              >
+
                 Cancel
               </button>
 
               <button
                 className="save-btn"
                 onClick={handleSave}
-              >
+
                 Save
               </button>
             </div>

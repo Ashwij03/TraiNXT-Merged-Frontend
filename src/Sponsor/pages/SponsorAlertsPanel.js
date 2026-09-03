@@ -10,6 +10,7 @@ import {
 import { getAlerts, getNotifications, SEVERITY_COLORS } from '../data/sponsorDataStore';
 import EnterpriseModal from './EnterpriseModal';
 import '../styles/SponsorAlertsPanel.css';
+import './SponsorAlertsPanel.js';
 
 const MODULE_ROUTES = {
   Regulatory: '/regulatory',
@@ -70,7 +71,7 @@ const SponsorAlertsPanel = () => {
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && handleAlertClick(alert)}
-    >
+
       {severityIcon(alert.severity)}
       <div className="alert-content">
         <p>{alert.message}</p>
@@ -79,7 +80,7 @@ const SponsorAlertsPanel = () => {
       <span
         className="severity-badge"
         style={{ backgroundColor: SEVERITY_COLORS[alert.severity] }}
-      >
+
         {alert.severity}
       </span>
     </div>
@@ -123,7 +124,7 @@ const SponsorAlertsPanel = () => {
           onClose={() => setShowAllModal(false)}
           onSave={() => { setShowAllModal(false); navigate('/notifications', { state: { viewAll: true } }); }}
           saveLabel="Open Notification Center"
-        >
+
           <div className="alerts-modal-section">
             <h4>Active Alerts ({alerts.length})</h4>
             <div className="alerts-list alerts-list-modal">
@@ -140,7 +141,7 @@ const SponsorAlertsPanel = () => {
                   onClick={() => { setShowAllModal(false); navigate('/notifications'); }}
                   role="button"
                   tabIndex={0}
-                >
+
                   {severityIcon(n.severity)}
                   <div className="alert-content">
                     <p>{n.message}</p>
@@ -149,7 +150,7 @@ const SponsorAlertsPanel = () => {
                   <span
                     className="severity-badge"
                     style={{ backgroundColor: SEVERITY_COLORS[n.severity] }}
-                  >
+
                     {n.severity}
                   </span>
                 </div>

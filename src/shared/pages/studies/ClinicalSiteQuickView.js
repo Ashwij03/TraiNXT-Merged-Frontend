@@ -31,14 +31,14 @@ function ClinicalSiteQuickView({ site, study, onClose }) {
     <div
       className="clinical-site-quick-view-overlay"
       onClick={onClose}
-    >
+
       <div
         className="clinical-site-quick-view-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="clinical-site-quick-view-title"
         onClick={(event) => event.stopPropagation()}
-      >
+
         <div className="clinical-site-quick-view-header">
           <div>
             <h2 id="clinical-site-quick-view-title">
@@ -53,7 +53,7 @@ function ClinicalSiteQuickView({ site, study, onClose }) {
             className="clinical-site-quick-view-close"
             onClick={onClose}
             aria-label="Close quick view"
-          >
+
             ×
           </button>
         </div>

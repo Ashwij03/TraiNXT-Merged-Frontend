@@ -9,7 +9,6 @@ import {
   saveUserSettings,
   updateUserPassword
 } from "../../services/roleService";
-import {
   formatSessionTimestamp,
   getCurrentSession,
   getSessionDurationMinutes,
@@ -166,7 +165,7 @@ function SecuritySettingsSection({ showTitle = false }) {
         title={
           adminMode ? "Account Security Preferences" : "Site Security Preferences"
         }
-      >
+
         <div className="admin-settings-form">
           <label>
             <span>
@@ -207,7 +206,7 @@ function SecuritySettingsSection({ showTitle = false }) {
                   Number(event.target.value)
                 )
               }
-            >
+
               <option value={15}>15</option>
               <option value={30}>30</option>
               <option value={60}>60</option>
@@ -250,7 +249,7 @@ function SecuritySettingsSection({ showTitle = false }) {
             type="button"
             className="secondary-btn"
             onClick={handleTerminateSession}
-          >
+
             Sign Out All Sessions
           </button>
         </div>

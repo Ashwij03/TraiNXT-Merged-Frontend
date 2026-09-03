@@ -6,8 +6,8 @@ import '../styles/SponsorShared.css';
 import KpiCard from './KpiCard';
 import { FiAlertTriangle, FiShield, FiCheckCircle, FiActivity } from 'react-icons/fi';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { getRisks, getRiskKPIs, SEVERITY_COLORS, getPortfolioStudies } from '../data/sponsorDataStore';
 import RequestPermissionButton from '../../shared/components/RequestPermissionButton';
+import { getRisks, getRiskKPIs, SEVERITY_COLORS, getPortfolioStudies } from '../data/sponsorDataStore';
 
 const RiskManagement = () => {
   const navigate = useNavigate();
@@ -80,7 +80,7 @@ const RiskManagement = () => {
             value={studyCode}
             onChange={(e) => setStudyCode(e.target.value)}
             aria-label="Select study for new risk"
-          >
+
             <option value="">Select study…</option>
             {studies.map((study) => (
               <option key={study.studyId} value={study.studyId}>

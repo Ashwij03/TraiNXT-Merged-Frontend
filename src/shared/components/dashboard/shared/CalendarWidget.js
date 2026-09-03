@@ -55,6 +55,8 @@ function CalendarWidget({
     useState(firstScheduleDate);
 
   const [currentMonth, setCurrentMonth] = useState(() => {
+    const baseDate = selectedDate ? parseCalendarDateKey(selectedDate) : new Date();
+
     const baseDate = firstScheduleDate
       ? parseCalendarDateKey(firstScheduleDate)
       : new Date();
@@ -63,6 +65,8 @@ function CalendarWidget({
   });
 
   const [currentYear, setCurrentYear] = useState(() => {
+    const baseDate = selectedDate ? parseCalendarDateKey(selectedDate) : new Date();
+
     const baseDate = firstScheduleDate
       ? parseCalendarDateKey(firstScheduleDate)
       : new Date();
@@ -79,6 +83,18 @@ function CalendarWidget({
       setCurrentYear(d.getFullYear());
     }
   }, [isControlled, selectedDate]);
+
+  const todayDateKey = getCalendarDateKey(new Date());
+
+  const weekDays = [
+    "Sun",
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat",
+  ];
 
   useEffect(() => {
     if (!selectedDate && firstScheduleDate) {
@@ -124,6 +140,8 @@ function CalendarWidget({
       return [];
     }
 
+    return schedules.filter((schedule) => getCalendarDateKey(schedule.date) === date);
+
     return schedules.filter(
       (schedule) => getCalendarDateKey(schedule.date) === date
     );
@@ -159,6 +177,8 @@ function CalendarWidget({
 
   const selectedSchedules = getSchedulesForDate(activeDate);
 
+  // Item 17 — resolve schedule.site to the actual Site Number for display.
+
   const siteSources = useMemo(() => {
     try {
       return getStudies();
@@ -174,7 +194,7 @@ function CalendarWidget({
           type="button"
           className="calendar-nav-btn"
           onClick={() => changeMonth("prev")}
-        >
+
           ←
         </button>
 
@@ -189,7 +209,7 @@ function CalendarWidget({
           type="button"
           className="calendar-nav-btn"
           onClick={() => changeMonth("next")}
-        >
+
           →
         </button>
       </div>
@@ -233,6 +253,9 @@ function CalendarWidget({
             <button
               key={date}
               type="button"
+              aria-label={`${date}${isToday ? " Today" : ""}${
+                hasSchedule ? ` ${daySchedules.length} scheduled visit${daySchedules.length !== 1 ? "s" : ""}` : ""
+              }`}
               className={[
                 "calendar-day",
                 hasSchedule ? "has-schedule" : "",
@@ -242,8 +265,20 @@ function CalendarWidget({
                 .filter(Boolean)
                 .join(" ")}
               onClick={() => handleDateSelect(date)}
-            >
+
               <span>{day}</span>
+
+              {isToday && (
+                <em>
+                  Today
+                </em>
+              )}
+
+              {hasSchedule && (
+                <small>
+                  {daySchedules.length}
+                </small>
+              )}
 
               {isToday && <em>Today</em>}
 
@@ -292,6 +327,9 @@ function CalendarWidget({
                 </p>
 
                 <p>
+                  <b>Site:</b>{" "}
+                  {resolveSiteDisplay(schedule.site, {
+
                   <b>Site:</b> {resolveSiteDisplay(schedule.site, {
                     sources: siteSources,
                     fallback: schedule.site || "—",

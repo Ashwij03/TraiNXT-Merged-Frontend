@@ -4,7 +4,6 @@ import {
   getStudyFinancials,
   saveStudyFinancials,
 } from "../../services/financialService";
-import {
   formatSiteOption,
   resolveSiteRecord,
   MISSING_SITE_DISPLAY,
@@ -966,7 +965,7 @@ const handleDeleteSubjectCost = (id) => {
             id="financial-status-filter"
             value={selectedFilter}
             onChange={(event) => setSelectedFilter(event.target.value)}
-          >
+
             <option value="All">All</option>
             <option value="Paid">Paid</option>
             <option value="Pending">Pending</option>
@@ -976,7 +975,7 @@ const handleDeleteSubjectCost = (id) => {
       </div>
  <h3 className="financial-section-title">
   Budget Overview
-</h3> 
+/h3> 
       <div className="financial-cards">
         <div className="financial-card">
           <h4>Total Budget</h4>
@@ -985,7 +984,7 @@ const handleDeleteSubjectCost = (id) => {
    totalBudget,
    budgets[0]?.currency
 )}
-</h2>
+/h2>
         </div>
 
         <div className="financial-card">
@@ -1007,7 +1006,7 @@ const handleDeleteSubjectCost = (id) => {
                 ? "financial-status-active"
                 : "financial-status-pending"
             }`}
-          >
+
             {remainingBudget >= 0 ? "Healthy" : "Exceeded"}
           </span>
           <p>Budgets created: {budgets.length}</p>
@@ -1083,14 +1082,14 @@ const handleDeleteSubjectCost = (id) => {
     setSubjectCostForm(INITIAL_SUBJECT_COST_FORM);
     setShowSubjectCostModal(true);
   }}
->
+
   + New Subject Cost
 </button>
 
         <button
           type="button"
           onClick={() => setShowAllData((currentValue) => !currentValue)}
-        >
+
           {showAllData ? "Hide Summary" : "View Summary"}
         </button>
 
@@ -1100,30 +1099,29 @@ const handleDeleteSubjectCost = (id) => {
       </div>
      <div className="financial-tabs">
 
-<button
+button
 onClick={()=>setActiveTab("budget")}
->
+
 Budget Info
 </button>
 
-<button
+button
 onClick={()=>setActiveTab("grants")}
->
+
 Investigator Grants
 </button>
 
-<button
+button
 onClick={()=>setActiveTab("site")}
->
+
 Site Management
 </button>
 
-<button
+button
 onClick={()=>setActiveTab("subjects")}
->
+
 Subject Costs
 </button>
-
 
 </div>
 
@@ -1259,7 +1257,7 @@ Subject Costs
                 <div
                   key={row.category}
                   className="financial-chart-row"
-                >
+
                   <span className="financial-chart-label">
                     {row.category}
                   </span>
@@ -1371,7 +1369,7 @@ Subject Costs
                       className={`financial-status ${getStatusClassName(
                         budget.status,
                       )}`}
-                    >
+
                       {budget.status}
                     </span>
                   </td>
@@ -1383,7 +1381,7 @@ Subject Costs
     type="button"
     className="financial-action-btn"
     onClick={() => handleEditBudget(budget)}
-  >
+
     Edit
   </button>
 
@@ -1391,7 +1389,7 @@ Subject Costs
     type="button"
     className="financial-action-btn"
     onClick={() => handleBudgetPreview(budget)}
-  >
+
     Preview
   </button>
 
@@ -1399,12 +1397,10 @@ Subject Costs
   type="button"
   className="financial-delete-btn"
   onClick={() => openDeleteModal("budget", budget.id)}
->
+
   Delete
 </button>
 </td>
-
-
 
 <td>{budget.version}</td>
                 </tr>
@@ -1425,7 +1421,7 @@ Subject Costs
               setCurrentPage(1);
             }}
             aria-label="Rows per page"
-          >
+
             {FINANCIALS_PAGE_SIZE_OPTIONS.map((option) => (
               <option key={option} value={option}>
                 {option}
@@ -1438,7 +1434,7 @@ Subject Costs
           type="button"
           disabled={safeCurrentPage === 1}
           onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
-        >
+
           Previous
         </button>
 
@@ -1452,7 +1448,7 @@ Subject Costs
           onClick={() =>
             setCurrentPage((page) => Math.min(page + 1, totalPages))
           }
-        >
+
           Next
         </button>
       </div>
@@ -1461,7 +1457,7 @@ Subject Costs
       {activeTab==="grants" && (
 <section className="payment-table">
 
-<h3>Investigator Grants</h3>
+h3>Investigator Grants</h3>
 
 <table className="ctms-standard-table">
 
@@ -1481,8 +1477,6 @@ Subject Costs
 </tbody>
 
 </table>
-
-
 
 </section>
 )}
@@ -1571,14 +1565,14 @@ Subject Costs
                 <button
                   className="financial-action-btn"
                   onClick={() => handleEditSubjectCost(item)}
-                >
+
                   Edit
                 </button>
 
                 <button
                   className="financial-delete-btn"
                   onClick={() => handleDeleteSubjectCost(item.id)}
-                >
+
                   Delete
                 </button>
               </td>
@@ -1623,7 +1617,7 @@ Subject Costs
                       className={`financial-status ${getStatusClassName(
                         payment.status,
                       )}`}
-                    >
+
                       {payment.status}
                     </span>
                   </td>
@@ -1632,7 +1626,7 @@ Subject Costs
                       type="button"
                       className="financial-action-btn"
                       onClick={() => handleEditPayment(payment)}
-                    >
+
                       Edit
                     </button>
 
@@ -1640,7 +1634,7 @@ Subject Costs
                       type="button"
                       className="financial-delete-btn"
                       onClick={() => openDeleteModal("payment", payment.id)}
-                    >
+
                       Delete
                     </button>
                   </td>
@@ -1684,7 +1678,7 @@ Subject Costs
                       className={`financial-status ${getStatusClassName(
                         receivable.status,
                       )}`}
-                    >
+
                       {receivable.status}
                     </span>
                   </td>
@@ -1694,7 +1688,7 @@ Subject Costs
                         type="button"
                         className="financial-receivable-edit-btn"
                         onClick={() => handleEditReceivable(receivable)}
-                      >
+
                         Edit
                       </button>
 
@@ -1704,7 +1698,7 @@ Subject Costs
                         onClick={() =>
                           openDeleteModal("receivable", receivable.id)
                         }
-                      >
+
                         Delete
                       </button>
                     </div>
@@ -1753,7 +1747,7 @@ Subject Costs
                       className={`financial-status ${getStatusClassName(
                         invoice.status,
                       )}`}
-                    >
+
                       {invoice.status}
                     </span>
                   </td>
@@ -1763,7 +1757,7 @@ Subject Costs
                         type="button"
                         className="financial-receivable-edit-btn"
                         onClick={() => handleEditInvoice(invoice)}
-                      >
+
                         Edit
                       </button>
 
@@ -1771,7 +1765,7 @@ Subject Costs
                         type="button"
                         className="financial-receivable-delete-btn"
                         onClick={() => openDeleteModal("invoice", invoice.id)}
-                      >
+
                         Delete
                       </button>
                     </div>
@@ -1820,7 +1814,7 @@ Subject Costs
                 onChange={(event) =>
                   updateBudgetField("category", event.target.value)
                 }
-              >
+
                 <option value="">Select Category</option>
                 {BUDGET_CATEGORY_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -1837,7 +1831,7 @@ Subject Costs
 
              <label className="financial-form-label">Cost Per Unit</label>
 
-<input
+input
   type="number"
   min="0"
   value={budgetForm.costPerUnit}
@@ -1854,7 +1848,7 @@ Subject Costs
 
 <label className="financial-form-label">Units</label>
 
-<input
+input
   type="number"
   min="1"
   value={budgetForm.units}
@@ -1871,7 +1865,7 @@ Subject Costs
 
 <label className="financial-form-label">Unit Type</label>
 
-<select
+select
   value={budgetForm.unitType}
   onChange={(event) =>
     setBudgetForm((currentForm) => ({
@@ -1879,7 +1873,7 @@ Subject Costs
       unitType: event.target.value,
     }))
   }
->
+
   <option value="Subjects">Subjects</option>
   <option value="Visits">Visits</option>
   <option value="Sites">Sites</option>
@@ -1890,7 +1884,7 @@ Subject Costs
 Total Cost
 </label>
 
-<input
+input
    type="number"
    value={budgetForm.totalCost}
    readOnly
@@ -1899,7 +1893,7 @@ Total Cost
 Currency
 </label>
 
-<select
+select
    value={budgetForm.currency}
    onChange={(event)=>
       updateBudgetField(
@@ -1907,7 +1901,6 @@ Currency
          event.target.value
       )
    }
->
 
 <option>USD</option>
 
@@ -1921,7 +1914,7 @@ Currency
 Version
 </label>
 
-<input
+input
    type="text"
    value={budgetForm.version}
    readOnly
@@ -1959,7 +1952,7 @@ Version
          event.target.value
       )
    }
->
+
                 <option value="Active">Active</option>
                 <option value="Draft">Draft</option>
                 <option value="Closed">Closed</option>
@@ -2047,7 +2040,7 @@ Version
                     status: event.target.value,
                   }))
                 }
-              >
+
                 <option value="Paid">Paid</option>
                 <option value="Pending">Pending</option>
                 <option value="Upcoming">Upcoming</option>
@@ -2137,7 +2130,7 @@ Version
                     status: event.target.value,
                   }))
                 }
-              >
+
                 <option value="Pending">Pending</option>
                 <option value="Received">Received</option>
                 <option value="Overdue">Overdue</option>
@@ -2235,7 +2228,7 @@ Version
                     status: event.target.value,
                   }))
                 }
-              >
+
                 <option value="Pending">Pending</option>
                 <option value="Paid">Paid</option>
                 <option value="Overdue">Overdue</option>
@@ -2325,7 +2318,7 @@ Version
 
         <label>Total</label>
 
-<input
+input
   readOnly
   value={
     Number(subjectCostForm.cost || 0) *
@@ -2342,7 +2335,7 @@ Version
               status:e.target.value
             })
           }
-        >
+
           <option>Pending</option>
           <option>Completed</option>
         </select>
@@ -2353,13 +2346,13 @@ Version
 
         <button
           onClick={resetSubjectCostModal}
-        >
+
           Cancel
         </button>
 
        <button
   onClick={handleSaveSubjectCost}
->
+
   Save
 </button>
 
@@ -2368,7 +2361,6 @@ Version
     </div>
   </div>
 )}
-
 
       {showDeleteModal && (
         <div className="financial-modal-overlay">
@@ -2399,7 +2391,7 @@ Version
                 type="button"
                 className="financial-receivable-delete-btn"
                 onClick={confirmDelete}
-              >
+
                 Delete
               </button>
             </div>
@@ -2436,7 +2428,7 @@ Version
         <button
           type="button"
           onClick={() => setShowBudgetPreview(false)}
-        >
+
           Close
         </button>
       </div>

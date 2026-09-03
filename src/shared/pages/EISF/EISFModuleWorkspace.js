@@ -93,6 +93,20 @@ export default function EISFModuleWorkspace({
     [enabledMap]
   );
 
+  const handleToggleSectionEnabled = useCallback(
+    (sectionId, event) => {
+      if (event) {
+        event.stopPropagation();
+      }
+      if (!sectionId) return;
+
+      const nextEnabled = !isSectionEnabled(sectionId);
+      setSubModuleEnabled(studyCode, sectionId, nextEnabled);
+      setEnabledMap((prev) => ({ ...prev, [sectionId]: nextEnabled }));
+    },
+    [isSectionEnabled, studyCode]
+  );
+
   useEffect(() => {
     persistModuleDocuments(moduleConfig, studyCode, documents);
   }, [documents, moduleConfig, studyCode]);
@@ -130,6 +144,11 @@ export default function EISFModuleWorkspace({
   const activeSectionEnabled = useMemo(
     () => (activeSection ? isSectionEnabled(activeSection.id) : false),
     [activeSection, isSectionEnabled]
+  );
+
+  const folderCounts = useMemo(
+    () => getFolderCounts(moduleConfig.sections, documents),
+    [moduleConfig.sections, documents]
   );
 
   const processedSectionDocuments = useMemo(() => {
@@ -181,6 +200,12 @@ export default function EISFModuleWorkspace({
     () => buildReferenceDashboardCards(documents, moduleConfig.sections),
     [documents, moduleConfig.sections]
   );
+
+  const selectSection = (sectionId) => {
+    if (!sectionId) return;
+    setSelectedSectionId(sectionId);
+    onSectionChange?.(sectionId);
+  };
 
   const clearFilters = () => {
     setSearch("");
@@ -267,8 +292,8 @@ export default function EISFModuleWorkspace({
     setShowUpload(false);
   };
 
-
   const handleSaveDocument = (updatedDocument) => {
+    // Item 9 guard: disabled sub-modules must not allow edits.
     if (!activeSectionEnabled) {
       setEditOpen(false);
       setSelectedDocument(null);
@@ -412,7 +437,7 @@ export default function EISFModuleWorkspace({
             <select
               value={selectedModuleId || moduleConfig.id}
               onChange={(event) => onModuleChange?.(event.target.value)}
-            >
+
               {moduleOptions.map((module) => (
                 <option key={module.id} value={module.id}>
                   {module.id} {module.title}
@@ -453,9 +478,38 @@ export default function EISFModuleWorkspace({
                 type="button"
                 className="filing-guideline-btn"
                 onClick={() => setGuidelineOpen(true)}
-              >
+
                 View Filing Guidelines ↗
               </button>
+            </div>
+          )}
+        </aside>
+
+        <section className="eisf-module-documents-card">
+          {!activeSection ? (
+            <div className="eisf-submodule-disabled-panel">
+              <span className="disabled-icon" aria-hidden="true">▤</span>
+              <h4>No sub-module selected</h4>
+              <p>Select a sub-module from the list to view its documents.</p>
+            </div>
+          ) : !activeSectionEnabled ? (
+            <div className="eisf-submodule-disabled-panel">
+              <span className="disabled-icon" aria-hidden="true">🚫</span>
+              <h4>{activeSection.id} {activeSection.title}</h4>
+              <p>This eISF sub-module is disabled.</p>
+              <p style={{ marginTop: 6, fontSize: 12 }}>
+                Existing documents are preserved and will reappear when the sub-module is enabled.
+              </p>
+            </div>
+          ) : (
+            <>
+          <div className="eisf-documents-header">
+            <div>
+              <h3>{activeSection?.id} {activeSection?.title}</h3>
+              <span>{totalLabel}</span>
+            </div>
+
+            <div className="eisf-documents-actions">
               <button type="button" onClick={handleExport}>⇩ Export</button>
               {canUploadDocs && (
                 <button type="button" className="primary" onClick={() => setShowUpload(true)}>Upload</button>
@@ -466,7 +520,7 @@ export default function EISFModuleWorkspace({
                 onClick={() => setShowFilters((current) => !current)}
                 aria-label="Toggle filters"
                 title="Toggle filters"
-              >
+
                 ⋯
               </button>
             </div>
@@ -534,7 +588,7 @@ export default function EISFModuleWorkspace({
                 <select
                   value={pageSize}
                   onChange={(event) => setPageSize(Number(event.target.value))}
-                >
+
                   {DOCUMENT_PAGE_SIZE_OPTIONS.map((option) => (
                     <option key={option} value={option}>{option}</option>
                   ))}
@@ -546,7 +600,7 @@ export default function EISFModuleWorkspace({
                   type="button"
                   disabled={pagination.page === 1}
                   onClick={() => setPage((current) => Math.max(1, current - 1))}
-                >
+
                   ‹
                 </button>
                 {Array.from({ length: pagination.totalPages }, (_, index) => index + 1).map((pageNumber) => (
@@ -555,7 +609,7 @@ export default function EISFModuleWorkspace({
                     key={pageNumber}
                     className={pagination.page === pageNumber ? "active" : ""}
                     onClick={() => setPage(pageNumber)}
-                  >
+
                     {pageNumber}
                   </button>
                 ))}
@@ -563,7 +617,7 @@ export default function EISFModuleWorkspace({
                   type="button"
                   disabled={pagination.page === pagination.totalPages}
                   onClick={() => setPage((current) => Math.min(pagination.totalPages, current + 1))}
-                >
+
                   ›
                 </button>
               </div>
@@ -593,6 +647,13 @@ export default function EISFModuleWorkspace({
         onUpload={handleUpload}
         categoryOptions={categoryOptions}
         defaultCategory={activeSection?.title}
+      />
+
+      <DocumentViewer
+        open={viewerOpen && activeSectionEnabled}
+        document={selectedDocument}
+        onClose={() => closeDocumentModal(setViewerOpen)}
+        onDownload={handleDownload}
       />
 
       <EditDocumentModal

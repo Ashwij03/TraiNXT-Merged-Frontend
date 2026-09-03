@@ -39,7 +39,6 @@ function DashboardPieChart({
     <ResponsiveContainer
       width="100%"
       height={220}
-    >
 
       <PieChart>
 
@@ -48,7 +47,6 @@ function DashboardPieChart({
           dataKey="value"
           outerRadius={80}
           label
-        >
 
           {data.map(
             (entry, index) => (

@@ -27,7 +27,6 @@ import {
   formatAuditTimestamp,
   getVisibleAuditEvents
 } from "../../services/auditService";
-import {
   getAssignedSite,
   getCurrentUser,
   isAdmin

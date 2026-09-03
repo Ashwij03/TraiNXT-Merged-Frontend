@@ -30,7 +30,7 @@ function SubjectSearch({ value, onChange, onClear }) {
           className="sx-search-clear"
           aria-label="Clear folder filter"
           onClick={onClear}
-        >
+
           <MdClose size={13} />
         </button>
       )}

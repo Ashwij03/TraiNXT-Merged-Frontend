@@ -46,7 +46,6 @@ function DashboardBarChart({
     <ResponsiveContainer
       width="100%"
       height={250}
-    >
 
       <BarChart data={data}>
 

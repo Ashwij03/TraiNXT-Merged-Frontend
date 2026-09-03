@@ -2,7 +2,6 @@ import React from "react";
 import AppLayout from "./AppLayout";
 import { useLocation, useNavigate } from "react-router-dom";
 
-
 const CRODetails = () => {
 
   const location = useLocation();
@@ -26,7 +25,7 @@ const CRODetails = () => {
     <AppLayout>
 
       <div style={{ padding: "1.5rem" }}>
-<button
+button
   onClick={() => navigate(-1)}
   style={{
     background: "#2563eb",
@@ -37,7 +36,7 @@ const CRODetails = () => {
     cursor: "pointer",
     marginBottom: "1.25rem"
   }}
->
+
   Back
 </button>
         <h1>{croName} Details</h1>
@@ -49,7 +48,6 @@ const CRODetails = () => {
             gap: "1.25rem",
             marginTop: "1.25rem"
           }}
-        >
 
           <div
             style={{
@@ -58,7 +56,7 @@ const CRODetails = () => {
               borderRadius: "0.625rem",
               textAlign: "center"
             }}
-          >
+
             <h3>Studies</h3>
             <h2>{studies}</h2>
           </div>
@@ -70,7 +68,7 @@ const CRODetails = () => {
               borderRadius: "0.625rem",
               textAlign: "center"
             }}
-          >
+
             <h3>Sites</h3>
             <h2>{sites}</h2>
           </div>
@@ -82,7 +80,7 @@ const CRODetails = () => {
               borderRadius: "0.625rem",
               textAlign: "center"
             }}
-          >
+
             <h3>Performance</h3>
             <h2>{performance}</h2>
           </div>

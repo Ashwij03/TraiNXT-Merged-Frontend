@@ -55,7 +55,7 @@ function UpcomingVisitsWidget({
             type="button"
             onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
             disabled={currentPage === 1}
-          >
+
             Previous
           </button>
 
@@ -69,7 +69,7 @@ function UpcomingVisitsWidget({
               setCurrentPage((page) => Math.min(totalPages, page + 1))
             }
             disabled={currentPage === totalPages}
-          >
+
             Next
           </button>
         </div>

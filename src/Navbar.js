@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "./shared/context/AuthContext";
-import "./Dashboard.css";
+import "./Admin/pages/Dashboard.js";
 import "./Navbar.css";
 
 function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
@@ -13,14 +13,12 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
 
-
   const currentUser =
     JSON.parse(
       localStorage.getItem(
         "currentUser"
       )
     );
-
 
   const institutions = [
     "Hospital A",
@@ -65,7 +63,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
         <div
           className="logo"
           onClick={handleHomeClick}
-        >
+
           TriaNXT
         </div>
 
@@ -97,7 +95,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
                         setSearchTerm(item);
                         setShowDropdown(false);
                       }}
-                    >
+
                       {item}
                     </div>
                   ))}
@@ -132,7 +130,6 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
             onChange={(e) => setSearchText(e.target.value)}
           />
         </div>
-
 
           {/* // newly added */}
         {
@@ -185,7 +182,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
                 onClick={() =>
                   navigate("/site-staff-dashboard")
                 }
-              >
+
                 Dashboard
               </span>
               
@@ -193,7 +190,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
                 onClick={() =>
                   navigate("/subjects")
                 }
-              >
+
                 Subjects
               </span>
               
@@ -201,7 +198,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
                 onClick={() =>
                   navigate("/visits")
                 }
-              >
+
                 Visits
               </span>
               
@@ -209,7 +206,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
                 onClick={() =>
                   navigate("/screening")
                 }
-              >
+
                 Screening
               </span>
               
@@ -217,7 +214,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
                 onClick={() =>
                   navigate("/enrollment")
                 }
-              >
+
                 Enrollment
               </span>
               
@@ -225,7 +222,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
                 onClick={() =>
                   navigate("/comments")
                 }
-              >
+
                 Comments
               </span>
               
@@ -233,7 +230,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
                 onClick={() =>
                   navigate("/site-activities")
                 }
-              >
+
                 Site Activities
               </span>
               
@@ -241,7 +238,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
                 onClick={() =>
                   navigate("/access-request")
                 }
-              >
+
                 Access Request
               </span>
             </>
@@ -258,7 +255,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
                     "/pi-dashboard"
                   )
                 }
-              >
+
                 PI Dashboard
               </span>
             </>
@@ -266,7 +263,6 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
         }
 
         {/* newly added till here */}
-
 
         {/* ✅ UPDATED */}
         <span onClick={handleHomeClick}>Home</span>
@@ -277,13 +273,13 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
   Progress Notes
 </span>
 
-<span
+span
   onClick={() => {
     if (setSelectedPage) {
       setSelectedPage("comments");
     }
   }}
->
+
   Comments
 </span>
 
@@ -303,7 +299,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
           <span
             className="welcome"
             onClick={() => setOpen(!open)}
-          >
+
             Welcome {name || "User"} ▾
           </span>
 

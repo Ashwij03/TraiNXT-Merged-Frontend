@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import useVisitPlans from "../../hooks/useVisitPlans";
-import useVisitSchedules from "../../hooks/useVisitSchedules";
 import RequestPermissionButton from "../../components/RequestPermissionButton";
 import useCanEditStudyContent from "../../hooks/useCanEditStudyContent";
-import { formatScheduleDisplayDate } from "../../utils/formatScheduleDisplayDate";
+import useVisitPlans from "../../hooks/useVisitPlans";
+import useVisitSchedules from "../../hooks/useVisitSchedules";
+import { canEditStudyContent } from "../../utils/contentAccess.js";
 import { compareScheduleDates } from "../../services/visitScheduleService";
+import { formatScheduleDisplayDate } from "../../utils/formatScheduleDisplayDate";
+import { getCurrentUser } from "../../services/roleService.js";
 import {
   saveVisitPlan,
   deleteVisitPlan,
@@ -145,7 +147,7 @@ function StudyVisitPlan() {
               type="button"
               className="add-study-btn"
               onClick={openCreateWizard}
-            >
+
               + New Visit Plan
             </button>
           )}
@@ -166,7 +168,7 @@ function StudyVisitPlan() {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-              >
+
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                 <line x1="16" y1="2" x2="16" y2="6" />
                 <line x1="8" y1="2" x2="8" y2="6" />
@@ -218,7 +220,7 @@ function StudyVisitPlan() {
                         )
                           .toLowerCase()
                           .replace(/\s+/g, "-")}`}
-                      >
+
                         {visit.status || "Scheduled"}
                       </span>
                     </td>
@@ -250,7 +252,7 @@ function StudyVisitPlan() {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-              >
+
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
@@ -267,7 +269,7 @@ function StudyVisitPlan() {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="visit-plan-status-select"
-          >
+
             <option value="all">All statuses</option>
             <option value="Draft">Draft</option>
             <option value="Active">Active</option>
@@ -287,7 +289,7 @@ function StudyVisitPlan() {
               type="button"
               className="secondary-btn"
               onClick={openCreateWizard}
-            >
+
               Create Visit Plan
             </button>
           )}
@@ -302,7 +304,7 @@ function StudyVisitPlan() {
                   <strong>{plan.name}</strong>
                   <span
                     className={`status-pill status-${String(plan.status || "draft").toLowerCase()}`}
-                  >
+
                     {plan.status}
                   </span>
                 </div>
@@ -316,7 +318,7 @@ function StudyVisitPlan() {
                     type="button"
                     className="secondary-btn"
                     onClick={() => openEditWizard(plan.id)}
-                  >
+
                     {canEdit ? "Edit" : "View"}
                   </button>
                   {canEdit && (
@@ -327,7 +329,7 @@ function StudyVisitPlan() {
                         deleteVisitPlan(studyCode, plan.id);
                         refresh();
                       }}
-                    >
+
                       Delete
                     </button>
                   )}
@@ -412,7 +414,7 @@ function VisitPlanWizard({
             <span
               key={label}
               className={`visit-plan-step${index === step ? " active" : ""}${index < step ? " done" : ""}`}
-            >
+
               {index + 1}. {label}
             </span>
           ))}
@@ -448,7 +450,7 @@ function VisitPlanWizard({
                   onChange={(e) =>
                     onChange({ ...draft, status: e.target.value })
                   }
-                >
+
                   <option>Draft</option>
                   <option>Active</option>
                   <option>Archived</option>
@@ -586,7 +588,7 @@ function VisitPlanWizard({
             className="secondary-btn"
             disabled={step === 0}
             onClick={() => onStepChange(step - 1)}
-          >
+
             Back
           </button>
           {!isLastStep ? (
@@ -595,7 +597,7 @@ function VisitPlanWizard({
               className="add-study-btn"
               disabled={!canProceed}
               onClick={() => onStepChange(step + 1)}
-            >
+
               Next
             </button>
           ) : (
@@ -605,7 +607,7 @@ function VisitPlanWizard({
                 className="add-study-btn"
                 disabled={!canProceed}
                 onClick={onSave}
-              >
+
                 Save Visit Plan
               </button>
             )
@@ -717,7 +719,7 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
                     onChange={(e) =>
                       updateVisit(visit.id, "visitType", e.target.value)
                     }
-                  >
+
                     <option>Scheduled</option>
 
                     <option>Screening</option>
@@ -748,7 +750,7 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
                     onChange={(e) =>
                       updateVisit(visit.id, "windowStartUnit", e.target.value)
                     }
-                  >
+
                     <option>Days</option>
 
                     <option>Hours</option>
@@ -773,7 +775,7 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
                     onChange={(e) =>
                       updateVisit(visit.id, "windowEndUnit", e.target.value)
                     }
-                  >
+
                     <option>Days</option>
 
                     <option>Hours</option>
@@ -808,7 +810,7 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
 
                         onChange(next);
                       }}
-                    >
+
                       ↑
                     </button>
 
@@ -828,7 +830,7 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
 
                         onChange(next);
                       }}
-                    >
+
                       ↓
                     </button>
 
@@ -836,7 +838,7 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
                       type="button"
                       className="link-btn danger"
                       onClick={() => removeVisit(visit.id)}
-                    >
+
                       Remove
                     </button>
                   </td>
@@ -933,7 +935,7 @@ function ProcedureDetailsTable({ visits, procedures, canEdit, onChange }) {
                       onChange={(e) =>
                         updateProcedure(proc.id, "visitId", e.target.value)
                       }
-                    >
+
                       <option value="">All visits</option>
                       {(visits || []).map((visit) => (
                         <option key={visit.id} value={visit.id}>
@@ -992,7 +994,7 @@ function ProcedureDetailsTable({ visits, procedures, canEdit, onChange }) {
                         type="button"
                         className="link-btn danger"
                         onClick={() => removeProcedure(proc.id)}
-                      >
+
                         Remove
                       </button>
                     </td>
@@ -1008,7 +1010,7 @@ function ProcedureDetailsTable({ visits, procedures, canEdit, onChange }) {
             type="button"
             className="secondary-btn"
             onClick={addProcedure}
-          >
+
             Select Standard Procedure
           </button>
           + Add Procedure

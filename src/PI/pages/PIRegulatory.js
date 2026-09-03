@@ -12,7 +12,6 @@ import {
   FaSave,
 } from "react-icons/fa";
 import PIKpiCard from "./PIKpiCard";
-import {
   getRegulatoryData,
   saveRegulatoryData,
   getNavbarData,
@@ -157,7 +156,7 @@ function PIRegulatory({ selectedStudy: studyProp }) {
                       type="button"
                       className="view-all-btn pi-btn-icon"
                       onClick={() => { setSelectedDoc(doc); setEditDoc({ ...doc }); }}
-                    >
+
                       <FaEye /> View
                     </button>
                     <button
@@ -165,7 +164,7 @@ function PIRegulatory({ selectedStudy: studyProp }) {
                       className="export-btn pi-btn-sm pi-btn-icon"
                       style={{ marginLeft: "0.375rem" }}
                       onClick={() => { setSelectedDoc(doc); setEditDoc({ ...doc }); }}
-                    >
+
                       <FaEdit /> Edit
                     </button>
                   </td>

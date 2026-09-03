@@ -68,7 +68,7 @@ function ReferralProgramSettings() {
           className={`referral-admin-toggle ${bonusEnabled ? "on" : "off"}`}
           onClick={handleToggle}
           aria-pressed={bonusEnabled}
-        >
+
           {bonusEnabled ? "ON" : "OFF"}
         </button>
       </div>

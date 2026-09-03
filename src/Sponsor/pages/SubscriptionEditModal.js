@@ -95,7 +95,7 @@ const SubscriptionEditModal = ({ subscription, onSave, onClose }) => {
               <select
                 value={formData.plan}
                 onChange={(e) => handleChange('plan', e.target.value)}
-              >
+
                 {PLAN_OPTIONS.map((plan) => (
                   <option key={plan} value={plan}>{plan}</option>
                 ))}
@@ -108,7 +108,7 @@ const SubscriptionEditModal = ({ subscription, onSave, onClose }) => {
               <select
                 value={formData.status}
                 onChange={(e) => handleChange('status', e.target.value)}
-              >
+
                 {STATUS_OPTIONS.map((status) => (
                   <option key={status} value={status}>{status}</option>
                 ))}

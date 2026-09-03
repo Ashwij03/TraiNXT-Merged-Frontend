@@ -173,7 +173,7 @@ const location = useLocation();
         <button
   className="back-btn"
   onClick={() => navigate(-1)}
->
+
    Back
 </button>
 
@@ -205,7 +205,6 @@ const location = useLocation();
   </div>
 
 </div>
-
 
 <div className="details-card">
 
@@ -444,7 +443,7 @@ const location = useLocation();
   onClick={() =>
     alert("Recruitment notification sent to all participating sites")
   }
->
+
   Notify Sites
 </button>
 
@@ -452,7 +451,7 @@ const location = useLocation();
   onClick={() =>
     setShowCampaignModal(true)
   }
->
+
   Create Recruitment Campaign
 </button>
 
@@ -571,7 +570,7 @@ const location = useLocation();
             priority: e.target.value
           })
         }
-      >
+
         <option>Low</option>
         <option>Medium</option>
         <option>High</option>
@@ -585,7 +584,7 @@ const location = useLocation();
             status: e.target.value
           })
         }
-      >
+
         <option>Planned</option>
         <option>Active</option>
         <option>Completed</option>
@@ -601,7 +600,7 @@ const location = useLocation();
           onClick={() =>
             setShowCampaignModal(false)
           }
-        >
+
           Cancel
         </button>
 

@@ -59,7 +59,7 @@ function GlobalSearch() {
           id={LISTBOX_ID}
           className="cro-global-search-dropdown"
           role="listbox"
-        >
+
           {results.length === 0 ? (
             <li className="cro-global-search-empty">No results found</li>
           ) : (
@@ -71,7 +71,7 @@ function GlobalSearch() {
                   onClick={() => handleSelect(result)}
                   role="option"
                   aria-selected="false"
-                >
+
                   <span className="cro-global-search-type">{result.type}</span>
                   <span className="cro-global-search-label">{result.label}</span>
                   {result.sublabel && (

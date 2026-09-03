@@ -8,6 +8,7 @@ import EnterpriseModal from './EnterpriseModal';
 import { FiHome, FiUsers, FiTrendingUp, FiBarChart2 } from 'react-icons/fi';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { getSites, getSiteKPIs } from '../data/sponsorDataStore';
+import { resolveSiteDisplay, formatSiteOption } from '../../shared/utils/siteDisplay.js';
 import { resolveSiteDisplay, formatSiteOption, MISSING_SITE_DISPLAY } from '../../shared/utils/siteDisplay';
 
 const SitePerformance = () => {
