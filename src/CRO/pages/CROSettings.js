@@ -197,7 +197,7 @@ function CROSettings() {
                 <option value="Europe/London">UK (London)</option>
                 <option value="Asia/Singapore">Singapore</option>
                 <option value="Australia/Sydney">Australia (Sydney)</option>
-              </select>
+              </select>  
             </div>
           </div>
         )}
