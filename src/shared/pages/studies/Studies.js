@@ -259,6 +259,7 @@ function Studies() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState(initialForm);
+  const [createError, setCreateError] = useState("");
 
   const canCreateStudy = canAddStudy(currentUser);
 
@@ -497,11 +498,22 @@ function Studies() {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const createdStudy = createStudy({
-      ...form,
-      site: form.site || form.location,
-      protocol: form.protocol || form.name,
-    });
+    let createdStudy;
+
+    try {
+      createdStudy = createStudy({
+        ...form,
+        site: form.site || form.location,
+        protocol: form.protocol || form.name,
+      });
+    } catch (err) {
+      // Subscription enforcement (subscriptionGuard.assertCanCreateStudy)
+      // throws when the license isn't Active or the study limit is reached.
+      setCreateError(err?.message || "Unable to create study.");
+      return;
+    }
+
+    setCreateError("");
 
     // No need to pre-create an empty subjectsByStudy bucket.
     // The bucket is created automatically when the first subject is added
@@ -759,6 +771,10 @@ function Studies() {
             )}
           </div>
         </div>
+
+        {createError && (
+          <div className="studies-create-error">{createError}</div>
+        )}
 
         {filteredStudies.length === 0 && (
           <div className="studies-empty-state">

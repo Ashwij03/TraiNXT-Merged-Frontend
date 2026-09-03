@@ -24,6 +24,7 @@ import {
   NOTIFICATIONS_UPDATED
 } from "./notificationService";
 import { getCanonicalSubjectStatus } from "../utils/subjectLifecycle";
+import { assertCanApproveUser } from "./subscriptionGuard";
 
 // UPDATED: queries storage key renamed to comments (legacy "queries" key migrated on read)
 const STORAGE_KEYS = {
@@ -223,6 +224,7 @@ export function getPendingSignupRequests() {
 }
 
 export function approveSignupRequest(email) {
+  assertCanApproveUser();
   const users = readJson("users", []);
   let updatedUser = null;
 

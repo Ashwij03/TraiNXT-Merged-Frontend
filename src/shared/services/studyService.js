@@ -13,6 +13,7 @@ import {
   addAuditLog as recordCanonicalAuditLog,
   getRecentActivityLogs as getCanonicalRecentActivityLogs
 } from "./auditService";
+import { assertCanCreateStudy } from "./subscriptionGuard";
 
 const STUDIES_STORAGE_KEY = "trianxtStudies";
 
@@ -182,6 +183,7 @@ export function getSubjectStudyDefaults(studyCode) {
 }
 
 export function createStudy(study) {
+  assertCanCreateStudy();
   const normalizedStudy = normalizeStudy(study);
   const storedStudies = getStoredStudies();
 

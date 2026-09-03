@@ -440,6 +440,9 @@ export function canAccessRoute(path, user = getCurrentUser()) {
     "/ai-review": [ROLES.ADMIN, ROLES.CRO, ROLES.SPONSOR],
     "/etmf": [ROLES.ADMIN, ROLES.CRO, ROLES.SPONSOR],
     // ===== END: Safety / AI Review / eTMF route access =====
+    // ===== START: Monitoring Access route access =====
+    "/monitoring-access": [ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.CRO, ROLES.SPONSOR],
+    // ===== END: Monitoring Access route access =====
     "/sites": [ROLES.ADMIN, ROLES.CRO],
     "/portfolio": [ROLES.SPONSOR],
     "/study-oversight": [ROLES.SPONSOR],
@@ -602,6 +605,7 @@ export function getUserProfile(user = getCurrentUser()) {
     assignedSite: getAssignedSite(user) || "",
     role: user.role || "",
     orgType: user.orgType || "",
+    pincode: storedProfile.pincode || user.pincode || "",
   };
 }
 
@@ -685,10 +689,15 @@ export function saveUserProfile(profile, user = getCurrentUser()) {
     .replace(/\s+/g, " ")
     .trim();
 
+  // Pincode is part of the referral anti-abuse rule (referralService reads
+  // it from the "users" array via adminService.getUsers()), so it must stay
+  // in sync on the underlying user record — updateCurrentUserProfile()
+  // patches both "currentUser" and the matching "users" row in one call.
   const updatedUser = updateCurrentUserProfile({
     name: fullName || user.name,
     assignedSite: profile.assignedSite || user.assignedSite,
     orgType: profile.assignedSite || user.orgType,
+    pincode: profile.pincode || user.pincode,
   });
 
   if (Object.prototype.hasOwnProperty.call(profile, "profilePhoto")) {

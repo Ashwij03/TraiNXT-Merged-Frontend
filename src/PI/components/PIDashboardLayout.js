@@ -37,6 +37,8 @@ export const PI_PAGE_ROUTES = {
 
   referral: "/pi-referral",
 
+  license: "/my-license",
+
   eisf: "/pi-eisf-dashboard",
 
   icf: "/pi-icf-dashboard",

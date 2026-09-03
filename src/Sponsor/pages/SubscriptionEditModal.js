@@ -1,12 +1,35 @@
 import React, { useState } from 'react';
+import {
+  getPlanCatalog,
+  getDefaultPlan,
+} from '../../shared/services/planCatalogService';
 import '../styles/SubscriptionEditModal.css';
 
-const PLAN_OPTIONS = ['Basic', 'Professional', 'Enterprise'];
+// Status is subscription state, not catalog data — the three computed
+// statuses are the license vocabulary (getSubscriptionStatus returns them).
 const STATUS_OPTIONS = ['Active', 'Expired', 'Suspended'];
 
 const SubscriptionEditModal = ({ subscription, onSave, onClose }) => {
+  // Plan tiers are read live from the catalog so Admin-defined plans show
+  // up here automatically — no hardcoded Basic/Professional/Enterprise list.
+  const planCatalog = getPlanCatalog();
+  const defaultPlan = getDefaultPlan();
+
+  // Resolve the current selection: prefer the stored planId when it still
+  // exists in the catalog; fall back to a name match (legacy subscriptions
+  // store only the display name); finally fall back to the catalog's
+  // default tier. A dangling planId (deleted tier) never survives.
+  const initialPlanId =
+    (subscription?.planId &&
+    planCatalog.some((plan) => plan.id === subscription.planId)
+      ? subscription.planId
+      : planCatalog.find((plan) => plan.name === subscription?.plan)?.id) ||
+    defaultPlan?.id ||
+    '';
+
   const [formData, setFormData] = useState({
-    plan: subscription?.plan || 'Basic',
+    planId: initialPlanId,
+    plan: subscription?.plan || defaultPlan?.name || '',
     status: subscription?.status || 'Active',
     startDate: subscription?.startDate || '',
     endDate: subscription?.endDate || '',
@@ -28,7 +51,7 @@ const SubscriptionEditModal = ({ subscription, onSave, onClose }) => {
   const validate = () => {
     const newErrors = {};
 
-    if (!formData.plan) newErrors.plan = 'Plan is required';
+    if (!formData.planId) newErrors.plan = 'Plan is required';
     if (!formData.status) newErrors.status = 'Status is required';
     if (!formData.startDate) newErrors.startDate = 'Start date is required';
     if (!formData.endDate) newErrors.endDate = 'End date is required';
@@ -65,8 +88,14 @@ const SubscriptionEditModal = ({ subscription, onSave, onClose }) => {
   const handleSave = () => {
     if (!validate()) return;
 
+    // Persist the resolved tier: planId is the stable reference, and the
+    // display name is kept in sync for backward-compatible consumers.
+    const selectedPlan = planCatalog.find((plan) => plan.id === formData.planId);
+
     onSave({
       ...formData,
+      planId: selectedPlan?.id || formData.planId,
+      plan: selectedPlan?.name || formData.plan,
       maxUsers: Number(formData.maxUsers),
       maxStudies: Number(formData.maxStudies),
       storageLimit: Number(formData.storageLimit),
@@ -93,11 +122,13 @@ const SubscriptionEditModal = ({ subscription, onSave, onClose }) => {
             <div className="subscription-form-group">
               <label>Plan *</label>
               <select
-                value={formData.plan}
-                onChange={(e) => handleChange('plan', e.target.value)}
+                value={formData.planId}
+                onChange={(e) => handleChange('planId', e.target.value)}
               >
-                {PLAN_OPTIONS.map((plan) => (
-                  <option key={plan} value={plan}>{plan}</option>
+                {planCatalog.map((plan) => (
+                  <option key={plan.id} value={plan.id}>
+                    {plan.name}
+                  </option>
                 ))}
               </select>
               {errors.plan && <span className="subscription-field-error">{errors.plan}</span>}

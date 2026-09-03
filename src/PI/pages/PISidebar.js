@@ -10,6 +10,7 @@ import {
   FaBell,
   FaCog,
   FaGift,
+  FaCreditCard,
 } from "react-icons/fa";
 import "../styles/PISidebar.css";
 import { getSidebarMenuData } from "./piDashboardService";
@@ -77,6 +78,7 @@ function PISidebar({
       notifications: "/pi-notifications",
       settings: "/pi-settings",
       referral: "/pi-referral",
+      license: "/my-license",
     };
 
     const route = routeMap[page];
@@ -178,6 +180,16 @@ function PISidebar({
         >
           <FaGift />
           {!collapsed && <span>Referral Program</span>}
+        </div>
+
+        {/* My License — shown directly below Referral Program. Read-only for
+            every role; only Admin can change the plan. */}
+        <div
+          className={getMenuClass("license")}
+          onClick={() => handleMenuClick("license")}
+        >
+          <FaCreditCard />
+          {!collapsed && <span>My License</span>}
         </div>
       </div>
     </>

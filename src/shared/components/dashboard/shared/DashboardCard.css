@@ -16,7 +16,7 @@
 
 .dashboard-widget-header h3 {
   margin: 0;
-  font-size: var(--tnxt-space-lg);
+  font-size: 15px;
   font-weight: 600;
   line-height: 1.25;
   color: var(--tnxt-text);

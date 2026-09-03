@@ -49,6 +49,7 @@ function StatusPill({ status }) {
 function AccessPermissions() {
   const [activeTab, setActiveTab] = useState("signup");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [signupError, setSignupError] = useState("");
 
   useEffect(() => {
     const refresh = () => setRefreshKey((value) => value + 1);
@@ -88,8 +89,18 @@ function AccessPermissions() {
   };
 
   const handleApproveSignup = (email) => {
-    approveSignupRequest(email);
-    setRefreshKey((value) => value + 1);
+    setSignupError("");
+
+    try {
+      approveSignupRequest(email);
+      setRefreshKey((value) => value + 1);
+    } catch (err) {
+      // Subscription enforcement (subscriptionGuard.assertCanApproveUser)
+      // throws when the license isn't Active or the user limit is reached.
+      setSignupError(
+        err?.message || "Unable to approve this signup request."
+      );
+    }
   };
 
   const handleRejectSignup = (email) => {
@@ -300,6 +311,10 @@ function AccessPermissions() {
             </span>
           </button>
         </div>
+
+        {signupError && (
+          <div className="access-permissions-error">{signupError}</div>
+        )}
 
         {activeTab === "signup" ? (
           <DataTable

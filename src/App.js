@@ -114,9 +114,15 @@ import SiteStaffLiveChat from "./SiteStaff/pages/LiveChat";
 
 // ===== START: Safety / AI Review / eTMF imports =====
 import SafetyCenter from "./shared/pages/safety/SafetyCenter";
+import MonitoringAccess from "./shared/pages/monitoring/MonitoringAccess";
 import RiskInsights from "./shared/pages/aiReview/RiskInsights";
 import EtmfCenter from "./shared/pages/etmf/EtmfCenter";
 // ===== END: Safety / AI Review / eTMF imports =====
+
+// ===== START: Dynamic Subscription & Plan Catalog imports =====
+import MyLicense from "./shared/pages/MyLicense";
+import SubscriptionManagement from "./Admin/pages/SubscriptionManagement";
+// ===== END: Dynamic Subscription & Plan Catalog imports =====
 
 const SPONSOR_ROLES = [ROLES.SPONSOR];
 const SPONSOR_ADMIN_ROLES = [ROLES.SPONSOR, ROLES.ADMIN];
@@ -477,6 +483,26 @@ function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* ===== START: Dynamic Subscription & Plan Catalog routes ===== */}
+      <Route
+        path="/my-license"
+        element={
+          <ProtectedRoute>
+            <MyLicense />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/subscription"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+            <SubscriptionManagement />
+          </ProtectedRoute>
+        }
+      />
+      {/* ===== END: Dynamic Subscription & Plan Catalog routes ===== */}
 
       {/* Sponsor-specific routes */}
       <Route
@@ -994,6 +1020,17 @@ function App() {
         }
       />
       {/* ===== END: Safety / AI Review / eTMF routes ===== */}
+
+      {/* ===== START: Monitoring Access route ===== */}
+      <Route
+        path="/monitoring-access"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.CRO, ROLES.SPONSOR]}>
+            <MonitoringAccess />
+          </ProtectedRoute>
+        }
+      />
+      {/* ===== END: Monitoring Access route ===== */}
 
       <Route path="*" element={<RoleAwareFallback />} />
     </Routes>

@@ -141,6 +141,11 @@ export async function apiFetch(path, opts = {}) {
     method,
     headers: buildHeaders(headers, hasJsonBody),
     signal,
+    // The backend authenticates via Django session cookie (not the Bearer
+    // token below, which nothing currently issues) — "include" is required
+    // for that cookie to be sent/received cross-origin, since the CRA dev
+    // server and the Django backend run on different ports/origins.
+    credentials: "include",
   };
   if (isFormData) {
     init.body = body; // browser sets the multipart Content-Type + boundary

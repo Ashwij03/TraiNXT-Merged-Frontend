@@ -10,6 +10,14 @@
 //   R3 — If the referee already has active access (paid subscription and/or a
 //        prior referral extension), the 15 days are appended AFTER that
 //        access ends, not from today.
+//        NOTE on data source: this codebase has no per-user subscription
+//        record — subscriptionService.js's "trianxtSubscription" is a single
+//        ORG-WIDE plan object (one localStorage key, no userId field). That
+//        is the only "subscription" concept that exists anywhere in this
+//        app, so it is what R3 stacks against (see getOrgSubscriptionEndDate
+//        below). If/when a real per-user subscription is introduced, swap
+//        that one function's body for a per-user lookup — nothing else in
+//        this file needs to change.
 //   R4 — Every user has exactly one static referral code, generated once and
 //        never regenerated.
 //   R5 — A single referral code can be successfully redeemed by at most 3
@@ -18,7 +26,8 @@
 //        15 days on a successful redemption; when OFF, only the referee does.
 
 import { readJson } from "../utils/storageHelpers";
-import { getSettings, saveSettings } from "./adminService";
+import { getSettings, saveSettings, getUsers } from "./adminService";
+import { getSubscription } from "./subscriptionService";
 
 // ---------------------------------------------------------------------------
 // Storage keys
@@ -333,11 +342,41 @@ export function computeStackedEndDate(
   return end.toISOString();
 }
 
+/**
+ * Resolves "the user's existing subscription end date" for R3 stacking
+ * purposes. This app only has one subscription record in total — the
+ * org-wide plan in subscriptionService.js ("trianxtSubscription") — so that
+ * is treated as every user's active subscription end date, but only when
+ * that subscription is actually Active. Fails soft (returns null) if
+ * subscriptionService is unavailable for any reason, so a referral grant
+ * can never throw because of this lookup.
+ */
+function getOrgSubscriptionEndDate() {
+  try {
+    const subscription = getSubscription();
+    if (subscription && subscription.status === "Active" && subscription.endDate) {
+      return subscription.endDate;
+    }
+  } catch {
+    // Fail soft — treat as "no active subscription" rather than block the grant.
+  }
+  return null;
+}
+
 function grantDaysToUser(userId, daysToAdd, sourceUsageId) {
   const current = getRawEntitlement(userId) || {};
-  const newEndDate = computeStackedEndDate(current, daysToAdd);
+
+  // R3: pull in the current subscription end date as a stacking candidate
+  // (see getOrgSubscriptionEndDate's note on why this reads the org-wide
+  // subscription) alongside any prior referral extension already on file.
+  const subscriptionEndDate = getOrgSubscriptionEndDate();
+  const newEndDate = computeStackedEndDate(
+    { ...current, subscriptionEndDate },
+    daysToAdd
+  );
 
   return upsertEntitlement(userId, {
+    subscriptionEndDate,
     referralExtensionEndDate: newEndDate,
     referralExtensionDaysTotal: (current.referralExtensionDaysTotal || 0) + daysToAdd,
     referralExtensionSource: sourceUsageId
@@ -396,6 +435,7 @@ const REJECTION_MESSAGES = {
   self_referral: "You can't redeem your own referral code.",
   already_redeemed: "You've already redeemed a referral code before.",
   referral_limit_reached: "This referral code has reached its redemption limit (3/3 used).",
+  same_organization_referral: "Referral codes can't be redeemed by another user from the same organization and location.",
   missing_referee: "A signed-in user is required to redeem a referral code."
 };
 
@@ -429,6 +469,40 @@ export function redeemReferralCode(refereeUserId, codeString) {
   // Step 3 — self-referral guard.
   if (String(codeRecord.userId) === String(refereeUserId)) {
     return { ok: false, reason: "self_referral", message: getRedemptionErrorMessage("self_referral") };
+  }
+
+  // Step 3b — same-organization + same-pincode guard, fail-closed on
+  // missing data. Blocks when the organizations match AND we cannot
+  // prove the two users are at different locations: either the
+  // pincodes match, or either side's pincode is missing/blank. A
+  // different organization is always allowed. The same organization
+  // with two known, differing pincodes (a different site of the same
+  // org) is allowed.
+  const allUsers = getUsers();
+  const referrerRecord = allUsers.find(
+    (u) => String(u.id) === String(codeRecord.userId)
+  );
+  const refereeRecord = allUsers.find(
+    (u) => String(u.id) === String(refereeUserId)
+  );
+
+  const referrerOrg = (referrerRecord?.organizationName || referrerRecord?.orgType || "").trim();
+  const refereeOrg = (refereeRecord?.organizationName || refereeRecord?.orgType || "").trim();
+  const referrerPincode = (referrerRecord?.pincode || "").trim();
+  const refereePincode = (refereeRecord?.pincode || "").trim();
+
+  const sameOrganization = Boolean(referrerOrg) && referrerOrg === refereeOrg;
+  const pincodeKnownOnBothSides = Boolean(referrerPincode) && Boolean(refereePincode);
+  const blockedByPincode = pincodeKnownOnBothSides
+    ? referrerPincode === refereePincode
+    : true; // fail-closed: can't verify distinct locations, so treat as a match
+
+  if (sameOrganization && blockedByPincode) {
+    return {
+      ok: false,
+      reason: "same_organization_referral",
+      message: getRedemptionErrorMessage("same_organization_referral")
+    };
   }
 
   // Step 4 — duplicate-redemption guard: a referee may redeem any code only once, ever.

@@ -14,7 +14,7 @@ html {
   /* 54% of the browser default 16px = 8.64px root.
      At 100% browser zoom this gives the same visual density
      the user sees at 110% zoom — matching the reference. */
-  font-size: 54%;
+  font-size: 60%;
 }
 /* ===== END ITEM B ===== */
 

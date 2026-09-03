@@ -29,6 +29,7 @@ import {
   FiLayers,
   FiCpu,
   FiGift,
+  FiCreditCard,
 } from "react-icons/fi";
 import { getRoleExtraMenuItems } from "../../../constants/roleMenus";
 import { canViewFinancials } from "../../../pages/studies/StudyWorkspaceTabsConfig";
@@ -137,6 +138,13 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   const canViewAuditLogs =
     effectiveUser?.role === "Admin" || effectiveUser?.role === "SiteStaff";
 
+  // ===== START: Dynamic Subscription & Plan Catalog sidebar gating =====
+  // My License is universal (every role), so it is gated exactly like the
+  // Referral Program link below. Subscription Plans is Admin-only.
+  const canManageSubscription = effectiveUser?.role === "Admin";
+  // ===== END: Dynamic Subscription & Plan Catalog sidebar gating =====
+
+
   const canRequestAccess =
     effectiveUser?.role === "CRO" || effectiveUser?.role === "Sponsor";
 
@@ -156,6 +164,16 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
     effectiveUser?.role === "CRO" ||
     effectiveUser?.role === "Sponsor";
   // ===== END: Safety / AI Review / eTMF role checks =====
+
+  // ===== START: Monitoring Access role check =====
+  // Mirrors the "/monitoring-access" entry in roleService.js's
+  // ROUTE_ACCESS map (Admin, SiteStaff, CRO, Sponsor).
+  const canViewMonitoringAccess =
+    effectiveUser?.role === "Admin" ||
+    effectiveUser?.role === "SiteStaff" ||
+    effectiveUser?.role === "CRO" ||
+    effectiveUser?.role === "Sponsor";
+  // ===== END: Monitoring Access role check =====
 
   const roleExtraMenuItems = getRoleExtraMenuItems(effectiveUser?.role);
   const visibleStudySections = STUDY_SECTIONS.filter((section) => {
@@ -779,6 +797,18 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       )}
       {/* ===== END: Safety / AI Review / eTMF sidebar links ===== */}
 
+      {/* ===== START: Monitoring Access sidebar link ===== */}
+      {canViewMonitoringAccess && (
+        <div
+          className={getLinkClass(pathname.includes("/monitoring-access"))}
+          onClick={() => handleNav("/monitoring-access")}
+        >
+          <FiEye size={16} />
+          <span>Monitoring Access</span>
+        </div>
+      )}
+      {/* ===== END: Monitoring Access sidebar link ===== */}
+
       {canManageUsers && (
         <div
           className={getLinkClass(pathname.includes("user-management"))}
@@ -876,6 +906,26 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         >
           <FiGift size={16} />
           <span>Referral Program</span>
+        </div>
+      )}
+
+      {sidebarItems.some((item) => item.key === "settings") && (
+        <div
+          className={getLinkClass(pathname.includes("/my-license"))}
+          onClick={() => handleNav("/my-license")}
+        >
+          <FiCreditCard size={16} />
+          <span>My License</span>
+        </div>
+      )}
+
+      {canManageSubscription && (
+        <div
+          className={getLinkClass(pathname.includes("/admin/subscription"))}
+          onClick={() => handleNav("/admin/subscription")}
+        >
+          <FiCreditCard size={16} />
+          <span>Subscription Plans</span>
         </div>
       )}
 

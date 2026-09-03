@@ -39,6 +39,24 @@ function ProfileSettingsSection({ showTitle = false }) {
   const handleSave = (event) => {
     event.preventDefault();
 
+    // Pincode is mandatory (mirrors registration validation): it feeds the
+    // referral same-organization/same-location anti-abuse rule, so it can
+    // never be saved blank or as non-numeric junk.
+    const trimmedPincode = String(profile.pincode || "").trim();
+    const pincodeRegex = /^\d{4,10}$/;
+
+    if (!trimmedPincode) {
+      setSaveError(true);
+      setSavedMessage("Pincode is required");
+      return;
+    }
+
+    if (!pincodeRegex.test(trimmedPincode)) {
+      setSaveError(true);
+      setSavedMessage("Enter a valid pincode (numbers only)");
+      return;
+    }
+
     try {
       saveUserProfile(profile, currentUser);
       setSaveError(false);
@@ -155,6 +173,17 @@ function ProfileSettingsSection({ showTitle = false }) {
                 readOnly={!canEditSite}
                 onChange={(event) =>
                   handleChange("assignedSite", event.target.value)
+                }
+              />
+            </label>
+
+            <label>
+              <span>Pincode</span>
+              <input
+                type="text"
+                value={profile.pincode || ""}
+                onChange={(event) =>
+                  handleChange("pincode", event.target.value)
                 }
               />
             </label>
