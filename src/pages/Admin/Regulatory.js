@@ -1,11 +1,11 @@
 // UPDATED: Admin regulatory overview page (not study workspace regulatory)
 
-import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
-import KPICard from "../../components/dashboard/shared/KPICard";
+import DashboardLayout from "../../shared/components/dashboard/shared/DashboardLayout.css";
+import KPICard from "../../shared/components/dashboard/shared/KPICard.css";
 import AlertsPanel from "../../components/dashboard/shared/AlertsPanel";
 import DataTable from "../../components/dashboard/shared/DataTable";
 import { getRegulatoryDocs } from "../../services/adminService";
-import "./AdminPage.css";
+import "../../shared/styles/AdminPage.css";
 
 function Regulatory() {
   const documents = getRegulatoryDocs();

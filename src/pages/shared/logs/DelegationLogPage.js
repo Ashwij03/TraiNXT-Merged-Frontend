@@ -1,13 +1,13 @@
 // UPDATED: Delegation Log page in DashboardLayout with dynamic localStorage data
 
 import { useState } from "react";
-import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
+import DashboardLayout from "../../../shared/components/dashboard/shared/DashboardLayout.css";
 import DataTable from "../../../components/dashboard/shared/DataTable";
-import KPICard from "../../../components/dashboard/shared/KPICard";
+import KPICard from "../../../shared/components/dashboard/shared/KPICard.css";
 import { getDelegationLogs } from "../../../services/adminService";
-import { getAssignedSite } from "../../../services/roleService";
-import "../../../pages/Admin/AdminPage.css";
-import "../../../components/DelegationLog.css";
+import { getAssignedSite } from "../../../shared/services/roleService.js";
+import "../../../shared/styles/AdminPage.css";
+import "../../../shared/components/DelegationLog.css";
 
 function DelegationLogPage() {
   const logs = getDelegationLogs();
@@ -56,7 +56,7 @@ function DelegationLogPage() {
               className="delegate-card"
               onClick={() => setSelectedDelegate(delegate)}
               style={{ cursor: "pointer" }}
-            >
+
               <div className="delegate-user">
                 <div className="delegate-image">
                   <img
@@ -89,14 +89,14 @@ function DelegationLogPage() {
                 type="button"
                 className={tab === "active" ? "tab active" : "tab"}
                 onClick={() => setTab("active")}
-              >
+
                 Active
               </button>
               <button
                 type="button"
                 className={tab === "inactive" ? "tab active" : "tab"}
                 onClick={() => setTab("inactive")}
-              >
+
                 Inactive
               </button>
             </div>

@@ -1,4 +1,4 @@
-import { readJson } from "../utils/storageHelpers";
+import { readJson } from "../shared/utils/storageHelpers.js";
 // UPDATED: Central admin data service — localStorage-backed, fully dynamic (no default/seed data)
 
 import { getStudies, getRecentActivityLogs, getStudyByCode } from "./studyService";
@@ -7,21 +7,19 @@ import {
   getAssignedSite,
   getCurrentUser,
   isAdmin
-} from "./roleService";
-import {
+} from "../shared/services/roleService.js";
   getFilteredSchedules,
   getMergedSchedules,
   getUpcomingVisitsWindow
 } from "./visitScheduleService";
 import { isOpenComment } from "./commentService";
-import { getPendingAccessRequests } from "./accessPermissionService";
-import {
+import { getPendingAccessRequests } from "../shared/services/accessPermissionService.js";
   getNotificationsForUser,
   markNotificationRead as markSharedNotificationRead,
   markAllNotificationsReadForUser,
   NOTIFICATIONS_UPDATED
-} from "./notificationService";
-import { getCanonicalSubjectStatus } from "../utils/subjectLifecycle";
+} from "../shared/services/notificationService.js";
+import { getCanonicalSubjectStatus } from "../shared/utils/subjectLifecycle.js";
 
 // UPDATED: queries storage key renamed to comments (legacy "queries" key migrated on read)
 const STORAGE_KEYS = {

@@ -1,6 +1,6 @@
-import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
-import ProfileSettingsSection from "./ProfileSettingsSection";
-import "../../../pages/Admin/AdminPage.css";
+import DashboardLayout from "../../../shared/components/dashboard/shared/DashboardLayout.css";
+import ProfileSettingsSection from "../../../shared/pages/profile/ProfileSettingsSection.js";
+import "../../../shared/styles/AdminPage.css";
 
 function ProfilePage() {
   return (

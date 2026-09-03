@@ -1,6 +1,6 @@
 
-import { formatScheduleDisplayDate } from "../../../utils/formatScheduleDisplayDate";
-import "./dashboard.css";
+import { formatScheduleDisplayDate } from "../../../shared/utils/formatScheduleDisplayDate.js";
+import "../../../shared/components/dashboard/shared/dashboard.css";
 
 function UpcomingVisitsWidget({
   visits = [],

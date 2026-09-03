@@ -1,4 +1,4 @@
-import { normalizeStatus } from "./normalizeStatus";
+import { normalizeStatus } from "../shared/utils/normalizeStatus.js";
 export const SUBJECT_STATUS_ORDER = [
   "Screened",
   "Enrolled",

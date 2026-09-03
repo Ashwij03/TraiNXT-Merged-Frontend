@@ -2,26 +2,25 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import SiteStaffDashboardLayout from "../../components/dashboard/sitestaff/SiteStaffDashboardLayout";
-import KPICard from "../../components/dashboard/shared/KPICard";
+import SiteStaffDashboardLayout from "../../SiteStaff/components/SiteStaffDashboardLayout.js";
+import KPICard from "../../shared/components/dashboard/shared/KPICard.css";
 import SubjectAnalyticsSection from "../../components/dashboard/shared/SubjectAnalyticsSection";
 import { getStudies } from "../../services/studyService";
 import DataTable from "../../components/dashboard/shared/DataTable";
 import AlertsPanel from "../../components/dashboard/shared/AlertsPanel";
 import QuickActions from "../../components/dashboard/shared/QuickActions";
-import VisitCalendarSection from "../../components/dashboard/shared/VisitCalendarSection";
+import VisitCalendarSection from "../../shared/components/dashboard/shared/VisitCalendarSection.css";
 import {
   getSiteStaffDashboardData,
   getSubjectsForAnalytics
 } from "../../services/adminService";
-import { getAccessibleStudies, getAssignedSite } from "../../services/roleService";
+import { getAccessibleStudies, getAssignedSite } from "../../shared/services/roleService.js";
 import { useComments } from "../../comments/CommentsContext";
-import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay.js";
 
-import "../Admin/Dashboard.css";
-import "../shared/AccessPermissions.css";
-import "./Dashboard.css";
-import "../shared/studies/StudyDashboard.css";
+import "../Admin/Dashboard.js";
+import "../../shared/pages/AccessPermissions.css";
+import "../shared/studies/StudyDashboard.js";
 
 function SiteStaffDashboard() {
   const navigate = useNavigate();

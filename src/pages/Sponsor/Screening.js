@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
-import AppLayout from "./AppLayout";
-import "./Screening.css";
+import AppLayout from "../../shared/pages/sites/SiteWorkspace/AppLayout.css";
+import "./Screening.js";
 import { useNavigate } from "react-router-dom";
-import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay.js";
 import { getStudies } from "../../services/studyService";
 
 function Screening() {
@@ -259,7 +259,7 @@ function Screening() {
 		<select
 		  value={selectedSite}
 		  onChange={(e) => setSelectedSite(e.target.value)}
-		>
+
 		  <option>All Sites</option>
 		  <option>Hyderabad</option>
 		  <option>Bangalore</option>
@@ -273,7 +273,7 @@ function Screening() {
 		<select
 		  value={selectedStatus}
 		  onChange={(e) => setSelectedStatus(e.target.value)}
-		>
+
 		  <option>All Status</option>
 		  <option>Completed</option>
 		  <option>Pending</option>
@@ -325,7 +325,7 @@ function Screening() {
 
     navigate(`/study/${screening.id}`);
   }}
->
+
   View
 </button>
 				</td>
@@ -392,7 +392,7 @@ function Screening() {
 			</p>
 		      <button
 		        onClick={() => setSelectedScreening(null)}
-		      >
+
 		        Close
 		      </button>
 

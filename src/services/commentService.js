@@ -1,13 +1,13 @@
-import ROLES from "../constants/roles";
+import ROLES from "../shared/constants/roles.js";
 import { getComments, saveComments } from "./adminService";
 import {
   getCurrentUser,
   getEffectiveRole,
   hasPermission,
   getAccessibleStudies
-} from "./roleService";
-import PERMISSIONS from "../constants/permissions";
-import { notifyCommentAdded } from "./notificationService";
+} from "../shared/services/roleService.js";
+import PERMISSIONS from "../shared/constants/permissions.js";
+import { notifyCommentAdded } from "../shared/services/notificationService.js";
 
 // Two different features share this one comment store:
 // 1. Document/subject-level QC comments (DocumentFolderManager, StudyComments)

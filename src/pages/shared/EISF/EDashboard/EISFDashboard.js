@@ -1,30 +1,30 @@
 import { useMemo, useState } from "react";
-import "./EISFDashboard.css";
-import EISFMenuConfig from "../Constants/EISFMenuConfig";
+import "./EISFDashboard.js";
+import EISFMenuConfig from "../../../../shared/pages/EISF/Constants/EISFMenuConfig.js";
 
 // Pages
-import ParticipatingSiteTeam from "../ParticipatingSiteTeam/ParticipatingSiteTeam";
-import ProjectManagement from "../ProjectManagement/ProjectManagement";
-import Protocol from "../Protocol/Protocol";
-import ParticipantConsent from "../ParticipantConsent/ParticipantConsent";
-import Regulatory from "../Regulatory/Regulatory";
-import Ethics from "../Ethics/Ethics";
-import ResearchGovernance from "../ResearchGovernance/ResearchGovernance";
-import SOP from "../Sop/Sop";
+import ParticipatingSiteTeam from "../../../../shared/pages/EISF/ParticipatingSiteTeam/ParticipatingSiteTeam.css";
+import ProjectManagement from "../../../../shared/pages/EISF/ProjectManagement/ProjectManagement.css";
+import Protocol from "../../../../shared/pages/EISF/Protocol/Protocol.css";
+import ParticipantConsent from "../../../../shared/pages/EISF/ParticipantConsent/ParticipantConsent.css";
+import Regulatory from "../../../Admin/Regulatory.js";
+import Ethics from "../../../../shared/pages/EISF/Ethics/Ethics.css";
+import ResearchGovernance from "../../../../shared/pages/EISF/ResearchGovernance/ResearchGovernance.css";
+import SOP from "../../../../shared/pages/EISF/Sop/Sop.css";
 import SiteInitiation from "../SiteInitiation/SiteInitiation";
-import SiteTraining from "../SiteTraining/SiteTraining";
-import Recruitment from "../Recruitment/Recruitment";
-import Randomization from "../Randomization/Randomization";
-import DataManagement from "../DataManagement/DataManagement";
-import Safety from "../Safety/Safety";
-import Monitoring from "../Monitoring/Monitoring";
-import Laboratory from "../Laboratory/Laboratory";
-import Supplies from "../Supplies/Supplies";
-import Legal from "../Legal/Legal";
-import Finance from "../Finance/Finance";
-import OtherCommunication from "../OtherCommunication/OtherCommunication";
-import Archiving from "../Archiving/Archiving";
-import InvestigationalProduct from "../InvestigationalProduct/InvestigationalProduct";
+import SiteTraining from "../../../../shared/pages/EISF/SiteTraining/SiteTraining.css";
+import Recruitment from "../../../../Admin/pages/Recruitment.js";
+import Randomization from "../../../../shared/pages/EISF/Randomization/Randomization.css";
+import DataManagement from "../../../../shared/pages/EISF/DataManagement/DataManagement.css";
+import Safety from "../../../../shared/pages/EISF/Safety/Safety.css";
+import Monitoring from "../../../CRO/Monitoring.js";
+import Laboratory from "../../../../shared/pages/EISF/Laboratory/Laboratory.css";
+import Supplies from "../../../../shared/pages/EISF/Supplies/Supplies.css";
+import Legal from "../../../../shared/pages/EISF/Legal/Legal.css";
+import Finance from "../../../../shared/pages/EISF/Finance/Finance.css";
+import OtherCommunication from "../../../../shared/pages/EISF/OtherCommunication/OtherCommunication.css";
+import Archiving from "../../../../shared/pages/EISF/Archiving/Archiving.css";
+import InvestigationalProduct from "../../../../shared/pages/EISF/InvestigationalProduct/InvestigationalProduct.css";
 
 const pageMap = {
   "1.0": ParticipatingSiteTeam,
@@ -96,12 +96,12 @@ export default function EISFDashboard({ studyCode } = {}) {
                 className={`eisf-menu-item ${
                   selectedModuleId === item.id ? "active" : ""
                 }`}
-              >
+
                 <button
                   type="button"
                   className="eisf-menu-label"
                   onClick={() => handleModuleChange(item.id)}
-                >
+
                   <span className="eisf-module-number">{item.id}</span>
                   <span>{item.title}</span>
                 </button>
@@ -112,7 +112,7 @@ export default function EISFDashboard({ studyCode } = {}) {
                     className="eisf-expand-btn"
                     onClick={() => toggleModule(item.id)}
                     aria-label={`${expandedModuleId === item.id ? "Collapse" : "Expand"} ${item.title}`}
-                  >
+
                     {expandedModuleId === item.id ? "−" : "+"}
                   </button>
                 )}
@@ -127,7 +127,7 @@ export default function EISFDashboard({ studyCode } = {}) {
                       selected === child.id ? "active" : ""
                     }`}
                     onClick={() => handleSectionChange(child.id)}
-                  >
+
                     {child.id} {child.title}
                   </button>
                 ))}

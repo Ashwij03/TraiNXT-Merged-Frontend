@@ -1,18 +1,18 @@
 import React from "react";
-import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay.js";
 import { getStudies } from "../../services/studyService";
-import "./CRODashboard.css";
-import "../shared/studies/StudyDashboard.css";
-import CROLayout from "./CROLayout";
-import { useCROData } from "./CRODATAContext";
-import StudyStatusChart from "./StudyStatusChart";
+import "./CRODashboard.js";
+import "../shared/studies/StudyDashboard.js";
+import CROLayout from "../../CRO/pages/CROLayout.js";
+import { useCROData } from "../../CRO/pages/CRODATAContext.js";
+import StudyStatusChart from "../../CRO/pages/StudyStatusChart.js";
 import EnrollmentChart from "./EnrollmentChart";
-import VisitCompletionChart from "./VisitCompletionChart";
-import QueryStatusChart from "./QueryStatusChart";
-import UpcomingMonitoringVisits from "./UpcomingMonitoringVisits";
-import CROStatusBadge from "./CROStatusBadge";
-import SkeletonLoader from "./SkeletonLoader";
-import EmptyState from "./EmptyState";
+import VisitCompletionChart from "../../CRO/pages/VisitCompletionChart.js";
+import QueryStatusChart from "../../CRO/pages/QueryStatusChart.js";
+import UpcomingMonitoringVisits from "../../CRO/pages/UpcomingMonitoringVisits.js";
+import CROStatusBadge from "../../CRO/pages/CROStatusBadge.js";
+import SkeletonLoader from "../../CRO/pages/SkeletonLoader.js";
+import EmptyState from "../../CRO/pages/EmptyState.js";
 import { useNavigate } from "react-router-dom";
 
 function CRODashboard() {
@@ -133,7 +133,7 @@ function CRODashboard() {
                     }
                     role="button"
                     tabIndex={0}
-                  >
+
                     <div className="kpi-icon">{card.icon}</div>
                     <h3>{card.title}</h3>
                     <p>{card.value}</p>
@@ -148,7 +148,7 @@ function CRODashboard() {
                   onClick={() => navigate("/cro-enrollment")}
                   role="button"
                   tabIndex={0}
-                >
+
                   <EnrollmentChart />
                 </div>
                 <div
@@ -156,7 +156,7 @@ function CRODashboard() {
                   onClick={() => navigate("/cro-monitoring")}
                   role="button"
                   tabIndex={0}
-                >
+
                   <VisitCompletionChart />
                 </div>
                 <div
@@ -164,7 +164,7 @@ function CRODashboard() {
                   onClick={() => navigate("comments")}
                   role="button"
                   tabIndex={0}
-                >
+
                   <QueryStatusChart />
                 </div>
                 <div
@@ -172,7 +172,7 @@ function CRODashboard() {
                   onClick={() => navigate("/cro-subjects")}
                   role="button"
                   tabIndex={0}
-                >
+
                   <StudyStatusChart />
                 </div>
               </div>
@@ -182,7 +182,7 @@ function CRODashboard() {
                 onClick={() => navigate("/cro-subject-management")}
                 role="button"
                 tabIndex={0}
-              >
+
                 <h2>Sites Under Monitoring</h2>
                 {uniqueSites.length === 0 ? (
                   <EmptyState title="No Sites Found" />
@@ -233,7 +233,7 @@ function CRODashboard() {
                 onClick={() => navigate("/cro-monitoring")}
                 role="button"
                 tabIndex={0}
-              >
+
                 <h2>Monitoring Visits</h2>
                 {safeVisits.length === 0 ? (
                   <EmptyState title="No Visits Found" />
@@ -269,14 +269,13 @@ function CRODashboard() {
                   <UpcomingMonitoringVisits />
                 </div>
 
-
               <div className="info-grid">
                 <div
                   className="dashboard-card clickable-card"
                   onClick={() => navigate("/cro-monitoring")}
                   role="button"
                   tabIndex={0}
-                >
+
                   <h2>Recent Monitoring Activities</h2>
                   {recentActivities.length === 0 ? (
                     <EmptyState title="No Activities" />
@@ -310,7 +309,7 @@ function CRODashboard() {
                   onClick={() => navigate("/cro-comments")}
                   role="button"
                   tabIndex={0}
-                >
+
                   <h2>Recent Comments</h2>
                   {recentComments.length === 0 ? (
                     <EmptyState title="No Comments Found" />
@@ -355,7 +354,7 @@ function CRODashboard() {
   onClick={() => navigate("/cro-notifications")}
   role="button"
   tabIndex={0}
->
+
   <h2>🔔 Alerts & Notifications</h2>
 
   <div className="alerts-list">
@@ -369,7 +368,7 @@ function CRODashboard() {
       <div
   key={alert?.id ?? `${alert?.title}-${alert?.date}`}
   className={`alert-card ${severity}`}
->
+
   <div className="alert-card-header">
     <h4>{alert?.title ?? "Alert"}</h4>
 
@@ -399,7 +398,7 @@ function CRODashboard() {
         key={action.label}
         type="button"
         onClick={() => navigate(action.route)}
-      >
+
         {action.label}
       </button>
     ))}

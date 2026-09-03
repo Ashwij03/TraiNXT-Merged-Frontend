@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import DataTable from "../../../components/dashboard/shared/DataTable";
 import { getVisibleComments } from "../../../services/commentService";
-import { readJson } from "../../../utils/storageHelpers";
+import { readJson } from "../../../shared/utils/storageHelpers.js";
 
 // Resolve a Subject → Study ID mapping from the shared subjectsByStudy store,
 // used as a fallback Study ID when a comment record itself does not carry an

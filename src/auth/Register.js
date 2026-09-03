@@ -413,7 +413,7 @@ function Register() {
                   !showPassword
                 )
               }
-            >
+
               {
                 showPassword
                   ? "Hide"
@@ -463,7 +463,7 @@ function Register() {
                   !showConfirmPassword
                 )
               }
-            >
+
               {
                 showConfirmPassword
                   ? "Hide"
@@ -498,7 +498,7 @@ function Register() {
               setRole("");
             }}
             required
-          >
+
             <option value="">
               Select Organization
             </option>
@@ -581,7 +581,6 @@ function Register() {
               )
             }
             required
-          >
 
             <option value="">
               Select role
@@ -596,7 +595,7 @@ function Register() {
                 <option
                   key={index}
                   value={r}
-                >
+
                   {r}
                 </option>
               ))
@@ -623,7 +622,7 @@ function Register() {
                 e.preventDefault();
                 setShowPolicy(true);
               }}
-            >
+
               Privacy Policy
             </span>
           </label>
@@ -642,7 +641,7 @@ function Register() {
             confirmError ||
             !acceptedPolicy
           }
-        >
+
           SIGN UP
         </button>
 
@@ -656,7 +655,7 @@ function Register() {
             type="button"
             className="login-link-btn"
             onClick={() => navigate("/login")}
-          >
+
             Login
           </button>
 
@@ -731,7 +730,7 @@ function Register() {
               onClick={() =>
                 setShowPolicy(false)
               }
-            >
+
               Close
             </button>
             

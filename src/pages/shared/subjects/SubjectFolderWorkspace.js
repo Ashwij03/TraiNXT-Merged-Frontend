@@ -1,27 +1,25 @@
 import { useEffect, useCallback, useState, useMemo } from "react";
-import ROLES from "../../../constants/roles";
-import PERMISSIONS from "../../../constants/permissions";
+import ROLES from "../../../shared/constants/roles.js";
+import PERMISSIONS from "../../../shared/constants/permissions.js";
 import {
   getCurrentUser,
   getEffectiveRole,
   hasPermission
 } from "../../../services/roleService";
-import {
   ensureSubjectFolderWithICF,
   FOLDER_TREE_EVENT
 } from "../../../services/folderService";
-import {
   markVisitStageCompleted,
   SCHEDULES_EVENT,
   shouldPromptNextVisit,
   syncSubjectSchedules,
   VISIT_STAGES
 } from "../../../services/visitScheduleService";
-import NextVisitPromptModal from "../../../components/common/NextVisitPromptModal";
-import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
-import { resolveSiteDisplay } from "../../../utils/siteDisplay";
+import NextVisitPromptModal from "../../../shared/components/NextVisitPromptModal.css";
+import DocumentFolderManager from "../../../shared/components/DocumentFolderManager.css";
+import { resolveSiteDisplay } from "../../../shared/utils/siteDisplay.js";
 import { getStudies } from "../../../services/studyService";
-import "./SubjectFolderWorkspace.css";
+import "./SubjectFolderWorkspace.js";
 
 const SUBJECT_DETAILS_KEY = "subjectDetailsByStudy";
 const SUBJECT_STATUSES = [
@@ -118,7 +116,7 @@ function SubjectDetailsPanel({ subject, studyId, onUpdate }) {
               onChange={(e) =>
                 setForm((prev) => ({ ...prev, status: e.target.value }))
               }
-            >
+
               {SUBJECT_STATUSES.map((status) => (
                 <option key={status} value={status}>
                   {status}

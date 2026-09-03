@@ -1,12 +1,12 @@
 // UPDATED: Site Performance page with dynamic metrics from adminService
 
-import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
-import DashboardCard from "../../components/dashboard/shared/DashboardCard";
-import DashboardBarChart from "../../components/dashboard/shared/DashboardBarChart";
+import DashboardLayout from "../../shared/components/dashboard/shared/DashboardLayout.css";
+import DashboardCard from "../../shared/components/dashboard/shared/DashboardCard.css";
+import DashboardBarChart from "../../shared/components/dashboard/shared/DashboardBarChart.js";
 import DataTable from "../../components/dashboard/shared/DataTable";
 import { getSitePerformance } from "../../services/adminService";
-import { formatSiteLabel } from "../../utils/siteDisplay";
-import "./AdminPage.css";
+import { formatSiteLabel } from "../../shared/utils/siteDisplay.js";
+import "../../shared/styles/AdminPage.css";
 
 function SitePerformance() {
   const performance = getSitePerformance();

@@ -6,7 +6,7 @@ import {
   canViewComment,
   canWriteComments,
 } from "../../../services/commentService";
-import { getCurrentUser } from "../../../services/roleService";
+import { getCurrentUser } from "../../../shared/services/roleService.js";
 import { getStudyByCode } from "../../../services/studyService";
 import { useComments } from "../../../comments/CommentsContext";
 
@@ -43,7 +43,7 @@ function StudyComments() {
             <button
               type="button"
               onClick={() => resolveComment(comment.id)}
-            >
+
               Resolve
             </button>
           ) : (
@@ -84,7 +84,7 @@ function StudyComments() {
             onClick={handleAddComment}
             disabled={!studyCode || !commentText.trim()}
             style={{ marginTop: "8px" }}
-          >
+
             Add Comment
           </button>
         </div>

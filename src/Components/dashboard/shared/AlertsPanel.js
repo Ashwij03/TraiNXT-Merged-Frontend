@@ -33,7 +33,6 @@ function AlertsPanel({
               <div
                 key={index}
                 className={`alert-item ${alert.type}`}
-              >
 
                 <div className="alert-icon">
 

@@ -1,6 +1,6 @@
-import useVisitSchedules from "../../../hooks/useVisitSchedules";
-import { formatScheduleDisplayDate } from "../../../utils/formatScheduleDisplayDate";
-import "./StudyVisits.css";
+import useVisitSchedules from "../../../shared/hooks/useVisitSchedules.js";
+import { formatScheduleDisplayDate } from "../../../shared/utils/formatScheduleDisplayDate.js";
+import "./StudyVisits.js";
 
 function StudyVisits({ setActiveTab }) {
   const { schedules } = useVisitSchedules();
@@ -42,7 +42,7 @@ function StudyVisits({ setActiveTab }) {
                       className={`status-badge ${String(
                         visit.status || "Scheduled"
                       ).toLowerCase()}`}
-                    >
+
                       {visit.status || "Scheduled"}
                     </span>
                   </td>

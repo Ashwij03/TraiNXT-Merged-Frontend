@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FiActivity } from "react-icons/fi";
-import IncompleteEisfModulesModal from "./IncompleteEisfModulesModal";
+import IncompleteEisfModulesModal from "../../shared/components/studies/IncompleteEisfModulesModal.js";
 
 function StudyHealthSummary({ health }) {
   const score = health?.score ?? 0;
@@ -23,7 +23,7 @@ function StudyHealthSummary({ health }) {
     <div
       className="study-widget-card study-health-card"
       aria-label="eISF Summary"
-    >
+
       <div className="study-widget-header">
         <FiActivity />
         <h3>eISF Summary</h3>
@@ -58,7 +58,7 @@ function StudyHealthSummary({ health }) {
                 key={moduleEntry.id || moduleEntry.title}
                 className="study-health-incomplete-item"
                 title={moduleEntry.title}
-              >
+
                 {moduleEntry.title}
               </li>
             ))}
@@ -68,7 +68,7 @@ function StudyHealthSummary({ health }) {
               type="button"
               className="study-health-view-all"
               onClick={() => setShowAllModal(true)}
-            >
+
               View All ({incompleteModules.length})
             </button>
           )}

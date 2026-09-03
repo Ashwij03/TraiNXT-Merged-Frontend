@@ -1,5 +1,5 @@
-import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
-import RoleCommentsView from "../../components/common/RoleCommentsView";
+import DashboardLayout from "../../shared/components/dashboard/shared/DashboardLayout.css";
+import RoleCommentsView from "../../shared/components/RoleCommentsView.js";
 
 function Comments() {
   return (

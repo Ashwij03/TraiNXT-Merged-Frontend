@@ -2,27 +2,26 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminDashboardLayout from "../../components/dashboard/admin/AdminDashboardLayout";
+import AdminDashboardLayout from "../../Admin/components/AdminDashboardLayout.js";
 
-import KPICard from "../../components/dashboard/shared/KPICard";
+import KPICard from "../../shared/components/dashboard/shared/KPICard.css";
 import SubjectAnalyticsSection from "../../components/dashboard/shared/SubjectAnalyticsSection";
 import { getStudies } from "../../services/studyService";
 import AlertsPanel from "../../components/dashboard/shared/AlertsPanel";
 import QuickActions from "../../components/dashboard/shared/QuickActions";
-import VisitCalendarSection from "../../components/dashboard/shared/VisitCalendarSection";
+import VisitCalendarSection from "../../shared/components/dashboard/shared/VisitCalendarSection.css";
 import {
   getAdminDashboardData,
   getSubjectsForAnalytics
 } from "../../services/adminService";
 import { useComments } from "../../comments/CommentsContext";
-import {
   INSTITUTION_FILTER_EVENT,
   getStoredInstitutionFilter
 } from "../../constants/headerFilters";
 
-import "./Dashboard.css";
-import "../shared/studies/StudyDashboard.css";
-import "../shared/AccessPermissions.css";
+import "./Dashboard.js";
+import "../shared/studies/StudyDashboard.js";
+import "../../shared/pages/AccessPermissions.css";
 
 // Ongoing studies = studies currently in Startup, Recruitment Phase,
 // or Conduct Phase (the statuses set on the study details form's

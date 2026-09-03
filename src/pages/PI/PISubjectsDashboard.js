@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import "./PISubjectsDashboard.css";
+import "./PISubjectsDashboard.js";
 import { FaEye, FaFileAlt, FaEllipsisV } from "react-icons/fa";
 import {
   COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE,
@@ -8,9 +8,9 @@ import {
   getSubjectStudyDefaults,
   getStudies,
 } from "../../services/studyService";
-import { STUDY_STATUS_COMPLETED } from "../../constants/studyStatus";
+import { STUDY_STATUS_COMPLETED } from "../../shared/constants/studyStatus.js";
 
-import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay.js";
 
 function PISubjectsDashboard({ onProfileClick }) {
   const [search, setSearch] = useState("");
@@ -247,7 +247,7 @@ function PISubjectsDashboard({ onProfileClick }) {
               ? "No non-completed studies are available for subject creation."
               : undefined
           }
-        >
+
           + Add Subject
         </button>
       </div>
@@ -262,7 +262,7 @@ function PISubjectsDashboard({ onProfileClick }) {
         <select
           value={selectedStatus}
           onChange={(e) => setSelectedStatus(e.target.value)}
-        >
+
           <option>All</option>
           <option>Screening</option>
           <option>Enrolled</option>
@@ -324,7 +324,7 @@ function PISubjectsDashboard({ onProfileClick }) {
                 <td>
                   <span
                     className={`status-badge ${subject.status.toLowerCase()}`}
-                  >
+
                     {subject.status}
                   </span>
                 </td>
@@ -392,7 +392,7 @@ function PISubjectsDashboard({ onProfileClick }) {
                   site: getSubjectStudyDefaults(e.target.value).site,
                 })
               }
-            >
+
               <option value="">Select active study</option>
               {studyOptions.map((study) => (
                 <option key={study.code} value={study.code}>
@@ -443,7 +443,7 @@ function PISubjectsDashboard({ onProfileClick }) {
                   status: e.target.value,
                 })
               }
-            >
+
               <option>Screening</option>
               <option>Enrolled</option>
               <option>Completed</option>
@@ -493,7 +493,7 @@ function PISubjectsDashboard({ onProfileClick }) {
 
                 <span
                   className={`status-badge ${selectedSubject.status.toLowerCase()}`}
-                >
+
                   {selectedSubject.status}
                 </span>
               </div>

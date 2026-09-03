@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
-import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay.js";
 import { getStudies } from "../../services/studyService";
-import "./PIStudySubjectProfile.css";
+import "../../PI/styles/PIStudySubjectProfile.css";
 
 function PIStudySubjectProfile({ subject }) {
 	const siteSources = useMemo(() => getStudies(), []);
@@ -182,7 +182,6 @@ function PIStudySubjectProfile({ subject }) {
 	    updatedSubject
 	  );
 
-
 	  const allSubjects =
 	    JSON.parse(
 	      localStorage.getItem("subjectsData")
@@ -264,7 +263,6 @@ function PIStudySubjectProfile({ subject }) {
 	  setShowEnrollmentModal(false);
 	};
 
-
 	const saveDocument = () => {
 
 	  if (!documentForm.name) {
@@ -288,7 +286,6 @@ function PIStudySubjectProfile({ subject }) {
 
 	  }
 	  setDocumentList(updatedDocuments);
-
 
 	  const updatedSubject = {
 	    ...subject,
@@ -355,8 +352,6 @@ function PIStudySubjectProfile({ subject }) {
 
 	  setQueryList(updatedQueries);
 
-
-
 	  const updatedSubject = {
 	    ...subject,
 	    queries: updatedQueries
@@ -398,7 +393,6 @@ function PIStudySubjectProfile({ subject }) {
 
 	};
 
-
 	const saveScreening = () => {
 
 	  let updatedScreenings =
@@ -419,7 +413,6 @@ function PIStudySubjectProfile({ subject }) {
 	  setScreeningList(
 	    updatedScreenings
 	  );
-
 
 	  const updatedSubject = {
 	    ...subject,
@@ -483,7 +476,6 @@ function PIStudySubjectProfile({ subject }) {
     setScreeningList(
       updatedScreenings
     );
-
 
 	const updatedSubject = {
 	  ...subject,
@@ -549,7 +541,7 @@ function PIStudySubjectProfile({ subject }) {
 
         <span
           className={`status-badge ${subject.status.toLowerCase()}`}
-        >
+
           {subject.status}
         </span>
 
@@ -636,7 +628,7 @@ function PIStudySubjectProfile({ subject }) {
           onClick={() =>
             setActiveTab("overview")
           }
-        >
+
           Overview
         </button>
 
@@ -649,7 +641,7 @@ function PIStudySubjectProfile({ subject }) {
           onClick={() =>
             setActiveTab("screening")
           }
-        >
+
           Screening
         </button>
 
@@ -662,7 +654,7 @@ function PIStudySubjectProfile({ subject }) {
           onClick={() =>
             setActiveTab("enrollment")
           }
-        >
+
           Enrollment
         </button>
 
@@ -675,7 +667,7 @@ function PIStudySubjectProfile({ subject }) {
           onClick={() =>
             setActiveTab("visits")
           }
-        >
+
           Visits
         </button>
 
@@ -688,7 +680,7 @@ function PIStudySubjectProfile({ subject }) {
           onClick={() =>
             setActiveTab("documents")
           }
-        >
+
           Documents
         </button>
 
@@ -701,7 +693,7 @@ function PIStudySubjectProfile({ subject }) {
           onClick={() =>
             setActiveTab("queries")
           }
-        >
+
           Queries
         </button>
 
@@ -714,7 +706,7 @@ function PIStudySubjectProfile({ subject }) {
           onClick={() =>
             setActiveTab("audit")
           }
-        >
+
           Audit Trail
         </button>
 
@@ -744,7 +736,7 @@ function PIStudySubjectProfile({ subject }) {
 
 		    <span
 		      className={`status-badge ${subject.status.toLowerCase()}`}
-		    >
+
 		      {subject.status}
 		    </span>
 		  </div>
@@ -786,7 +778,7 @@ function PIStudySubjectProfile({ subject }) {
 	            setEditIndex(null);
 	            setShowScreeningModal(true);
 	          }}
-	        >
+
 	          + Add Screening
 	        </button>
 
@@ -856,7 +848,7 @@ function PIStudySubjectProfile({ subject }) {
 			  <button
 			    className="add-visit-btn"
 			    onClick={handleEditEnrollment}
-			  >
+
 			    Edit Enrollment
 			  </button>
 		    </div>
@@ -901,7 +893,7 @@ function PIStudySubjectProfile({ subject }) {
 		    <button
 		      className="add-visit-btn"
 		      onClick={() => setShowDocumentModal(true)}
-		    >
+
 		      + Add Document
 		    </button>
 
@@ -1018,7 +1010,7 @@ function PIStudySubjectProfile({ subject }) {
 	          onClick={() =>
 	            setShowVisitModal(true)
 	          }
-	        >
+
 	          + Add Visit
 	        </button>
 
@@ -1046,7 +1038,7 @@ function PIStudySubjectProfile({ subject }) {
 			        <td>
 			          <span
 			            className={`visit-status ${visit.status.toLowerCase()}`}
-			          >
+
 			            {visit.status}
 			          </span>
 			        </td>
@@ -1087,7 +1079,7 @@ function PIStudySubjectProfile({ subject }) {
 		  <button
 		    className="add-visit-btn"
 		    onClick={() => setShowQueryModal(true)}
-		  >
+
 		    + Create Query
 		  </button>
 
@@ -1268,7 +1260,7 @@ function PIStudySubjectProfile({ subject }) {
 	              status: e.target.value
 	            })
 	          }
-	        >
+
 	          <option>Scheduled</option>
 	          <option>Completed</option>
 	          <option>Missed</option>
@@ -1281,14 +1273,14 @@ function PIStudySubjectProfile({ subject }) {
 			  onClick={() =>
 			    setShowVisitModal(false)
 			  }
-			>
+
 			  Cancel
 			</button>
 
 			<button
 			  className="save-btn"
 			  onClick={handleAddVisit}
-			>
+
 			  Save Visit
 			</button>
 
@@ -1328,7 +1320,7 @@ value={screeningForm.eligibility}
 	               eligibility: e.target.value
 	            })
 	          }
-	        >
+
 	          <option value="">Select</option>
 	          <option value="Eligible">Eligible</option>
 	          <option value="Pending">Pending</option>
@@ -1349,7 +1341,7 @@ value={screeningForm.eligibility}
 			  className="save-btn"
 			  type="button"
 			  onClick={saveScreening}
-			>
+
 			  Save
 			</button>
 
@@ -1359,7 +1351,7 @@ value={screeningForm.eligibility}
 			  onClick={() =>
 			    setShowScreeningModal(false)
 			  }
-			>
+
 			  Cancel
 			</button>
 
@@ -1409,7 +1401,7 @@ value={screeningForm.eligibility}
 	                e.target.value
 	            })
 	          }
-	        >
+
 	          <option value="">
 	            Select Consent
 	          </option>
@@ -1434,7 +1426,7 @@ value={screeningForm.eligibility}
 			    className="save-btn"
 			    type="button"
 			    onClick={saveEnrollment}
-			  >
+
 			    Save
 			  </button>
 
@@ -1444,7 +1436,7 @@ value={screeningForm.eligibility}
 			    onClick={() =>
 			      setShowEnrollmentModal(false)
 			    }
-			  >
+
 			    Cancel
 			  </button>
 
@@ -1486,7 +1478,7 @@ value={screeningForm.eligibility}
 	              type: e.target.value
 	            })
 	          }
-	        >
+
 	          <option value="">
 	            Select Type
 	          </option>
@@ -1510,7 +1502,7 @@ value={screeningForm.eligibility}
 	          <button
 	            className="save-btn"
 	            onClick={saveDocument}
-	          >
+
 	            Save
 	          </button>
 
@@ -1519,7 +1511,7 @@ value={screeningForm.eligibility}
 	            onClick={() =>
 	              setShowDocumentModal(false)
 	            }
-	          >
+
 	            Cancel
 	          </button>
 
@@ -1572,7 +1564,7 @@ value={screeningForm.eligibility}
 	              status:e.target.value
 	            })
 	          }
-	        >
+
 	          <option>Open</option>
 	          <option>Closed</option>
 	          <option>Pending</option>
@@ -1583,7 +1575,7 @@ value={screeningForm.eligibility}
 	          <button
 	            className="save-btn"
 	            onClick={saveQuery}
-	          >
+
 	            Save
 	          </button>
 
@@ -1592,7 +1584,7 @@ value={screeningForm.eligibility}
 	            onClick={() =>
 	              setShowQueryModal(false)
 	            }
-	          >
+
 	            Cancel
 	          </button>
 

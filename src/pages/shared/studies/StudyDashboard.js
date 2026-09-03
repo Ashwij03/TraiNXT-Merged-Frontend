@@ -1,46 +1,44 @@
 import StudyActivity from "./StudyActivity";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
-import KPICard from "../../../components/dashboard/shared/KPICard";
+import DashboardLayout from "../../../shared/components/dashboard/shared/DashboardLayout.css";
+import KPICard from "../../../shared/components/dashboard/shared/KPICard.css";
 import SubjectAnalyticsSection from "../../../components/dashboard/shared/SubjectAnalyticsSection";
-import VisitCalendarSection from "../../../components/dashboard/shared/VisitCalendarSection";
-import StudySubjects from "./StudySubjects";
+import VisitCalendarSection from "../../../shared/components/dashboard/shared/VisitCalendarSection.css";
+import StudySubjects from "../../../shared/pages/studies/StudySubjects.css";
 import StudyWorkspaceTabs from "./StudyWorkspaceTabs";
-import StudyDocuments from "./StudyDocuments";
+import StudyDocuments from "../../../shared/pages/studies/StudyDocuments.css";
 import StudyComments from "./StudyComments";
 import StudyLogsTab from "./StudyLogsTab";
-import StudyReports from "./StudyReports";
+import StudyReports from "../../../shared/pages/studies/StudyReports.css";
 import StudyPlanning from "./StudyPlanning";
-import StudyVisitPlan from "./StudyVisitPlan";
+import StudyVisitPlan from "../../../shared/pages/studies/StudyVisitPlan.css";
 import EssentialDocumentsWidget from "../../../components/studies/EssentialDocumentsWidget";
-import StudyProgressSummary from "../../../components/studies/StudyProgressSummary";
-import StudyMilestoneTimeline from "../../../components/studies/StudyMilestoneTimeline";
+import StudyProgressSummary from "../../../shared/components/studies/StudyProgressSummary.js";
+import StudyMilestoneTimeline from "../../../shared/components/studies/StudyMilestoneTimeline.js";
 import SitePerformanceSummary from "../../../components/studies/SitePerformanceSummary";
-import SiteActivationStatus from "../../../components/studies/SiteActivationStatus";
+import SiteActivationStatus from "../../../shared/components/studies/SiteActivationStatus.js";
 import StudyHealthSummary from "../../../components/studies/StudyHealthSummary";
-import useStudyOverview from "../../../hooks/useStudyOverview";
-import StudyFinancials from "../../Sponsor/Financials/StudyFinancials";
+import useStudyOverview from "../../../shared/hooks/useStudyOverview.js";
+import StudyFinancials from "../Financials/StudyFinancials.css";
 import AlertsPanel from "../../../components/dashboard/shared/AlertsPanel";
 import useStudiesDashboard from "../../../hooks/useStudiesDashboard";
-import useVisitSchedules from "../../../hooks/useVisitSchedules";
+import useVisitSchedules from "../../../shared/hooks/useVisitSchedules.js";
 import {
   getStudyByCode,
   deleteStudy,
   updateStudy,
 } from "../../../services/studyService";
-import {
   STUDY_STATUS_OPTIONS,
   STUDY_STATUS_DEFAULT,
-} from "../../../constants/studyStatus";
-import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
-import RecentSubjectsWidget from "../../../components/dashboard/shared/RecentSubjectsWidget";
+} from "../../../shared/constants/studyStatus.js";
+import DeleteConfirmationModal from "../../../shared/components/DeleteConfirmationModal.css";
+import RecentSubjectsWidget from "../../../shared/components/dashboard/shared/RecentSubjectsWidget.js";
 import UpcomingVisitsWidget from "../../../components/dashboard/shared/UpcomingVisitsWidget";
 import PendingCommentsWidget from "../../../components/dashboard/shared/PendingCommentsWidget";
 import QuickActionsWidget from "../../../components/dashboard/shared/QuickActionsWidget";
-import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
-import EISFWorkspace from "../EISF/EISFWorkspace";
-import {
+import DocumentFolderManager from "../../../shared/components/DocumentFolderManager.css";
+import EISFWorkspace from "../../../shared/pages/EISF/EISFWorkspace.js";
   FiUsers,
   FiClipboard,
   FiMessageSquare,
@@ -49,13 +47,11 @@ import {
   FiEdit2,
   FiRefreshCw,
 } from "react-icons/fi";
-import {
   canDeleteStudy,
   canEditStudyContent,
   requiresPermissionRequest,
 } from "../../../utils/contentAccess";
-import { submitAccessRequest } from "../../../services/accessPermissionService";
-import {
+import { submitAccessRequest } from "../../../shared/services/accessPermissionService.js";
   getCurrentUser,
   getAccessibleStudies,
   hasPermission,
@@ -63,10 +59,10 @@ import {
 } from "../../../services/roleService";
 import { useComments } from "../../../comments/CommentsContext";
 import { isOpenComment } from "../../../services/commentService";
-import "../AccessPermissions.css";
-import "../../Admin/Dashboard.css";
+import "../../../shared/pages/AccessPermissions.css";
+import "../../Admin/Dashboard.js";
 
-import ClinicalSitesDashboard from "./ClinicalSitesDashboard";
+import ClinicalSitesDashboard from "../../../shared/pages/studies/ClinicalSitesDashboard.css";
 
 function StudyDashboard() {
   const navigate = useNavigate();
@@ -405,7 +401,7 @@ function StudyDashboard() {
                 type="button"
                 className="back-to-studies-btn"
                 onClick={handleBackToStudies}
-              >
+
                 <FiArrowLeft />
                 <span>Back to Studies</span>
               </button>
@@ -470,7 +466,7 @@ function StudyDashboard() {
                   onClick={handleRefreshStudy}
                   disabled={isRefreshing}
                   title="Refresh study overview"
-                >
+
                   <FiRefreshCw className={isRefreshing ? "spinning" : ""} />
                   {isRefreshing ? "Refreshing..." : "Refresh"}
                 </button>
@@ -482,7 +478,7 @@ function StudyDashboard() {
                     onClick={handleEditStudy}
                     title="Edit study"
                     aria-label="Edit study"
-                  >
+
                     <FiEdit2 />
                     Edit Study
                   </button>
@@ -493,7 +489,7 @@ function StudyDashboard() {
                     type="button"
                     className="request-permission-btn"
                     onClick={handleRequestEditPermission}
-                  >
+
                     Request Edit Permission
                   </button>
                 )}
@@ -505,7 +501,7 @@ function StudyDashboard() {
                     onClick={() => setShowDeleteModal(true)}
                     title="Delete study"
                     aria-label="Delete study"
-                  >
+
                     <FiTrash2 />
                     Delete Study
                   </button>
@@ -680,7 +676,7 @@ function StudyDashboard() {
                     type="button"
                     onClick={() => setShowEditModal(false)}
                     aria-label="Close edit study modal"
-                  >
+
                     ×
                   </button>
                 </div>
@@ -770,7 +766,7 @@ function StudyDashboard() {
                       value={editForm.status || STUDY_STATUS_DEFAULT}
                       onChange={handleEditFormChange}
                       required
-                    >
+
                       {STUDY_STATUS_OPTIONS.map((option) => (
                         <option key={option} value={option}>
                           {option}
@@ -845,7 +841,7 @@ function StudyDashboard() {
                     type="button"
                     className="secondary-btn"
                     onClick={() => setShowEditModal(false)}
-                  >
+
                     Cancel
                   </button>
 

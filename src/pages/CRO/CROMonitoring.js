@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from "react";
-import CROLayout from "./CROLayout";
-import { useCROData } from "./CRODATAContext";
-import StatusBadge from "./StatusBadge";
-import EmptyState from "./EmptyState";
-import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import CROLayout from "../../CRO/pages/CROLayout.js";
+import { useCROData } from "../../CRO/pages/CRODATAContext.js";
+import StatusBadge from "../../CRO/pages/StatusBadge.js";
+import EmptyState from "../../CRO/pages/EmptyState.js";
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay.js";
 import { getStudies } from "../../services/studyService";
-import { formatScheduleDisplayDate } from "../../utils/formatScheduleDisplayDate";
+import { formatScheduleDisplayDate } from "../../shared/utils/formatScheduleDisplayDate.js";
 import { isPastCalendarDate } from "../../services/visitScheduleService";
 
 function CROMonitoring() {
@@ -78,7 +78,7 @@ function CROMonitoring() {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="cro-input"
-            >
+
               <option value="All">All</option>
               <option value="Completed">Completed</option>
               <option value="Pending">Pending</option>

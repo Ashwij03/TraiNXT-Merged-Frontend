@@ -1,5 +1,5 @@
 import "./Auth.css";
-import TriaNXTLogo from "../components/common/TriaNXTLogo";
+import TriaNXTLogo from "../shared/assets/TriaNXTLogo.png";
 
 export default function AuthLayout({ title, children }) {
   return (

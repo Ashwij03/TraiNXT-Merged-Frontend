@@ -11,10 +11,10 @@ import {
   FaCog,
 } from "react-icons/fa";
 import "./PISidebar.css";
-import { getSidebarMenuData } from "./piDashboardService";
-import TriaNXTLogo from "../../components/common/TriaNXTLogo";
-import RoleStudiesSidebarTree from "../../components/common/RoleStudiesSidebarTree";
-import { useRoleStudiesSidebar } from "../../hooks/useRoleStudiesSidebar";
+import { getSidebarMenuData } from "../../PI/pages/piDashboardService.js";
+import TriaNXTLogo from "../../shared/assets/TriaNXTLogo.png";
+import RoleStudiesSidebarTree from "../../shared/components/RoleStudiesSidebarTree.js";
+import { useRoleStudiesSidebar } from "../../shared/hooks/useRoleStudiesSidebar.js";
 
 const ICON_MAP = {
   home: FaHome,
@@ -111,7 +111,7 @@ const getMenuClass = (page) => {
           <div
             className={getMenuClass(dashboardSection.page)}
             onClick={() => handleMenuClick(dashboardSection.page)}
-          >
+
             <FaHome />
             <span>{dashboardSection.label}</span>
           </div>
@@ -125,7 +125,7 @@ const getMenuClass = (page) => {
               : ""
           }`}
           onClick={handleStudiesNav}
-        >
+
           <FaBookOpen />
           <span>Studies ({studyCount})</span>
         </div>
@@ -146,7 +146,7 @@ const getMenuClass = (page) => {
               key={section.id}
               className={getMenuClass(section.page)}
               onClick={() => handleMenuClick(section.page)}
-            >
+
               <Icon />
               <span>{section.label}</span>
             </div>

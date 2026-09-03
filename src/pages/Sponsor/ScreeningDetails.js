@@ -1,9 +1,8 @@
 import React, { useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import AppLayout from "./AppLayout";
-import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import AppLayout from "../../shared/pages/sites/SiteWorkspace/AppLayout.css";
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay.js";
 import { getStudies } from "../../services/studyService";
-
 
 function ScreeningDetails() {
 	const navigate = useNavigate();
@@ -48,7 +47,7 @@ function ScreeningDetails() {
 	  <button
 	    className="back-btn"
 	    onClick={() => navigate("/screening")}
-	  >
+
 	    ← Back to Screening
 	  </button>
 
@@ -85,7 +84,7 @@ function ScreeningDetails() {
 
 		    <span
 		      className={`status-badge ${screeningData.status.toLowerCase()}`}
-		    >
+
 		      {screeningData.status}
 		    </span>
 		  </p>

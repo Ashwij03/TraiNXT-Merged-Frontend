@@ -1,4 +1,4 @@
-import RecentActivity from "../../../components/dashboard/shared/RecentActivity";
+import RecentActivity from "../../../shared/components/dashboard/shared/RecentActivity.css";
 // ===== END F2 CHANGES =====
 // ===== START F2 CHANGES =====
 import StudyComments from "./StudyComments";
@@ -6,11 +6,9 @@ import StudyComments from "./StudyComments";
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { getStudyLogs } from "../../../services/adminService";
-import "./StudyActivity.css";
+import "./StudyActivity.js";
 
 // ===== START F2 CHANGES =====
-
-
 
 const overdueActivities = [
   {
@@ -185,7 +183,6 @@ function StudyActivity() {
 
       </div>
 
-
       {/* ===== END F2 CHANGES ===== */}
 
       {/* ===== START F2 CHANGES ===== */}
@@ -219,13 +216,13 @@ function StudyActivity() {
                   alert("Email Sent");
                   setShowComposeModal(false);
                 }}
-              >
+
                 Send
               </button>
 
               <button
                 onClick={() => setShowComposeModal(false)}
-              >
+
                 Cancel
               </button>
 
@@ -237,7 +234,6 @@ function StudyActivity() {
       )}
 
       {/* ===== END F2 CHANGES ===== */}
-
 
     </div>
     

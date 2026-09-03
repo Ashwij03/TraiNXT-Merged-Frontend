@@ -13,7 +13,7 @@ import {
   reopenCommentRecord,
   resolveCommentRecord,
 } from "../services/commentService";
-import { getCurrentUser } from "../services/roleService";
+import { getCurrentUser } from "../shared/services/roleService.js";
 
 const CommentsContext = createContext();
 
@@ -92,7 +92,7 @@ export function CommentsProvider({ children }) {
         reopenComment,
         refreshComments,
       }}
-    >
+
       {children}
     </CommentsContext.Provider>
   );

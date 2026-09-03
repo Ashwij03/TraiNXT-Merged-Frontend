@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "../../components/dashboard/shared/DashboardLayout";
-import KPICard from "../../components/dashboard/shared/KPICard";
+import DashboardLayout from "../../shared/components/dashboard/shared/DashboardLayout.css";
+import KPICard from "../../shared/components/dashboard/shared/KPICard.css";
 import DataTable from "../../components/dashboard/shared/DataTable";
 import { getUsers } from "../../services/adminService";
-import { removeUserPermissions } from "../../services/accessPermissionService";
-import { ROLE_LABELS } from "../../services/roleService";
-import "../../pages/Admin/AdminPage.css";
-import "./AccessPermissions.css";
+import { removeUserPermissions } from "../../shared/services/accessPermissionService.js";
+import { ROLE_LABELS } from "../../shared/services/roleService.js";
+import "../../shared/styles/AdminPage.css";
+import "../../shared/pages/AccessPermissions.css";
 
 function UserManagement() {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -105,7 +105,7 @@ function UserManagement() {
             className="user-management-role-filter"
             value={roleFilter}
             onChange={(event) => setRoleFilter(event.target.value)}
-          >
+
             {roles.map((role) => (
               <option key={role} value={role}>
                 {role === "All" ? "All Roles" : ROLE_LABELS[role] || role}
@@ -138,7 +138,7 @@ function UserManagement() {
                   type="button"
                   className="permission-remove-btn"
                   onClick={() => handleRemovePermission(user.email)}
-                >
+
                   Remove
                 </button>
               )

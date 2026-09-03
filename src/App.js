@@ -1,44 +1,43 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import Login from "./auth/Login";
-import Register from "./auth/Register";
-import ProfilePage from "./pages/shared/profile/ProfilePage";
-import SecurityPage from "./pages/shared/profile/SecurityPage";
-import ROLES from "./constants/roles";
-import StudyDashboard from "./pages/shared/studies/StudyDashboard";
-import VisitDetails from "./pages/shared/visits/VisitDetails";
-import CompletedVisit from "./pages/shared/visits/CompletedVisit";
-import ProtectedRoute from "./auth/ProtectedRoute";
-import ForgotPassword from "./auth/ForgotPassword";
-import EISFHub from "./pages/shared/documents/EISFHub";
+import CompletedVisit from "./shared/pages/visits/CompletedVisit";
+import EISFHub from "./shared/pages/documents/EISFHub";
+import FileDetails from "./shared/pages/documents/FileDetails";
+import ForgotPassword from "./shared/auth/ForgotPassword";
+import Login from "./shared/auth/Login";
+import OperationsComments from "./shared/pages/operations/Comments";
+import ProfilePage from "./shared/pages/profile/ProfilePage";
+import ProtectedRoute from "./shared/auth/ProtectedRoute";
+import ROLES from "./shared/constants/roles";
+import Register from "./shared/auth/Register";
+import SecurityPage from "./shared/pages/profile/SecurityPage";
+import StudyDashboard from "./shared/pages/studies/StudyDashboard";
+import VisitDetails from "./shared/pages/visits/VisitDetails";
 
-import OperationsComments from "./pages/shared/operations/Comments";
-import FileDetails from "./pages/shared/documents/FileDetails";
+import AdminDashboard from "./Admin/pages/Dashboard";
+import SiteStaffDashboard from "./SiteStaff/pages/Dashboard";
+import PIDashboard from "./PI/pages/PIDashboard";
+import CRODashboard from "./CRO/pages/CRODashboard";
+import SponsorDashboard from "./Sponsor/pages/SponsorDashboard";
+import AccessRequestForm from "./shared/pages/AccessRequestForm";
+import AccessPermissions from "./shared/pages/AccessPermissions";
+import PermissionApproval from "./shared/pages/PermissionApproval";
+import UserManagement from "./shared/pages/UserManagement";
+import CROOverview from "./CRO/pages/CROOverview";
 
-import AdminDashboard from "./pages/Admin/Dashboard";
-import SiteStaffDashboard from "./pages/SiteStaff/Dashboard";
-import PIDashboard from "./pages/PI/PIDashboard";
-import CRODashboard from "./pages/CRO/CRODashboard";
-import SponsorDashboard from "./pages/Sponsor/SponsorDashboard";
-import AccessRequestForm from "./pages/shared/AccessRequestForm";
-import AccessPermissions from "./pages/shared/AccessPermissions";
-import PermissionApproval from "./pages/shared/PermissionApproval";
-import UserManagement from "./pages/shared/UserManagement";
-import CROOverview from "./pages/CRO/CROOverview";
-
-import Sites from "./pages/Admin/Sites";
-import LogsPage from "./pages/shared/logs/LogsPage";
-import TrainingLogPage from "./pages/shared/logs/TrainingLogPage";
+import AuditLogsPage from "./shared/pages/audit/AuditLogsPage";
 import DelegationLogPage from "./pages/shared/logs/DelegationLogPage";
-import AuditLogsPage from "./pages/shared/audit/AuditLogsPage";
+import LogsPage from "./pages/shared/logs/LogsPage";
+import Sites from "./Admin/pages/Sites";
+import TrainingLogPage from "./pages/shared/logs/TrainingLogPage";
 import {
   getDashboardPath,
   getCurrentUser,
   getEffectiveRole,
-} from "./services/roleService";
-import EISFDashboard from "./pages/shared/EISF/EDashboard/EISFDashboard";
-import {
+} from "./shared/services/roleService";
+import { cleanupCrossStudySubjectData } from "./shared/services/studyService";
+import EISFDashboard from "./shared/pages/EISF/EDashboard/EISFDashboard";
   RoleAwareComments,
   RoleAwareNotifications,
   RoleAwareProgressNotes,
@@ -46,71 +45,79 @@ import {
   RoleAwareRegulatory,
   RoleAwareReports,
   RoleAwareSettings,
+  RoleAwareReferral,
   RoleAwareSitePerformance,
   RoleAwareStudies,
   RoleAwareSubjects,
   RoleAwareEnrollment,
   RoleAwareQueries,
-} from "./routes/roleAwarePages";
+} from "./shared/routes/roleAwarePages";
 
-import SponsorScreening from "./pages/Sponsor/Screening";
-import SponsorVisits from "./pages/Sponsor/Visits";
-import SponsorFiles from "./pages/Sponsor/Files";
-import PortfolioManagement from "./pages/Sponsor/PortfolioManagement";
-import StudyOversight from "./pages/Sponsor/StudyOversight";
-import CROOversight from "./pages/Sponsor/CROOversight";
-import RiskManagement from "./pages/Sponsor/RiskManagement";
-import SiteRanking from "./pages/Sponsor/SiteRanking";
-import SiteQueries from "./pages/Sponsor/SiteQueries";
-import SiteDocuments from "./pages/Sponsor/SiteDocuments";
-import SponsorCRODetails from "./pages/Sponsor/CRODetails";
-import SponsorCROReport from "./pages/Sponsor/CROReport";
-import SponsorCROContracts from "./pages/Sponsor/CROContracts";
-import SiteDetails from "./pages/Sponsor/SiteDetails";
-import ReportDetails from "./pages/Sponsor/ReportDetails";
-import RecruitmentDetails from "./pages/Sponsor/RecruitmentDetails";
-import RegulatoryDetails from "./pages/Sponsor/RegulatoryDetails";
-import RiskDetails from "./pages/Sponsor/RiskDetails";
-import QueryDetails from "./pages/Sponsor/QueryDetails";
-import NotificationDetails from "./pages/Sponsor/NotificationDetails";
-import ProgressNoteDetails from "./pages/Sponsor/ProgressNoteDetails";
-import SponsorVisitDetails from "./pages/Sponsor/VisitDetails";
-import SponsorMonitoring from "./pages/Sponsor/Monitoring";
-import SponsorQueries from "./pages/Sponsor/Queries";
+import SponsorScreening from "./Sponsor/pages/Screening";
+import SponsorVisits from "./Sponsor/pages/Visits";
+import SponsorFiles from "./Sponsor/pages/Files";
+import PortfolioManagement from "./Sponsor/pages/PortfolioManagement";
+import StudyOversight from "./Sponsor/pages/StudyOversight";
+import CROOversight from "./Sponsor/pages/CROOversight";
+import RiskManagement from "./Sponsor/pages/RiskManagement";
+import SiteRanking from "./Sponsor/pages/SiteRanking";
+import SiteQueries from "./Sponsor/pages/SiteQueries";
+import SiteDocuments from "./Sponsor/pages/SiteDocuments";
+import SponsorCRODetails from "./Sponsor/pages/CRODetails";
+import SponsorCROReport from "./Sponsor/pages/CROReport";
+import SponsorCROContracts from "./Sponsor/pages/CROContracts";
+import SiteDetailsPage from "./shared/pages/sites/SiteWorkspace/SiteDetailsPage";
+import ReportDetails from "./Sponsor/pages/ReportDetails";
+import RecruitmentDetails from "./Sponsor/pages/RecruitmentDetails";
+import RegulatoryDetails from "./Sponsor/pages/RegulatoryDetails";
+import RiskDetails from "./Sponsor/pages/RiskDetails";
+import QueryDetails from "./Sponsor/pages/QueryDetails";
+import NotificationDetails from "./Sponsor/pages/NotificationDetails";
+import ProgressNoteDetails from "./Sponsor/pages/ProgressNoteDetails";
+import SponsorVisitDetails from "./Sponsor/pages/VisitDetails";
+import SponsorMonitoring from "./Sponsor/pages/Monitoring";
+import SponsorQueries from "./Sponsor/pages/Queries";
 
-import PIComments from "./pages/PI/PIComments";
-import PISitePerformance from "./pages/PI/PISitePerformance";
-import PIRecruitment from "./pages/PI/PIRecruitment";
-import PIRegulatory from "./pages/PI/PIRegulatory";
-import PIReports from "./pages/PI/PIReports";
-import PINotifications from "./pages/PI/PINotifications";
-import PISettings from "./pages/PI/PISettings";
-import PISubjectsDashboard from "./pages/PI/PISubjectsDashboard";
-import PIStudyFolderDashboard from "./pages/PI/PIStudyFolderDashboard";
-import PIStudySubjectsProfile from "./pages/PI/PIStudySubjectsProfile";
-import PIEISFDashboard from "./pages/PI/PIEISFDashboard";
-import PIICFDashboard from "./pages/PI/PIICFDashboard";
-import PILiveChat from "./pages/PI/PILiveChat";
-import PIPageLayout from "./pages/PI/PIPageLayout";
+import PIComments from "./PI/pages/PIComments";
+import PIEISFDashboard from "./PI/pages/PIEISFDashboard";
+import PIICFDashboard from "./PI/pages/PIICFDashboard";
+import PILiveChat from "./PI/pages/PILiveChat";
+import PINotifications from "./PI/pages/PINotifications";
+import PIPageLayout from "./PI/pages/PIPageLayout";
+import PIRecruitment from "./PI/pages/PIRecruitment";
+import PIReferral from "./PI/pages/PIReferral";
+import PIRegulatory from "./PI/pages/PIRegulatory";
+import PIReports from "./PI/pages/PIReports";
+import PISettings from "./PI/pages/PISettings";
+import PISitePerformance from "./PI/pages/PISitePerformance";
+import PIStudyFolderDashboard from "./PI/pages/PIStudyFolderDashboard";
+import PIStudySubjectsProfile from "./PI/pages/PIStudySubjectsProfile";
+import PISubjectsDashboard from "./PI/pages/PISubjectsDashboard";
 
-import CroMonitoring from "./pages/CRO/CROMonitoring";
-import CroSubjectManagement from "./pages/CRO/CROSubjectManagement";
-// import CroSubjectDetail from "./pages/CRO/CROSubjectDetail";
-// import CroSubjects from "./pages/CRO/CROSubjects";
-import CroScreening from "./pages/CRO/CROScreening";
-import CroEnrollment from "./pages/CRO/CROEnrollment";
-import CroVisits from "./pages/CRO/CROVisits";
-import CroComments from "./pages/CRO/CROComments";
-import CroFiles from "./pages/CRO/CROFiles";
-import CroSitePerformance from "./pages/CRO/CROSitePerformance";
-import CroReports from "./pages/CRO/CROReports";
-import CroNotifications from "./pages/CRO/CRONotifications";
-import CroSettings from "./pages/CRO/CROSettings";
-import CroRegulatoryDocuments from "./pages/CRO/CRORegulatoryDocuments";
-import AdminLiveChat from "./pages/Admin/LiveChat";
-import SiteStaffLiveChat from "./pages/SiteStaff/LiveChat";
-import CROLiveChat from "./pages/CRO/CROLiveChat";
-import SponsorLiveChat from "./pages/Sponsor/LiveChat";
+import CroMonitoring from "./CRO/pages/CROMonitoring";
+import CroSubjectManagement from "./CRO/pages/CROSubjectManagement";
+
+import CroScreening from "./CRO/pages/CROScreening";
+import CroEnrollment from "./CRO/pages/CROEnrollment";
+import CroVisits from "./CRO/pages/CROVisits";
+import CroComments from "./CRO/pages/CROComments";
+import CroFiles from "./CRO/pages/CROFiles";
+import CroSitePerformance from "./CRO/pages/CROSitePerformance";
+import CroReports from "./CRO/pages/CROReports";
+import CroNotifications from "./CRO/pages/CRONotifications";
+import CroSettings from "./CRO/pages/CROSettings";
+import CROReferral from "./CRO/pages/CROReferral";
+import CroRegulatoryDocuments from "./CRO/pages/CRORegulatoryDocuments";
+import CROLiveChat from "./CRO/pages/CROLiveChat";
+import SponsorLiveChat from "./Sponsor/pages/LiveChat";
+import AdminLiveChat from "./Admin/pages/LiveChat";
+import SiteStaffLiveChat from "./SiteStaff/pages/LiveChat";
+
+// ===== START: Safety / AI Review / eTMF imports =====
+import SafetyCenter from "./shared/pages/safety/SafetyCenter";
+import RiskInsights from "./shared/pages/aiReview/RiskInsights";
+import EtmfCenter from "./shared/pages/etmf/EtmfCenter";
+// ===== END: Safety / AI Review / eTMF imports =====
 
 const SPONSOR_ROLES = [ROLES.SPONSOR];
 const SPONSOR_ADMIN_ROLES = [ROLES.SPONSOR, ROLES.ADMIN];
@@ -135,6 +142,19 @@ function UnifiedSettingsRedirect({ section, children }) {
 }
 
 function App() {
+  // One-time data repair (A2 follow-up): move/quarantine any subjects left
+  // behind under the wrong study's storage key by earlier builds. Safe to
+  // run on every app load — it no-ops after the first successful pass.
+  // Exposed on window for a manual re-run from the console if ever needed:
+  //   window.__trianxtCleanupSubjects({ force: true })
+  useEffect(() => {
+    cleanupCrossStudySubjectData();
+
+    if (typeof window !== "undefined") {
+      window.__trianxtCleanupSubjects = cleanupCrossStudySubjectData;
+    }
+  }, []);
+
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/login" />} />
@@ -283,15 +303,10 @@ function App() {
         }
       />
 
-      <Route
-        path="/delegation"
-        element={<Navigate to="/logs/delegation" replace />}
-      />
-
-      <Route
-        path="/training"
-        element={<Navigate to="/logs/training" replace />}
-      />
+      {/* ---- Global Logs module removed by request. Training & Delegation
+      logs now live inside each study at Studies → Study → Logs tab. Old
+      /logs, /logs/training, /logs/delegation, /delegation, /training
+      routes have been removed. ---- */}
 
       <Route
         path="/ereg-comments"
@@ -395,7 +410,7 @@ function App() {
         element={
           <ProtectedRoute
             allowedRoles={[ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.CRO]}
-          >
+>
             <CROOverview />
           </ProtectedRoute>
         }
@@ -478,6 +493,15 @@ function App() {
         element={
           <ProtectedRoute>
             <RoleAwareSettings />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/referral"
+        element={
+          <ProtectedRoute>
+            <RoleAwareReferral />
           </ProtectedRoute>
         }
       />
@@ -599,7 +623,7 @@ function App() {
         path="/site-details"
         element={
           <ProtectedRoute allowedRoles={SPONSOR_ADMIN_ROLES}>
-            <SiteDetails />
+            <SiteDetailsPage />
           </ProtectedRoute>
         }
       />
@@ -751,6 +775,16 @@ function App() {
           <ProtectedRoute allowedRoles={PI_ROLES}>
             <PIPageLayout>
               <PISettings />
+            </PIPageLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/pi-referral"
+        element={
+          <ProtectedRoute allowedRoles={PI_ROLES}>
+            <PIPageLayout>
+              <PIReferral />
             </PIPageLayout>
           </ProtectedRoute>
         }
@@ -915,6 +949,14 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/cro-referral"
+        element={
+          <ProtectedRoute allowedRoles={CRO_ROLES}>
+            <CROReferral />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/admin-livechat"
@@ -951,6 +993,35 @@ function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* ===== START: Safety / AI Review / eTMF routes ===== */}
+      <Route
+        path="/safety"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.CRO, ROLES.SPONSOR]}>
+            <SafetyCenter />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/ai-review"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.CRO, ROLES.SPONSOR]}>
+            <RiskInsights />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/etmf"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.CRO, ROLES.SPONSOR]}>
+            <EtmfCenter />
+          </ProtectedRoute>
+        }
+      />
+      {/* ===== END: Safety / AI Review / eTMF routes ===== */}
 
       <Route path="*" element={<RoleAwareFallback />} />
     </Routes>

@@ -1,12 +1,10 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-
-import AppLayout from "./AppLayout";
-import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import AppLayout from "../../shared/pages/sites/SiteWorkspace/AppLayout.css";
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay.js";
 import { getStudies } from "../../services/studyService";
-import "./Subjects.css";
-
+import "./Subjects.js";
 
 function Subjects() {
 	const navigate = useNavigate();
@@ -151,7 +149,7 @@ function Subjects() {
 				        ? "status-enrolled"
 				        : "status-screened"
 				    }
-				  >
+
 				    {subject.status}
 				  </span>
 				</td>
@@ -171,7 +169,7 @@ function Subjects() {
 					    }
 					  })
 					}
-				  >
+
 				    View
 				  </button>
 				</td>

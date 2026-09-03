@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
+import DashboardLayout from "../../../shared/components/dashboard/shared/DashboardLayout.css";
 import {
   addCommentRecord,
   canResolveComments,
@@ -8,7 +8,7 @@ import {
   getVisibleComments,
   resolveCommentRecord,
 } from "../../../services/commentService";
-import { getCurrentUser } from "../../../services/roleService";
+import { getCurrentUser } from "../../../shared/services/roleService.js";
 
 // This is the "Comments" tab rendered inside a study's detail page
 // (StudyDetails.js → activeTab === "comments"), reached by opening a
@@ -101,7 +101,7 @@ export default function CommentsPage({ embedded = false }) {
             onClick={handleAddComment}
             disabled={!studyCode || !commentText.trim()}
             style={{ marginTop: "8px" }}
-          >
+
             Add Comment
           </button>
         </div>
@@ -165,7 +165,7 @@ export default function CommentsPage({ embedded = false }) {
                       padding: "5px 10px",
                       borderRadius: "5px",
                     }}
-                  >
+
                     {comment.status === "Resolved" ? "Resolved" : "Open"}
                   </button>
                 </td>

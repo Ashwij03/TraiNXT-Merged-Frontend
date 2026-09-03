@@ -1,12 +1,22 @@
-@import "./styles/design-system.css";
-@import "./styles/ctms-global.css";
-@import "./styles/ctms-tables.css";
+@import "./shared/styles/design-system.css";
+@import "./shared/styles/ctms-global.css";
+@import "./shared/styles/ctms-tables.css";
+@import "./shared/styles/ctms-compact.css";
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
+
+/* ===== START ITEM B: Global 100%-zoom density fix ===== */
+html {
+  /* 54% of the browser default 16px = 8.64px root.
+     At 100% browser zoom this gives the same visual density
+     the user sees at 110% zoom — matching the reference. */
+  font-size: 54%;
+}
+/* ===== END ITEM B ===== */
 
 body {
   margin: 0;
@@ -56,10 +66,10 @@ select {
   display: inline-flex;
   font-size: var(--tnxt-font-size-sm);
   font-weight: 600;
-  gap: 6px;
+  gap: var(--tnxt-radius-sm);
   justify-content: center;
   line-height: 1.2;
-  padding: 10px 16px;
+  padding: 0.625rem var(--tnxt-space-lg);
   transition:
     background 0.2s ease,
     border-color 0.2s ease,
@@ -79,34 +89,48 @@ select {
 
 .btn-edit svg {
   flex-shrink: 0;
-  height: 16px;
-  width: 16px;
+  height: var(--tnxt-space-lg);
+  width: var(--tnxt-space-lg);
+}
+
+/* ==========================================
+   PAGE SECTION HIGHLIGHT (Task 6)
+   Reusable highlighted-header treatment
+   for page titles, toolbars, and summary
+   rows across all pages.
+========================================== */
+.page-section-highlight {
+  background: #0d6efd;
+  border: 1px solid #d6e4f5;
+  border-radius: var(--tnxt-radius-lg);
+  padding: 0.5rem;
+  margin-left: 0.5rem;
 }
 
 @media print {
   body {
-    background: white !important;
+    background: white;
   }
 
   .subject-profile-card {
-    box-shadow: none !important;
+    box-shadow: none;
     border: 1px solid #ccc;
   }
 
   .navbar,
   .study-tabs,
   button {
-    display: none !important;
+    display: none;
   }
 
   table {
-    width: 100% !important;
+    width: 100%;
     border-collapse: collapse;
   }
 
   th,
   td {
     border: 1px solid #000;
-    padding: 8px;
+    padding: var(--tnxt-space-sm);
   }
 }

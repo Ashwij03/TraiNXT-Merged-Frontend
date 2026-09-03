@@ -1,12 +1,12 @@
 import React, { useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import AppLayout from "./AppLayout";
-import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import AppLayout from "../../shared/pages/sites/SiteWorkspace/AppLayout.css";
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay.js";
 import { getStudies } from "../../services/studyService";
-import useVisitSchedules from "../../hooks/useVisitSchedules";
+import useVisitSchedules from "../../shared/hooks/useVisitSchedules.js";
 import { isCompletedVisitSchedule } from "../../services/visitScheduleService";
-import { formatScheduleDisplayDate } from "../../utils/formatScheduleDisplayDate";
-import "./VisitDetails.css";
+import { formatScheduleDisplayDate } from "../../shared/utils/formatScheduleDisplayDate.js";
+import "./VisitDetails.js";
 
 function VisitDetails() {
   const { id } = useParams();

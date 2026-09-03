@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { getStudiesDashboard } from "../services/dashboardService";
+import { getStudiesDashboard } from "../shared/pages/EISF/services/dashboardService.js";
 
 function useStudiesDashboard() {
   const [data, setData] = useState(() => getStudiesDashboard());

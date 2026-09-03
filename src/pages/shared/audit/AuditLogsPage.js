@@ -18,22 +18,21 @@
 // foundation that Batch B will link to.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
+import DashboardLayout from "../../../shared/components/dashboard/shared/DashboardLayout.css";
 import DataTable from "../../../components/dashboard/shared/DataTable";
-import KPICard from "../../../components/dashboard/shared/KPICard";
+import KPICard from "../../../shared/components/dashboard/shared/KPICard.css";
 import {
   AUDIT_UPDATED_EVENT,
   formatActorLabel,
   formatAuditTimestamp,
   getVisibleAuditEvents
 } from "../../../services/auditService";
-import {
   getAssignedSite,
   getCurrentUser,
   isAdmin
-} from "../../../services/roleService";
+} from "../../../shared/services/roleService.js";
 import { getStudies } from "../../../services/studyService";
-import { resolveSiteDisplay } from "../../../utils/siteDisplay";
+import { resolveSiteDisplay } from "../../../shared/utils/siteDisplay.js";
 import "./AuditLogsPage.css";
 
 function buildDisplayRow(event, siteSources) {

@@ -1,20 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
-import KPICard from "../../../components/dashboard/shared/KPICard";
+import DashboardLayout from "../../../shared/components/dashboard/shared/DashboardLayout.css";
+import KPICard from "../../../shared/components/dashboard/shared/KPICard.css";
 import { createStudy } from "../../../services/studyService";
 import {
   getAccessibleStudies,
   getCurrentUser,
-} from "../../../services/roleService";
-import { canAddStudy } from "../../../utils/contentAccess";
-import { readStorage } from "../../../utils/storageHelpers";
-import {
+} from "../../../shared/services/roleService.js";
+import { canAddStudy } from "../../../shared/utils/contentAccess.js";
+import { readStorage } from "../../../shared/utils/storageHelpers.js";
   STUDY_STATUS_OPTIONS,
   STUDY_STATUS_DEFAULT,
   getStudyStatusClass,
-} from "../../../constants/studyStatus";
-import {
+} from "../../../shared/constants/studyStatus.js";
   FiFolder,
   FiGrid,
   FiList,
@@ -24,7 +22,7 @@ import {
   FiChevronRight,
 } from "react-icons/fi";
 
-import "./Studies.css";
+import "./Studies.js";
 
 const STUDIES_PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 const SUBJECTS_STORAGE_KEY = "subjectsByStudy";
@@ -484,7 +482,7 @@ function Studies() {
               value={pageSize}
               onChange={(event) => setPageSize(Number(event.target.value))}
               aria-label="Rows per page"
-            >
+
               {STUDIES_PAGE_SIZE_OPTIONS.map((option) => (
                 <option key={option} value={option}>
                   {option}
@@ -499,7 +497,7 @@ function Studies() {
             onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
             disabled={currentPage === 1}
             aria-label="Previous page"
-          >
+
             <FiChevronLeft />
           </button>
 
@@ -509,7 +507,7 @@ function Studies() {
                 type="button"
                 className="pagination-btn"
                 onClick={() => setCurrentPage(1)}
-              >
+
                 1
               </button>
 
@@ -527,7 +525,7 @@ function Studies() {
                 currentPage === page ? "active" : ""
               }`}
               onClick={() => setCurrentPage(page)}
-            >
+
               {page}
             </button>
           ))}
@@ -542,7 +540,7 @@ function Studies() {
                 type="button"
                 className="pagination-btn"
                 onClick={() => setCurrentPage(totalPages)}
-              >
+
                 {totalPages}
               </button>
             </>
@@ -556,7 +554,7 @@ function Studies() {
             }
             disabled={currentPage === totalPages}
             aria-label="Next page"
-          >
+
             <FiChevronRight />
           </button>
         </div>
@@ -590,7 +588,7 @@ function Studies() {
             <select
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
-            >
+
               <option value="">All Status</option>
 
               {statusOptions.map((status) => (
@@ -603,7 +601,7 @@ function Studies() {
             <select
               value={sponsorFilter}
               onChange={(event) => setSponsorFilter(event.target.value)}
-            >
+
               <option value="">All Sponsors</option>
 
               {sponsorOptions.map((item) => (
@@ -616,7 +614,7 @@ function Studies() {
             <select
               value={indicationFilter}
               onChange={(event) => setIndicationFilter(event.target.value)}
-            >
+
               <option value="">All Indications</option>
 
               {indicationOptions.map((item) => (
@@ -629,7 +627,7 @@ function Studies() {
             <select
               value={countryFilter}
               onChange={(event) => setCountryFilter(event.target.value)}
-            >
+
               <option value="">All Countries</option>
 
               {countryOptions.map((item) => (
@@ -642,7 +640,7 @@ function Studies() {
             <select
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value)}
-            >
+
               <option value="studyId">Sort By</option>
               <option value="studyId">Study ID</option>
               <option value="name">Study Name</option>
@@ -666,7 +664,7 @@ function Studies() {
                 type="button"
                 className={viewMode === "grid" ? "active" : ""}
                 onClick={() => handleViewChange("grid")}
-              >
+
                 <FiGrid />
                 <span>Grid</span>
               </button>
@@ -675,7 +673,7 @@ function Studies() {
                 type="button"
                 className={viewMode === "list" ? "active" : ""}
                 onClick={() => handleViewChange("list")}
-              >
+
                 <FiList />
                 <span>List</span>
               </button>
@@ -684,7 +682,7 @@ function Studies() {
                 type="button"
                 className={viewMode === "table" ? "active" : ""}
                 onClick={() => handleViewChange("table")}
-              >
+
                 <FiColumns />
                 <span>Table</span>
               </button>
@@ -695,7 +693,7 @@ function Studies() {
                 type="button"
                 className="add-study-btn"
                 onClick={() => setFormOpen(true)}
-              >
+
                 + Add Study
               </button>
             )}
@@ -723,13 +721,13 @@ function Studies() {
                     handleStudyCardClick(study);
                   }
                 }}
-              >
+
                 <div className="study-card-content">
                   <div
                     className={`study-status ${getStudyStatusClass(
                       study.status || STUDY_STATUS_DEFAULT
                     )}`}
-                  >
+
                     {study.status || STUDY_STATUS_DEFAULT}
                   </div>
 
@@ -768,7 +766,7 @@ function Studies() {
                       event.stopPropagation();
                       handleStudyCardClick(study);
                     }}
-                  >
+
                     Open Workspace
                   </button>
                 </div>
@@ -792,7 +790,7 @@ function Studies() {
                     handleStudyCardClick(study);
                   }
                 }}
-              >
+
                 <div className="study-list-name">
                   <h3>{study.name}</h3>
                   <span>{study.code}</span>
@@ -845,7 +843,7 @@ function Studies() {
                     className={`study-status ${getStudyStatusClass(
                       study.status || STUDY_STATUS_DEFAULT
                     )}`}
-                  >
+
                     {study.status || STUDY_STATUS_DEFAULT}
                   </span>
 
@@ -856,7 +854,7 @@ function Studies() {
                       event.stopPropagation();
                       handleStudyCardClick(study);
                     }}
-                  >
+
                     Open
                   </button>
                 </div>
@@ -900,7 +898,7 @@ function Studies() {
                         handleStudyCardClick(study);
                       }
                     }}
-                  >
+
                     <td>{study.code}</td>
                     <td>{study.name}</td>
                     <td>{study.sponsor || "-"}</td>
@@ -919,7 +917,7 @@ function Studies() {
                         className={`study-status ${getStudyStatusClass(
                           study.status || STUDY_STATUS_DEFAULT
                         )}`}
-                      >
+
                         {study.status || STUDY_STATUS_DEFAULT}
                       </span>
                     </td>
@@ -936,7 +934,7 @@ function Studies() {
                           event.stopPropagation();
                           handleStudyCardClick(study);
                         }}
-                      >
+
                         Open
                       </button>
                     </td>
@@ -962,7 +960,7 @@ function Studies() {
                   type="button"
                   onClick={() => setFormOpen(false)}
                   aria-label="Close add study form"
-                >
+
                   ×
                 </button>
               </div>
@@ -1066,7 +1064,7 @@ function Studies() {
                     value={form.status}
                     onChange={handleChange}
                     required
-                  >
+
                     {STUDY_STATUS_OPTIONS.map((option) => (
                       <option key={option} value={option}>
                         {option}
@@ -1146,7 +1144,7 @@ function Studies() {
                   type="button"
                   className="secondary-btn"
                   onClick={() => setFormOpen(false)}
-                >
+
                   Cancel
                 </button>
 

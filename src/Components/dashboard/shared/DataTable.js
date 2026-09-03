@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 
-import "./DataTable.css";
+import "./DataTable.js";
 
 function DataTable({
   title,
@@ -146,7 +146,7 @@ function DataTable({
                       }))
                     }
                     aria-label={`${filter.label} filter`}
-                  >
+
                     <option value="">{filter.allLabel || `All ${filter.label}`}</option>
 
                     {filter.options.map((option) => {
@@ -182,7 +182,7 @@ function DataTable({
                 <th
                   key={column.key}
                   style={column.width ? { width: column.width } : undefined}
-                >
+
                   {column.label}
                 </th>
 
@@ -206,7 +206,7 @@ function DataTable({
                       key={
                         column.key
                       }
-                    >
+
                       {typeof column.render === "function"
                         ? column.render(row[column.key], row)
                         : row[column.key]}
@@ -227,7 +227,6 @@ function DataTable({
                     columns.length
                   }
                   className="empty-row"
-                >
 
                   <div className="empty-row-inner">{emptyMessage}</div>
 
@@ -256,7 +255,7 @@ function DataTable({
                 value={pageSize}
                 onChange={(event) => setPageSize(Number(event.target.value))}
                 aria-label="Rows per page"
-              >
+
                 {pageSizeOptions.map((option) => (
                   <option key={option} value={option}>
                     {option}
@@ -269,7 +268,7 @@ function DataTable({
               type="button"
               onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
               disabled={currentPage === 1}
-            >
+
               Previous
             </button>
 
@@ -283,7 +282,7 @@ function DataTable({
                 setCurrentPage((page) => Math.min(totalPages, page + 1))
               }
               disabled={currentPage === totalPages}
-            >
+
               Next
             </button>
           </div>

@@ -1,8 +1,8 @@
-import DashboardCard from "./DashboardCard";
-import DashboardPieChart from "./DashboardPieChart";
-import DashboardBarChart from "./DashboardBarChart";
-import { getSubjectStatusAnalytics } from "../../../utils/contentAccess";
-import { getEnrollmentStatusAnalytics } from "../../../utils/enrollmentStatusAnalytics";
+import DashboardCard from "../../../shared/components/dashboard/shared/DashboardCard.css";
+import DashboardPieChart from "../../../shared/components/dashboard/shared/DashboardPieChart.js";
+import DashboardBarChart from "../../../shared/components/dashboard/shared/DashboardBarChart.js";
+import { getSubjectStatusAnalytics } from "../../../shared/utils/contentAccess.js";
+import { getEnrollmentStatusAnalytics } from "../../../shared/utils/enrollmentStatusAnalytics.js";
 import "./SubjectAnalyticsSection.css";
 
 function SubjectAnalyticsSection({

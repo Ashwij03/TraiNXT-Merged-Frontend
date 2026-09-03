@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useComments } from "./CommentsContext";
-import { getCurrentUser } from "../services/roleService";
-import "./CommentModal.css";
+import { getCurrentUser } from "../shared/services/roleService.js";
+import "./CommentModal.js";
 
 export default function CommentModal({
   onClose,

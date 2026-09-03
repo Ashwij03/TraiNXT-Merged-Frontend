@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import AppLayout from "./AppLayout";
-import "./ProgressNoteDetails.css";
-import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import AppLayout from "../../shared/pages/sites/SiteWorkspace/AppLayout.css";
+import "./ProgressNoteDetails.js";
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay.js";
 import { getStudies } from "../../services/studyService";
 
 function ProgressNoteDetails() {
@@ -76,10 +76,9 @@ function ProgressNoteDetails() {
       <button
   className="back-btn"
   onClick={() => navigate("/progress-notes")}
->
+
    Back to Progress Notes
 </button>
-
 
       <div className="details-card">
 

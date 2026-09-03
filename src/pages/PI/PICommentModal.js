@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useComments } from "../../comments/CommentsContext";
-import { getCurrentUser } from "../../services/roleService";
-import "./PICommentModal.css";
+import { getCurrentUser } from "../../shared/services/roleService.js";
+import "./PICommentModal.js";
 
 export default function PICommentModal({
   onClose,

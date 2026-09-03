@@ -1,4 +1,4 @@
-import "./dashboard.css";
+import "../../../shared/components/dashboard/shared/dashboard.css";
 
 function PendingCommentsWidget({ comments = [] }) {
   return (

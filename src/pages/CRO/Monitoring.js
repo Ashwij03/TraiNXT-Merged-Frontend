@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
-import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay.js";
 import { getStudies } from "../../services/studyService";
-import useVisitSchedules from "../../hooks/useVisitSchedules";
-import { formatScheduleDisplayDate } from "../../utils/formatScheduleDisplayDate";
+import useVisitSchedules from "../../shared/hooks/useVisitSchedules.js";
+import { formatScheduleDisplayDate } from "../../shared/utils/formatScheduleDisplayDate.js";
 
 function Monitoring() {
   const { schedules } = useVisitSchedules();

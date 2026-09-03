@@ -2,12 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 import DataTable from "../../../components/dashboard/shared/DataTable";
-import DocumentFolderManager from "../../../components/common/DocumentFolderManager";
-import DelegationLog from "../../../components/DelegationLog";
+import DocumentFolderManager from "../../../shared/components/DocumentFolderManager.css";
+import DelegationLog from "../../../shared/components/DelegationLog.css";
 
 import { getStudyLogs, getDelegationLogs } from "../../../services/adminService";
 import { getStudyByCode } from "../../../services/studyService";
-import "./StudyLogsTab.css";
+import "./StudyLogsTab.js";
 
 function StudyLogsTab() {
   const [staff, setStaff] = useState([]);
@@ -268,7 +268,7 @@ const RESPONSIBILITY_MAP = {
         <button
           className="add-delegation-btn"
           onClick={() => setShowModal(true)}
-        >
+
           + Add Delegation
         </button>
       </div>
@@ -324,7 +324,7 @@ const RESPONSIBILITY_MAP = {
       responsibility: ""
     })
   }
->
+
   <option value="">Select Role</option>
 
   {ROLE_OPTIONS.map((role) => (
@@ -343,7 +343,7 @@ const RESPONSIBILITY_MAP = {
       responsibility: e.target.value
     })
   }
->
+
   <option value="">
     Select Responsibility
   </option>
@@ -363,7 +363,7 @@ const RESPONSIBILITY_MAP = {
                     status: e.target.value,
                   })
                 }
-              >
+
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
               </select>
@@ -373,14 +373,14 @@ const RESPONSIBILITY_MAP = {
               <button
                 className="cancel-btn"
                 onClick={() => setShowModal(false)}
-              >
+
                 Cancel
               </button>
 
               <button
                 className="save-btn"
                 onClick={handleSave}
-              >
+
                 Save
               </button>
             </div>

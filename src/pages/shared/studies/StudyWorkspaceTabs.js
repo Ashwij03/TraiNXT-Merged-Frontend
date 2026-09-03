@@ -1,10 +1,10 @@
-import "./StudyWorkspaceTabs.css";
+import "./StudyWorkspaceTabs.js";
 
 // ===== START F1 CHANGES =====
 import { STUDY_WORKSPACE_TABS } from "./StudyWorkspaceTabsConfig";
 // ===== END F1 CHANGES =====
 
-import { getEffectiveRole, ROLES, hasPermission, PERMISSIONS } from "../../../services/roleService";
+import { getEffectiveRole, ROLES, hasPermission, PERMISSIONS } from "../../../shared/services/roleService.js";
 
 function StudyWorkspaceTabs({ activeTab, setActiveTab }) {
 
@@ -45,7 +45,7 @@ function StudyWorkspaceTabs({ activeTab, setActiveTab }) {
             }
             onClick={() => setActiveTab(tab.label)}
             type="button"
-          >
+
             {tab.label}
           </button>
         ))}

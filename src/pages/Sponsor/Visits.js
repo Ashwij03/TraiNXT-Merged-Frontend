@@ -1,15 +1,15 @@
 import React, { useMemo, useState } from "react";
-import AppLayout from "./AppLayout";
-import "./Visits.css";
+import AppLayout from "../../shared/pages/sites/SiteWorkspace/AppLayout.css";
+import "./Visits.js";
 import { useNavigate } from "react-router-dom";
-import { resolveSiteDisplay } from "../../utils/siteDisplay";
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay.js";
 import { getStudies } from "../../services/studyService";
-import useVisitSchedules from "../../hooks/useVisitSchedules";
+import useVisitSchedules from "../../shared/hooks/useVisitSchedules.js";
 import {
   isCompletedVisitSchedule,
   isPastCalendarDate
 } from "../../services/visitScheduleService";
-import { formatScheduleDisplayDate } from "../../utils/formatScheduleDisplayDate";
+import { formatScheduleDisplayDate } from "../../shared/utils/formatScheduleDisplayDate.js";
 
 function Visits() {
   const navigate = useNavigate();
@@ -144,7 +144,7 @@ function Visits() {
                             `/visit-details/${encodeURIComponent(item.visitId)}`
                           )
                         }
-                      >
+
                         View
                       </button>
                     </td>

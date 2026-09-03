@@ -1,9 +1,9 @@
-import { readJson } from "../utils/storageHelpers";
+import { readJson } from "../shared/utils/storageHelpers.js";
 import { getStudyByCode, getStudies } from "./studyService";
 import { getSitePerformance, getTrainingLogs, getSites } from "./adminService";
 import { getFilteredSchedules } from "./visitScheduleService";
-import { getCurrentUser } from "./roleService";
-import { getEssentialDocumentsHealth } from "../pages/shared/EISF/services/essentialDocumentsHealthService";
+import { getCurrentUser } from "../shared/services/roleService.js";
+import { getEssentialDocumentsHealth } from "../shared/pages/EISF/services/essentialDocumentsHealthService.js";
 import {
   normalizeSiteActivationStatus,
   normalizeGCPStatus,
@@ -13,7 +13,6 @@ import {
 import { getSubjectStatusAnalytics } from "../utils/subjectStatusAnalytics";
 // Item 15 — reuse the single authoritative milestone store (Planning service).
 // Study Overview no longer maintains its own copy; it delegates to planning.
-import {
   getPlanningMilestones,
   savePlanningMilestone,
   deletePlanningMilestone,

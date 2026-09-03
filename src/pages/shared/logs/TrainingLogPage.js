@@ -1,14 +1,14 @@
 // UPDATED: Training Log page in DashboardLayout with dynamic localStorage data
 
-import DashboardLayout from "../../../components/dashboard/shared/DashboardLayout";
+import DashboardLayout from "../../../shared/components/dashboard/shared/DashboardLayout.css";
 import DataTable from "../../../components/dashboard/shared/DataTable";
-import KPICard from "../../../components/dashboard/shared/KPICard";
+import KPICard from "../../../shared/components/dashboard/shared/KPICard.css";
 import { getTrainingLogs } from "../../../services/adminService";
-import { getAssignedSite } from "../../../services/roleService";
-import { resolveSiteDisplay } from "../../../utils/siteDisplay";
+import { getAssignedSite } from "../../../shared/services/roleService.js";
+import { resolveSiteDisplay } from "../../../shared/utils/siteDisplay.js";
 import { getStudies } from "../../../services/studyService";
-import "../../../pages/Admin/AdminPage.css";
-import "../../../components/TrainingLog.css";
+import "../../../shared/styles/AdminPage.css";
+import "../../../shared/components/TrainingLog.css";
 
 function TrainingLogPage() {
   const logs = getTrainingLogs();

@@ -1,5 +1,5 @@
 
-import { readJson } from "../utils/storageHelpers";
+import { readJson } from "../shared/utils/storageHelpers.js";
 // Dynamic visit schedules from subject data, folder workflows, and header filters.
 
 import { getStudies } from "./studyService";
@@ -7,14 +7,13 @@ import {
   filterBySite,
   getCurrentUser,
   isAdmin
-} from "./roleService";
-import { getFilterState } from "./filterService";
-import ROLES from "../constants/roles";
-import {
+} from "../shared/services/roleService.js";
+import { getFilterState } from "../shared/services/filterService.js";
+import ROLES from "../shared/constants/roles.js";
   notifyUpcomingVisitReminder,
   notifyVisitCreated,
   notifyVisitUpdated
-} from "./notificationService";
+} from "../shared/services/notificationService.js";
 
 export const VISIT_STAGES = [
   "Screening",

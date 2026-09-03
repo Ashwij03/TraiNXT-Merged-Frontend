@@ -1,18 +1,16 @@
 import {
   STUDY_STATUS_DEFAULT,
   STUDY_STATUS_COMPLETED,
-} from "../constants/studyStatus";
-import { notifyStudyCompleted } from "./notificationService";
-import {
+} from "../shared/constants/studyStatus.js";
+import { notifyStudyCompleted } from "../shared/services/notificationService.js";
   formatSiteOption,
   getSiteDisplayName,
   resolveSiteNumber,
   resolveSiteRecord,
-} from "../utils/siteDisplay";
-import {
+} from "../shared/utils/siteDisplay.js";
   addAuditLog as recordCanonicalAuditLog,
   getRecentActivityLogs as getCanonicalRecentActivityLogs
-} from "./auditService";
+} from "../shared/services/auditService.js";
 
 const STUDIES_STORAGE_KEY = "trianxtStudies";
 const SUBJECTS_STORAGE_KEY = "subjectsByStudy";

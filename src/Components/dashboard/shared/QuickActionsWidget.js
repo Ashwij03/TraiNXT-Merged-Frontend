@@ -8,12 +8,11 @@ import {
   FiFileText
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import {
   COMPLETED_STUDY_SUBJECT_CREATION_MESSAGE,
   isStudyCompletedByCode,
 } from "../../../services/studyService";
 
-import "./dashboard.css";
+import "../../../shared/components/dashboard/shared/dashboard.css";
 
 function QuickActionsWidget({ study, studyCode, onAddSubject }) {
   const navigate = useNavigate();
