@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  FiCheck,
   FiDownload,
   FiEdit2,
   FiEye,
@@ -10,6 +11,7 @@ import {
   FiMessageSquare,
   FiTrash2,
   FiUpload,
+  FiX,
 } from "react-icons/fi";
   FOLDER_TREE_EVENT,
   collectFolderSubtree,
@@ -40,12 +42,14 @@ import FolderTemplateModal from "./FolderTemplateModal";
 import { getStudyByCode } from "../services/studyService";
 import { VISIT_STAGES } from "../services/visitScheduleService";
 import { notifyDocumentAdded } from "../services/notificationService";
-  getCurrentUser,
+import { getCurrentUser,
   getAssignedSite,
   getEffectiveRole,
+  hasPermission,
   ROLE_LABELS,
 } from "../services/roleService";
 import { formatDateTimeUTC } from "../utils/dateTime";
+import PERMISSIONS from "../constants/permissions";
 import "./DocumentFolderManager.css";
 import FolderColumnView from "./FolderColumnView";
 
@@ -496,6 +500,9 @@ function DocumentFolderManager({
   const [viewDoc, setViewDoc] = useState(null);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
 
+  // Task 1 — Document review/approval
+  const canApproveDocs = useMemo(() => hasPermission(PERMISSIONS.APPROVE_REGULATORY_DOCS), []);
+
   selectedFolderIdRef.current = selectedFolderId;
 
   const navigationTailId =
@@ -868,7 +875,7 @@ function DocumentFolderManager({
         size: Number(file.size) || 0,
         uploadedAt: new Date(now + index).toISOString(),
         uploadedBy: uploader,
-        status: "Submitted",
+        status: "Pending Review",
         documentType: "General",
         studyCode: studyCode || "",
         subjectId: subjectId || "",
@@ -1041,7 +1048,7 @@ function DocumentFolderManager({
       size: Number(pendingUpload.size) || 0,
       uploadedAt: new Date().toISOString(),
       uploadedBy: localStorage.getItem("currentUserName") || "Current User",
-      status: pendingUpload.status || "Submitted",
+      status: "Pending Review",
       documentType: pendingUpload.documentType || "General",
       studyCode: studyCode || "",
       subjectId: subjectId || "",
@@ -1182,6 +1189,33 @@ function DocumentFolderManager({
     link.click();
   };
 
+  // Task 1 — Document approval handler
+  const handleApproveDoc = (docId) => {
+    if (!canApproveDocs) return;
+
+    const doc = documents.find((d) => d.id === docId);
+    if (!doc) return;
+
+    if (
+      window.confirm(
+        `Approve "${doc.name}"? This will change its status to Approved.`
+      )
+    ) {
+      persistDocuments(
+        documents.map((d) =>
+          d.id === docId
+            ? {
+                ...d,
+                status: "Approved",
+                approvedBy: localStorage.getItem("currentUserName") || "Current User",
+                approvedAt: new Date().toISOString(),
+              }
+            : d
+        )
+      );
+    }
+  };
+
   const handleDragStart = (index) => {
     setDragDocIndex(index);
   };
@@ -1218,7 +1252,7 @@ function DocumentFolderManager({
   };
 
   return (
-    <div className={`dfm-container dfm-layout-${viewLayout}`}>
+    <div className={`dfm-container dfm-layout-${viewLayout}${viewDoc ? " dfm-with-viewer" : ""}`}>
       {!isExplorerLayout && !isColumnLayout && (
         <aside className="dfm-sidebar">
           <div className="dfm-sidebar-header">
@@ -1540,6 +1574,12 @@ function DocumentFolderManager({
                   PDF • {formatSize(document.size)} •{" "}
                   {formatDateTimeUTC(document.uploadedAt)}
                 </small>
+
+                {document.status && (
+                  <span className={`dfm-doc-status dfm-status--${(document.status || "").toLowerCase().replace(/\s+/g, "-")}`}>
+                    {document.status}
+                  </span>
+                )}
               </div>
 
               <div className="dfm-doc-actions">
@@ -1627,22 +1667,85 @@ function DocumentFolderManager({
           ) : (
             <p className="dfm-empty">No documents in this folder.</p>
           ))}
-      </section>
-
+      </section>      {/* Right-side Document Viewer panel */}
       {viewDoc && (
-        <div className="dfm-viewer-overlay" onClick={() => setViewDoc(null)}>
-          <div
-            className="dfm-viewer-modal"
-            onClick={(event) => event.stopPropagation()}
+        <section className="dfm-viewer-panel">
+          <div className="dfm-viewer-panel-header">
+            <h4>{viewDoc.name}</h4>
 
-            <div className="dfm-viewer-header">
-              <h4>{viewDoc.name}</h4>
+            <div className="dfm-viewer-panel-actions">
+              <span className={`dfm-doc-status dfm-status--${(viewDoc.status || "").toLowerCase().replace(/\s+/g, "-")}`}>
+                {viewDoc.status || "Unknown"}
+              </span>
 
-              <button type="button" onClick={() => setViewDoc(null)}>
-                Close
+              {canApproveDocs && viewDoc.status === "Pending Review" && (
+                <button
+                  type="button"
+                  className="dfm-approve-btn"
+                  onClick={() => handleApproveDoc(viewDoc.id)}
+                  title="Approve document"
+                >
+                  <FiCheck /> Approve
+                </button>
+              )}
+
+              <button type="button" className="dfm-viewer-close" onClick={() => setViewDoc(null)} title="Close preview">
+                <FiX />
               </button>
             </div>
+          </div>
 
+          <div className="dfm-viewer-panel-meta">
+            <div className="dfm-viewer-panel-grid">
+              <div>
+                <label>Document Name</label>
+                <span>{viewDoc.name}</span>
+              </div>
+
+              <div>
+                <label>Type</label>
+                <span>{viewDoc.documentType || "General"}</span>
+              </div>
+
+              <div>
+                <label>Status</label>
+                <span className={`dfm-doc-status dfm-status--${(viewDoc.status || "").toLowerCase().replace(/\s+/g, "-")}`}>
+                  {viewDoc.status || "Unknown"}
+                </span>
+              </div>
+
+              <div>
+                <label>Uploaded By</label>
+                <span>{viewDoc.uploadedBy || "—"}</span>
+              </div>
+
+              <div>
+                <label>Date</label>
+                <span>{viewDoc.uploadedAt ? new Date(viewDoc.uploadedAt).toLocaleDateString() : "—"}</span>
+              </div>
+
+              <div>
+                <label>Size</label>
+                <span>{formatSize(viewDoc.size)}</span>
+              </div>
+
+              {viewDoc.approvedBy && (
+                <div>
+                  <label>Approved By</label>
+                  <span>{viewDoc.approvedBy}</span>
+                </div>
+              )}
+
+              {viewDoc.approvedAt && (
+                <div>
+                  <label>Approved Date</label>
+                  <span>{new Date(viewDoc.approvedAt).toLocaleDateString()}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="dfm-viewer-panel-preview">
             {(() => {
               const previewUrl =
                 viewDoc.fileUrl || sessionFileUrlsRef.current.get(viewDoc.id);
@@ -1654,24 +1757,23 @@ function DocumentFolderManager({
                   className="dfm-viewer-frame"
                 />
               ) : (
-                <p>
-                  Preview unavailable. This document's file data isn't kept
-                  in browser storage (only its metadata is), and it wasn't
-                  uploaded/replaced in this browser session, so there's
-                  nothing left to render.
-                </p>
+                <div className="dfm-viewer-placeholder">
+                  <span className="dfm-pdf-icon">PDF</span>
+                  <h4>PDF Preview</h4>
+                  <p>Preview unavailable. Only document metadata is stored.</p>
+                </div>
               );
             })()}
-
-            <DocumentCommentsPanel
-              documentId={viewDoc.id}
-              documentName={viewDoc.name}
-              studyCode={studyCode || contextKey.split("::")[0]}
-              subjectId={subjectId || contextKey.split("::")[1]}
-              sectionId={sectionId}
-            />
           </div>
-        </div>
+
+          <DocumentCommentsPanel
+            documentId={viewDoc.id}
+            documentName={viewDoc.name}
+            studyCode={studyCode || contextKey.split("::")[0]}
+            subjectId={subjectId || contextKey.split("::")[1]}
+            sectionId={sectionId}
+          />
+        </section>
       )}
 
       {showTemplateModal && (

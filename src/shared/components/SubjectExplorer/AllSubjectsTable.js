@@ -302,6 +302,7 @@ function AuditTrailOverlay({ subject, onClose }) {
   );
 }
 
+
 function AllSubjectsTable({
   subjects = [],
   studyId,

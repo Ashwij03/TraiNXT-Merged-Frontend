@@ -34,7 +34,7 @@ import "../../shared/components/SubjectExplorer/WorkspaceIntegration.css";
 function readSubjectsFromStore(studyId) {
   try {
     const { getSubjectsForStudy, getAllSubjects } = require("../../shared/services/subjectService");
-    
+
     const mapSubject = (r, sid) => ({
       id: r.id || r.subjectId || "",
       study: r.studyId || sid || "",
@@ -46,7 +46,7 @@ function readSubjectsFromStore(studyId) {
       visit: r.currentVisit || "Screening",
       visitStatus: r.visitStatus || "Pending",
     });
-    
+
     if (studyId) {
       return getSubjectsForStudy(studyId).map((r) => mapSubject(r, studyId));
     }

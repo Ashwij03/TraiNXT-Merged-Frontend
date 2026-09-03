@@ -1,0 +1,269 @@
+name: "Frontend: Rollback"
+
+# Task 5 — Frontend Rollback Workflow
+#
+# Deploys a previous version of the frontend to staging or production.
+# Rebuilds the React production bundle from the target commit SHA and
+# deploys it to S3/CloudFront.
+#
+# Usage:
+#   1. Go to Actions → "Frontend: Rollback"
+#   2. Click "Run workflow"
+#   3. Enter the 40-character git commit SHA to roll back to
+#   4. Choose target environment (staging or production)
+#   5. Click "Run workflow"
+#
+# Limitations:
+#   - This rebuilds from source. If a CDN or artifact store with
+#     immutable builds is configured, it could pull the exact build.
+#   - Database concerns are NOT handled (backend concern).
+#   - Infrastructure rollbacks are NOT handled (Task 4 concern).
+#   - Production rollback requires environment approval.
+
+on:
+  workflow_dispatch:
+    inputs:
+      target-sha:
+        description: "Git commit SHA to roll back to (40 characters)"
+        required: true
+        type: string
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+        default: staging
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  # ==================================================================
+  # INPUT VALIDATION
+  # ==================================================================
+  validate-input:
+    name: Validate rollback input
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate SHA format
+        run: |
+          SHA="${{ inputs.target-sha }}"
+          if [[ ! "$SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "ERROR: target-sha must be a valid 40-character lowercase hex git commit SHA"
+            echo "Got: '$SHA'"
+            exit 1
+          fi
+          echo "Valid target SHA: $SHA"
+
+      - name: Verify commit exists
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target-sha }}
+          fetch-depth: 1
+
+  # ==================================================================
+  # BUILD FRONTEND FROM TARGET COMMIT
+  # ==================================================================
+  build-rollback:
+    name: "Build: frontend from target commit"
+    runs-on: ubuntu-latest
+    needs: [validate-input]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target-sha }}
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        run: CI=true npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rollback-build-${{ inputs.target-sha }}
+          path: build/
+          retention-days: 7
+
+  # ==================================================================
+  # ROLLBACK — STAGING
+  # ==================================================================
+  rollback-staging:
+    name: "Rollback: Staging"
+    runs-on: ubuntu-latest
+    needs: [build-rollback]
+    if: inputs.environment == 'staging'
+    environment:
+      name: staging
+      url: ${{ secrets.STAGING_URL }}
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: rollback-build-${{ inputs.target-sha }}
+          path: build/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+
+      - name: Deploy rollback to S3 (staging)
+        run: |
+          echo "Rolling back staging frontend to commit ${{ inputs.target-sha }}"
+          aws s3 sync build/ "s3://${{ secrets.STAGING_FRONTEND_BUCKET }}" \
+            --delete \
+            --cache-control "public,max-age=300"
+
+      - name: Invalidate CloudFront cache (staging)
+        if: ${{ secrets.STAGING_CLOUDFRONT_ID }}
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.STAGING_CLOUDFRONT_ID }} \
+            --paths "/*"
+
+      - name: Verify rollback
+        id: verify_rollback
+        run: |
+          sleep 30
+          for i in 1 2 3 4 5; do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              --max-time 30 "${{ secrets.STAGING_URL }}/")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "PASS: Staging rollback verified (HTTP ${HTTP_STATUS})"
+              exit 0
+            fi
+            echo "Attempt $i/5: HTTP ${HTTP_STATUS} — retrying in 15s..."
+            sleep 15
+          done
+          echo "FAIL: Staging health check failed after rollback"
+          exit 1
+
+      - name: Rollback summary
+        if: always()
+        run: |
+          echo "============================================"
+          echo "STAGING FRONTEND ROLLBACK RESULT"
+          echo "============================================"
+          echo "Target SHA: ${{ inputs.target-sha }}"
+          echo "Environment: staging"
+          echo "URL: ${{ secrets.STAGING_URL }}"
+          echo "============================================"
+
+  # ==================================================================
+  # ROLLBACK — PRODUCTION (requires environment approval)
+  # ==================================================================
+  rollback-production:
+    name: "Rollback: Production"
+    runs-on: ubuntu-latest
+    needs: [build-rollback]
+    if: inputs.environment == 'production'
+    environment:
+      name: production
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: rollback-build-${{ inputs.target-sha }}
+          path: build/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+
+      - name: Deploy rollback to S3 (production)
+        run: |
+          echo "Rolling back production frontend to commit ${{ inputs.target-sha }}"
+          aws s3 sync build/ "s3://${{ secrets.PROD_FRONTEND_BUCKET }}" \
+            --delete \
+            --cache-control "public,max-age=300"
+
+      - name: Invalidate CloudFront cache (production)
+        if: ${{ secrets.PROD_CLOUDFRONT_ID }}
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.PROD_CLOUDFRONT_ID }} \
+            --paths "/*"
+
+      - name: Verify rollback
+        id: verify_rollback
+        run: |
+          sleep 30
+          for i in 1 2 3 4 5; do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              --max-time 30 "${{ secrets.PROD_URL }}/")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "PASS: Production rollback verified (HTTP ${HTTP_STATUS})"
+              exit 0
+            fi
+            echo "Attempt $i/5: HTTP ${HTTP_STATUS} — retrying in 15s..."
+            sleep 15
+          done
+          echo "CRITICAL: Production health check failed after rollback"
+          exit 1
+
+      - name: Rollback summary
+        if: always()
+        run: |
+          echo "============================================"
+          echo "PRODUCTION FRONTEND ROLLBACK RESULT"
+          echo "============================================"
+          echo "Target SHA: ${{ inputs.target-sha }}"
+          echo "Environment: production"
+          echo "URL: ${{ secrets.PROD_URL }}"
+          echo "============================================"
+
+  # ==================================================================
+  # ROLLBACK NOTIFICATION
+  # ==================================================================
+  notify-rollback:
+    name: "Rollback: Notification"
+    runs-on: ubuntu-latest
+    needs: [rollback-staging, rollback-production]
+    if: always()
+    steps:
+      - name: Determine rollback result
+        id: result
+        run: |
+          if [ "${{ needs.rollback-staging.result }}" = "success" ] || [ "${{ needs.rollback-production.result }}" = "success" ]; then
+            echo "status=SUCCESS" >> "$GITHUB_OUTPUT"
+          elif [ "${{ needs.rollback-staging.result }}" = "failure" ] || [ "${{ needs.rollback-production.result }}" = "failure" ]; then
+            echo "status=FAILED" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=SKIPPED" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Console notification
+        run: |
+          echo "============================================"
+          echo "FRONTEND ROLLBACK NOTIFICATION"
+          echo "============================================"
+          echo "Target: ${{ inputs.environment }}"
+          echo "Version: ${{ inputs.target-sha }}"
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Status: ${{ steps.result.outputs.status }}"
+          echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "============================================"
+
+      - name: Notify Slack
+        if: ${{ env.SLACK_WEBHOOK_URL != '' }}
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          payload: '{"text":"Frontend Rollback ${{ steps.result.outputs.status }}: ${{ inputs.environment }} to ${{ inputs.target-sha }} by ${{ github.actor }}"}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

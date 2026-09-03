@@ -1,4 +1,5 @@
 import React from "react";
+import DocumentFolderManager from "../../shared/components/DocumentFolderManager";
 
 function StudyFolderDashboard() {
   return (
@@ -66,6 +67,13 @@ function StudyFolderDashboard() {
           </tbody>
         </table> 
       </div>
+
+      <DocumentFolderManager
+        sectionId="studyFolder"
+        contextKey="pi-global"
+        title="Study Documents"
+        layout="explorer"
+      />
 
     </div>
   );
