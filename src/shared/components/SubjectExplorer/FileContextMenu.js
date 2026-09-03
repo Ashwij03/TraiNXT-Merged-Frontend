@@ -189,7 +189,7 @@ function FileContextMenu({
           // trigger itself is focused.
           event.stopPropagation();
         }}
-      >
+
         <MdMoreVert size={15} />
       </button>
 
@@ -202,7 +202,7 @@ function FileContextMenu({
             aria-label={`More actions for ${file?.name || "file"}`}
             style={{ top: position.top, left: position.left, width: MENU_WIDTH }}
             onClick={(event) => event.stopPropagation()}
-          >
+
             <div className="sf-menu-heading" title={file?.name}>
               {file?.name}
             </div>
@@ -214,7 +214,7 @@ function FileContextMenu({
                 role="menuitem"
                 className={`sf-menu-item${danger ? " is-danger" : ""}`}
                 onClick={(event) => runAction(event, key)}
-              >
+
                 <Icon size={15} aria-hidden="true" />
                 <span className="sf-menu-item-label">{label}</span>
               </button>

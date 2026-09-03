@@ -47,7 +47,7 @@ function NextVisitPromptModal({
         className="next-visit-modal"
         role="dialog"
         aria-labelledby="next-visit-title"
-      >
+
         <div className="next-visit-modal-header">
           <h3 id="next-visit-title">Schedule Next Visit</h3>
           <p>
@@ -104,7 +104,7 @@ function NextVisitPromptModal({
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, status: event.target.value }))
               }
-            >
+
               <option value="Scheduled">Scheduled</option>
               <option value="Due">Due</option>
               <option value="Completed">Completed</option>

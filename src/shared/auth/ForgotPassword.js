@@ -96,7 +96,7 @@ function ForgotPassword() {
       <button
         className="auth-btn"
         onClick={handleReset}
-      >
+
         Reset Password
       </button>
               
@@ -110,7 +110,7 @@ function ForgotPassword() {
           type="button"
           className="login-link-btn"
           onClick={() => navigate("/login")}
-        >
+
           Back to Login
         </button>
               
@@ -128,7 +128,7 @@ function ForgotPassword() {
                 ? "green"
                 : "red",
           }}
-        >
+
           {message}
         </p>
       )}

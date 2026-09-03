@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import RequestPermissionButton from "../../components/RequestPermissionButton";
 import useCanEditStudyContent from "../../hooks/useCanEditStudyContent";
+import { canEditStudyContent } from "../../utils/contentAccess.js";
+import { getCurrentUser } from "../../services/roleService.js";
 import { getStudyByCode } from "../../services/studyService";
 import { resolveSiteDisplay } from "../../utils/siteDisplay";
 import {
@@ -95,7 +97,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
       onClick={() => {
         // navigate/open full milestone list
       }}
-    >
+
       View All
     </button>
   </div>
@@ -125,7 +127,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
     type="button"
     className="link-btn"
     onClick={() => setEditingMilestone(item)}
-  >
+
     Edit
   </button>
 
@@ -136,7 +138,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
       deletePlanningMilestone(studyCode, item.id);
       bump();
     }}
-  >
+
     Delete
   </button>
 </td>
@@ -168,7 +170,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
     onClick={() => {
       // navigate/open full task list
     }}
-  >
+
     View All
   </button>
 </div>
@@ -202,7 +204,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
     type="button"
     className="link-btn"
     onClick={() => setEditingTask(item)}
-  >
+
     Edit
   </button>
 
@@ -213,7 +215,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
       deletePlanningTask(studyCode, item.id);
       bump();
     }}
-  >
+
     Delete
   </button>
 </td>
@@ -263,25 +265,24 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
                     
                       <td>
 
-<button
+button
 type="button"
 className="link-btn"
 onClick={() => setEditingMember(member)}
->
+
 Edit
 </button>
 
-<button
+button
 type="button"
 className="link-btn danger"
 onClick={() => {
 deleteStudyTeamMember(studyCode, member.id);
 bump();
 }}
->
+
 Delete
 </button>
-
 
                     </td>
                   )}
@@ -341,34 +342,34 @@ Uploaded:
 
 <div className="checklist-actions">
 
-<button
+button
 type="button"
 className="link-btn"
 onClick={() => setEditingChecklistItem(item)}
->
+
 Edit
 </button>
 
 {item.documentUrl && (
-<button
+button
 type="button"
 className="link-btn"
 onClick={() =>
 window.open(item.documentUrl, "_blank")
 }
->
+
 View Document
 </button>
 )}
 
-<button
+button
 type="button"
 className="link-btn danger"
 onClick={() => {
 deleteRegulatoryChecklistItem(studyCode, item.id);
 bump();
 }}
->
+
 Remove
 </button>
 
@@ -422,7 +423,7 @@ Remove
         type="button"
         className="link-btn"
         onClick={() => setEditingProtocol(protocol)}
-      >
+
         Edit
       </button>
 
@@ -433,7 +434,7 @@ Remove
           deleteProtocol(studyCode, protocol.id);
           bump();
         }}
-      >
+
         Delete
       </button>
     </div>
@@ -503,7 +504,7 @@ function PlanningMilestoneForm({
         onSave(form);
         setForm(MILESTONE_FORM_DEFAULTS);
       }}
-    >
+
       <input
         placeholder="Milestone title"
         value={form.title ?? ""}
@@ -563,7 +564,7 @@ function PlanningTaskForm({
         onSave(form);
         setForm(TASK_FORM_DEFAULTS);
       }}
-    >
+
       <input
         placeholder="Task title"
         value={form.title ?? ""}
@@ -624,7 +625,7 @@ function StudyTeamForm({
         onSave(form);
         setForm(STUDY_TEAM_FORM_DEFAULTS);
       }}
-    >
+
       <input
         placeholder="Name"
         value={form.name ?? ""}
@@ -707,7 +708,7 @@ onSave({
 
 setForm(REGULATORY_ITEM_FORM_DEFAULTS);
       }}
-    >
+
       <input
   placeholder="Checklist Item"
   value={form.label ?? ""}
@@ -719,7 +720,7 @@ setForm(REGULATORY_ITEM_FORM_DEFAULTS);
   }
 />
 
-<input
+input
   type="date"
   value={form.documentDate ?? ""}
   onChange={(e) =>
@@ -730,7 +731,7 @@ setForm(REGULATORY_ITEM_FORM_DEFAULTS);
   }
 />
 
-<input
+input
   type="date"
   value={form.dueDate ?? ""}
   onChange={(e) =>
@@ -741,7 +742,7 @@ setForm(REGULATORY_ITEM_FORM_DEFAULTS);
   }
 />
 
-<select
+select
   value={form.status ?? "Pending"}
   onChange={(e) =>
     setForm({
@@ -749,14 +750,14 @@ setForm(REGULATORY_ITEM_FORM_DEFAULTS);
       status: e.target.value,
     })
   }
->
+
   <option>Pending</option>
   <option>Submitted</option>
   <option>Approved</option>
   <option>Rejected</option>
 </select>
 
-<input
+input
   type="file"
   onChange={(e) => {
     const file = e.target.files?.[0];
@@ -818,7 +819,7 @@ onSave
         onSave(form);
         setForm(PROTOCOL_FORM_DEFAULTS);
       }}
-    >
+
       <input
         placeholder="Protocol title"
         value={form.title ?? ""}
@@ -834,7 +835,7 @@ protocolNumber:e.target.value
 })
 }
 />
-<select
+select
 value={form.status ?? "Draft"}
 onChange={(e)=>
 setForm({
@@ -842,7 +843,6 @@ setForm({
 status:e.target.value
 })
 }
->
 
 <option>Draft</option>
 <option>In Review</option>

@@ -34,7 +34,7 @@ function SubjectStatusChart() {
             innerRadius={45}
             outerRadius={80}
             label
-          >
+
             {data.map((entry, index) => (
               <Cell
                 key={index}

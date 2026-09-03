@@ -81,7 +81,7 @@ const Regulatory = () => {
             value={studyCode}
             onChange={(e) => setStudyCode(e.target.value)}
             aria-label="Select study for new document"
-          >
+
             <option value="">Select study…</option>
             {studies.map((study) => (
               <option key={study.studyId} value={study.studyId}>

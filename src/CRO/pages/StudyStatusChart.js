@@ -30,7 +30,7 @@ function StudyStatusChart() {
 		  cy="50%"
 		  outerRadius={75}
             label={false}
-          >
+
             {data.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}

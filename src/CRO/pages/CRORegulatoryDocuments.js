@@ -6,8 +6,8 @@ import EmptyState from "./EmptyState";
 import CROModal from "./CROModal";
 import RequestPermissionButton from "../../shared/components/RequestPermissionButton";
 import { getAccessibleStudies, getCurrentUser } from "../../shared/services/roleService";
-import { resolveSiteDisplay } from "../../shared/utils/siteDisplay";
 import { getStudies } from "../../shared/services/studyService";
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay";
 
 function CRORegulatoryDocuments() {
   const { documents } = useCROData();
@@ -27,7 +27,6 @@ function CRORegulatoryDocuments() {
           fallback: value
         })
       : "—";
-
 
   React.useEffect(() => {
     const refresh = () => setStudies(getAccessibleStudies(getCurrentUser()));
@@ -95,7 +94,7 @@ function CRORegulatoryDocuments() {
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
               className="cro-input"
-            >
+
               <option value="All">All</option>
               <option value="Approved">Approved</option>
               <option value="Pending">Pending</option>
@@ -108,7 +107,7 @@ function CRORegulatoryDocuments() {
               onChange={(event) => setUploadStudyCode(event.target.value)}
               className="cro-input"
               aria-label="Select study for new document"
-            >
+
               <option value="">Select study…</option>
               {studies.map((study) => (
                 <option key={study.code} value={study.code}>
@@ -160,7 +159,7 @@ function CRORegulatoryDocuments() {
                         type="button"
                         className="cro-btn-primary-inline"
                         onClick={() => handleView(doc)}
-                      >
+
                         View
                       </button>
                     </td>
@@ -189,7 +188,7 @@ function CRORegulatoryDocuments() {
             />
           ) : null
         }
-      >
+
         {selectedDoc && (
           <div>
             <p>

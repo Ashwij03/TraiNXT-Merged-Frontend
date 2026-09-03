@@ -1,4 +1,6 @@
 import "./DashboardSidebar.css";
+<import TriaNXTLogo from "../../common/TriaNXTLogo";
+
 import TriaNXTLogo from "../../TriaNXTLogo";
 import {
   getAccessibleStudies,
@@ -7,6 +9,7 @@ import {
   getEffectiveRole,
   getEffectiveUser,
   getSidebarMenuItems,
+
   hasPermission,
   PERMISSIONS,
 } from "../../../services/roleService";
@@ -14,7 +17,6 @@ import { ADMIN_PREVIEW_ROLE_EVENT } from "../../../constants/headerFilters";
 import { FOLDER_TREE_EVENT } from "../../../services/folderService";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
   FiBell,
   FiFolder,
   FiGrid,
@@ -31,12 +33,20 @@ import {
   FiGift,
 } from "react-icons/fi";
 import { getRoleExtraMenuItems } from "../../../constants/roleMenus";
+
 import { canViewFinancials } from "../../../pages/studies/StudyWorkspaceTabsConfig";
 import { resolveStudyKey as getStudyKey, getSubjectsForStudy } from "../../../services/subjectService";
 
 const STUDY_SECTIONS = [
   { key: "overview", label: "Overview" },
   { key: "subjects", label: "Subjects", expandable: true },
+  { key: "planning", label: "Planning" },
+  { key: "visitPlan", label: "Visit Plan" },
+  { key: "clinicalSites", label: "Clinical Sites" },
+  { key: "eisf", label: "eISF" },
+  // ===== ITEM 16: Regulatory removed from Studies sidebar sections =====
+  // { key: "regulatory", label: "Regulatory" },
+
   { key: "logs", label: "Logs" },
   { key: "eisf", label: "eISF" },
   { key: "visitPlan", label: "Visit Plan" },
@@ -158,6 +168,13 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   // ===== END: Safety / AI Review / eTMF role checks =====
 
   const roleExtraMenuItems = getRoleExtraMenuItems(effectiveUser?.role);
+  const visibleStudySections = STUDY_SECTIONS.filter(
+    (section) =>
+      section.key !== "clinicalSites" ||
+      effectiveUser?.role === "Sponsor" ||
+      effectiveUser?.role === "Admin",
+  );
+
   const visibleStudySections = STUDY_SECTIONS.filter((section) => {
     if (section.key === "clinicalSites") {
       return (
@@ -492,13 +509,13 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
               flexBasis: sidebarWidth,
             }
       }
-    >
+
       <TriaNXTLogo size="sidebar" onClick={() => handleNav(dashboardPath)} />
 
       <div
         className={getLinkClass(isDashboardActive)}
         onClick={handleDashboardClick}
-      >
+
         <FiGrid size={16} />
         <span>Dashboard</span>
       </div>
@@ -510,7 +527,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
           studiesOpen ? " submenu-open" : ""
         }`}
         onClick={handleStudiesClick}
-      >
+
         <FiFolder size={16} />
         <span>Studies ({studyCount})</span>
       </div>
@@ -527,14 +544,14 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                   : "Expand Study Binder"
               }
               onClick={handleStudyBinderClick}
-            >
+
               {studyBinderOpen ? "−" : "+"}
             </button>
 
             <span
               className="sidebar-tree-label sidebar-tree-label--strong"
               onClick={handleStudyBinderClick}
-            >
+
               Study Binder
             </span>
           </div>
@@ -561,7 +578,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                             : "Expand study sections"
                         }
                         onClick={(event) => toggleStudyNode(studyKey, event)}
-                      >
+
                         {isStudyOpen ? "−" : "+"}
                       </button>
 
@@ -578,7 +595,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                             handleStudyNameClick(studyKey, event);
                           }
                         }}
-                      >
+
                         <span className="study-label-name">{studyName}</span>
 
                         {studyMeta && (
@@ -622,7 +639,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                                         event,
                                       )
                                     }
-                                  >
+
                                     {isSectionOpen ? "−" : "+"}
                                   </button>
 
@@ -635,7 +652,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                                         event,
                                       )
                                     }
-                                  >
+
                                     {displayLabel}
                                   </span>
                                 </div>
@@ -655,7 +672,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                                         <div
                                           key={`${studyKey}-${subjectKey}`}
                                           className="sidebar-subject-group"
-                                        >
+
                                           <div
                                             className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-subject-row"
                                             onClick={() =>
@@ -664,7 +681,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                                                 subject,
                                               )
                                             }
-                                          >
+
                                             <span className="sidebar-tree-label">
                                               {subjectKey}
                                             </span>
@@ -685,7 +702,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                               onClick={() =>
                                 navigateToStudySection(studyKey, sectionKey)
                               }
-                            >
+
                               <span
                                 className="sidebar-tree-spacer"
                                 aria-hidden="true"
@@ -710,7 +727,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
               isCommentsRoute ? " active" : ""
             }`}
             onClick={handleStudiesCommentsClick}
-          >
+
             <span className="sidebar-tree-spacer" aria-hidden="true" />
             <span className="sidebar-tree-label">Comments</span>
           </div>
@@ -721,7 +738,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         <div
           className={getLinkClass(pathname.includes("site-performance"))}
           onClick={() => handleNav("/site-performance")}
-        >
+
           <FiTrendingUp size={16} />
           <span>Site Performance</span>
         </div>
@@ -731,7 +748,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         <div
           className={getLinkClass(pathname.includes("recruitment"))}
           onClick={() => handleNav("/recruitment")}
-        >
+
           <FiUsers size={16} />
           <span>Recruitment</span>
         </div>
@@ -741,7 +758,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         <div
           className={getLinkClass(pathname.includes("/reports"))}
           onClick={() => handleNav("/reports")}
-        >
+
           <FiBarChart2 size={16} />
           <span>Reports</span>
         </div>
@@ -752,7 +769,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         <div
           className={getLinkClass(pathname.includes("/safety"))}
           onClick={() => handleNav("/safety")}
-        >
+
           <FiShield size={16} />
           <span>Safety</span>
         </div>
@@ -762,7 +779,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         <div
           className={getLinkClass(pathname.includes("/ai-review"))}
           onClick={() => handleNav("/ai-review")}
-        >
+
           <FiCpu size={16} />
           <span>AI Review</span>
         </div>
@@ -772,7 +789,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         <div
           className={getLinkClass(pathname.includes("/etmf"))}
           onClick={() => handleNav("/etmf")}
-        >
+
           <FiFolder size={16} />
           <span>eTMF</span>
         </div>
@@ -783,7 +800,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         <div
           className={getLinkClass(pathname.includes("user-management"))}
           onClick={() => handleNav("/user-management")}
-        >
+
           <FiUsers size={16} />
           <span>User Management</span>
         </div>
@@ -796,7 +813,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
               pathname.includes("permission-approval"),
           )}
           onClick={() => handleNav("/access-permission")}
-        >
+
           <FiShield size={16} />
           <span>Permission Approval</span>
         </div>
@@ -806,7 +823,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         <div
           className={getLinkClass(pathname.includes("access-request"))}
           onClick={() => handleNav("/access-request")}
-        >
+
           <FiShield size={16} />
           <span>Request Access</span>
         </div>
@@ -816,7 +833,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         <div
           className={getLinkClass(pathname.includes("cro-overview"))}
           onClick={() => handleNav("/cro-overview")}
-        >
+
           <FiEye size={16} />
           <span>CRO Overview</span>
         </div>
@@ -826,9 +843,21 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         <div
           className={getLinkClass(pathname === "/audit-logs")}
           onClick={() => handleNav("/audit-logs")}
-        >
+
           <FiFileText size={16} />
           <span>Audit Logs</span>
+        </div>
+      )}
+
+      {canViewAuditLogs && (
+        <div
+          className={getLinkClass(
+            pathname === "/logs" || pathname.startsWith("/logs/"),
+          )}
+          onClick={() => handleNav("/logs")}
+
+          <FiLayers size={16} />
+          <span>Logs</span>
         </div>
       )}
 
@@ -839,7 +868,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         <div
           className={getLinkClass(pathname.includes("notifications"))}
           onClick={() => handleNav("/notifications")}
-        >
+
           <FiBell size={16} />
           <span>Notifications</span>
         </div>
@@ -849,7 +878,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         <div
           className={getLinkClass(pathname.includes("/profile"))}
           onClick={() => handleNav("/profile")}
-        >
+
           <FiUser size={16} />
           <span>Profile</span>
         </div>
@@ -863,7 +892,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
               ? handleSettingsNav("profile")
               : handleNav("/settings")
           }
-        >
+
           <FiSettings size={16} />
           <span>Settings</span>
         </div>
@@ -873,7 +902,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         <div
           className={getLinkClass(pathname.includes("/referral"))}
           onClick={() => handleNav("/referral")}
-        >
+
           <FiGift size={16} />
           <span>Referral Program</span>
         </div>
@@ -884,7 +913,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
           key={item.key}
           className={getLinkClass(pathname.includes(item.path))}
           onClick={() => handleNav(item.path)}
-        >
+
           <FiLayers size={16} />
           <span>{item.label}</span>
         </div>

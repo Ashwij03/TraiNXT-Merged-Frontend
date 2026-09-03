@@ -201,7 +201,7 @@ export function CommentsProvider({ children }) {
         deleteComment,
         refreshComments,
       }}
-    >
+
       {children}
     </CommentsContext.Provider>
   );

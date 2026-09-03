@@ -15,10 +15,11 @@ import {
   FaTimes,
   FaGift,
 } from "react-icons/fa";
-import TriaNXTLogo from "../../shared/components/TriaNXTLogo";
-import RoleStudiesSidebarTree from "../../shared/components/RoleStudiesSidebarTree";
-import { useRoleStudiesSidebar } from "../../shared/hooks/useRoleStudiesSidebar";
 import "../styles/CRODashboard.css";
+import "./CRODashboard.js";
+import RoleStudiesSidebarTree from "../../shared/components/RoleStudiesSidebarTree";
+import TriaNXTLogo from "../../shared/components/TriaNXTLogo";
+import { useRoleStudiesSidebar } from "../../shared/hooks/useRoleStudiesSidebar";
 
 const MAIN_ITEMS = [
   { to: "/cro-dashboard", icon: FaTachometerAlt, label: "Dashboard" },
@@ -53,7 +54,7 @@ function SidebarItem({ to, icon: Icon, label, onNavigate }) {
           `cro-sidebar-link${isActive ? " active" : ""}`
         }
         onClick={onNavigate}
-      >
+
         <span className="cro-sidebar-icon">
           <Icon />
         </span>
@@ -90,7 +91,7 @@ function CROSidebar({ isOpen = false, collapsed = false, onClose }) {
       className={`cro-sidebar cro-sidebar-aligned
         ${isOpen ? " open" : ""}
         ${collapsed ? " collapsed" : ""}`}
-    >
+
       <div className="cro-sidebar-top">
         <div
           className="cro-sidebar-logo-link"
@@ -98,7 +99,7 @@ function CROSidebar({ isOpen = false, collapsed = false, onClose }) {
             handleNavigate();
             navigate("/cro-dashboard");
           }}
-        >
+
           <TriaNXTLogo size="sidebar" />
         </div>
 
@@ -106,7 +107,7 @@ function CROSidebar({ isOpen = false, collapsed = false, onClose }) {
           type="button"
           className="cro-sidebar-close"
           onClick={onClose}
-        >
+
           <FaTimes />
         </button>
       </div>
@@ -126,7 +127,7 @@ function CROSidebar({ isOpen = false, collapsed = false, onClose }) {
               isStudiesActive || isCommentsRoute ? " active" : ""
             }`}
             onClick={handleStudiesToggle}
-          >
+
             <span className="cro-sidebar-icon">
               <FaBook />
             </span>

@@ -117,7 +117,7 @@ function CRODashboard() {
                   onKeyDown={(e) => e.key === "Enter" && navigate(card.route)}
                   role="button"
                   tabIndex={0}
-                >
+
                   <div className="kpi-icon">{card.icon}</div>
                   <div className="kpi-text">
                     <h3>{card.title}</h3>
@@ -139,7 +139,7 @@ function CRODashboard() {
                 onClick={() => navigate("/cro-enrollment")}
                 role="button"
                 tabIndex={0}
-              >
+
                 <EnrollmentChart />
               </div>
               <div
@@ -147,7 +147,7 @@ function CRODashboard() {
                 onClick={() => navigate("/cro-monitoring")}
                 role="button"
                 tabIndex={0}
-              >
+
                 <VisitCompletionChart />
               </div>
               <div
@@ -155,7 +155,7 @@ function CRODashboard() {
                 onClick={() => navigate("comments")}
                 role="button"
                 tabIndex={0}
-              >
+
                 <QueryStatusChart />
               </div>
               <div
@@ -163,7 +163,7 @@ function CRODashboard() {
                 onClick={() => navigate("/cro-subjects")}
                 role="button"
                 tabIndex={0}
-              >
+
                 <StudyStatusChart />
               </div>
             </div>
@@ -173,7 +173,7 @@ function CRODashboard() {
               onClick={() => navigate("/cro-subject-management")}
               role="button"
               tabIndex={0}
-            >
+
               <h2>Sites Under Monitoring</h2>
               {uniqueSites.length === 0 ? (
                 <EmptyState title="No Sites Found" />
@@ -222,7 +222,7 @@ function CRODashboard() {
               onClick={() => navigate("/cro-monitoring")}
               role="button"
               tabIndex={0}
-            >
+
               <h2>Monitoring Visits</h2>
               {safeVisits.length === 0 ? (
                 <EmptyState title="No Visits Found" />
@@ -243,7 +243,7 @@ function CRODashboard() {
                           key={
                             visit?.id ?? `${visit?.site}-${visit?.visitType}`
                           }
-                        >
+
                           <td>{visit?.id ?? "—"}</td>
                           <td>{visit?.site ?? "—"}</td>
                           <td>{visit?.visitType ?? visit?.visit ?? "—"}</td>
@@ -268,7 +268,7 @@ function CRODashboard() {
                 onClick={() => navigate("/cro-monitoring")}
                 role="button"
                 tabIndex={0}
-              >
+
                 <h2>Recent Monitoring Activities</h2>
                 {recentActivities.length === 0 ? (
                   <EmptyState title="No Activities" />
@@ -302,7 +302,7 @@ function CRODashboard() {
                 onClick={() => navigate("/cro-comments")}
                 role="button"
                 tabIndex={0}
-              >
+
                 <h2>Recent Comments</h2>
                 {recentComments.length === 0 ? (
                   <EmptyState title="No Comments Found" />
@@ -347,7 +347,7 @@ function CRODashboard() {
                 onClick={() => navigate("/cro-notifications")}
                 role="button"
                 tabIndex={0}
-              >
+
                 <h2>🔔 Alerts & Notifications</h2>
 
                 <div className="alerts-list">
@@ -363,7 +363,7 @@ function CRODashboard() {
                         <div
                           key={alert?.id ?? `${alert?.title}-${alert?.date}`}
                           className={`alert-card ${severity}`}
-                        >
+
                           <div className="alert-card-header">
                             <h4>{alert?.title ?? "Alert"}</h4>
 
@@ -395,7 +395,7 @@ function CRODashboard() {
                       key={action.label}
                       type="button"
                       onClick={() => navigate(action.route)}
-                    >
+
                       {action.label}
                     </button>
                   ))}

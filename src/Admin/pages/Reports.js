@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import DashboardLayout from "../../shared/components/dashboard/shared/DashboardLayout";
-import KPICard from "../../shared/components/dashboard/shared/KPICard";
 import DataTable from "../../shared/components/dashboard/shared/DataTable";
+import KPICard from "../../shared/components/dashboard/shared/KPICard";
 import {
   canManageReports,
   createReport,
@@ -153,7 +153,7 @@ function Reports() {
                       onChange={(event) =>
                         setForm({ ...form, reportType: event.target.value })
                       }
-                    >
+
                       {REPORT_TYPE_OPTIONS.map((option) => (
                         <option key={option} value={option}>
                           {option}
@@ -167,7 +167,7 @@ function Reports() {
                         setForm({ ...form, studyCode: event.target.value })
                       }
                       required
-                    >
+
                       <option value="" disabled>
                         Select study
                       </option>
@@ -183,7 +183,7 @@ function Reports() {
                       onChange={(event) =>
                         setForm({ ...form, status: event.target.value })
                       }
-                    >
+
                       {REPORT_STATUS_OPTIONS.map((option) => (
                         <option key={option} value={option}>
                           {option}

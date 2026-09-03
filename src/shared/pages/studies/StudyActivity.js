@@ -136,7 +136,7 @@ function StudyActivity() {
                 setSelectedActivity(item);
                 setShowCommentModal(true);
             }}
-        >
+
             Comment
         </button>
     </td>
@@ -173,7 +173,7 @@ function StudyActivity() {
                 setSelectedActivity(item);
                 setShowCommentModal(true);
             }}
-        >
+
             Comment
         </button>
     </td>
@@ -226,13 +226,13 @@ function StudyActivity() {
                   alert("Email Sent");
                   setShowComposeModal(false);
                 }}
-              >
+
                 Send
               </button>
 
               <button
                 onClick={() => setShowComposeModal(false)}
-              >
+
                 Cancel
               </button>
 

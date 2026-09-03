@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
-import { resolveSiteDisplay } from "../../shared/utils/siteDisplay";
 import { getStudies } from "../../shared/services/studyService";
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay";
 
 function Recruitment() {
 

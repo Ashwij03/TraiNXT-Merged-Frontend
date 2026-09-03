@@ -29,7 +29,7 @@ function LiveChatFab({ liveChatPath }) {
       className="floating-chat-btn"
       onClick={openLiveChat}
       aria-label="Open live chat"
-    >
+
       <FiMessageSquare size={40} />
     </button>
   );

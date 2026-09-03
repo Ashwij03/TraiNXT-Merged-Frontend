@@ -149,6 +149,31 @@
   z-index: 1;
 }
 
+.calendar-day.today {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.22);
+}
+
+.calendar-day.today:not(.selected) {
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.calendar-day.today em {
+  background: #f59e0b;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  padding: 2px 4px;
+  position: relative;
+  text-transform: uppercase;
+  z-index: 1;
+}
+
 .calendar-day.selected {
   background: #0d6efd;
   border-color: #0d6efd;
@@ -158,6 +183,9 @@
 
 .calendar-day.today.selected {
   box-shadow:
+    0 10px 22px rgba(13, 110, 253, 0.26),
+    0 0 0 3px rgba(245, 158, 11, 0.32);
+
     0 0.625rem 1.375rem rgba(13, 110, 253, 0.26),
     0 0 0 0.1875rem rgba(245, 158, 11, 0.32);
 }

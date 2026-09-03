@@ -8,7 +8,6 @@ import {
   removeUserPermissions,
   PERMISSION_REQUESTS_UPDATED,
 } from "../services/accessPermissionService";
-import {
   getUserAccessLevel,
   setUserAccessLevel,
   ACCESS_LEVELS_UPDATED,
@@ -282,7 +281,6 @@ function UserManagement() {
           </div>
         </div>
 
-
         <div className="user-management-toolbar">
           <input
             type="text"
@@ -296,7 +294,7 @@ function UserManagement() {
             className="user-management-role-filter"
             value={roleFilter}
             onChange={(event) => setRoleFilter(event.target.value)}
-          >
+
             {roles.map((role) => (
               <option key={role} value={role}>
                 {role === "All" ? "All Roles" : ROLE_LABELS[role] || role}
@@ -309,7 +307,7 @@ function UserManagement() {
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value)}
             aria-label="Filter by account status"
-          >
+
             {statuses.map((status) => (
               <option key={status} value={status}>
                 {status === "All" ? "All Status" : status}
@@ -326,7 +324,7 @@ function UserManagement() {
               aria-selected={activeView === "directory"}
               className={`tab-btn${activeView === "directory" ? " active" : ""}`}
               onClick={() => setActiveView("directory")}
-            >
+
               User Directory
               <span className="user-management-tab-count">{directoryUsers.length}</span>
             </button>
@@ -336,7 +334,7 @@ function UserManagement() {
               aria-selected={activeView === "history"}
               className={`tab-btn${activeView === "history" ? " active" : ""}`}
               onClick={() => setActiveView("history")}
-            >
+
               Access History
               <span className="user-management-tab-count">{accessHistory.length}</span>
             </button>
@@ -402,7 +400,7 @@ function UserManagement() {
                       type="button"
                       className="permission-remove-btn"
                       onClick={() => handleRemovePermission(user.email)}
-                    >
+
                       Remove
                     </button>
                   )

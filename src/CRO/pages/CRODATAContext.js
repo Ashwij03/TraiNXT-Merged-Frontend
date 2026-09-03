@@ -7,9 +7,9 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import { getStudies } from "../../shared/services/studyService";
 import { addCommentRecord } from "../../shared/services/commentService";
 import { getCurrentUser } from "../../shared/services/roleService";
+import { getStudies } from "../../shared/services/studyService";
 import {
   getFilteredSchedules,
   getUpcomingVisitsWindow,
@@ -94,6 +94,16 @@ function getSharedDocuments() {
 
 function getSharedReports() {
   return readStorageArray("reports");
+}
+
+function getSharedComments() {
+  return readStorageArray("comments").map((comment) => ({
+    ...comment,
+    message: comment.description || comment.message || comment.text || "",
+    author: comment.createdBy || comment.author || "Unknown",
+    subject: comment.subjectId || comment.subject || "",
+    date: comment.createdAt || comment.date || "",
+  }));
 }
 
 function getSharedNotifications() {
@@ -504,7 +514,7 @@ export const CROProvider = ({ children }) => {
         closeAlert,
         closeModal,
       }}
-    >
+
       {children}
     </CRODataContext.Provider>
   );

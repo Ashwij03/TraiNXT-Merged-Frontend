@@ -50,7 +50,7 @@ function FileDetails() {
               alignItems: "center",
               marginBottom: "1.25rem",
             }}
-          >
+
             <h1>Files</h1>
             <div style={{ display: "flex", gap: "0.625rem", alignItems: "center" }}>
               <select
@@ -58,7 +58,7 @@ function FileDetails() {
                 onChange={(event) => setUploadStudyCode(event.target.value)}
                 aria-label="Select study for new file"
                 style={{ padding: "0.5rem" }}
-              >
+
                 <option value="">Select study…</option>
                 {studies.map((study) => (
                   <option key={study.code} value={study.code}>
@@ -92,7 +92,7 @@ function FileDetails() {
                     justifyContent: "space-between",
                     alignItems: "center",
                   }}
-                >
+
                   <div>
                     <strong>{file.name || file.fileName}</strong>
                     <p style={{ margin: "0.25rem 0 0", color: "#64748b" }}>

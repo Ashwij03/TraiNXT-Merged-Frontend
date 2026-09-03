@@ -29,7 +29,7 @@ export default function FilingGuidelineModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="filing-guideline-title"
-      >
+
         <div className="filing-guideline-header">
           <div>
             <span>{moduleConfig?.id} {moduleConfig?.title}</span>
@@ -41,7 +41,7 @@ export default function FilingGuidelineModal({
             className="filing-guideline-close"
             onClick={onClose}
             aria-label="Close filing guidelines"
-          >
+
             ×
           </button>
         </div>

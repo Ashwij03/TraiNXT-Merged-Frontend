@@ -4,9 +4,8 @@ import { useCROData } from "./CRODATAContext";
 import CROStatusBadge from "./CROStatusBadge";
 import EmptyState from "./EmptyState";
 import { useNavigate } from "react-router-dom";
-import { resolveSiteDisplay } from "../../shared/utils/siteDisplay";
 import { getStudies } from "../../shared/services/studyService";
-
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay";
 
 function CROVisits() {
   const { subjects, visits } = useCROData();
@@ -82,7 +81,7 @@ function CROVisits() {
                         type="button"
                         className="cro-btn-sm"
                         onClick={() => navigate(`/cro-subject/${v.id}`)}
-                      >
+
                         View Subject
                       </button>
                     </td>

@@ -31,7 +31,7 @@ export default function MissingDocumentsWidget({
               <li
                 key={document.id || document.name}
                 className="missing-item"
-              >
+
                 {document.name || "Unnamed Document"}
               </li>
             ))}

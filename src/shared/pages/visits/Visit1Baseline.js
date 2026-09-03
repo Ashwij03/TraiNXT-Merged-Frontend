@@ -28,7 +28,7 @@ export default function Visit1Baseline() {
         borderRadius: "0.375rem",
         overflow: "hidden",
       }}
-    >
+
       {/* LEFT SIDEBAR */}
       <div
         style={{
@@ -37,11 +37,11 @@ export default function Visit1Baseline() {
           background: "#3f5f81",
           color: "white",
         }}
-      >
+
         <div
           style={menuStyle("inclusion")}
           onClick={() => setActiveProcedure("inclusion")}
-        >
+
           <span>✔</span>
           <span>Inclusion Criteria</span>
         </div>
@@ -49,7 +49,7 @@ export default function Visit1Baseline() {
         <div
           style={menuStyle("exclusion")}
           onClick={() => setActiveProcedure("exclusion")}
-        >
+
           <span>✔</span>
           <span>Exclusion Criteria</span>
         </div>
@@ -57,7 +57,7 @@ export default function Visit1Baseline() {
         <div
           style={menuStyle("demographics")}
           onClick={() => setActiveProcedure("demographics")}
-        >
+
           <span></span>
           <span>Demographics</span>
         </div>
@@ -65,7 +65,7 @@ export default function Visit1Baseline() {
         <div
           style={menuStyle("medical")}
           onClick={() => setActiveProcedure("medical")}
-        >
+
           <span>✔</span>
           <span>Medical History</span>
         </div>
@@ -73,7 +73,7 @@ export default function Visit1Baseline() {
         <div
           style={menuStyle("surgical")}
           onClick={() => setActiveProcedure("surgical")}
-        >
+
           <span></span>
           <span>Surgical History</span>
         </div>
@@ -81,7 +81,7 @@ export default function Visit1Baseline() {
         <div
           style={menuStyle("adverse")}
           onClick={() => setActiveProcedure("adverse")}
-        >
+
           <span>!</span>
           <span>Adverse Events</span>
         </div>
@@ -89,7 +89,7 @@ export default function Visit1Baseline() {
         <div
           style={menuStyle("bmi")}
           onClick={() => setActiveProcedure("bmi")}
-        >
+
           <span></span>
           <span>Ht/Wt/BMI (ins/lbs)</span>
         </div>
@@ -101,7 +101,7 @@ export default function Visit1Baseline() {
           flex: 1,
           background: "#f7f7f7",
         }}
-      >
+
         {/* HEADER */}
         <div
           style={{
@@ -111,7 +111,7 @@ export default function Visit1Baseline() {
             fontSize: "1.5rem",
             color: "#222",
           }}
-        >
+
           {activeProcedure === "demographics"
             ? "Demographics"
             : activeProcedure === "exclusion"
@@ -135,7 +135,7 @@ export default function Visit1Baseline() {
             fontSize: "1.125rem",
             color: "#333",
           }}
-        >
+
           {/* INCLUSION */}
           {activeProcedure === "inclusion" && (
             <>
@@ -151,7 +151,7 @@ export default function Visit1Baseline() {
                     color: "#666",
                     marginTop: "0.5rem",
                   }}
-                >
+
                   Kristen Bosse, 30-Jul-2019 16:08
                 </div>
               </div>
@@ -174,13 +174,13 @@ export default function Visit1Baseline() {
                   boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
                   maxWidth: "43.75rem",
                 }}
-              >
+
                 {/* Gender */}
                 <div
                   style={{
                     marginBottom: "1.75rem",
                   }}
-                >
+
                   <label
                     style={{
                       display: "block",
@@ -189,7 +189,7 @@ export default function Visit1Baseline() {
                       fontWeight: "600",
                       color: "#c62828",
                     }}
-                  >
+
                     * Gender
                   </label>
 
@@ -202,7 +202,7 @@ export default function Visit1Baseline() {
                       border: "1px solid #ccc",
                       background: "#fff",
                     }}
-                  >
+
                     <option>Select Gender</option>
                     <option>Male</option>
                     <option>Female</option>
@@ -215,7 +215,7 @@ export default function Visit1Baseline() {
                   style={{
                     marginBottom: "1.75rem",
                   }}
-                >
+
                   <label
                     style={{
                       display: "block",
@@ -224,7 +224,7 @@ export default function Visit1Baseline() {
                       fontWeight: "600",
                       color: "#c62828",
                     }}
-                  >
+
                     * Ethnicity
                   </label>
 
@@ -237,7 +237,7 @@ export default function Visit1Baseline() {
                       border: "1px solid #ccc",
                       background: "#fff",
                     }}
-                  >
+
                     <option>Select Ethnicity</option>
                     <option>Asian</option>
                     <option>Hispanic</option>
@@ -251,7 +251,7 @@ export default function Visit1Baseline() {
                   style={{
                     marginBottom: "1.25rem",
                   }}
-                >
+
                   <label
                     style={{
                       display: "block",
@@ -260,7 +260,7 @@ export default function Visit1Baseline() {
                       fontWeight: "600",
                       color: "#c62828",
                     }}
-                  >
+
                     * Race
                   </label>
 
@@ -273,7 +273,7 @@ export default function Visit1Baseline() {
                       border: "1px solid #ccc",
                       background: "#fff",
                     }}
-                  >
+
                     <option>Select Race</option>
                     <option>White</option>
                     <option>Black</option>
@@ -295,7 +295,7 @@ export default function Visit1Baseline() {
                     cursor: "pointer",
                     color: "#222",
                   }}
-                >
+
                   Save Demographics
                 </button>
               </div>

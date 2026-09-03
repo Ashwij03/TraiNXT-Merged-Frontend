@@ -1,3 +1,6 @@
+<import ROLES from "../../../constants/roles";
+import EnterpriseNavbarBase from "../../shared/components/dashboard/shared/EnterpriseNavbarBase.js";
+
 import ROLES from "../../shared/constants/roles";
 import EnterpriseNavbarBase from "../../shared/components/dashboard/shared/EnterpriseNavbarBase";
 

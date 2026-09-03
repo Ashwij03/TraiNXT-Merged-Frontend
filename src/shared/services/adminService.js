@@ -10,14 +10,12 @@ import {
   isAdmin
 } from "./roleService";
 import { getSiteNumberDirectory } from "./filterService";
-import {
   getFilteredSchedules,
   getMergedSchedules,
   getUpcomingVisitsWindow
 } from "./visitScheduleService";
 import { isOpenComment } from "./commentService";
 import { getPendingAccessRequests } from "./accessPermissionService";
-import {
   getNotificationsForUser,
   markNotificationRead as markSharedNotificationRead,
   markAllNotificationsReadForUser,

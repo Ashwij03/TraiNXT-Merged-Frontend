@@ -13,7 +13,6 @@ import {
   FiUpload,
   FiX,
 } from "react-icons/fi";
-import {
   FOLDER_TREE_EVENT,
   collectFolderSubtree,
   createFolder,
@@ -26,7 +25,6 @@ import {
   renameFolder,
   saveDocumentsForFolder,
 } from "../services/folderService";
-import {
   buildFolderZip,
   parseUploadedFolderFiles,
   triggerBlobDownload,
@@ -34,7 +32,6 @@ import {
 } from "../utils/folderZipUtils";
 import FolderOptionsMenu from "./FolderOptionsMenu";
 import FolderTemplateModal from "./FolderTemplateModal";
-import {
   addCommentRecord,
   canResolveComments,
   canWriteComments,
@@ -44,7 +41,8 @@ import {
 } from "../services/commentService";
 import { getStudyByCode } from "../services/studyService";
 import { VISIT_STAGES } from "../services/visitScheduleService";
-import { notifyDocumentAdded } from "../services/notificationService";import { getCurrentUser,
+import { notifyDocumentAdded } from "../services/notificationService";
+import { getCurrentUser,
   getAssignedSite,
   getEffectiveRole,
   hasPermission,
@@ -163,14 +161,14 @@ function FolderTreeNode({
           isICFFolder(node) ? " is-icf" : ""
         }`}
         style={{ paddingLeft: `${8 + depth * 14}px` }}
-      >
+
         {hasChildren ? (
           <button
             type="button"
             className="dfm-folder-toggle"
             onClick={() => onToggle(node.id)}
             aria-label={isExpanded ? "Collapse folder" : "Expand folder"}
-          >
+
             {isExpanded ? "▾" : "▸"}
           </button>
         ) : (
@@ -182,7 +180,7 @@ function FolderTreeNode({
             type="button"
             className="dfm-folder-label"
             onClick={() => onSelect(node.id)}
-          >
+
             <FiFolder className="dfm-folder-icon" />
             <span>{node.name}</span>
             {isICFFolder(node) && <FiLock className="dfm-icf-lock" />}
@@ -338,7 +336,7 @@ function DocumentCommentsPanel({
             <div className="dfm-comment-meta">
               <span
                 className={`dfm-status dfm-status--${comment.status?.toLowerCase()}`}
-              >
+
                 {comment.status}
               </span>
 
@@ -1310,12 +1308,12 @@ function DocumentFolderManager({
             className="dfm-view-switcher"
             role="tablist"
             aria-label="Folder view"
-          >
+
             <button
               type="button"
               className={viewLayout === "vertical" ? "active" : ""}
               onClick={() => setViewLayout("vertical")}
-            >
+
               Tree View
             </button>
 
@@ -1323,7 +1321,7 @@ function DocumentFolderManager({
               type="button"
               className={viewLayout === "explorer" ? "active" : ""}
               onClick={() => setViewLayout("explorer")}
-            >
+
               Explorer View
             </button>
 
@@ -1331,7 +1329,7 @@ function DocumentFolderManager({
               type="button"
               className={viewLayout === "column" ? "active" : ""}
               onClick={() => setViewLayout("column")}
-            >
+
               Column View
             </button>
           </div>
@@ -1341,7 +1339,7 @@ function DocumentFolderManager({
               type="button"
               className="dfm-template-btn"
               onClick={() => setShowTemplateModal(true)}
-            >
+
               Folder Templates
             </button>
           )}
@@ -1355,7 +1353,7 @@ function DocumentFolderManager({
                   type="button"
                   className="dfm-back-btn"
                   onClick={handleBackToSubjects}
-                >
+
                   ← Back to Subjects
                 </button>
               )}
@@ -1365,7 +1363,7 @@ function DocumentFolderManager({
                   type="button"
                   className="dfm-back-btn"
                   onClick={goUpOneLevel}
-                >
+
                   ← Back
                 </button>
               )}
@@ -1383,7 +1381,7 @@ function DocumentFolderManager({
                           : "dfm-breadcrumb-link"
                       }
                       onClick={() => goToBreadcrumbIndex(index)}
-                    >
+
                       {node.name}
                     </button>
                   </span>
@@ -1444,7 +1442,7 @@ function DocumentFolderManager({
                 type="button"
                 className="dfm-upload-btn"
                 onClick={() => fileInputRef.current?.click()}
-              >
+
                 <FiUpload />
                 Upload Files
               </button>
@@ -1454,7 +1452,7 @@ function DocumentFolderManager({
                   type="button"
                   className="dfm-add-folder-btn"
                   onClick={() => handleAddFolder()}
-                >
+
                   <FiFolderPlus />
                   Add Folder
                 </button>
@@ -1465,7 +1463,7 @@ function DocumentFolderManager({
                   type="button"
                   className="dfm-complete-visit-btn"
                   onClick={() => onVisitStageComplete(matchedVisitStage)}
-                >
+
                   Complete {matchedVisitStage}
                 </button>
               )}
@@ -1491,7 +1489,7 @@ function DocumentFolderManager({
                 type="button"
                 className="dfm-save-btn"
                 onClick={handleSaveUpload}
-              >
+
                 Save
               </button>
             )}
@@ -1510,12 +1508,12 @@ function DocumentFolderManager({
                   className={`dfm-explorer-folder-wrap${
                     isICFFolder(folder) ? " is-icf" : ""
                   }`}
-                >
+
                   <button
                     type="button"
                     className="dfm-explorer-folder"
                     onClick={() => enterFolder(folder.id)}
-                  >
+
                     <FiFolder className="dfm-explorer-folder-icon" />
                     <span>{folder.name}</span>
 
@@ -1566,7 +1564,7 @@ function DocumentFolderManager({
               onDragStart={() => handleDragStart(index)}
               onDragOver={(event) => event.preventDefault()}
               onDrop={() => handleDrop(index)}
-            >
+
               <FiFile className="dfm-doc-icon" />
 
               <div className="dfm-doc-info">
@@ -1589,7 +1587,7 @@ function DocumentFolderManager({
                   type="button"
                   title="View"
                   onClick={() => setViewDoc(document)}
-                >
+
                   <FiEye />
                 </button>
 
@@ -1597,7 +1595,7 @@ function DocumentFolderManager({
                   type="button"
                   title="Download"
                   onClick={() => handleDownloadDoc(document)}
-                >
+
                   <FiDownload />
                 </button>
 
@@ -1607,7 +1605,7 @@ function DocumentFolderManager({
                       type="button"
                       title="Rename"
                       onClick={() => handleRenameDoc(document.id)}
-                    >
+
                       <FiEdit2 />
                     </button>
 
@@ -1615,7 +1613,7 @@ function DocumentFolderManager({
                       type="button"
                       title="Replace"
                       onClick={() => handleReplaceDoc(document.id)}
-                    >
+
                       <FiUpload />
                     </button>
 
@@ -1623,7 +1621,7 @@ function DocumentFolderManager({
                       type="button"
                       title="Delete"
                       onClick={() => handleDeleteDoc(document.id)}
-                    >
+
                       <FiTrash2 />
                     </button>
                   </>
@@ -1659,7 +1657,7 @@ function DocumentFolderManager({
                     : event.dataTransfer.files
                 );
               }}
-            >
+
               <FiUpload className="dfm-drop-zone-icon" />
               <p className="dfm-drop-zone-title">
                 Drag and drop PDF files here

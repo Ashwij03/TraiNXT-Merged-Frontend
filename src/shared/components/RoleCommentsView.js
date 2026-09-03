@@ -184,6 +184,12 @@ export default function RoleCommentsView({ embedded = false }) {
 
   const toggleStatus = (comment) => {
     if (comment.status === "resolved") {
+      // Reopen goes through the canonical commentService entry point so it
+      // fires the same comments-updated / sponsor-data-updated events every
+      // other consumer subscribes to (Study/Subject/Operations Comments,
+      // dashboard KPI widgets, PendingCommentsWidget). Previously this
+      // wrote via saveComments directly, which only dispatched
+      // admin-data-updated and left other views stale until reload.
       reopenComment(comment.id);
       return;
     }
@@ -217,7 +223,7 @@ export default function RoleCommentsView({ embedded = false }) {
       className={`pi-page-content comments-content tnxt-compact${
         embedded ? " embedded" : ""
       }`}
-    >
+
       <div className="comments-header">
         <div>
           <h2>Comments</h2>
@@ -239,7 +245,7 @@ export default function RoleCommentsView({ embedded = false }) {
           <select
             value={selectedSite}
             onChange={(event) => setSelectedSite(event.target.value)}
-          >
+
             <option value={assignedSite}>{assignedSite}</option>
           </select>
         </div>
@@ -248,7 +254,7 @@ export default function RoleCommentsView({ embedded = false }) {
           <select
             value={selectedStudy}
             onChange={(event) => setSelectedStudy(event.target.value)}
-          >
+
             <option value="All Studies">All Studies</option>
             {availableStudies.map((study) => (
               <option key={study} value={study}>
@@ -274,7 +280,7 @@ export default function RoleCommentsView({ embedded = false }) {
                     onClick={() =>
                       setSearchQuery(suggestion.replace("…", ""))
                     }
-                  >
+
                     {suggestion}
                   </button>
                 </li>
@@ -321,7 +327,7 @@ export default function RoleCommentsView({ embedded = false }) {
         <select
           value={selectedSubject}
           onChange={(event) => setSelectedSubject(event.target.value)}
-        >
+
           <option value="All">All Subjects</option>
           {[...new Set(sourceComments.map((comment) => comment.subjectId))].map(
             (subject) => (
@@ -334,7 +340,7 @@ export default function RoleCommentsView({ embedded = false }) {
         <select
           value={selectedType}
           onChange={(event) => setSelectedType(event.target.value)}
-        >
+
           <option value="All">All Types</option>
           {[...new Set(sourceComments.map((comment) => comment.type))].map(
             (type) => (
@@ -347,7 +353,7 @@ export default function RoleCommentsView({ embedded = false }) {
         <select
           value={selectedVisit}
           onChange={(event) => setSelectedVisit(event.target.value)}
-        >
+
           <option value="All">All Visits</option>
           {[...new Set(sourceComments.map((comment) => comment.visit))].map(
             (visit) => (
@@ -369,7 +375,7 @@ export default function RoleCommentsView({ embedded = false }) {
               <th
                 onClick={() => handleSort("subjectId")}
                 className="pi-sortable-th"
-              >
+
                 Subject ID{sortIndicator("subjectId")}
               </th>
               <th onClick={() => handleSort("visit")} className="pi-sortable-th">
@@ -386,7 +392,7 @@ export default function RoleCommentsView({ embedded = false }) {
               <th
                 onClick={() => handleSort("status")}
                 className="pi-sortable-th"
-              >
+
                 Status{sortIndicator("status")}
               </th>
               <th>Actions</th>
@@ -420,7 +426,7 @@ export default function RoleCommentsView({ embedded = false }) {
                           ? "pending"
                           : "open"
                       }`}
-                    >
+
                       {toDisplayStatus(comment.status)}
                     </button>
                   </td>
@@ -429,7 +435,7 @@ export default function RoleCommentsView({ embedded = false }) {
                       type="button"
                       className="view-btn"
                       onClick={() => setSelectedComment(comment)}
-                    >
+
                       View
                     </button>
                     {canResolveComments(currentUser) && (
@@ -437,7 +443,7 @@ export default function RoleCommentsView({ embedded = false }) {
                         type="button"
                         className="resolve-btn"
                         onClick={() => toggleStatus(comment)}
-                      >
+
                         {comment.status === "resolved" ? "Reopen" : "Resolve"}
                       </button>
                     )}
@@ -501,7 +507,7 @@ export default function RoleCommentsView({ embedded = false }) {
               type="button"
               className="close-btn"
               onClick={() => setSelectedComment(null)}
-            >
+
               Close
             </button>
           </div>

@@ -97,7 +97,7 @@ export default function FolderColumnView({
                   className={`dfm-column-folder${isActive ? " active" : ""}`}
                   onClick={() => enterFolder(folder.id)}
                   onContextMenu={(event) => event.preventDefault()}
-                >
+
                   <FiFolder />
                   <span>{folder.name}</span>
                   <FolderOptionsMenu

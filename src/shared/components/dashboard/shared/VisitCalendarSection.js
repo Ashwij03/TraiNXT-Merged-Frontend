@@ -4,6 +4,8 @@ import CalendarWidget from "./CalendarWidget";
 import DataTable from "./DataTable";
 import {
   compareScheduleDates,
+  isCompletedVisitSchedule
+
   isUpcomingVisitSchedule
 } from "../../../services/visitScheduleService";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
@@ -48,7 +50,6 @@ function VisitCalendarSection({
     daysAhead
   });
 
-
   const [selectedScheduleDate, setSelectedScheduleDate] = useState(null);
 
   useEffect(() => {
@@ -70,6 +71,9 @@ function VisitCalendarSection({
     [getVisitsForDate, selectedScheduleDate]
   );
 
+  const calendarSchedules = useMemo(
+    () => schedules.filter((item) => !isCompletedVisitSchedule(item)),
+
   // BUG-2 fix: the Calendar previously only excluded Completed visits,
   // so past-dated visits and Cancelled/Missed visits kept rendering as
   // markers even after they had disappeared from the Upcoming Visits
@@ -85,6 +89,13 @@ function VisitCalendarSection({
 
   
   const baseRows = useMemo(() => {
+    if (selectedScheduleDate) {
+      return selectedDaySchedules;
+    }
+
+    return [...upcomingWindow].sort(compareScheduleDates);
+  }, [selectedDaySchedules, selectedScheduleDate, upcomingWindow]);
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -138,7 +149,7 @@ function VisitCalendarSection({
     <DashboardCard
       title="Visit Calendar & Upcoming Visits"
       className={cardClassName}
-    >
+
       <div className="calendar-table-unified">
         <div className="calendar-table-unified__calendar">
           <CalendarWidget

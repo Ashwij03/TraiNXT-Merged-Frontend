@@ -33,7 +33,7 @@ export default function DocumentsUnderApprovalWidget({
                 <li
                   key={document.id || document.name}
                   className="approval-item"
-                >
+
                   {document.name || "Unnamed Document"}
                 </li>
               ))}

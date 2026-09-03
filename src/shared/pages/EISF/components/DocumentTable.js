@@ -150,7 +150,7 @@ export default function DocumentTable({
         type="button"
         className={`table-sort-btn ${isActive ? "active" : ""}`}
         onClick={() => onSort(column.key)}
-      >
+
         {column.label}
         <span>{isActive ? (sortDirection === "asc" ? "↑" : "↓") : "↕"}</span>
       </button>
@@ -195,7 +195,7 @@ export default function DocumentTable({
                 className={`${onSelect ? "selectable-row" : ""} ${selectedDocumentId === doc.id ? "row-selected" : ""}`.trim()}
                 onClick={onSelect ? () => onSelect(doc) : undefined}
                 aria-selected={selectedDocumentId === doc.id}
-              >
+
                 {isReferenceView && (
                   <td className="select-col" onClick={(event) => event.stopPropagation()}>
                     <input type="checkbox" aria-label={`Select ${doc.documentName}`} />
@@ -242,7 +242,7 @@ export default function DocumentTable({
                         onClick={() => runAction(onView, doc)}
                         aria-label={`View ${doc.documentName}`}
                         title="View"
-                      >
+
                         <FiEye />
                       </button>
 
@@ -252,7 +252,7 @@ export default function DocumentTable({
                         onClick={() => runAction(onDownload, doc)}
                         aria-label={`Download ${doc.documentName}`}
                         title="Download"
-                      >
+
                         <FiDownload />
                       </button>
 
@@ -267,7 +267,7 @@ export default function DocumentTable({
                           aria-label={`More actions for ${doc.documentName}`}
                           aria-expanded={openMenuId === doc.id}
                           title="More"
-                        >
+
                           <FiMoreVertical />
                         </button>
                       </div>
@@ -303,7 +303,7 @@ export default function DocumentTable({
             className="document-action-menu"
             role="menu"
             style={{ top: menuPosition.top, left: menuPosition.left }}
-          >
+
             {(() => {
               const doc = documents.find((d) => d.id === openMenuId);
               if (!doc) return null;

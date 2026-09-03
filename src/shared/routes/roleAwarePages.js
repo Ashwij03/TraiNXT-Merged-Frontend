@@ -1,17 +1,22 @@
 import ROLES from "../constants/roles";
 import { getEffectiveRole } from "../services/roleService";
 
-import RoleCommentsView from "../components/RoleCommentsView";
-import DashboardLayout from "../components/dashboard/shared/DashboardLayout";
 import AdminComments from "../../Admin/pages/Comments";
-import AdminSitePerformance from "../../Admin/pages/SitePerformance";
-import AdminRecruitment from "../../Admin/pages/Recruitment";
-import AdminReports from "../../Admin/pages/Reports";
 import AdminNotifications from "../../Admin/pages/Notifications";
-import AdminSettings from "../../Admin/pages/Settings";
+import AdminRecruitment from "../../Admin/pages/Recruitment";
 import AdminReferral from "../../Admin/pages/Referral";
+import AdminRegulatory from "../pages/EISF/Regulatory/Regulatory.css";
+import AdminReports from "../../Admin/pages/Reports";
+import AdminSettings from "../../Admin/pages/Settings";
+import AdminSitePerformance from "../../Admin/pages/SitePerformance";
+import CroEnrollment from "../../CRO/pages/CROEnrollment.js";
+import CroQueries from "../../CRO/pages/CROQueries.js";
+import DashboardLayout from "../components/dashboard/shared/DashboardLayout";
+import RoleCommentsView from "../components/RoleCommentsView";
 import SharedProgressNotes from "../pages/operations/ProgressNotes";
 import SharedStudies from "../pages/studies/Studies";
+import SponsorEnrollment from "../../CRO/pages/Enrollment.js";
+import SponsorQueries from "../../Sponsor/pages/Queries.js";
 
 import SponsorEnrollment from "../../Sponsor/pages/Enrollment";
 import SponsorQueries from "../../Sponsor/pages/Queries";

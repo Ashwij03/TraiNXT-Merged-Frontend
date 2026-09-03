@@ -3,9 +3,10 @@ import { useEnterpriseDashboardShell } from "../../shared/hooks/useEnterpriseDas
 import CROSidebar from "./CROSidebar";
 import CRONavbar from "../components/CRONavbar";
 import CROAlertHost from "./CROAlertHost";
-import LiveChatFab from "../../shared/components/LiveChatFab";
 import "../../shared/components/dashboard/shared/DashboardLayout.css";
 import "../styles/CROLayout.css";
+import "./CROLayout.js";
+import LiveChatFab from "../../shared/components/LiveChatFab";
 
 function CROLayout({ children }) {
 const {

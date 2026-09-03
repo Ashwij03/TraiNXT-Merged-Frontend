@@ -14,9 +14,8 @@
   width: calc(100% + 1rem);
 }
 
-/* ==========================================
-   LOADING
-========================================== */
+/*    LOADING
+ */
 
 .dashboard-loading {
   background: #ffffff;
@@ -29,9 +28,8 @@
   padding: 0.1875rem;
 }
 
-/* ==========================================
-   BACK BUTTON
-========================================== */
+/*    BACK BUTTON
+ */
 
 /*
   Task 13 follow-up: Back to Studies now lives inline in the title row,
@@ -80,9 +78,8 @@
   height: 1rem;
 }
 
-/* ==========================================
-   PAGE HEADER
-========================================== */
+/*    PAGE HEADER
+ */
 
 /*
   Everything in the header — title, KPI buttons, Back to Studies, and
@@ -333,9 +330,8 @@
   height: 1rem;
 }
 
-/* ==========================================
-   KPI GRID
-========================================== */
+/*    KPI GRID
+ */
 
 .study-dashboard-page .studies-kpi-grid {
   display: grid;
@@ -344,17 +340,15 @@
   margin-bottom: 1.5rem;
 }
 
-/* ==========================================
-   WIDGET GRID
-========================================== */
+/*    WIDGET GRID
+ */
 
 .study-dashboard-page .widget-grid {
   align-items: stretch;
 }
 
-/* ==========================================
-   STUDY OVERVIEW + CALENDAR ROW
-========================================== */
+/*    STUDY OVERVIEW + CALENDAR ROW
+ */
 
 .studies-content-grid {
   display: flex;
@@ -414,9 +408,8 @@
   margin-top: 2rem;
 }
 
-/* ==========================================
-   CALENDAR + ALERTS ROW
-========================================== */
+/*    CALENDAR + ALERTS ROW
+ */
 
 .calendar-alerts-grid {
   display: grid;
@@ -441,9 +434,8 @@
   min-width: 0;
 }
 
-/* ==========================================
-CHARTS
-========================================== */
+/* CHARTS
+ */
 
 .studies-chart-grid {
   display: grid;
@@ -469,9 +461,8 @@ CHARTS
   grid-column: 1 / -1;
 }
 
-/* ==========================================
-ACTIVITY
-========================================== */
+/* ACTIVITY
+ */
 
 .activity-grid {
   display: grid;
@@ -548,9 +539,8 @@ ACTIVITY
   white-space: nowrap;
 }
 
-/* ==========================================
-TABLE
-========================================== */
+/* TABLE
+ */
 
 .study-dashboard-page .ctms-table-card {
   border-radius: 0.5rem;
@@ -572,18 +562,16 @@ TABLE
   white-space: normal;
 }
 
-/* ==========================================
-BUTTONS
-========================================== */
+/* BUTTONS
+ */
 
 .study-dashboard-page .quick-grid button {
   border-radius: var(--tnxt-space-sm);
   min-width: 0;
 }
 
-/* ==========================================
-HOVER EFFECTS
-========================================== */
+/* HOVER EFFECTS
+ */
 
 .study-dashboard-page .chart-card,
 .study-dashboard-page .activity-card,
@@ -622,9 +610,8 @@ HOVER EFFECTS
   color: #0f172a;
 }
 
-/* ==========================================
-RESPONSIVE
-========================================== */
+/* RESPONSIVE
+ */
 
 @media (max-width: 992px) {
   .calendar-alerts-grid {
@@ -702,9 +689,8 @@ RESPONSIVE
   }
 }
 
-/* ==========================================
-   STUDY OVERVIEW WIDGETS (Section B)
-========================================== */
+/*    STUDY OVERVIEW WIDGETS (Section B)
+ */
 
 .refresh-study-btn {
   display: inline-flex;

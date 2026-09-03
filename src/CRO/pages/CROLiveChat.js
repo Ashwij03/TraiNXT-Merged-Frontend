@@ -1,6 +1,6 @@
 import CROLayout from "./CROLayout";
-import RoleLiveChatPage from "../../shared/components/RoleLiveChatPage";
 import ROLES from "../../shared/constants/roles";
+import RoleLiveChatPage from "../../shared/components/RoleLiveChatPage";
 import useLiveChatNavigation from "../../shared/hooks/useLiveChatNavigation";
 
 function CROLiveChat() {

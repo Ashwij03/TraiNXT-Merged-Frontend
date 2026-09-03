@@ -11,11 +11,8 @@ import EmptyState from "./EmptyState";
 
 import CROModal from "./CROModal";
 
-import { resolveSiteDisplay } from "../../shared/utils/siteDisplay";
-
 import { getStudies } from "../../shared/services/studyService";
-
-
+import { resolveSiteDisplay } from "../../shared/utils/siteDisplay";
 
 function CROComments() {
 
@@ -51,8 +48,6 @@ function CROComments() {
 
   });
 
-
-
   const filteredComments = comments.filter(
 
     (c) =>
@@ -62,8 +57,6 @@ function CROComments() {
       c.subject?.toLowerCase().includes(searchTerm.toLowerCase())
 
   );
-
-
 
   const handleAddComment = () => {
 
@@ -99,15 +92,11 @@ function CROComments() {
 
   };
 
-
-
   return (
 
     <CROLayout>
 
       <h1 style={{ marginBottom: "1.5625rem" }}>Comments</h1>
-
-
 
       <div className="cro-summary-cards">
 
@@ -144,8 +133,6 @@ function CROComments() {
 
       </div>
 
-
-
       <div className="cro-panel">
 
         <div className="cro-panel-header">
@@ -174,15 +161,11 @@ function CROComments() {
 
             onClick={() => setShowAddModal(true)}
 
-          >
-
             + Add Comment
 
           </button>
 
         </div>
-
-
 
         {filteredComments.length === 0 ? (
 
@@ -258,8 +241,6 @@ function CROComments() {
 
                         }
 
-                      >
-
                         View
 
                       </button>
@@ -279,8 +260,6 @@ function CROComments() {
         )}
 
       </div>
-
-
 
       <CROModal
 
@@ -309,8 +288,6 @@ function CROComments() {
           </>
 
         }
-
-      >
 
         <input
 
@@ -369,7 +346,5 @@ function CROComments() {
   );
 
 }
-
-
 
 export default CROComments;

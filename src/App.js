@@ -1,20 +1,19 @@
 import React, { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
+import CompletedVisit from "./shared/pages/visits/CompletedVisit";
+import EISFHub from "./shared/pages/documents/EISFHub";
+import FileDetails from "./shared/pages/documents/FileDetails";
+import ForgotPassword from "./shared/auth/ForgotPassword";
 import Login from "./shared/auth/Login";
-import Register from "./shared/auth/Register";
+import OperationsComments from "./shared/pages/operations/Comments";
 import ProfilePage from "./shared/pages/profile/ProfilePage";
-import SecurityPage from "./shared/pages/profile/SecurityPage";
+import ProtectedRoute from "./shared/auth/ProtectedRoute";
 import ROLES from "./shared/constants/roles";
+import Register from "./shared/auth/Register";
+import SecurityPage from "./shared/pages/profile/SecurityPage";
 import StudyDashboard from "./shared/pages/studies/StudyDashboard";
 import VisitDetails from "./shared/pages/visits/VisitDetails";
-import CompletedVisit from "./shared/pages/visits/CompletedVisit";
-import ProtectedRoute from "./shared/auth/ProtectedRoute";
-import ForgotPassword from "./shared/auth/ForgotPassword";
-import EISFHub from "./shared/pages/documents/EISFHub";
-
-import OperationsComments from "./shared/pages/operations/Comments";
-import FileDetails from "./shared/pages/documents/FileDetails";
 
 import AdminDashboard from "./Admin/pages/Dashboard";
 import SiteStaffDashboard from "./SiteStaff/pages/Dashboard";
@@ -27,8 +26,11 @@ import PermissionApproval from "./shared/pages/PermissionApproval";
 import UserManagement from "./shared/pages/UserManagement";
 import CROOverview from "./CRO/pages/CROOverview";
 
-import Sites from "./Admin/pages/Sites";
 import AuditLogsPage from "./shared/pages/audit/AuditLogsPage";
+import DelegationLogPage from "./pages/shared/logs/DelegationLogPage";
+import LogsPage from "./pages/shared/logs/LogsPage";
+import Sites from "./Admin/pages/Sites";
+import TrainingLogPage from "./pages/shared/logs/TrainingLogPage";
 import {
   getDashboardPath,
   getCurrentUser,
@@ -36,7 +38,6 @@ import {
 } from "./shared/services/roleService";
 import { cleanupCrossStudySubjectData } from "./shared/services/studyService";
 import EISFDashboard from "./shared/pages/EISF/EDashboard/EISFDashboard";
-import {
   RoleAwareComments,
   RoleAwareNotifications,
   RoleAwareProgressNotes,
@@ -78,20 +79,20 @@ import SponsorMonitoring from "./Sponsor/pages/Monitoring";
 import SponsorQueries from "./Sponsor/pages/Queries";
 
 import PIComments from "./PI/pages/PIComments";
-import PISitePerformance from "./PI/pages/PISitePerformance";
-import PIRecruitment from "./PI/pages/PIRecruitment";
-import PIRegulatory from "./PI/pages/PIRegulatory";
-import PIReports from "./PI/pages/PIReports";
-import PINotifications from "./PI/pages/PINotifications";
-import PISettings from "./PI/pages/PISettings";
-import PIReferral from "./PI/pages/PIReferral";
-import PISubjectsDashboard from "./PI/pages/PISubjectsDashboard";
-import PIStudyFolderDashboard from "./PI/pages/PIStudyFolderDashboard";
-import PIStudySubjectsProfile from "./PI/pages/PIStudySubjectsProfile";
 import PIEISFDashboard from "./PI/pages/PIEISFDashboard";
 import PIICFDashboard from "./PI/pages/PIICFDashboard";
 import PILiveChat from "./PI/pages/PILiveChat";
+import PINotifications from "./PI/pages/PINotifications";
 import PIPageLayout from "./PI/pages/PIPageLayout";
+import PIRecruitment from "./PI/pages/PIRecruitment";
+import PIReferral from "./PI/pages/PIReferral";
+import PIRegulatory from "./PI/pages/PIRegulatory";
+import PIReports from "./PI/pages/PIReports";
+import PISettings from "./PI/pages/PISettings";
+import PISitePerformance from "./PI/pages/PISitePerformance";
+import PIStudyFolderDashboard from "./PI/pages/PIStudyFolderDashboard";
+import PIStudySubjectsProfile from "./PI/pages/PIStudySubjectsProfile";
+import PISubjectsDashboard from "./PI/pages/PISubjectsDashboard";
 
 import CroMonitoring from "./CRO/pages/CROMonitoring";
 import CroSubjectManagement from "./CRO/pages/CROSubjectManagement";
@@ -267,6 +268,33 @@ function App() {
       />
 
       <Route
+        path="/logs"
+        element={
+          <ProtectedRoute>
+            <LogsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/logs/training"
+        element={
+          <ProtectedRoute>
+            <TrainingLogPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/logs/delegation"
+        element={
+          <ProtectedRoute>
+            <DelegationLogPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/audit-logs"
         element={
           <ProtectedRoute>
@@ -382,7 +410,7 @@ function App() {
         element={
           <ProtectedRoute
             allowedRoles={[ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.CRO]}
-          >
+>
             <CROOverview />
           </ProtectedRoute>
         }

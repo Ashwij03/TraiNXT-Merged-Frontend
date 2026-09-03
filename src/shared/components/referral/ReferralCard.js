@@ -115,7 +115,7 @@ function ReferralCard({ userId, displayName }) {
               className="referral-copy-btn"
               onClick={handleCopy}
               disabled={!stats?.code}
-            >
+
               <FaCopy aria-hidden="true" /> {copyLabel}
             </button>
           </div>
@@ -167,7 +167,7 @@ function ReferralCard({ userId, displayName }) {
                     ? "referral-redeem-message success"
                     : "referral-redeem-message error"
                 }
-              >
+
                 {redeemStatus.message}
               </p>
             )}

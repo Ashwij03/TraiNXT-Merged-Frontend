@@ -38,7 +38,7 @@ function StudyWorkspaceTabs({ activeTab, setActiveTab }) {
             }
             onClick={() => setActiveTab(tab.label)}
             type="button"
-          >
+
             {tab.label}
           </button>
         )        )}

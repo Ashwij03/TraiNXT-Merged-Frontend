@@ -243,7 +243,7 @@ function FolderContextMenu({ node, onAction, onOpenChange }) {
           // trigger itself is focused.
           event.stopPropagation();
         }}
-      >
+
         <MdMoreVert size={15} />
       </button>
 
@@ -256,7 +256,7 @@ function FolderContextMenu({ node, onAction, onOpenChange }) {
             aria-label={`Folder actions for ${node?.name || "folder"}`}
             style={{ top: position.top, left: position.left, width: MENU_WIDTH }}
             onClick={(event) => event.stopPropagation()}
-          >
+
             <div className="sx-menu-heading" title={node?.name}>
               {node?.name}
             </div>
@@ -268,7 +268,7 @@ function FolderContextMenu({ node, onAction, onOpenChange }) {
                 role="menuitem"
                 className={`sx-menu-item${danger ? " is-danger" : ""}`}
                 onClick={(event) => runAction(event, key)}
-              >
+
                 <Icon size={15} aria-hidden="true" />
                 <span className="sx-menu-item-label">{label}</span>
                 {hint && <span className="sx-menu-item-hint">{hint}</span>}
