@@ -6,12 +6,6 @@ import {
   PI_PREVIEW_ROLE_EVENT,
 } from "../../../constants/headerFilters";
 import { getCurrentUser, getEffectiveRole } from "../../../services/roleService";
-<import AdminDashboardLayout from "../admin/AdminDashboardLayout";
-import SiteStaffDashboardLayout from "../../../../SiteStaff/components/SiteStaffDashboardLayout.js";
-import PIDashboardLayout from "../../../../PI/components/PIDashboardLayout.js";
-import CROLayout from "../../../../CRO/pages/CROLayout.js";
-import AppLayout from "../../../pages/sites/SiteWorkspace/AppLayout.css";
-
 import AdminDashboardLayout from "../../../../Admin/components/AdminDashboardLayout";
 import SiteStaffDashboardLayout from "../../../../SiteStaff/components/SiteStaffDashboardLayout";
 import PIDashboardLayout from "../../../../PI/components/PIDashboardLayout";

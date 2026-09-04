@@ -93,13 +93,13 @@ function RenameFileModal({
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose?.();
       }}
-
+    >
       <div
         className="sxm-modal"
         role="dialog"
         aria-modal="true"
         aria-label="Rename file"
-
+      >
         <div className="sxm-header">
           <div className="sxm-header-title">
             <span className="sxm-header-icon">
@@ -116,7 +116,7 @@ function RenameFileModal({
             className="sxm-close"
             aria-label="Close"
             onClick={onClose}
-
+          >
             <MdClose size={17} />
           </button>
         </div>
@@ -183,7 +183,7 @@ function RenameFileModal({
               type="submit"
               className="sxm-btn sxm-btn--primary"
               disabled={!baseName.trim()}
-
+            >
               Save Changes
             </button>
           </div>

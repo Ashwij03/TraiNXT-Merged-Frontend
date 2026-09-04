@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./DashboardHeader.css";
-<import SearchableDropdown from "../../common/SearchableDropdown";
-import RoleSwitcherDropdown from "../../RoleSwitcherDropdown.js";
-import NavbarNotificationsDropdown from "../../NavbarNotificationsDropdown.css";
 
 import TriaNXTLogo from "../../TriaNXTLogo";
 import SearchableDropdown from "../../SearchableDropdown";
@@ -18,12 +15,14 @@ import {
   FiSettings,
 } from "react-icons/fi";
 import { useAdminNavbarNotifications } from "../../../hooks/useAdminNavbarNotifications";
+import {
   FILTER_ORDERS,
   FILTER_LABELS,
   ROLE_BADGE_CLASSES,
 } from "./enterpriseHeaderConfig";
 import { getStudyByCode } from "../../../services/studyService";
 import ROLES from "../../../constants/roles";
+import {
   formatUserDisplayName,
   getCurrentUser,
   getDashboardPath,
@@ -33,9 +32,11 @@ import ROLES from "../../../constants/roles";
   setAdminPreviewRole,
 } from "../../../services/roleService";
 import { PROFILE_PHOTO_EVENT } from "../../../constants/profileEvents";
+import {
   terminateCurrentSession,
   touchUserSession,
 } from "../../../services/sessionService";
+import {
   ADMIN_PREVIEW_ROLE_EVENT,
   clearDependentFilters,
   getDependentFilterKeys,
@@ -62,6 +63,7 @@ import { PROFILE_PHOTO_EVENT } from "../../../constants/profileEvents";
   setStoredStudyFilter,
   setStoredSubjectFilter,
 } from "../../../constants/headerFilters";
+import {
   getCROOptions,
   getDefaultInstitution,
   getIndicationOptions,
@@ -821,7 +823,7 @@ function EnterpriseNavbarBase({
           className="header-menu-toggle"
           onClick={onToggleSidebar}
           aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
-          aria-expanded={sidebarOpen}
+          aria-expanded={sidebarOpen}>
 
           <FiMenu />
         </button>
@@ -854,7 +856,7 @@ function EnterpriseNavbarBase({
             className={`header-filter-toggle${filtersOpen ? " is-open" : ""}`}
             onClick={() => setFiltersOpen((previousValue) => !previousValue)}
             aria-label="Toggle filters"
-            aria-expanded={filtersOpen}
+            aria-expanded={filtersOpen}>
 
             <FiSliders />
             <span>Filters</span>
@@ -862,7 +864,7 @@ function EnterpriseNavbarBase({
           </button>
 
           <div
-            className={`header-filters-grid${filtersOpen ? " is-open" : ""}`}
+            className={`header-filters-grid${filtersOpen ? " is-open" : ""}`}>
 
             <div className="header-filters-grid-heading">
               <span>Filters</span>
@@ -870,7 +872,7 @@ function EnterpriseNavbarBase({
                 type="button"
                 className="header-filters-grid-close"
                 onClick={() => setFiltersOpen(false)}
-                aria-label="Close filters"
+                aria-label="Close filters">
 
                 &times;
               </button>
@@ -885,7 +887,7 @@ function EnterpriseNavbarBase({
             <button
               type="button"
               className="header-action-btn header-action-btn--outline"
-              onClick={handleHomeNavigation}
+              onClick={handleHomeNavigation}>
 
               <FiHome />
               <span>Home</span>
@@ -894,7 +896,7 @@ function EnterpriseNavbarBase({
             <button
               type="button"
               className="header-action-btn header-action-btn--outline"
-              onClick={openLiveChat}
+              onClick={openLiveChat}>
 
               <FiMessageSquare />
               <span>Live Chat</span>
@@ -913,7 +915,7 @@ function EnterpriseNavbarBase({
               type="button"
               className="header-icon-btn"
               aria-label="Settings"
-              onClick={() => navigateToSettingsSection("profile")}
+              onClick={() => navigateToSettingsSection("profile")}>
 
               <FiSettings />
             </button>
@@ -930,7 +932,7 @@ function EnterpriseNavbarBase({
                 event.preventDefault();
                 setProfileOpen((previousValue) => !previousValue);
               }
-            }}
+            }}>
 
             <div className="profile-avatar">
               {profilePhoto ? (
@@ -952,25 +954,25 @@ function EnterpriseNavbarBase({
             {profileOpen && (
               <div
                 className="profile-dropdown"
-                onClick={(event) => event.stopPropagation()}
+                onClick={(event) => event.stopPropagation()}>
 
                 <button
                   type="button"
-                  onClick={() => navigateToSettingsSection("profile")}
+                  onClick={() => navigateToSettingsSection("profile")}>
 
                   Profile
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => navigateToSettingsSection("account")}
+                  onClick={() => navigateToSettingsSection("account")}>
 
                   Account Settings
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => navigateToSettingsSection("security")}
+                  onClick={() => navigateToSettingsSection("security")}>
 
                   Security
                 </button>

@@ -55,7 +55,7 @@ function SubjectAuditTrail() {
 
               <td
                 colSpan="4"
-                className="no-audit-data"
+                className="no-audit-data">
 
                 No Audit Records Found
               </td>

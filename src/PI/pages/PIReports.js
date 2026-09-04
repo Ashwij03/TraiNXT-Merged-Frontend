@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa";
 import PIKpiCard from "./PIKpiCard";
 import { downloadCsvReport } from "../../shared/utils/exportReport";
+import {
   canManageReports,
   createReport,
   canEditReport,
@@ -180,7 +181,7 @@ function PIReports({ selectedStudy = "All Studies" }) {
             className="pi-filter-select"
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-
+          >
             <option value="All">All Categories</option>
             {REPORT_TYPE_OPTIONS.map((option) => (
               <option key={option} value={option}>
@@ -212,7 +213,7 @@ function PIReports({ selectedStudy = "All Studies" }) {
             <select
               value={form.reportType}
               onChange={(event) => setForm({ ...form, reportType: event.target.value })}
-
+            >
               {REPORT_TYPE_OPTIONS.map((option) => (
                 <option key={option} value={option}>
                   {option}
@@ -224,7 +225,7 @@ function PIReports({ selectedStudy = "All Studies" }) {
               value={form.studyCode}
               onChange={(event) => setForm({ ...form, studyCode: event.target.value })}
               required
-
+            >
               <option value="" disabled>
                 Select study
               </option>

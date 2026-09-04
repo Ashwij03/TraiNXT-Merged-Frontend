@@ -22,7 +22,7 @@ const SiteRanking = () => {
             cursor: "pointer",
             marginBottom: "1.25rem"
           }}
-
+        >
            Back
         </button>
 

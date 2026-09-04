@@ -90,7 +90,7 @@ function WorkspaceBreadcrumb({ crumbs = [], onNavigate, onSelect }) {
                     activate(crumb);
                   }
                 }}
-
+              >
                 {content}
               </span>
             ) : (

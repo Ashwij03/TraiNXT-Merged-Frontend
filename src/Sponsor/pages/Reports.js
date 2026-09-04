@@ -166,7 +166,7 @@ const Reports = () => {
             value={studyCode}
             onChange={(e) => setStudyCode(e.target.value)}
             aria-label="Select study for new report"
-
+          >
             <option value="">Select study…</option>
             {studies.map((study) => (
               <option key={study.code} value={study.code}>
@@ -200,7 +200,7 @@ const Reports = () => {
                   openReport(report.type);
                 }
               }}
-
+            >
               <h3>{report.title}</h3>
               <p>{report.description}</p>
 
@@ -211,7 +211,7 @@ const Reports = () => {
                   event.stopPropagation();
                   openReport(report.type);
                 }}
-
+              >
                 Open Report
               </button>
             </div>
@@ -233,7 +233,7 @@ const Reports = () => {
                   openReport(report.title);
                 }
               }}
-
+            >
               <h3>{report.title}</h3>
               <p>{report.description}</p>
 
@@ -244,7 +244,7 @@ const Reports = () => {
                   event.stopPropagation();
                   openReport(report.title);
                 }}
-
+              >
                 Open Report
               </button>
             </div>
@@ -281,7 +281,7 @@ const Reports = () => {
                     onClick={() =>
                       navigate("/report-details", { state: { report } })
                     }
-
+                  >
                     <td>{report.id}</td>
                     <td>{report.name}</td>
                     <td>{report.reportType}</td>
@@ -295,7 +295,7 @@ const Reports = () => {
                         className={`status-badge ${
                           report.status === "Generated" ? "active" : "planning"
                         }`}
-
+                      >
                         {report.status}
                       </span>
                     </td>
@@ -306,7 +306,7 @@ const Reports = () => {
                         onClick={() =>
                           navigate("/report-details", { state: { report } })
                         }
-
+                      >
                         View
                       </button>
                     </td>

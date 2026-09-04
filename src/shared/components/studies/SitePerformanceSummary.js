@@ -141,7 +141,7 @@ function SitePerformanceSummary({ records }) {
                       site.siteName ||
                       index
                     }
-
+                  >
                     {columns.map((column) => (
                       <td key={column.key}>{column.render(site)}</td>
                     ))}

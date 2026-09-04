@@ -141,7 +141,7 @@ export default function FolderTemplateModal({
       <div
         className="folder-template-modal"
         onClick={(event) => event.stopPropagation()}
-
+      >
         <div className="folder-template-header">
           <h3>Create Custom Folder Structure</h3>
           <button type="button" onClick={onClose}>
@@ -204,14 +204,14 @@ export default function FolderTemplateModal({
                 <button
                   type="button"
                   onClick={() => handleApplyTemplate(template.id)}
-
+                >
                   Apply
                 </button>
                 <button
                   type="button"
                   className="danger"
                   onClick={() => handleDeleteTemplate(template.id)}
-
+                >
                   Delete
                 </button>
               </div>

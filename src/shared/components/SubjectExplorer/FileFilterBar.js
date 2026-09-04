@@ -78,7 +78,7 @@ function FileFilterBar({
       id="sf-filterbar"
       role="group"
       aria-label="Advanced file filters"
-
+    >
       <span className="sf-filterbar-lead" aria-hidden="true">
         <MdFilterList size={15} />
         <span>Filters</span>
@@ -93,7 +93,7 @@ function FileFilterBar({
               key={key}
               className={`sf-filter${isActive ? " is-active" : ""}`}
               title={title}
-
+            >
               <span className="sf-filter-label">{label}</span>
 
               <span className="sf-filter-control">
@@ -102,7 +102,7 @@ function FileFilterBar({
                   value={value}
                   aria-label={title}
                   onChange={(event) => onChange?.({ [key]: event.target.value })}
-
+                >
                   {options.map((option) => (
                     <option
                       key={option.value}
@@ -113,7 +113,7 @@ function FileFilterBar({
                          selected value is never disabled, or the browser would
                          fall back to painting the first option instead. */
                       disabled={option.empty && option.value !== value}
-
+                    >
                       {option.label}
                     </option>
                   ))}
@@ -140,7 +140,7 @@ function FileFilterBar({
             className="sf-filter-clear"
             onClick={onReset}
             title="Clear all filters"
-
+          >
             <MdClose size={14} aria-hidden="true" />
             <span>Clear ({activeCount})</span>
           </button>

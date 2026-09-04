@@ -79,7 +79,7 @@ function ScreeningDetails() {
 	  <button
 	    className="back-btn"
 	    onClick={() => navigate("/screening")}
-
+	  >
 	    ← Back to Screening
 	  </button>
 
@@ -116,7 +116,7 @@ function ScreeningDetails() {
 
 		    <span
 		      className={`status-badge ${screeningData.status.toLowerCase()}`}
-
+		    >
 		      {screeningData.status}
 		    </span>
 		  </p>

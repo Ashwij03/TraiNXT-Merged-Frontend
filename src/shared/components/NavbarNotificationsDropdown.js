@@ -30,14 +30,14 @@ function NavbarNotificationsDropdown({
     <div
       className={`navbar-notifications ${className}`.trim()}
       ref={containerRef}
-
+    >
       <button
         type="button"
         className={`navbar-notifications-btn ${buttonClassName}`.trim()}
         onClick={() => setOpen((prev) => !prev)}
         aria-label="Notifications"
         aria-expanded={open}
-
+      >
         <FiBell />
         {unreadCount > 0 && (
           <span className="navbar-notifications-badge">{unreadCount}</span>
@@ -64,7 +64,7 @@ function NavbarNotificationsDropdown({
                   event.stopPropagation();
                   onMarkAllRead();
                 }}
-
+              >
                 Mark all read
               </button>
             )}
@@ -84,7 +84,7 @@ function NavbarNotificationsDropdown({
                   className={`navbar-notifications-item ${
                     isRead ? "read" : "unread"
                   }`}
-
+                >
                   <div
                     className="navbar-notifications-item-body"
                     onClick={() => {
@@ -95,7 +95,7 @@ function NavbarNotificationsDropdown({
                         onViewAll();
                       }
                     }}
-
+                  >
                     <strong>{notification.title || notification.message}</strong>
                     {notification.message && notification.title && (
                       <p>{notification.message}</p>
@@ -115,7 +115,7 @@ function NavbarNotificationsDropdown({
                         event.stopPropagation();
                         onToggleRead(notification, index);
                       }}
-
+                    >
                       {isRead ? "Unread" : "Read"}
                     </button>
                   )}
@@ -131,7 +131,7 @@ function NavbarNotificationsDropdown({
                 setOpen(false);
                 onViewAll();
               }}
-
+            >
               View All Notifications
             </div>
           )}

@@ -9,6 +9,7 @@ import {
   saveUserSettings,
   updateUserPassword
 } from "../../services/roleService";
+import {
   formatSessionTimestamp,
   getCurrentSession,
   getSessionDurationMinutes,
@@ -164,7 +165,7 @@ function SecuritySettingsSection({ showTitle = false }) {
       <DashboardCard
         title={
           adminMode ? "Account Security Preferences" : "Site Security Preferences"
-        }
+        }>
 
         <div className="admin-settings-form">
           <label>
@@ -205,7 +206,7 @@ function SecuritySettingsSection({ showTitle = false }) {
                   "sessionTimeoutMinutes",
                   Number(event.target.value)
                 )
-              }
+              }>
 
               <option value={15}>15</option>
               <option value={30}>30</option>
@@ -248,7 +249,7 @@ function SecuritySettingsSection({ showTitle = false }) {
           <button
             type="button"
             className="secondary-btn"
-            onClick={handleTerminateSession}
+            onClick={handleTerminateSession}>
 
             Sign Out All Sessions
           </button>

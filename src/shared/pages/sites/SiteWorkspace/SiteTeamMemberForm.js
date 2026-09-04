@@ -114,14 +114,14 @@ export default function SiteTeamMemberForm({
             <button
               type="button"
               className="secondary-btn"
-              onClick={onCancel}
+              onClick={onCancel}>
 
               Cancel
             </button>
 
             <button
               type="submit"
-              className="primary-btn"
+              className="primary-btn">
 
               Save
             </button>

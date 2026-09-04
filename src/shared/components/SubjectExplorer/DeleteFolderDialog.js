@@ -47,13 +47,13 @@ function DeleteFolderDialog({
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose?.();
       }}
-
+    >
       <div
         className="sxm-modal sxm-modal--sm"
         role="alertdialog"
         aria-modal="true"
         aria-label="Delete folder"
-
+      >
         <div className="sxm-header">
           <div className="sxm-header-title">
             <span className="sxm-header-icon sxm-header-icon--danger">
@@ -70,7 +70,7 @@ function DeleteFolderDialog({
             className="sxm-close"
             aria-label="Close"
             onClick={onClose}
-
+          >
             <MdClose size={17} />
           </button>
         </div>
@@ -115,7 +115,7 @@ function DeleteFolderDialog({
               ref={confirmRef}
               className="sxm-btn sxm-btn--danger"
               onClick={onConfirm}
-
+            >
               Delete {hasChildren ? "All" : "Folder"}
             </button>
           </div>

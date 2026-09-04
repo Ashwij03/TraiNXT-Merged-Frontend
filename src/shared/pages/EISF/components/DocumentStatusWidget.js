@@ -36,7 +36,7 @@ export default function DocumentStatusWidget({
           statuses.map(([status, count]) => (
             <div
               className="status-row"
-              key={status}
+              key={status}>
 
               <div className="status-info">
                 <span

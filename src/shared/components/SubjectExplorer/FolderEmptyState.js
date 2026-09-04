@@ -79,7 +79,7 @@ function FolderEmptyState({
             type="button"
             className="sf-btn sf-btn--ghost"
             onClick={onClearSearch}
-
+          >
             <MdSearchOff size={15} aria-hidden="true" />
             <span>Clear Search</span>
           </button>
@@ -107,7 +107,7 @@ function FolderEmptyState({
             type="button"
             className="sf-btn sf-btn--ghost"
             onClick={onClearFilters}
-
+          >
             <MdFilterAltOff size={15} aria-hidden="true" />
             <span>Clear Filters</span>
           </button>
@@ -145,7 +145,7 @@ function FolderEmptyState({
             className="sf-btn sf-btn--ghost"
             onClick={onCreateFolder}
             disabled={!canUpload}
-
+          >
             <MdCreateNewFolder size={16} aria-hidden="true" />
             <span>Create Folder</span>
           </button>

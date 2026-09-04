@@ -82,7 +82,7 @@ function StudyWorkspace() {
     type="button"
     className={activeTab === "overview" ? "active-tab" : ""}
     onClick={() => setActiveTab("overview")}
-
+  >
     Overview
   </button>
 
@@ -90,7 +90,7 @@ function StudyWorkspace() {
     type="button"
     className={activeTab === "details" ? "active-tab" : ""}
     onClick={() => setActiveTab("details")}
-
+  >
     Details
   </button>
 
@@ -98,7 +98,7 @@ function StudyWorkspace() {
     type="button"
     className={activeTab === "visitplan" ? "active-tab" : ""}
     onClick={() => setActiveTab("visitplan")}
-
+  >
     Visit Plan
   </button>
 
@@ -106,7 +106,7 @@ function StudyWorkspace() {
     type="button"
     className={activeTab === "financials" ? "active-tab" : ""}
     onClick={() => setActiveTab("financials")}
-
+  >
     Financials
   </button>
 
@@ -114,7 +114,7 @@ function StudyWorkspace() {
     type="button"
     className={activeTab === "sites" ? "active-tab" : ""}
     onClick={() => setActiveTab("sites")}
-
+  >
     Clinical Sites
   </button>
 
@@ -122,7 +122,7 @@ function StudyWorkspace() {
     type="button"
     className={activeTab === "monitoring" ? "active-tab" : ""}
     onClick={() => setActiveTab("monitoring")}
-
+  >
     Monitoring
   </button>
 
@@ -130,7 +130,7 @@ function StudyWorkspace() {
     type="button"
     className={activeTab === "files" ? "active-tab" : ""}
     onClick={() => setActiveTab("files")}
-
+  >
     Files
   </button>
 
@@ -138,7 +138,7 @@ function StudyWorkspace() {
     type="button"
     className={activeTab === "study-milestone" ? "active-tab" : ""}
     onClick={() => setActiveTab("study-milestone")}
-
+  >
     Study Milestone
   </button>
 
@@ -146,7 +146,7 @@ function StudyWorkspace() {
     type="button"
     className={activeTab === "activity" ? "active-tab" : ""}
     onClick={() => setActiveTab("activity")}
-
+  >
     Activity
   </button>
 </div>

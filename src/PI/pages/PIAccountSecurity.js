@@ -7,6 +7,7 @@ import {
   FaCheckCircle,
   FaExclamationCircle,
 } from "react-icons/fa";
+import {
   getSecurityData,
   saveSecurityData,
 } from "./piDashboardService";
@@ -136,7 +137,7 @@ function PIAccountSecurity() {
             type="button"
             className="export-btn pi-security-btn"
             onClick={() => setShowPasswordModal(true)}
-
+          >
             <FaKey /> Update Password
           </button>
         </div>
@@ -159,7 +160,7 @@ function PIAccountSecurity() {
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => e.key === "Enter" && toggleSetting(item.key)}
-
+              >
                 <div>
                   <strong>{item.label}</strong>
                   <p>{item.desc}</p>

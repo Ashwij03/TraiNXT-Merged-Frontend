@@ -32,6 +32,7 @@ import {
   deleteStudy,
   updateStudy,
 } from "../../services/studyService";
+import {
   STUDY_STATUS_OPTIONS,
   STUDY_STATUS_DEFAULT,
   STUDY_STATUS_COMPLETED,
@@ -42,16 +43,19 @@ import PendingCommentsWidget from "../../components/dashboard/shared/PendingComm
 import DocumentFolderManager from "../../components/DocumentFolderManager";
 import EISFWorkspace from "../EISF/EISFWorkspace";
 import { EISF_SIDEBAR_COLLAPSE_EVENT } from "../../constants/headerFilters";
+import {
   FiTrash2,
   FiArrowLeft,
   FiEdit2,
   FiRefreshCw,
 } from "react-icons/fi";
+import {
   canDeleteStudy,
   requiresPermissionRequest,
 } from "../../utils/contentAccess";
 import useCanEditStudyContent from "../../hooks/useCanEditStudyContent";
 import { submitAccessRequest } from "../../services/accessPermissionService";
+import {
   getCurrentUser,
   getAccessibleStudies,
   hasPermission,
@@ -562,7 +566,7 @@ window.dispatchEvent(new Event("studies-updated"));
                     <button
                       type="button"
                       className="study-header-kpi-btn"
-                      onClick={() => handleTabChange("Subjects")}
+                      onClick={() => handleTabChange("Subjects")}>
 
                       <span className="study-header-kpi-btn-label">
                         Total Subjects
@@ -575,7 +579,7 @@ window.dispatchEvent(new Event("studies-updated"));
                     <button
                       type="button"
                       className="study-header-kpi-btn"
-                      onClick={() => handleTabChange("Comments")}
+                      onClick={() => handleTabChange("Comments")}>
 
                       <span className="study-header-kpi-btn-label">
                         Open Comments
@@ -588,7 +592,7 @@ window.dispatchEvent(new Event("studies-updated"));
                     <button
                       type="button"
                       className="study-header-kpi-btn"
-                      onClick={() => handleTabChange("Visit Plan")}
+                      onClick={() => handleTabChange("Visit Plan")}>
 
                       <span className="study-header-kpi-btn-label">
                         Site Visits
@@ -601,7 +605,7 @@ window.dispatchEvent(new Event("studies-updated"));
                     <button
                       type="button"
                       className="back-to-studies-btn"
-                      onClick={handleBackToStudies}
+                      onClick={handleBackToStudies}>
 
                       <FiArrowLeft />
                       <span>Back to Studies</span>
@@ -615,7 +619,7 @@ window.dispatchEvent(new Event("studies-updated"));
                     className="refresh-study-btn"
                     onClick={handleRefreshStudy}
                     disabled={isRefreshing}
-                    title="Refresh study overview"
+                    title="Refresh study overview">
 
                     <FiRefreshCw className={isRefreshing ? "spinning" : ""} />
                     {isRefreshing ? "Refreshing..." : "Refresh"}
@@ -627,7 +631,7 @@ window.dispatchEvent(new Event("studies-updated"));
                       className="btn-edit edit-study-btn"
                       onClick={handleEditStudy}
                       title="Edit study"
-                      aria-label="Edit study"
+                      aria-label="Edit study">
 
                       <FiEdit2 />
                       Edit Study
@@ -638,7 +642,7 @@ window.dispatchEvent(new Event("studies-updated"));
                     <button
                       type="button"
                       className="request-permission-btn"
-                      onClick={handleRequestEditPermission}
+                      onClick={handleRequestEditPermission}>
 
                       Request Edit Permission
                     </button>
@@ -650,7 +654,7 @@ window.dispatchEvent(new Event("studies-updated"));
                       className="delete-study-btn"
                       onClick={() => setShowDeleteModal(true)}
                       title="Delete study"
-                      aria-label="Delete study"
+                      aria-label="Delete study">
 
                       <FiTrash2 />
                       Delete Study
@@ -841,7 +845,7 @@ window.dispatchEvent(new Event("studies-updated"));
             <StudyModal
               mode="edit"
               onClose={() => setShowEditModal(false)}
-              onSubmit={handleSaveStudyEdit}
+              onSubmit={handleSaveStudyEdit}>
 
               <div className="study-form-grid">
                 <label>
@@ -938,7 +942,7 @@ window.dispatchEvent(new Event("studies-updated"));
                     name="status"
                     value={editForm.status || STUDY_STATUS_DEFAULT}
                     onChange={handleEditFormChange}
-                    required
+                    required>
 
                     {STUDY_STATUS_OPTIONS.map((option) => (
                       <option key={option} value={option}>

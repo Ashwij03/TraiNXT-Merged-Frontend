@@ -981,3 +981,15 @@
     padding: var(--tnxt-font-size-xl);
   }
 }
+
+/* Subscription enforcement error banner (create-study blocks) */
+.studies-create-error {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  font-size: 0.875rem;
+  font-weight: 600;
+}

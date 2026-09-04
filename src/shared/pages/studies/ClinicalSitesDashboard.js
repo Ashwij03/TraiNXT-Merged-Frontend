@@ -224,7 +224,7 @@ function ClinicalSitesDashboard({ study }) {
             id="clinical-site-country"
             name="clinicalSiteCountry"
             value={selectedCountry}
-            onChange={(e) => setSelectedCountry(e.target.value)}
+            onChange={(e) => setSelectedCountry(e.target.value)}>
 
             {countries.map((country) => (
               <option key={country} value={country}>
@@ -237,7 +237,7 @@ function ClinicalSitesDashboard({ study }) {
             id="clinical-site-status"
             name="clinicalSiteStatus"
             value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
+            onChange={(e) => setSelectedStatus(e.target.value)}>
 
             {statuses.map((status) => (
               <option key={status} value={status}>
@@ -250,7 +250,7 @@ function ClinicalSitesDashboard({ study }) {
             id="clinical-site-filter"
             name="clinicalSiteFilter"
             value={selectedSite}
-            onChange={(e) => setSelectedSite(e.target.value)}
+            onChange={(e) => setSelectedSite(e.target.value)}>
 
             {siteFilterOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -263,7 +263,7 @@ function ClinicalSitesDashboard({ study }) {
             id="clinical-site-sort-direction"
             name="clinicalSiteSortDirection"
             value={sortDirection}
-            onChange={(e) => setSortDirection(e.target.value)}
+            onChange={(e) => setSortDirection(e.target.value)}>
 
             <option value="asc">Ascending</option>
             <option value="desc">Descending</option>
@@ -317,7 +317,7 @@ function ClinicalSitesDashboard({ study }) {
                     <button
                       type="button"
                       className="sponsor-btn-secondary"
-                      onClick={() => setQuickViewSite(site)}
+                      onClick={() => setQuickViewSite(site)}>
 
                       View
                     </button>
@@ -330,7 +330,7 @@ function ClinicalSitesDashboard({ study }) {
                         navigate("/site-details", {
                           state: site,
                         })
-                      }
+                      }>
 
                       Open
                     </button>
@@ -346,7 +346,7 @@ function ClinicalSitesDashboard({ study }) {
             <select
               value={rowsPerPage}
               onChange={(event) => setRowsPerPage(Number(event.target.value))}
-              aria-label="Rows per page"
+              aria-label="Rows per page">
 
               {CLINICAL_SITES_PAGE_SIZE_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -361,7 +361,7 @@ function ClinicalSitesDashboard({ study }) {
               className="sponsor-btn-secondary"
               type="button"
               disabled={currentPage === 1}
-              onClick={() => setCurrentPage((page) => page - 1)}
+              onClick={() => setCurrentPage((page) => page - 1)}>
 
               ← Previous
             </button>
@@ -374,7 +374,7 @@ function ClinicalSitesDashboard({ study }) {
               className="sponsor-btn-secondary"
               type="button"
               disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((page) => page + 1)}
+              onClick={() => setCurrentPage((page) => page + 1)}>
 
               Next →
             </button>
@@ -420,7 +420,7 @@ function ClinicalSitesDashboard({ study }) {
                 onChange={(event) =>
                   setRankingRowsPerPage(Number(event.target.value))
                 }
-                aria-label="Rows per page"
+                aria-label="Rows per page">
 
                 {CLINICAL_SITES_PAGE_SIZE_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -435,7 +435,7 @@ function ClinicalSitesDashboard({ study }) {
                 className="sponsor-btn-secondary"
                 type="button"
                 disabled={rankingPage === 1}
-                onClick={() => setRankingPage((page) => page - 1)}
+                onClick={() => setRankingPage((page) => page - 1)}>
 
                 ← Previous
               </button>
@@ -448,7 +448,7 @@ function ClinicalSitesDashboard({ study }) {
                 className="sponsor-btn-secondary"
                 type="button"
                 disabled={rankingPage === rankingTotalPages}
-                onClick={() => setRankingPage((page) => page + 1)}
+                onClick={() => setRankingPage((page) => page + 1)}>
 
                 Next →
               </button>

@@ -81,7 +81,7 @@ function CROVisits() {
                         type="button"
                         className="cro-btn-sm"
                         onClick={() => navigate(`/cro-subject/${v.id}`)}
-
+                      >
                         View Subject
                       </button>
                     </td>

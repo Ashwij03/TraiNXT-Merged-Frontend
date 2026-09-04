@@ -39,6 +39,24 @@ function ProfileSettingsSection({ showTitle = false }) {
   const handleSave = (event) => {
     event.preventDefault();
 
+    // Pincode is mandatory (mirrors registration validation): it feeds the
+    // referral same-organization/same-location anti-abuse rule, so it can
+    // never be saved blank or as non-numeric junk.
+    const trimmedPincode = String(profile.pincode || "").trim();
+    const pincodeRegex = /^\d{4,10}$/;
+
+    if (!trimmedPincode) {
+      setSaveError(true);
+      setSavedMessage("Pincode is required");
+      return;
+    }
+
+    if (!pincodeRegex.test(trimmedPincode)) {
+      setSaveError(true);
+      setSavedMessage("Enter a valid pincode (numbers only)");
+      return;
+    }
+
     try {
       saveUserProfile(profile, currentUser);
       setSaveError(false);
@@ -160,6 +178,17 @@ function ProfileSettingsSection({ showTitle = false }) {
             </label>
 
             <label>
+              <span>Pincode</span>
+              <input
+                type="text"
+                value={profile.pincode || ""}
+                onChange={(event) =>
+                  handleChange("pincode", event.target.value)
+                }
+              />
+            </label>
+
+            <label>
               <span>Office Phone</span>
               <input
                 type="text"
@@ -207,7 +236,7 @@ function ProfileSettingsSection({ showTitle = false }) {
                 value={profile.timezone || "Asia/Kolkata"}
                 onChange={(event) =>
                   handleChange("timezone", event.target.value)
-                }
+                }>
 
                 <option value="Asia/Kolkata">Asia/Kolkata</option>
                 <option value="UTC">UTC</option>
@@ -222,7 +251,7 @@ function ProfileSettingsSection({ showTitle = false }) {
                 value={profile.preferredLanguage || "English"}
                 onChange={(event) =>
                   handleChange("preferredLanguage", event.target.value)
-                }
+                }>
 
                 <option value="English">English</option>
                 <option value="Hindi">Hindi</option>
@@ -249,7 +278,7 @@ function ProfileSettingsSection({ showTitle = false }) {
                 className="profile-save-message full-width"
                 data-span="2"
                 role="status"
-                style={{ color: saveError ? "#dc2626" : "#059669" }}
+                style={{ color: saveError ? "#dc2626" : "#059669" }}>
 
                 {savedMessage}
               </p>

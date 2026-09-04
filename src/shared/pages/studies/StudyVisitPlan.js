@@ -146,7 +146,7 @@ function StudyVisitPlan() {
             <button
               type="button"
               className="add-study-btn"
-              onClick={openCreateWizard}
+              onClick={openCreateWizard}>
 
               + New Visit Plan
             </button>
@@ -167,7 +167,7 @@ function StudyVisitPlan() {
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
-                strokeLinejoin="round"
+                strokeLinejoin="round">
 
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                 <line x1="16" y1="2" x2="16" y2="6" />
@@ -219,7 +219,7 @@ function StudyVisitPlan() {
                           visit.status || "scheduled",
                         )
                           .toLowerCase()
-                          .replace(/\s+/g, "-")}`}
+                          .replace(/\s+/g, "-")}`}>
 
                         {visit.status || "Scheduled"}
                       </span>
@@ -251,7 +251,7 @@ function StudyVisitPlan() {
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
-                strokeLinejoin="round"
+                strokeLinejoin="round">
 
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -268,7 +268,7 @@ function StudyVisitPlan() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="visit-plan-status-select"
+            className="visit-plan-status-select">
 
             <option value="all">All statuses</option>
             <option value="Draft">Draft</option>
@@ -288,7 +288,7 @@ function StudyVisitPlan() {
             <button
               type="button"
               className="secondary-btn"
-              onClick={openCreateWizard}
+              onClick={openCreateWizard}>
 
               Create Visit Plan
             </button>
@@ -303,7 +303,7 @@ function StudyVisitPlan() {
                 <div className="visit-plan-card-header">
                   <strong>{plan.name}</strong>
                   <span
-                    className={`status-pill status-${String(plan.status || "draft").toLowerCase()}`}
+                    className={`status-pill status-${String(plan.status || "draft").toLowerCase()}`}>
 
                     {plan.status}
                   </span>
@@ -317,7 +317,7 @@ function StudyVisitPlan() {
                   <button
                     type="button"
                     className="secondary-btn"
-                    onClick={() => openEditWizard(plan.id)}
+                    onClick={() => openEditWizard(plan.id)}>
 
                     {canEdit ? "Edit" : "View"}
                   </button>
@@ -328,7 +328,7 @@ function StudyVisitPlan() {
                       onClick={() => {
                         deleteVisitPlan(studyCode, plan.id);
                         refresh();
-                      }}
+                      }}>
 
                       Delete
                     </button>
@@ -413,7 +413,7 @@ function VisitPlanWizard({
           {WIZARD_STEPS.map((label, index) => (
             <span
               key={label}
-              className={`visit-plan-step${index === step ? " active" : ""}${index < step ? " done" : ""}`}
+              className={`visit-plan-step${index === step ? " active" : ""}${index < step ? " done" : ""}`}>
 
               {index + 1}. {label}
             </span>
@@ -449,7 +449,7 @@ function VisitPlanWizard({
                   disabled={!canEdit}
                   onChange={(e) =>
                     onChange({ ...draft, status: e.target.value })
-                  }
+                  }>
 
                   <option>Draft</option>
                   <option>Active</option>
@@ -587,7 +587,7 @@ function VisitPlanWizard({
             type="button"
             className="secondary-btn"
             disabled={step === 0}
-            onClick={() => onStepChange(step - 1)}
+            onClick={() => onStepChange(step - 1)}>
 
             Back
           </button>
@@ -596,7 +596,7 @@ function VisitPlanWizard({
               type="button"
               className="add-study-btn"
               disabled={!canProceed}
-              onClick={() => onStepChange(step + 1)}
+              onClick={() => onStepChange(step + 1)}>
 
               Next
             </button>
@@ -606,7 +606,7 @@ function VisitPlanWizard({
                 type="button"
                 className="add-study-btn"
                 disabled={!canProceed}
-                onClick={onSave}
+                onClick={onSave}>
 
                 Save Visit Plan
               </button>
@@ -718,7 +718,7 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
                     disabled={!canEdit}
                     onChange={(e) =>
                       updateVisit(visit.id, "visitType", e.target.value)
-                    }
+                    }>
 
                     <option>Scheduled</option>
 
@@ -749,7 +749,7 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
                     disabled={!canEdit}
                     onChange={(e) =>
                       updateVisit(visit.id, "windowStartUnit", e.target.value)
-                    }
+                    }>
 
                     <option>Days</option>
 
@@ -774,7 +774,7 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
                     disabled={!canEdit}
                     onChange={(e) =>
                       updateVisit(visit.id, "windowEndUnit", e.target.value)
-                    }
+                    }>
 
                     <option>Days</option>
 
@@ -809,7 +809,7 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
                         next.forEach((item, i) => (item.sequence = i + 1));
 
                         onChange(next);
-                      }}
+                      }}>
 
                       ↑
                     </button>
@@ -829,7 +829,7 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
                         next.forEach((item, i) => (item.sequence = i + 1));
 
                         onChange(next);
-                      }}
+                      }}>
 
                       ↓
                     </button>
@@ -837,7 +837,7 @@ function VisitDetailsTable({ visits, canEdit, onChange }) {
                     <button
                       type="button"
                       className="link-btn danger"
-                      onClick={() => removeVisit(visit.id)}
+                      onClick={() => removeVisit(visit.id)}>
 
                       Remove
                     </button>
@@ -934,7 +934,7 @@ function ProcedureDetailsTable({ visits, procedures, canEdit, onChange }) {
                       disabled={!canEdit}
                       onChange={(e) =>
                         updateProcedure(proc.id, "visitId", e.target.value)
-                      }
+                      }>
 
                       <option value="">All visits</option>
                       {(visits || []).map((visit) => (
@@ -993,7 +993,7 @@ function ProcedureDetailsTable({ visits, procedures, canEdit, onChange }) {
                       <button
                         type="button"
                         className="link-btn danger"
-                        onClick={() => removeProcedure(proc.id)}
+                        onClick={() => removeProcedure(proc.id)}>
 
                         Remove
                       </button>
@@ -1009,7 +1009,7 @@ function ProcedureDetailsTable({ visits, procedures, canEdit, onChange }) {
           <button
             type="button"
             className="secondary-btn"
-            onClick={addProcedure}
+            onClick={addProcedure}>
 
             Select Standard Procedure
           </button>

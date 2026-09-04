@@ -58,7 +58,7 @@ const TrainingLog = ({ records = [] }) => {
                 <div
                   key={`${delegate.name || "delegate"}-${idx}`}
                   className="delegate-wrapper"
-
+                >
                   <div className="delegate-avatar">
                     <img
                       src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(
@@ -73,7 +73,7 @@ const TrainingLog = ({ records = [] }) => {
                             ? "training-warning"
                             : "warning"
                         }
-
+                      >
                         {delegate.status === "warning" ? "▲" : "!"}
                       </span>
                     )}

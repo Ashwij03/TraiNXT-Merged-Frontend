@@ -96,7 +96,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
       className="secondary-btn"
       onClick={() => {
         // navigate/open full milestone list
-      }}
+      }}>
 
       View All
     </button>
@@ -126,7 +126,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
   <button
     type="button"
     className="link-btn"
-    onClick={() => setEditingMilestone(item)}
+    onClick={() => setEditingMilestone(item)}>
 
     Edit
   </button>
@@ -137,7 +137,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
     onClick={() => {
       deletePlanningMilestone(studyCode, item.id);
       bump();
-    }}
+    }}>
 
     Delete
   </button>
@@ -169,7 +169,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
     className="secondary-btn"
     onClick={() => {
       // navigate/open full task list
-    }}
+    }}>
 
     View All
   </button>
@@ -203,7 +203,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
   <button
     type="button"
     className="link-btn"
-    onClick={() => setEditingTask(item)}
+    onClick={() => setEditingTask(item)}>
 
     Edit
   </button>
@@ -214,7 +214,7 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
     onClick={() => {
       deletePlanningTask(studyCode, item.id);
       bump();
-    }}
+    }}>
 
     Delete
   </button>
@@ -262,28 +262,25 @@ const [editingChecklistItem, setEditingChecklistItem] = useState(null);
                   <td>{member.organization || "—"}</td>
                   <td>{member.email || "—"}</td>
                   {canEdit && (
-                    
-                      <td>
+                    <td>
+                      <button
+                        type="button"
+                        className="link-btn"
+                        onClick={() => setEditingMember(member)}
+                      >
+                        Edit
+                      </button>
 
-button
-type="button"
-className="link-btn"
-onClick={() => setEditingMember(member)}
-
-Edit
-</button>
-
-button
-type="button"
-className="link-btn danger"
-onClick={() => {
-deleteStudyTeamMember(studyCode, member.id);
-bump();
-}}
-
-Delete
-</button>
-
+                      <button
+                        type="button"
+                        className="link-btn danger"
+                        onClick={() => {
+                          deleteStudyTeamMember(studyCode, member.id);
+                          bump();
+                        }}
+                      >
+                        Delete
+                      </button>
                     </td>
                   )}
                 </tr>
@@ -341,38 +338,36 @@ Uploaded:
 </div>
 
 <div className="checklist-actions">
+  <button
+    type="button"
+    className="link-btn"
+    onClick={() => setEditingChecklistItem(item)}
+  >
+    Edit
+  </button>
 
-button
-type="button"
-className="link-btn"
-onClick={() => setEditingChecklistItem(item)}
+  {item.documentUrl && (
+    <button
+      type="button"
+      className="link-btn"
+      onClick={() =>
+        window.open(item.documentUrl, "_blank")
+      }
+    >
+      View Document
+    </button>
+  )}
 
-Edit
-</button>
-
-{item.documentUrl && (
-button
-type="button"
-className="link-btn"
-onClick={() =>
-window.open(item.documentUrl, "_blank")
-}
-
-View Document
-</button>
-)}
-
-button
-type="button"
-className="link-btn danger"
-onClick={() => {
-deleteRegulatoryChecklistItem(studyCode, item.id);
-bump();
-}}
-
-Remove
-</button>
-
+  <button
+    type="button"
+    className="link-btn danger"
+    onClick={() => {
+      deleteRegulatoryChecklistItem(studyCode, item.id);
+      bump();
+    }}
+  >
+    Remove
+  </button>
 </div>
 </li>
             ))}
@@ -422,7 +417,7 @@ Remove
       <button
         type="button"
         className="link-btn"
-        onClick={() => setEditingProtocol(protocol)}
+        onClick={() => setEditingProtocol(protocol)}>
 
         Edit
       </button>
@@ -433,7 +428,7 @@ Remove
         onClick={() => {
           deleteProtocol(studyCode, protocol.id);
           bump();
-        }}
+        }}>
 
         Delete
       </button>
@@ -503,7 +498,7 @@ function PlanningMilestoneForm({
         if (!form.title.trim()) return;
         onSave(form);
         setForm(MILESTONE_FORM_DEFAULTS);
-      }}
+      }}>
 
       <input
         placeholder="Milestone title"
@@ -563,7 +558,7 @@ function PlanningTaskForm({
         if (!form.title.trim()) return;
         onSave(form);
         setForm(TASK_FORM_DEFAULTS);
-      }}
+      }}>
 
       <input
         placeholder="Task title"
@@ -624,7 +619,7 @@ function StudyTeamForm({
         if (!form.name.trim()) return;
         onSave(form);
         setForm(STUDY_TEAM_FORM_DEFAULTS);
-      }}
+      }}>
 
       <input
         placeholder="Name"
@@ -704,13 +699,11 @@ function RegulatoryItemForm({
 onSave({
   ...form,
   completed: false,
-});
-
-setForm(REGULATORY_ITEM_FORM_DEFAULTS);
-      }}
+});        setForm(REGULATORY_ITEM_FORM_DEFAULTS);
+      }}>
 
       <input
-  placeholder="Checklist Item"
+        placeholder="Checklist Item"
   value={form.label ?? ""}
   onChange={(e) =>
     setForm({
@@ -720,7 +713,7 @@ setForm(REGULATORY_ITEM_FORM_DEFAULTS);
   }
 />
 
-input
+<input
   type="date"
   value={form.documentDate ?? ""}
   onChange={(e) =>
@@ -731,7 +724,7 @@ input
   }
 />
 
-input
+<input
   type="date"
   value={form.dueDate ?? ""}
   onChange={(e) =>
@@ -742,14 +735,14 @@ input
   }
 />
 
-select
+<select
   value={form.status ?? "Pending"}
   onChange={(e) =>
     setForm({
       ...form,
       status: e.target.value,
     })
-  }
+  }>
 
   <option>Pending</option>
   <option>Submitted</option>
@@ -757,7 +750,7 @@ select
   <option>Rejected</option>
 </select>
 
-input
+<input
   type="file"
   onChange={(e) => {
     const file = e.target.files?.[0];
@@ -818,7 +811,7 @@ onSave
         if (!form.title.trim()) return;
         onSave(form);
         setForm(PROTOCOL_FORM_DEFAULTS);
-      }}
+      }}>
 
       <input
         placeholder="Protocol title"
@@ -835,14 +828,14 @@ protocolNumber:e.target.value
 })
 }
 />
-select
+<select
 value={form.status ?? "Draft"}
 onChange={(e)=>
 setForm({
 ...form,
 status:e.target.value
 })
-}
+}>
 
 <option>Draft</option>
 <option>In Review</option>

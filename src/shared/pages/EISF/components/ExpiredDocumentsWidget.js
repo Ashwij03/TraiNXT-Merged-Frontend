@@ -32,7 +32,7 @@ export default function ExpiredDocumentsWidget({
               .map((document) => (
                 <li
                   key={document.id || document.name}
-                  className="expired-item"
+                  className="expired-item">
 
                   <div className="document-name">
                     {document.name || "Unnamed Document"}

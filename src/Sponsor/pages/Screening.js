@@ -111,7 +111,7 @@ function Screening() {
 		<select
 		  value={selectedSite}
 		  onChange={(e) => setSelectedSite(e.target.value)}
-
+		>
 		  <option>All Sites</option>
 		  {[...new Set(screenings.map((s) => s.site).filter(Boolean))].map((site) => (
 		    <option key={site} value={site}>{displaySite(site)}</option>
@@ -121,7 +121,7 @@ function Screening() {
 		<select
 		  value={selectedStatus}
 		  onChange={(e) => setSelectedStatus(e.target.value)}
-
+		>
 		  <option>All Status</option>
 		  <option>Completed</option>
 		  <option>Pending</option>
@@ -168,7 +168,7 @@ function Screening() {
   onClick={() => {
     navigate(`/study/${screening.id}`);
   }}
-
+				>
   View
 </button>
 				</td>
@@ -235,7 +235,7 @@ function Screening() {
 			</p>
 		      <button
 		        onClick={() => setSelectedScreening(null)}
-
+		      >
 		        Close
 		      </button>
 

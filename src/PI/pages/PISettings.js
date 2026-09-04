@@ -167,7 +167,7 @@ function PISettings({ activeView = "security" }) {
             role="button"
             tabIndex={0}
             onKeyDown={(e) => e.key === "Enter" && toggleNotifPref(item.key)}
-
+          >
             <div>
               <strong>{item.label}</strong>
               <p>{item.desc}</p>
@@ -232,7 +232,7 @@ function PISettings({ activeView = "security" }) {
               })
             }
             className="pi-multi-select"
-
+          >
             {allStudies.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
@@ -279,7 +279,7 @@ function PISettings({ activeView = "security" }) {
               onClick={() => setView(card.id)}
               onKeyDown={(e) => e.key === "Enter" && setView(card.id)}
               className={view === card.id ? "pi-settings-card-active" : ""}
-
+            >
               <PIKpiCard
                 title={card.title}
                 value={view === card.id ? "Active" : "—"}

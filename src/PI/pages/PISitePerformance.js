@@ -10,6 +10,7 @@ import {
   FaTasks,
   FaPlus,
 } from "react-icons/fa";
+import {
   BarChart,
   Bar,
   XAxis,
@@ -23,6 +24,7 @@ import {
   Radar,
 } from "recharts";
 import PIKpiCard from "./PIKpiCard";
+import {
   getSitePerformanceData,
   saveSitePerformanceData,
   getNavbarData,
@@ -143,7 +145,7 @@ function PISitePerformance({ selectedStudy: studyProp }) {
             className="pi-filter-select"
             value={metricFilter}
             onChange={(e) => setMetricFilter(e.target.value)}
-
+          >
             <option value="All">All Metrics</option>
             <option value="Enrollment">Enrollment</option>
             <option value="Screening">Screening</option>
@@ -210,7 +212,7 @@ function PISitePerformance({ selectedStudy: studyProp }) {
             type="button"
             className="view-all-btn"
             onClick={() => setShowAllMetrics((v) => !v)}
-
+          >
             {showAllMetrics ? "Show Filtered" : "View All"}
           </button>
         </div>
@@ -240,7 +242,7 @@ function PISitePerformance({ selectedStudy: studyProp }) {
                           ? "status-success"
                           : "status-danger"
                       }
-
+                    >
                       {row.status}
                     </span>
                   </td>
@@ -252,7 +254,7 @@ function PISitePerformance({ selectedStudy: studyProp }) {
                         setSelectedMetric(row);
                         setEditMetric({ ...row });
                       }}
-
+                    >
                       View
                     </button>
                     <button
@@ -263,7 +265,7 @@ function PISitePerformance({ selectedStudy: studyProp }) {
                         setSelectedMetric(row);
                         setEditMetric({ ...row });
                       }}
-
+                    >
                       Edit
                     </button>
                     <button
@@ -271,7 +273,7 @@ function PISitePerformance({ selectedStudy: studyProp }) {
                       className="view-all-btn pi-btn-sm"
                       style={{ marginLeft: "0.375rem", color: "#dc2626", borderColor: "#dc2626" }}
                       onClick={() => handleDeleteMetric(row)}
-
+                    >
                       Delete
                     </button>
                   </td>
@@ -319,7 +321,7 @@ function PISitePerformance({ selectedStudy: studyProp }) {
             <select
               value={editMetric.status}
               onChange={(e) => setEditMetric({ ...editMetric, status: e.target.value })}
-
+            >
               <option>On Track</option>
               <option>Good</option>
               <option>At Risk</option>

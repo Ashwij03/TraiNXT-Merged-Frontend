@@ -1,6 +1,5 @@
 import DashboardLayout from "../components/dashboard/shared/DashboardLayout";
 import DataTable from "../components/dashboard/shared/DataTable";
-import { useMemo, useState, useEffect } from "react";
 import { useMemo, useState, useEffect, useCallback } from "react";
 import {
   acceptAccessRequest,
@@ -9,10 +8,12 @@ import {
   revokeAccessRequest,
   PERMISSION_REQUESTS_UPDATED,
 } from "../services/accessPermissionService";
+import {
   approveSignupRequest,
   getPendingSignupRequests,
   rejectSignupRequest,
 } from "../services/adminService";
+import {
   getUserAccessLevel,
   setUserAccessLevel,
   ACCESS_LEVELS_UPDATED,
@@ -48,6 +49,7 @@ function StatusPill({ status }) {
 function AccessPermissions() {
   const [activeTab, setActiveTab] = useState("signup");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [signupError, setSignupError] = useState("");
 
   useEffect(() => {
     const refresh = () => setRefreshKey((value) => value + 1);
@@ -87,8 +89,18 @@ function AccessPermissions() {
   };
 
   const handleApproveSignup = (email) => {
-    approveSignupRequest(email);
-    setRefreshKey((value) => value + 1);
+    setSignupError("");
+
+    try {
+      approveSignupRequest(email);
+      setRefreshKey((value) => value + 1);
+    } catch (err) {
+      // Subscription enforcement (subscriptionGuard.assertCanApproveUser)
+      // throws when the license isn't Active or the user limit is reached.
+      setSignupError(
+        err?.message || "Unable to approve this signup request."
+      );
+    }
   };
 
   const handleRejectSignup = (email) => {
@@ -159,7 +171,7 @@ function AccessPermissions() {
         <button
           type="button"
           className="access-action-link"
-          onClick={() => handleAccept(request.id)}
+          onClick={() => handleAccept(request.id)}>
 
           Approve
         </button>
@@ -167,7 +179,7 @@ function AccessPermissions() {
         <button
           type="button"
           className="access-action-link revoke"
-          onClick={() => handleRevoke(request.id)}
+          onClick={() => handleRevoke(request.id)}>
 
           Reject
         </button>
@@ -240,7 +252,7 @@ function AccessPermissions() {
           <button
             type="button"
             className="access-action-link"
-            onClick={() => handleApproveSignup(user.email)}
+            onClick={() => handleApproveSignup(user.email)}>
 
             Approve
           </button>
@@ -248,7 +260,7 @@ function AccessPermissions() {
           <button
             type="button"
             className="access-action-link revoke"
-            onClick={() => handleRejectSignup(user.email)}
+            onClick={() => handleRejectSignup(user.email)}>
 
             Reject
           </button>
@@ -269,7 +281,7 @@ function AccessPermissions() {
           <button
             type="button"
             className={`access-tab${activeTab === "signup" ? " active" : ""}`}
-            onClick={() => setActiveTab("signup")}
+            onClick={() => setActiveTab("signup")}>
 
             Signup Approvals
             <span className="access-tab-badge">
@@ -280,7 +292,7 @@ function AccessPermissions() {
           <button
             type="button"
             className={`access-tab${activeTab === "pending" ? " active" : ""}`}
-            onClick={() => setActiveTab("pending")}
+            onClick={() => setActiveTab("pending")}>
 
             Pending Requests
             <span className="access-tab-badge">
@@ -291,7 +303,7 @@ function AccessPermissions() {
           <button
             type="button"
             className={`access-tab${activeTab === "history" ? " active" : ""}`}
-            onClick={() => setActiveTab("history")}
+            onClick={() => setActiveTab("history")}>
 
             Request History
             <span className="access-tab-badge">
@@ -299,6 +311,10 @@ function AccessPermissions() {
             </span>
           </button>
         </div>
+
+        {signupError && (
+          <div className="access-permissions-error">{signupError}</div>
+        )}
 
         {activeTab === "signup" ? (
           <DataTable

@@ -149,7 +149,7 @@ export default function DocumentTable({
       <button
         type="button"
         className={`table-sort-btn ${isActive ? "active" : ""}`}
-        onClick={() => onSort(column.key)}
+        onClick={() => onSort(column.key)}>
 
         {column.label}
         <span>{isActive ? (sortDirection === "asc" ? "↑" : "↓") : "↕"}</span>
@@ -194,7 +194,7 @@ export default function DocumentTable({
                 key={doc.id}
                 className={`${onSelect ? "selectable-row" : ""} ${selectedDocumentId === doc.id ? "row-selected" : ""}`.trim()}
                 onClick={onSelect ? () => onSelect(doc) : undefined}
-                aria-selected={selectedDocumentId === doc.id}
+                aria-selected={selectedDocumentId === doc.id}>
 
                 {isReferenceView && (
                   <td className="select-col" onClick={(event) => event.stopPropagation()}>
@@ -241,7 +241,7 @@ export default function DocumentTable({
                         className="icon-action-btn"
                         onClick={() => runAction(onView, doc)}
                         aria-label={`View ${doc.documentName}`}
-                        title="View"
+                        title="View">
 
                         <FiEye />
                       </button>
@@ -251,7 +251,7 @@ export default function DocumentTable({
                         className="icon-action-btn"
                         onClick={() => runAction(onDownload, doc)}
                         aria-label={`Download ${doc.documentName}`}
-                        title="Download"
+                        title="Download">
 
                         <FiDownload />
                       </button>
@@ -266,7 +266,7 @@ export default function DocumentTable({
                           onClick={() => toggleActionMenu(doc.id)}
                           aria-label={`More actions for ${doc.documentName}`}
                           aria-expanded={openMenuId === doc.id}
-                          title="More"
+                          title="More">
 
                           <FiMoreVertical />
                         </button>
@@ -302,7 +302,7 @@ export default function DocumentTable({
             ref={menuRef}
             className="document-action-menu"
             role="menu"
-            style={{ top: menuPosition.top, left: menuPosition.left }}
+            style={{ top: menuPosition.top, left: menuPosition.left }}>
 
             {(() => {
               const doc = documents.find((d) => d.id === openMenuId);

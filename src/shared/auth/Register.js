@@ -4,6 +4,27 @@ import AuthLayout from "./AuthLayout";
 import "./Auth.css";
 import { redeemReferralCode } from "../services/referralService";
 
+// ===== START: Plan selection at signup — decision record =====
+// DECISION (recorded per the Dynamic Subscription & Plan Catalog spec §5):
+// plan selection is DEFERRED to first login — it is NOT part of registration.
+//
+// Rationale:
+//   - Register.js is a single flat form, not a wizard; bolting a plan-picker
+//     step on top would fight the existing UX for marginal value.
+//   - A brand-new org has no billing identity yet, and the billing backend
+//     assigns the default/free tier at account creation. Collecting a plan
+//     choice here would either duplicate that (paid tiers would need a
+//     PaymentModal mid-signup) or be ignored for the free tier.
+//   - The intended flow: sign up -> land on the default/free tier (or
+//     PENDING_PAYMENT) -> My License (route /my-license, every role sees it)
+//     shows the Subscribe / Upgrade Plan CTA, which opens the shared
+//     PlanPickerModal + PaymentModal. That flow already exists and is the
+//     single path for both first-time subscriptions and upgrades.
+// If product later wants plan selection at signup, reuse PlanPickerModal /
+// PaymentModal from src/shared/components/subscription/ — do not build a
+// third variant.
+// ===== END: Plan selection at signup — decision record =====
+
 function Register() {
 
   const navigate = useNavigate();
@@ -24,6 +45,11 @@ function Register() {
   // Organization Name field (application can have unlimited orgs).
   const [organizationName, setOrganizationName] = useState("");
   const [organizationNameError, setOrganizationNameError] = useState("");
+
+  // Pincode — required for every role, no exceptions. Captures the
+  // organization's location, which feeds the referral anti-abuse rule.
+  const [pincode, setPincode] = useState("");
+  const [pincodeError, setPincodeError] = useState("");
 
   const [role, setRole] = useState("");
 
@@ -228,6 +254,31 @@ function Register() {
     }
   };
 
+  // Pincode — required for every role, no exceptions (unlike Organization
+  // Name, which is skipped for Admin): the point of capturing it is to know
+  // the location of every account that could plausibly refer or be referred.
+  const validatePincode = (value) => {
+
+    setPincode(value);
+
+    const regex = /^\d{4,10}$/;
+
+    if (!value.trim()) {
+
+      setPincodeError("Pincode is required");
+
+    } else if (!regex.test(value.trim())) {
+
+      setPincodeError(
+        "Enter a valid pincode (numbers only)"
+      );
+
+    } else {
+
+      setPincodeError("");
+    }
+  };
+
   // UPDATED: Role change now dynamically toggles whether Organization
   // Name is required, with no page refresh.
   const handleRoleChange = (value) => {
@@ -266,6 +317,7 @@ function Register() {
     const trimmedLastName = lastName.trim();
     const trimmedUsername = username.trim();
     const trimmedOrganizationName = organizationName.trim();
+    const trimmedPincode = pincode.trim();
 
     const nextFirstNameError = trimmedFirstName
       ? ""
@@ -302,6 +354,10 @@ function Register() {
           ? ""
           : "Organization name is required");
 
+    const nextPincodeError = !trimmedPincode
+      ? "Pincode is required"
+      : pincodeError;
+
     const nextPolicyError = acceptedPolicy
       ? ""
       : "Please accept the Privacy Policy to continue";
@@ -314,6 +370,7 @@ function Register() {
     setConfirmError(nextConfirmError);
     setRoleError(nextRoleError);
     setOrganizationNameError(nextOrganizationNameError);
+    setPincodeError(nextPincodeError);
     setPolicyError(nextPolicyError);
 
     if (
@@ -325,6 +382,7 @@ function Register() {
       nextConfirmError ||
       nextRoleError ||
       nextOrganizationNameError ||
+      nextPincodeError ||
       nextPolicyError
     ) {
 
@@ -409,6 +467,11 @@ function Register() {
 
       // UPDATED: persist assigned site for site-scoped RBAC
       assignedSite: savedOrganizationName,
+
+      // Pincode — organization's location. Required for every role (see
+      // validatePincode); read back out by id via adminService.getUsers()
+      // for the referral same-organization/same-location anti-abuse rule.
+      pincode: trimmedPincode,
 
       approvalStatus:
         role === "Admin"
@@ -620,7 +683,7 @@ function Register() {
                 setShowPassword(
                   !showPassword
                 )
-              }
+              }>
 
               {
                 showPassword
@@ -674,7 +737,7 @@ function Register() {
                 setShowConfirmPassword(
                   !showConfirmPassword
                 )
-              }
+              }>
 
               {
                 showConfirmPassword
@@ -748,7 +811,7 @@ function Register() {
             onChange={(e) =>
               handleRoleChange(e.target.value)
             }
-            required
+            required>
 
             <option value="">
               Select role
@@ -759,7 +822,7 @@ function Register() {
 
                 <option
                   key={option.value}
-                  value={option.value}
+                  value={option.value}>
 
                   {option.label}
                 </option>
@@ -781,8 +844,38 @@ function Register() {
 
         </div>
 
-        {/* REFERRAL CODE (Task 6 — Ashwij) — optional, never blocks signup */}
+        {/* PINCODE + REFERRAL CODE — same row.
+            Pincode captures the organization's location for this user and
+            is required for every role, no exceptions. Referral Code
+            (Task 6 — Ashwij) is optional and never blocks signup. */}
         <div className="form-row">
+
+        <div className="input-group">
+
+          <label>
+            Pincode
+            <span style={{ color: "#d32f2f", marginLeft: "0.25rem" }}>*</span>
+          </label>
+
+          <input
+            value={pincode}
+            placeholder="Enter your organization's location pincode"
+            onChange={(e) =>
+              validatePincode(e.target.value)
+            }
+            required
+          />
+
+          {
+            pincodeError && (
+
+              <p className="error">
+                {pincodeError}
+              </p>
+            )
+          }
+
+        </div>
 
         <div className="input-group">
 
@@ -829,7 +922,7 @@ function Register() {
               onClick={(e) => {
                 e.preventDefault();
                 setShowPolicy(true);
-              }}
+              }}>
 
               Privacy Policy
             </span>
@@ -856,7 +949,7 @@ function Register() {
             passwordError ||
             confirmError ||
             !acceptedPolicy
-          }
+          }>
 
           SIGN UP
         </button>
@@ -870,7 +963,7 @@ function Register() {
           <button
             type="button"
             className="login-link-btn"
-            onClick={() => navigate("/login")}
+            onClick={() => navigate("/login")}>
 
             Login
           </button>
@@ -945,7 +1038,7 @@ function Register() {
               className="close-policy"
               onClick={() =>
                 setShowPolicy(false)
-              }
+              }>
 
               Close
             </button>

@@ -325,7 +325,7 @@ function Subjects() {
                   setSelectedStudyId(e.target.value);
                   clearSelection();
                 }}
-
+              >
                 <option value="">All Studies</option>
                 {allStudies.map((study) => (
                   <option key={study.code || study.id} value={study.code || study.id}>
@@ -341,7 +341,7 @@ function Subjects() {
               type="button"
               className="sw-btn sw-btn--ghost"
               onClick={() => window.print()}
-
+            >
               <MdFileDownload size={16} />
               <span>Export</span>
             </button>
@@ -352,7 +352,7 @@ function Subjects() {
                 setFormError("");
                 setShowAddModal(true);
               }}
-
+            >
               <MdAdd size={18} />
               <span>Add Subject</span>
             </button>
@@ -366,7 +366,7 @@ function Subjects() {
               key={key}
               className={`sw-kpi-card sw-kpi--${tone}`}
               aria-label={`${label}: ${value}. ${delta}`}
-
+            >
               <div className="sw-kpi-top">
                 <span className="sw-kpi-label">{label}</span>
                 <span className="sw-kpi-icon" aria-hidden="true">
@@ -421,7 +421,7 @@ function Subjects() {
                       setSearchTerm("");
                       setPage(1);
                     }}
-
+                  >
                     <MdClose size={15} />
                   </button>
                 )}
@@ -437,7 +437,7 @@ function Subjects() {
                       setStatusFilter(e.target.value);
                       setPage(1);
                     }}
-
+                  >
                     {statusOptions.map((option) => (
                       <option key={option} value={option}>
                         {option}
@@ -455,7 +455,7 @@ function Subjects() {
                       setStudyFilter(e.target.value);
                       setPage(1);
                     }}
-
+                  >
                     {studyOptions.map((option) => (
                       <option key={option} value={option}>
                         {option}
@@ -473,7 +473,7 @@ function Subjects() {
                       setSiteFilter(e.target.value);
                       setPage(1);
                     }}
-
+                  >
                     {siteOptions.map((option) => (
                       <option key={option} value={option}>
                         {option === "All" ? "All" : displaySite(option)}
@@ -488,7 +488,7 @@ function Subjects() {
                     className="sw-btn sw-btn--subtle"
                     onClick={resetFilters}
                     aria-label={`Clear ${activeFilterCount} active filters`}
-
+                  >
                     Clear ({activeFilterCount})
                   </button>
                 )}
@@ -545,7 +545,7 @@ function Subjects() {
                               className={`sw-badge ${
                                 STATUS_CLASS[subject.status] || "status-screened"
                               }`}
-
+                            >
                               {subject.status}
                             </span>
                           </td>
@@ -557,7 +557,7 @@ function Subjects() {
                               className={`sw-visit ${
                                 VISIT_STATUS_CLASS[subject.visitStatus] || ""
                               }`}
-
+                            >
                               {subject.visitStatus}
                             </span>
                           </td>
@@ -570,7 +570,7 @@ function Subjects() {
                                   state: { from: "/subjects" },
                                 })
                               }
-
+                            >
                               View
                             </button>
                           </td>
@@ -598,7 +598,7 @@ function Subjects() {
                     className="sw-page-btn"
                     disabled={currentPage === 1}
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
-
+                  >
                     <MdChevronLeft size={18} />
                   </button>
 
@@ -611,7 +611,7 @@ function Subjects() {
                           pageNumber === currentPage ? " is-active" : ""
                         }`}
                         onClick={() => setPage(pageNumber)}
-
+                      >
                         {pageNumber}
                       </button>
                     )
@@ -622,7 +622,7 @@ function Subjects() {
                     className="sw-page-btn"
                     disabled={currentPage === totalPages}
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-
+                  >
                     <MdChevronRight size={18} />
                   </button>
                 </div>
@@ -666,14 +666,14 @@ function Subjects() {
         <div
           className="sw-modal-backdrop"
           onClick={() => setShowAddModal(false)}
-
+        >
           <div
             className="sw-modal"
             role="dialog"
             aria-modal="true"
             aria-label="Add Subject"
             onClick={(e) => e.stopPropagation()}
-
+          >
             <div className="sw-modal-header">
               <h3>Add Subject</h3>
               <button
@@ -681,7 +681,7 @@ function Subjects() {
                 className="sw-modal-close"
                 aria-label="Close"
                 onClick={() => setShowAddModal(false)}
-
+              >
                 <MdClose size={18} />
               </button>
             </div>
@@ -739,7 +739,7 @@ function Subjects() {
                   <select
                     value={form.status}
                     onChange={(e) => setForm({ ...form, status: e.target.value })}
-
+                  >
                     {["Screened", "Enrolled", "Active"].map((option) => (
                       <option key={option} value={option}>
                         {option}
@@ -768,7 +768,7 @@ function Subjects() {
                   type="button"
                   className="sw-btn sw-btn--ghost"
                   onClick={() => setShowAddModal(false)}
-
+                >
                   Cancel
                 </button>
                 <button type="submit" className="sw-btn sw-btn--primary">

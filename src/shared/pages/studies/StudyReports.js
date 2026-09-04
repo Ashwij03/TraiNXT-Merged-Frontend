@@ -93,7 +93,7 @@ function StudyReports() {
           <button
             type="button"
             className="report-btn report-btn-primary"
-            onClick={downloadReport}
+            onClick={downloadReport}>
 
             Download Report
           </button>

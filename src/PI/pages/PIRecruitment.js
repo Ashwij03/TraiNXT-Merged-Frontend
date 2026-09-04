@@ -8,6 +8,7 @@ import {
   FaChartPie,
   FaStream,
 } from "react-icons/fa";
+import {
   BarChart,
   Bar,
   XAxis,
@@ -16,6 +17,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import PIKpiCard from "./PIKpiCard";
+import {
   getRecruitmentData,
   saveRecruitmentData,
   getNavbarData,
@@ -140,7 +142,7 @@ function PIRecruitment({ selectedStudy: studyProp }) {
               setNewPipeline({ ...EMPTY_PIPELINE, study: studyOptions[0] || "" });
               setShowAddModal(true);
             }}
-
+          >
             + Add to Pipeline
           </button>
           <button type="button" className="export-btn" onClick={handleRefresh}>
@@ -187,7 +189,7 @@ function PIRecruitment({ selectedStudy: studyProp }) {
               type="button"
               className="view-all-btn"
               onClick={() => setShowAllStudies((v) => !v)}
-
+            >
               {showAllStudies ? "Show Summary" : "View All"}
             </button>
           </div>
@@ -236,7 +238,7 @@ function PIRecruitment({ selectedStudy: studyProp }) {
                 setNewPipeline({ ...EMPTY_PIPELINE, study: studyOptions[0] || "" });
                 setShowAddModal(true);
               }}
-
+            >
               + Add
             </button>
           </div>

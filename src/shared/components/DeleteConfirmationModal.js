@@ -51,7 +51,7 @@ export default function DeleteConfirmationModal({
             className="delete-modal-close"
             onClick={onClose}
             aria-label="Close modal"
-
+          >
             ×
           </button>
         </div>
@@ -133,7 +133,7 @@ export default function DeleteConfirmationModal({
             type="button"
             className="delete-cancel-btn"
             onClick={onClose}
-
+          >
             Cancel
           </button>
           <button
@@ -141,7 +141,7 @@ export default function DeleteConfirmationModal({
             className="delete-confirm-btn"
             onClick={handleSubmit}
             disabled={!confirmed}
-
+          >
             Delete
           </button>
         </div>

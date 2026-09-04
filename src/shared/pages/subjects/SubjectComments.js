@@ -198,7 +198,7 @@ function SubjectComments({
             type="button"
             className="subject-comments-action-btn"
             onClick={() => setEditTarget(row)}
-            disabled={!canEditRow(row)}
+            disabled={!canEditRow(row)}>
 
             Edit
           </button>
@@ -206,7 +206,7 @@ function SubjectComments({
             type="button"
             className="subject-comments-action-btn danger"
             onClick={() => setDeleteTarget(row)}
-            disabled={!canEditRow(row)}
+            disabled={!canEditRow(row)}>
 
             Delete
           </button>
@@ -228,7 +228,7 @@ function SubjectComments({
           <button
             type="button"
             className="subject-comments-add-btn"
-            onClick={handleAddClick}
+            onClick={handleAddClick}>
 
             + Add Comment
           </button>
@@ -315,7 +315,7 @@ function SubjectComments({
       className="subject-comments-modal-overlay"
       role="dialog"
       aria-modal="true"
-      aria-label="Subject Comments"
+      aria-label="Subject Comments">
 
       <div className="subject-comments-modal">
         <div className="subject-comments-modal-header">
@@ -324,7 +324,7 @@ function SubjectComments({
             type="button"
             className="subject-comments-modal-close"
             onClick={onClose}
-            aria-label="Close Subject Comments"
+            aria-label="Close Subject Comments">
 
             ×
           </button>
@@ -334,7 +334,7 @@ function SubjectComments({
           <button
             type="button"
             className="subject-comments-close-btn"
-            onClick={onClose}
+            onClick={onClose}>
 
             Close
           </button>

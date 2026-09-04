@@ -39,7 +39,7 @@ function QuickActions({
                   action.path
                 )
               }
-
+            >
               <div className="action-icon">
 
                 {action.icon}

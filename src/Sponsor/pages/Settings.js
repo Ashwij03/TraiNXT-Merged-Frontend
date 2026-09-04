@@ -126,7 +126,7 @@ const handleRemovePhoto = () => {
       type="button"
       className="photo-remove-btn"
       onClick={handleRemovePhoto}
-
+    >
       Remove Photo
     </button>
   )}
@@ -201,7 +201,7 @@ const handleRemovePhoto = () => {
   <select
     value={settings.language}
     onChange={(e) => update("language", e.target.value)}
-
+  >
     <option>English</option>
     <option>French</option>
     <option>German</option>
@@ -213,7 +213,7 @@ const handleRemovePhoto = () => {
   <select
     value={settings.timezone}
     onChange={(e) => update("timezone", e.target.value)}
-
+  >
     <option>Asia/Kolkata</option>
     <option>UTC</option>
     <option>US/Eastern</option>
@@ -334,7 +334,7 @@ const handleRemovePhoto = () => {
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => e.key === 'Enter' && setActiveSection(section.id)}
-
+              >
                 <div className="settings-nav-icon" style={{ backgroundColor: section.iconBg, color: section.iconColor }}>
                   <Icon size={24} />
                 </div>
@@ -367,7 +367,7 @@ const handleRemovePhoto = () => {
           onClose={() => setActiveSection(null)}
           onSave={handleSave}
           saveLabel={saved ? 'Saved!' : 'Save Changes'}
-
+        >
           {renderSectionForm()}
         </EnterpriseModal>
       )}

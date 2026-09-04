@@ -96,16 +96,6 @@ function getSharedReports() {
   return readStorageArray("reports");
 }
 
-function getSharedComments() {
-  return readStorageArray("comments").map((comment) => ({
-    ...comment,
-    message: comment.description || comment.message || comment.text || "",
-    author: comment.createdBy || comment.author || "Unknown",
-    subject: comment.subjectId || comment.subject || "",
-    date: comment.createdAt || comment.date || "",
-  }));
-}
-
 function getSharedNotifications() {
   return readStorageArray("notifications");
 }
@@ -514,7 +504,7 @@ export const CROProvider = ({ children }) => {
         closeAlert,
         closeModal,
       }}
-
+    >
       {children}
     </CRODataContext.Provider>
   );

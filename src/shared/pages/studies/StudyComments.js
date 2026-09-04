@@ -80,7 +80,7 @@ function StudyComments() {
               whiteSpace: "normal",
               wordBreak: "break-word",
               maxWidth: "15.625rem",
-            }}
+            }}>
 
             {comment.description || "—"}
           </div>
@@ -158,7 +158,7 @@ function StudyComments() {
           <button
             type="button"
             onClick={handleAddComment}
-            disabled={!studyCode}
+            disabled={!studyCode}>
 
             Add Comment
           </button>
@@ -182,7 +182,7 @@ function StudyComments() {
           gap: "0.75rem",
           flexWrap: "wrap",
           marginBottom: "1.25rem",
-        }}
+        }}>
 
         <input
           type="text"
@@ -202,7 +202,7 @@ function StudyComments() {
           style={{
             minWidth: "11.25rem",
             padding: "10px 12px",
-          }}
+          }}>
 
           <option value="All">All Comments</option>
           <option value="Open">Open / Unresolved</option>
@@ -214,7 +214,7 @@ function StudyComments() {
         style={{
           width: "100%",
           overflowX: "auto",
-        }}
+        }}>
 
         <DataTable
           title={`Comments — ${study?.name || studyCode}`}

@@ -80,13 +80,13 @@ function CreateFolderModal({
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose?.();
       }}
-
+    >
       <div
         className="sxm-modal"
         role="dialog"
         aria-modal="true"
         aria-label={title}
-
+      >
         <div className="sxm-header">
           <div className="sxm-header-title">
             <span className="sxm-header-icon">
@@ -107,7 +107,7 @@ function CreateFolderModal({
             className="sxm-close"
             aria-label="Close"
             onClick={onClose}
-
+          >
             <MdClose size={17} />
           </button>
         </div>
@@ -159,7 +159,7 @@ function CreateFolderModal({
               type="submit"
               className="sxm-btn sxm-btn--primary"
               disabled={!name.trim()}
-
+            >
               {isSubfolder ? "Create Subfolder" : "Create Folder"}
             </button>
           </div>

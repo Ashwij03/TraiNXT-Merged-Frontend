@@ -20,7 +20,7 @@ function Queries() {
               justifyContent: "space-between",
               alignItems: "center"
             }}
-
+          >
             <h1>Queries Management</h1>
 
             <button
@@ -31,7 +31,7 @@ function Queries() {
                 border: "none",
                 borderRadius: "0.3125rem"
               }}
-
+            >
               Raise Query
             </button>
           </div>
@@ -43,7 +43,7 @@ function Queries() {
               borderRadius: "0.625rem",
               marginTop: "1.25rem"
             }}
-
+          >
             <input
               type="text"
               placeholder="Search Query..."
@@ -54,12 +54,13 @@ function Queries() {
               }}
             />
 
-            <table className="ctms-standard-table"
+            <table
+              className="ctms-standard-table"
               style={{
                 width: "100%",
                 borderCollapse: "collapse"
               }}
-
+            >
               <thead>
                 <tr>
                   <th>Query ID</th>

@@ -46,7 +46,7 @@ function PaginationFooter({
             value={pageSize}
             onChange={(event) => onPageSizeChange?.(Number(event.target.value))}
             aria-label="Rows per page"
-
+          >
             {pageSizeOptions.map((option) => (
               <option key={option} value={option}>
                 {option}
@@ -61,7 +61,7 @@ function PaginationFooter({
           onClick={() => onPageChange?.(Math.max(1, page - 1))}
           disabled={page <= 1}
           aria-label="Previous page"
-
+        >
           <MdChevronLeft size={16} />
         </button>
 
@@ -75,7 +75,7 @@ function PaginationFooter({
           onClick={() => onPageChange?.(Math.min(totalPages, page + 1))}
           disabled={page >= totalPages}
           aria-label="Next page"
-
+        >
           <MdChevronRight size={16} />
         </button>
       </div>

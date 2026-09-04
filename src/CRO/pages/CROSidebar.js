@@ -14,6 +14,7 @@ import {
   FaUserFriends,
   FaTimes,
   FaGift,
+  FaCreditCard,
 } from "react-icons/fa";
 import "../styles/CRODashboard.css";
 import "./CRODashboard.js";
@@ -43,6 +44,7 @@ const MAIN_ITEMS = [
   { to: "/cro-notifications", icon: FaBell, label: "Notifications" },
   { to: "/cro-settings", icon: FaCog, label: "Settings" },
   { to: "/cro-referral", icon: FaGift, label: "Referral Program" },
+  { to: "/my-license", icon: FaCreditCard, label: "My License" },
 ];
 
 function SidebarItem({ to, icon: Icon, label, onNavigate }) {
@@ -54,7 +56,7 @@ function SidebarItem({ to, icon: Icon, label, onNavigate }) {
           `cro-sidebar-link${isActive ? " active" : ""}`
         }
         onClick={onNavigate}
-
+      >
         <span className="cro-sidebar-icon">
           <Icon />
         </span>
@@ -91,7 +93,7 @@ function CROSidebar({ isOpen = false, collapsed = false, onClose }) {
       className={`cro-sidebar cro-sidebar-aligned
         ${isOpen ? " open" : ""}
         ${collapsed ? " collapsed" : ""}`}
-
+    >
       <div className="cro-sidebar-top">
         <div
           className="cro-sidebar-logo-link"
@@ -99,7 +101,7 @@ function CROSidebar({ isOpen = false, collapsed = false, onClose }) {
             handleNavigate();
             navigate("/cro-dashboard");
           }}
-
+        >
           <TriaNXTLogo size="sidebar" />
         </div>
 
@@ -107,7 +109,7 @@ function CROSidebar({ isOpen = false, collapsed = false, onClose }) {
           type="button"
           className="cro-sidebar-close"
           onClick={onClose}
-
+        >
           <FaTimes />
         </button>
       </div>
@@ -127,7 +129,7 @@ function CROSidebar({ isOpen = false, collapsed = false, onClose }) {
               isStudiesActive || isCommentsRoute ? " active" : ""
             }`}
             onClick={handleStudiesToggle}
-
+          >
             <span className="cro-sidebar-icon">
               <FaBook />
             </span>

@@ -217,12 +217,12 @@ function SubjectTreeNode({
         title={node.name}
         onClick={handleRowClick}
         onKeyDown={handleKeyDown}
-
+      >
         {hasChildren ? (
           <span
             className={`sx-caret${isExpanded ? " is-open" : ""}`}
             aria-hidden="true"
-
+          >
             <MdChevronRight size={14} />
           </span>
         ) : (
@@ -250,13 +250,13 @@ function SubjectTreeNode({
         <span
           className="sx-row-actions"
           onClick={(event) => event.stopPropagation()}
-
+        >
           {isLocked && (
             <span
               className="sx-lock-badge"
               title="System folder - view only"
               aria-label="Locked folder"
-
+            >
               <MdLock size={12} />
             </span>
           )}
@@ -280,7 +280,7 @@ function SubjectTreeNode({
         <div
           className={`sx-children${isExpanded ? " is-open" : ""}`}
           aria-hidden={isExpanded ? undefined : "true"}
-
+        >
           <ul className="sx-node-list" role="group">
             {node.children.map((child) => (
               <SubjectTreeNode

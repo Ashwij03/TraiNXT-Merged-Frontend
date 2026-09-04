@@ -55,8 +55,6 @@ function CalendarWidget({
     useState(firstScheduleDate);
 
   const [currentMonth, setCurrentMonth] = useState(() => {
-    const baseDate = selectedDate ? parseCalendarDateKey(selectedDate) : new Date();
-
     const baseDate = firstScheduleDate
       ? parseCalendarDateKey(firstScheduleDate)
       : new Date();
@@ -65,8 +63,6 @@ function CalendarWidget({
   });
 
   const [currentYear, setCurrentYear] = useState(() => {
-    const baseDate = selectedDate ? parseCalendarDateKey(selectedDate) : new Date();
-
     const baseDate = firstScheduleDate
       ? parseCalendarDateKey(firstScheduleDate)
       : new Date();
@@ -83,8 +79,6 @@ function CalendarWidget({
       setCurrentYear(d.getFullYear());
     }
   }, [isControlled, selectedDate]);
-
-  const todayDateKey = getCalendarDateKey(new Date());
 
   const weekDays = [
     "Sun",
@@ -105,8 +99,6 @@ function CalendarWidget({
       setCurrentYear(d.getFullYear());
     }
   }, [firstScheduleDate, selectedDate]);
-
-  const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const monthNames = [
     "January",
@@ -139,8 +131,6 @@ function CalendarWidget({
     if (!date) {
       return [];
     }
-
-    return schedules.filter((schedule) => getCalendarDateKey(schedule.date) === date);
 
     return schedules.filter(
       (schedule) => getCalendarDateKey(schedule.date) === date
@@ -193,7 +183,7 @@ function CalendarWidget({
         <button
           type="button"
           className="calendar-nav-btn"
-          onClick={() => changeMonth("prev")}
+          onClick={() => changeMonth("prev")}>
 
           ←
         </button>
@@ -208,7 +198,7 @@ function CalendarWidget({
         <button
           type="button"
           className="calendar-nav-btn"
-          onClick={() => changeMonth("next")}
+          onClick={() => changeMonth("next")}>
 
           →
         </button>
@@ -264,7 +254,7 @@ function CalendarWidget({
               ]
                 .filter(Boolean)
                 .join(" ")}
-              onClick={() => handleDateSelect(date)}
+              onClick={() => handleDateSelect(date)}>
 
               <span>{day}</span>
 
@@ -329,8 +319,6 @@ function CalendarWidget({
                 <p>
                   <b>Site:</b>{" "}
                   {resolveSiteDisplay(schedule.site, {
-
-                  <b>Site:</b> {resolveSiteDisplay(schedule.site, {
                     sources: siteSources,
                     fallback: schedule.site || "—",
                   })}

@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
         <div>
           Previous 		<span
 		  className="link"
-		  onClick={() => navigate("/file-details")}
+		  onClick={() => navigate("/file-details")}>
 
 		  Lab Report
 		</span>

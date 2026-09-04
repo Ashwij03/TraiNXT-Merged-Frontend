@@ -41,7 +41,7 @@ function StudyVisits({ setActiveTab }) {
                     <span
                       className={`status-badge ${String(
                         visit.status || "Scheduled"
-                      ).toLowerCase()}`}
+                      ).toLowerCase()}`}>
 
                       {visit.status || "Scheduled"}
                     </span>

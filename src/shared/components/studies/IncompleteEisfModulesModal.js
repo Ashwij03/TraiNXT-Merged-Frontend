@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import "../../../pages/shared/studies/Studies.js";
+import "../../pages/studies/Studies.js";
 import "../../pages/studies/Studies.css";
 
 // Item 13 — Dedicated dialog for displaying ALL currently incomplete eISF
@@ -25,14 +25,14 @@ function IncompleteEisfModulesModal({ modules, onClose }) {
       className="study-modal-overlay"
       role="presentation"
       onClick={onClose}
-
+    >
       <div
         className="study-modal"
         role="dialog"
         aria-modal="true"
         aria-label="Incomplete eISF Modules"
         onClick={(event) => event.stopPropagation()}
-
+      >
         <div className="study-modal-header">
           <div>
             <h2>Incomplete eISF Modules</h2>
@@ -46,7 +46,7 @@ function IncompleteEisfModulesModal({ modules, onClose }) {
             type="button"
             onClick={onClose}
             aria-label="Close incomplete eISF modules dialog"
-
+          >
             ×
           </button>
         </div>
@@ -55,7 +55,7 @@ function IncompleteEisfModulesModal({ modules, onClose }) {
             {list.map((entry) => (
               <li
                 key={entry.id || entry.title}
-                className="study-health-incomplete-item"
+                className="study-health-incomplete-item">
 
                 <span className="study-health-incomplete-title">
                   {entry.title}
@@ -73,7 +73,7 @@ function IncompleteEisfModulesModal({ modules, onClose }) {
           <button
             type="button"
             className="secondary-btn"
-            onClick={onClose}
+            onClick={onClose}>
 
             Close
           </button>

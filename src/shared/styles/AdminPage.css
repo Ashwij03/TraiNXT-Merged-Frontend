@@ -23,7 +23,6 @@
 .admin-page-title.page-section-highlight {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--admin-gap-lg);
   flex-wrap: wrap;
 }

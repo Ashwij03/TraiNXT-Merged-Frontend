@@ -135,7 +135,7 @@ function StudyActivity() {
             onClick={() => {
                 setSelectedActivity(item);
                 setShowCommentModal(true);
-            }}
+            }}>
 
             Comment
         </button>
@@ -172,7 +172,7 @@ function StudyActivity() {
             onClick={() => {
                 setSelectedActivity(item);
                 setShowCommentModal(true);
-            }}
+            }}>
 
             Comment
         </button>
@@ -225,13 +225,13 @@ function StudyActivity() {
                 onClick={() => {
                   alert("Email Sent");
                   setShowComposeModal(false);
-                }}
+                }}>
 
                 Send
               </button>
 
               <button
-                onClick={() => setShowComposeModal(false)}
+                onClick={() => setShowComposeModal(false)}>
 
                 Cancel
               </button>

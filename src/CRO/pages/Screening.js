@@ -61,7 +61,7 @@ function Screening() {
               alignItems: "center",
               marginBottom: "1.25rem",
             }}
-
+          >
             <h1>Screening</h1>
             <RequestPermissionButton
               action="Add Screening"

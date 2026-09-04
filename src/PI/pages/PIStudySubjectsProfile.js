@@ -396,49 +396,49 @@ function PIStudySubjectProfile({ subject }) {
         <button
           className={activeTab === "overview" ? "active-tab" : ""}
           onClick={() => setActiveTab("overview")}
-
+        >
           Overview
         </button>
 
         <button
           className={activeTab === "screening" ? "active-tab" : ""}
           onClick={() => setActiveTab("screening")}
-
+        >
           Screening
         </button>
 
         <button
           className={activeTab === "enrollment" ? "active-tab" : ""}
           onClick={() => setActiveTab("enrollment")}
-
+        >
           Enrollment
         </button>
 
         <button
           className={activeTab === "visits" ? "active-tab" : ""}
           onClick={() => setActiveTab("visits")}
-
+        >
           Visits
         </button>
 
         <button
           className={activeTab === "documents" ? "active-tab" : ""}
           onClick={() => setActiveTab("documents")}
-
+        >
           Documents
         </button>
 
         <button
           className={activeTab === "queries" ? "active-tab" : ""}
           onClick={() => setActiveTab("queries")}
-
+        >
           Queries
         </button>
 
         <button
           className={activeTab === "audit" ? "active-tab" : ""}
           onClick={() => setActiveTab("audit")}
-
+        >
           Audit Trail
         </button>
       </div>
@@ -462,7 +462,7 @@ function PIStudySubjectProfile({ subject }) {
 
                 <span
                   className={`status-badge ${subject.status.toLowerCase()}`}
-
+                >
                   {subject.status}
                 </span>
               </div>
@@ -495,7 +495,7 @@ function PIStudySubjectProfile({ subject }) {
                   setEditIndex(null);
                   setShowScreeningModal(true);
                 }}
-
+              >
                 + Add Screening
               </button>
             </div>
@@ -572,7 +572,7 @@ function PIStudySubjectProfile({ subject }) {
               <button
                 className="add-visit-btn"
                 onClick={() => setShowDocumentModal(true)}
-
+              >
                 + Add Document
               </button>
             </div>
@@ -646,7 +646,7 @@ function PIStudySubjectProfile({ subject }) {
               <button
                 className="add-visit-btn"
                 onClick={() => setShowVisitModal(true)}
-
+              >
                 + Add Visit
               </button>
             </div>
@@ -670,7 +670,7 @@ function PIStudySubjectProfile({ subject }) {
                     <td>
                       <span
                         className={`visit-status ${visit.status.toLowerCase()}`}
-
+                      >
                         {visit.status}
                       </span>
                     </td>
@@ -700,7 +700,7 @@ function PIStudySubjectProfile({ subject }) {
               <button
                 className="add-visit-btn"
                 onClick={() => setShowQueryModal(true)}
-
+              >
                 + Create Query
               </button>
             </div>
@@ -831,7 +831,7 @@ function PIStudySubjectProfile({ subject }) {
                     status: e.target.value,
                   })
                 }
-
+              >
                 <option>Scheduled</option>
                 <option>Completed</option>
                 <option>Missed</option>
@@ -841,7 +841,7 @@ function PIStudySubjectProfile({ subject }) {
                 <button
                   className="cancel-btn"
                   onClick={() => setShowVisitModal(false)}
-
+                >
                   Cancel
                 </button>
 
@@ -877,7 +877,7 @@ function PIStudySubjectProfile({ subject }) {
                   eligibility: e.target.value,
                 })
               }
-
+            >
               <option value="">Select</option>
               <option value="Eligible">Eligible</option>
               <option value="Pending">Pending</option>
@@ -902,7 +902,7 @@ function PIStudySubjectProfile({ subject }) {
               className="cancel-btn"
               type="button"
               onClick={() => setShowScreeningModal(false)}
-
+            >
               Cancel
             </button>
           </div>
@@ -943,7 +943,7 @@ function PIStudySubjectProfile({ subject }) {
                   consentStatus: e.target.value,
                 })
               }
-
+            >
               <option value="">Select Consent</option>
 
               <option value="Pending">Pending</option>
@@ -958,7 +958,7 @@ function PIStudySubjectProfile({ subject }) {
                 className="save-btn"
                 type="button"
                 onClick={saveEnrollment}
-
+              >
                 Save
               </button>
 
@@ -966,7 +966,7 @@ function PIStudySubjectProfile({ subject }) {
                 className="cancel-btn"
                 type="button"
                 onClick={() => setShowEnrollmentModal(false)}
-
+              >
                 Cancel
               </button>
             </div>
@@ -997,7 +997,7 @@ function PIStudySubjectProfile({ subject }) {
                   type: e.target.value,
                 })
               }
-
+            >
               <option value="">Select Type</option>
 
               <option value="ICF">ICF</option>
@@ -1015,7 +1015,7 @@ function PIStudySubjectProfile({ subject }) {
               <button
                 className="cancel-btn"
                 onClick={() => setShowDocumentModal(false)}
-
+              >
                 Cancel
               </button>
             </div>
@@ -1057,7 +1057,7 @@ function PIStudySubjectProfile({ subject }) {
                   status: e.target.value,
                 })
               }
-
+            >
               <option>Open</option>
               <option>Closed</option>
               <option>Pending</option>
@@ -1071,7 +1071,7 @@ function PIStudySubjectProfile({ subject }) {
               <button
                 className="cancel-btn"
                 onClick={() => setShowQueryModal(false)}
-
+              >
                 Cancel
               </button>
             </div>

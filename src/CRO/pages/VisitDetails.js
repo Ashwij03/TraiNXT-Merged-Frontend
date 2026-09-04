@@ -57,7 +57,7 @@ export default function VisitDetails() {
           <button
             className="procedure-plus"
             onClick={() => setShowModal(true)}
-
+          >
             +
           </button>
 
@@ -68,7 +68,7 @@ export default function VisitDetails() {
           <div
             key={c.id}
             className="comment-inline"
-
+          >
             <div className="avatar">
 
               {c.id}

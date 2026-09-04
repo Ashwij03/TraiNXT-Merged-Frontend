@@ -27,10 +27,13 @@ import UserManagement from "./shared/pages/UserManagement";
 import CROOverview from "./CRO/pages/CROOverview";
 
 import AuditLogsPage from "./shared/pages/audit/AuditLogsPage";
-import DelegationLogPage from "./pages/shared/logs/DelegationLogPage";
-import LogsPage from "./pages/shared/logs/LogsPage";
+// TODO(fix-needed): DelegationLogPage module not found - route disabled pending file restoration
+// import DelegationLogPage from "./pages/shared/logs/DelegationLogPage";
+// TODO(fix-needed): LogsPage module not found - route disabled pending file restoration
+// import LogsPage from "./pages/shared/logs/LogsPage";
 import Sites from "./Admin/pages/Sites";
-import TrainingLogPage from "./pages/shared/logs/TrainingLogPage";
+// TODO(fix-needed): TrainingLogPage module not found - route disabled pending file restoration
+// import TrainingLogPage from "./pages/shared/logs/TrainingLogPage";
 import {
   getDashboardPath,
   getCurrentUser,
@@ -38,6 +41,7 @@ import {
 } from "./shared/services/roleService";
 import { cleanupCrossStudySubjectData } from "./shared/services/studyService";
 import EISFDashboard from "./shared/pages/EISF/EDashboard/EISFDashboard";
+import {
   RoleAwareComments,
   RoleAwareNotifications,
   RoleAwareProgressNotes,
@@ -115,9 +119,15 @@ import SiteStaffLiveChat from "./SiteStaff/pages/LiveChat";
 
 // ===== START: Safety / AI Review / eTMF imports =====
 import SafetyCenter from "./shared/pages/safety/SafetyCenter";
+import MonitoringAccess from "./shared/pages/monitoring/MonitoringAccess";
 import RiskInsights from "./shared/pages/aiReview/RiskInsights";
 import EtmfCenter from "./shared/pages/etmf/EtmfCenter";
 // ===== END: Safety / AI Review / eTMF imports =====
+
+// ===== START: Dynamic Subscription & Plan Catalog imports =====
+import MyLicense from "./shared/pages/MyLicense";
+import SubscriptionManagement from "./Admin/pages/SubscriptionManagement";
+// ===== END: Dynamic Subscription & Plan Catalog imports =====
 
 const SPONSOR_ROLES = [ROLES.SPONSOR];
 const SPONSOR_ADMIN_ROLES = [ROLES.SPONSOR, ROLES.ADMIN];
@@ -267,6 +277,7 @@ function App() {
         }
       />
 
+      {/* TODO(fix-needed): LogsPage module not found - route disabled pending file restoration
       <Route
         path="/logs"
         element={
@@ -275,7 +286,9 @@ function App() {
           </ProtectedRoute>
         }
       />
+      */}
 
+      {/* TODO(fix-needed): TrainingLogPage module not found - route disabled pending file restoration
       <Route
         path="/logs/training"
         element={
@@ -284,7 +297,9 @@ function App() {
           </ProtectedRoute>
         }
       />
+      */}
 
+      {/* TODO(fix-needed): DelegationLogPage module not found - route disabled pending file restoration
       <Route
         path="/logs/delegation"
         element={
@@ -293,6 +308,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+      */}
 
       <Route
         path="/audit-logs"
@@ -505,6 +521,26 @@ function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* ===== START: Dynamic Subscription & Plan Catalog routes ===== */}
+      <Route
+        path="/my-license"
+        element={
+          <ProtectedRoute>
+            <MyLicense />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/subscription"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+            <SubscriptionManagement />
+          </ProtectedRoute>
+        }
+      />
+      {/* ===== END: Dynamic Subscription & Plan Catalog routes ===== */}
 
       {/* Sponsor-specific routes */}
       <Route
@@ -1022,6 +1058,17 @@ function App() {
         }
       />
       {/* ===== END: Safety / AI Review / eTMF routes ===== */}
+
+      {/* ===== START: Monitoring Access route ===== */}
+      <Route
+        path="/monitoring-access"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.SITE_STAFF, ROLES.CRO, ROLES.SPONSOR]}>
+            <MonitoringAccess />
+          </ProtectedRoute>
+        }
+      />
+      {/* ===== END: Monitoring Access route ===== */}
 
       <Route path="*" element={<RoleAwareFallback />} />
     </Routes>

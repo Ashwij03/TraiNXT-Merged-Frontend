@@ -23,7 +23,7 @@ function StudyHealthSummary({ health }) {
     <div
       className="study-widget-card study-health-card"
       aria-label="eISF Summary"
-
+    >
       <div className="study-widget-header">
         <FiActivity />
         <h3>eISF Summary</h3>
@@ -58,7 +58,7 @@ function StudyHealthSummary({ health }) {
                 key={moduleEntry.id || moduleEntry.title}
                 className="study-health-incomplete-item"
                 title={moduleEntry.title}
-
+              >
                 {moduleEntry.title}
               </li>
             ))}
@@ -67,7 +67,7 @@ function StudyHealthSummary({ health }) {
             <button
               type="button"
               className="study-health-view-all"
-              onClick={() => setShowAllModal(true)}
+              onClick={() => setShowAllModal(true)}>
 
               View All ({incompleteModules.length})
             </button>

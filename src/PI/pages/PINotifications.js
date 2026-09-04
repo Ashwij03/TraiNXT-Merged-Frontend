@@ -127,7 +127,7 @@ function PINotifications({ selectedStudy = "All Studies" }) {
               setCategoryFilter("All");
               setStatusFilter("All");
             }}
-
+          >
             Clear Filters
           </button>
         </div>
@@ -157,7 +157,7 @@ function PINotifications({ selectedStudy = "All Studies" }) {
                     key={item.id}
                     className="pi-table-clickable"
                     onClick={() => toggleReadStatus(item.id)}
-
+                  >
                     <td>{item.message}</td>
                     <td>{item.category || "—"}</td>
                     <td>{item.study || "—"}</td>
@@ -180,7 +180,7 @@ function PINotifications({ selectedStudy = "All Studies" }) {
                           e.stopPropagation();
                           toggleReadStatus(item.id);
                         }}
-
+                      >
                         Mark {item.status === "Unread" ? "Read" : "Unread"}
                       </button>
                     </td>

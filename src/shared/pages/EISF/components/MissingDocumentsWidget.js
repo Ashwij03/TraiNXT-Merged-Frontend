@@ -30,7 +30,7 @@ export default function MissingDocumentsWidget({
             {missing.slice(0, maxItems).map((document) => (
               <li
                 key={document.id || document.name}
-                className="missing-item"
+                className="missing-item">
 
                 {document.name || "Unnamed Document"}
               </li>

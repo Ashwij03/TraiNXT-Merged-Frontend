@@ -231,7 +231,7 @@ function SubjectVisits({
           className="add-visit-btn"
           onClick={() =>
             setShowVisitModal(true)
-          }
+          }>
 
           + Add Visit
         </button>
@@ -261,7 +261,7 @@ function SubjectVisits({
             
               <td
                 colSpan="4"
-                className="no-visits"
+                className="no-visits">
 
                 No Visits Added Yet
               </td>
@@ -284,21 +284,21 @@ function SubjectVisits({
             
                   <button
                     className="view-visit-btn"
-                    onClick={() => viewVisit(visit)}
+                    onClick={() => viewVisit(visit)}>
 
                     View
                   </button>
             
                   <button
                     className="btn-edit edit-visit-btn"
-                    onClick={() => editVisit(visit)}
+                    onClick={() => editVisit(visit)}>
 
                     Edit
                   </button>
             
                   <button
                     className="delete-visit-btn"
-                    onClick={() => deleteVisit(visit)}
+                    onClick={() => deleteVisit(visit)}>
 
                     Delete
                   </button>
@@ -358,7 +358,7 @@ function SubjectVisits({
                     ...newVisit,
                     status:e.target.value
                   })
-                }
+                }>
 
                 <option>Scheduled</option>
                 <option>Completed</option>
@@ -370,13 +370,13 @@ function SubjectVisits({
                 <button
                   onClick={() =>
                     setShowVisitModal(false)
-                  }
+                  }>
 
                   Cancel
                 </button>
                 
                 <button
-                  onClick={addVisit}
+                  onClick={addVisit}>
 
                   {
                     newVisit.id
@@ -436,21 +436,21 @@ function SubjectVisits({
               />
 
               <div
-                className="visit-modal-actions"
+                className="visit-modal-actions">
 
               
                 <button
                   className="visit-cancel-btn"
                   onClick={() =>
                     setShowDeleteModal(false)
-                  }
+                  }>
 
                   Cancel
                 </button>
                 
                 <button
                   className="visit-delete-btn"
-                  onClick={confirmDeleteVisit}
+                  onClick={confirmDeleteVisit}>
 
                   Delete Visit
                 </button>

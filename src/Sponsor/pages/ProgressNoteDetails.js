@@ -48,7 +48,7 @@ function ProgressNoteDetails() {
       <button
   className="back-btn"
   onClick={() => navigate("/progress-notes")}
-
+      >
    Back to Progress Notes
 </button>
 

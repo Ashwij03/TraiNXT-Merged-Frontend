@@ -171,7 +171,7 @@ function LogCrudTable({
         <select
           value={value}
           onChange={(e) => onChange({ ...form, [field.key]: e.target.value })}
-
+        >
           <option value="">Select {field.label}</option>
           {field.options.map((option) => (
             <option key={option} value={option}>
@@ -268,7 +268,7 @@ function LogCrudTable({
               <button
                 className="log-crud-cancel-btn"
                 onClick={() => setShowAdd(false)}
-
+              >
                 Cancel
               </button>
               <button className="log-crud-save-btn" onClick={handleAddSubmit}>
@@ -293,7 +293,7 @@ function LogCrudTable({
               <span
                 className="log-crud-view-close"
                 onClick={() => setViewTarget(null)}
-
+              >
                 ✖
               </span>
             </div>
@@ -313,7 +313,7 @@ function LogCrudTable({
               <button
                 className="log-crud-cancel-btn"
                 onClick={() => setViewTarget(null)}
-
+              >
                 Close
               </button>
             </div>
@@ -338,13 +338,13 @@ function LogCrudTable({
               <button
                 className="log-crud-cancel-btn"
                 onClick={() => setEditConfirmTarget(null)}
-
+              >
                 Cancel
               </button>
               <button
                 className="log-crud-save-btn"
                 onClick={handleContinueToEdit}
-
+              >
                 Continue
               </button>
             </div>
@@ -365,13 +365,13 @@ function LogCrudTable({
               <button
                 className="log-crud-cancel-btn"
                 onClick={() => setEditTarget(null)}
-
+              >
                 Cancel
               </button>
               <button
                 className="log-crud-save-btn"
                 onClick={handleUpdateSubmit}
-
+              >
                 Update
               </button>
             </div>
@@ -396,13 +396,13 @@ function LogCrudTable({
               <button
                 className="log-crud-cancel-btn"
                 onClick={() => setDeleteConfirmTarget(null)}
-
+              >
                 Cancel
               </button>
               <button
                 className="log-crud-save-btn"
                 onClick={handleContinueToDeleteReason}
-
+              >
                 Continue
               </button>
             </div>
@@ -437,7 +437,7 @@ function LogCrudTable({
                     color: "#dc3545",
                     fontSize: "0.8125rem",
                     marginTop: "0.375rem"
-                  }}
+                  }}>
 
                   {deleteReasonError}
                 </p>
@@ -446,7 +446,7 @@ function LogCrudTable({
             <div className="modal-footer log-crud-modal-footer">
               <button
                 className="log-crud-cancel-btn"
-                onClick={() => setDeleteReasonTarget(null)}
+                onClick={() => setDeleteReasonTarget(null)}>
 
                 Cancel
               </button>

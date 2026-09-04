@@ -11,6 +11,7 @@ import {
   MdNotifications,
   MdCheckCircle,
 } from 'react-icons/md';
+import {
   PieChart,
   Pie,
   Cell,
@@ -34,12 +35,14 @@ import KpiCard from './KpiCard';
 import AlertsPanel from './SponsorAlertsPanel';
 import QuickActions from './SponsorQuickActions';
 import SubscriptionEditModal from './SubscriptionEditModal';
+import {
   FaCheckCircle,
   FaSearch,
   FaUpload,
   FaExclamationTriangle,
 } from "react-icons/fa";
 
+import {
   getDashboardKPIs,
   getEnrollmentByStudy,
   getStudyStatusData,
@@ -144,7 +147,7 @@ const SponsorDashboard = () => {
         className="sponsor-dashboard"
         data-analytics-subjects-count={analyticsSubjects.length}
         data-portfolio-studies-count={portfolioStudiesForAnalytics.length}
-
+      >
         <div className="dashboard-header-row page-section-highlight">
           <div className="dashboard-header">
             <h1>Sponsor Dashboard</h1>
@@ -237,7 +240,7 @@ const SponsorDashboard = () => {
             <button
               className="subscription-edit-btn"
               onClick={() => setShowSubscriptionModal(true)}
-
+            >
               Edit Subscription
             </button>
           </div>
@@ -298,7 +301,7 @@ const SponsorDashboard = () => {
                     cy="50%"
                     outerRadius={90}
                     label
-
+                  >
                     {statusData.map((entry, index) => (
                       <Cell
                         key={entry.name}

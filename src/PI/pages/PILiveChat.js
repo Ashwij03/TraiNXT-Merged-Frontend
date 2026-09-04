@@ -99,21 +99,21 @@ function PILiveChat({ setSelectedPage }) {
               type="button"
               className={activeTab === "all" ? "active" : ""}
               onClick={() => setActiveTab("all")}
-
+            >
               All
             </button>
             <button
               type="button"
               className={activeTab === "unread" ? "active" : ""}
               onClick={() => setActiveTab("unread")}
-
+            >
               Unread
             </button>
             <button
               type="button"
               className={activeTab === "resolved" ? "active" : ""}
               onClick={() => setActiveTab("resolved")}
-
+            >
               Resolved
             </button>
           </div>
@@ -139,7 +139,7 @@ function PILiveChat({ setSelectedPage }) {
                   key={chat.id}
                   className={`chat-user ${selectedUser === index ? "active" : ""}`}
                   onClick={() => setSelectedUser(index)}
-
+                >
                   <div className="user-details">
                     <div className="avatar">{chat.name.charAt(0)}</div>
                     <div className="user-details">
@@ -185,8 +185,8 @@ function PILiveChat({ setSelectedPage }) {
                     : msg.sender === "system"
                       ? "system"
                       : "received"
-                }`}
-
+                }`                }
+              >
                 {msg.file ? (
                   msg.type?.startsWith("image/") ? (
                     <img src={msg.url} alt={msg.name} className="chat-image" />
@@ -219,7 +219,7 @@ function PILiveChat({ setSelectedPage }) {
               type="button"
               className="attach-btn"
               onClick={() => fileInputRef.current?.click()}
-
+            >
               +
             </button>
 
@@ -239,7 +239,7 @@ function PILiveChat({ setSelectedPage }) {
               type="button"
               className="emoji-btn"
               onClick={() => setShowEmoji(!showEmoji)}
-
+            >
               😀
             </button>
 

@@ -11,15 +11,18 @@ import {
   saveRegulatoryChecklistItem,
   deleteRegulatoryChecklistItem,
 } from "../../../services/planningService";
+import {
   getAllSubjectsFromStorage,
   getSubjectStatusAnalytics,
 } from "../../../utils/subjectStatusAnalytics";
+import {
   getEssentialDocumentsCompletion,
   getStudyScopedSitePerformance,
   getStudyHealthSummary,
 } from "../../../services/studyOverviewService";
 import { getStudyLogs } from "../../../services/adminService";
 
+import {
   BarChart,
   Bar,
   XAxis,
@@ -136,7 +139,7 @@ const SiteDetails = () => {
           <button
             type="button"
             className="back-btn"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(-1)}>
 
             ← Back
           </button>
@@ -208,7 +211,7 @@ const SiteDetails = () => {
             <button
               type="button"
               className="back-btn"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate(-1)}>
 
               ← Back
             </button>
@@ -234,7 +237,7 @@ const SiteDetails = () => {
             className={
               activeTab === "overview" ? "active" : ""
             }
-            onClick={() => setActiveTab("overview")}
+            onClick={() => setActiveTab("overview")}>
 
             Overview
           </button>
@@ -244,7 +247,7 @@ const SiteDetails = () => {
             className={
               activeTab === "enrollment" ? "active" : ""
             }
-            onClick={() => setActiveTab("enrollment")}
+            onClick={() => setActiveTab("enrollment")}>
 
             Enrollment
           </button>
@@ -254,7 +257,7 @@ const SiteDetails = () => {
             className={
               activeTab === "status" ? "active" : ""
             }
-            onClick={() => setActiveTab("status")}
+            onClick={() => setActiveTab("status")}>
 
             Status
           </button>
@@ -264,7 +267,7 @@ const SiteDetails = () => {
             className={
               activeTab === "activity" ? "active" : ""
             }
-            onClick={() => setActiveTab("activity")}
+            onClick={() => setActiveTab("activity")}>
 
             Activity
           </button>
@@ -274,7 +277,7 @@ const SiteDetails = () => {
             className={
               activeTab === "details" ? "active" : ""
             }
-            onClick={() => setActiveTab("details")}
+            onClick={() => setActiveTab("details")}>
 
             Detailed Site Info
           </button>
@@ -284,7 +287,7 @@ const SiteDetails = () => {
             className={
               activeTab === "analytics" ? "active" : ""
             }
-            onClick={() => setActiveTab("analytics")}
+            onClick={() => setActiveTab("analytics")}>
 
             Enrollment Analytics
           </button>
@@ -294,7 +297,7 @@ const SiteDetails = () => {
             className={
               activeTab === "metrics" ? "active" : ""
             }
-            onClick={() => setActiveTab("metrics")}
+            onClick={() => setActiveTab("metrics")}>
 
             Dashboard Metrics
           </button>
@@ -438,7 +441,7 @@ const SiteDetails = () => {
               type="button"
               className="site-empty-btn"
               disabled
-              title="Site activity is derived from audit logs and cannot be added manually."
+              title="Site activity is derived from audit logs and cannot be added manually.">
 
               + Add Activity
             </button>
@@ -543,7 +546,7 @@ const SiteDetails = () => {
                   type="button"
                   className="site-empty-btn"
                   disabled
-                  title="Assignments are managed centrally in the study workspace."
+                  title="Assignments are managed centrally in the study workspace.">
 
                   + Create Assignment
                 </button>
@@ -568,7 +571,7 @@ const SiteDetails = () => {
                       onClick={() => {
                         setEditingTeamMember(null);
                         setTeamFormOpen(true);
-                      }}
+                      }}>
 
                       + Add Team Member
                     </button>
@@ -580,7 +583,7 @@ const SiteDetails = () => {
                     {studyTeam.map((member) => (
                       <div
                         className="site-team-card"
-                        key={member.id}
+                        key={member.id}>
 
                         <strong>
                           {member.name || "—"}
@@ -609,7 +612,7 @@ const SiteDetails = () => {
                               onClick={() => {
                                 setEditingTeamMember(member);
                                 setTeamFormOpen(true);
-                              }}
+                              }}>
 
                               Edit
                             </button>
@@ -618,7 +621,7 @@ const SiteDetails = () => {
                               className="link-btn danger"
                               onClick={() =>
                                 handleDeleteTeamMember(member.id)
-                              }
+                              }>
 
                               Delete
                             </button>
@@ -635,7 +638,7 @@ const SiteDetails = () => {
                       onClick={() => {
                         setEditingTeamMember(null);
                         setTeamFormOpen(true);
-                      }}
+                      }}>
 
                       + Add Team Member
                     </button>
@@ -673,7 +676,7 @@ const SiteDetails = () => {
                       onClick={() => {
                         setEditingContact(null);
                         setContactFormOpen(true);
-                      }}
+                      }}>
 
                       + Add Contact
                     </button>
@@ -685,7 +688,7 @@ const SiteDetails = () => {
                     {studyTeam.map((member) => (
                       <div
                         className="site-team-card"
-                        key={`contact-${member.id}`}
+                        key={`contact-${member.id}`}>
 
                         <strong>
                           {member.name || "—"}
@@ -709,7 +712,7 @@ const SiteDetails = () => {
                               onClick={() => {
                                 setEditingContact(member);
                                 setContactFormOpen(true);
-                              }}
+                              }}>
 
                               Edit
                             </button>
@@ -726,7 +729,7 @@ const SiteDetails = () => {
                       onClick={() => {
                         setEditingContact(null);
                         setContactFormOpen(true);
-                      }}
+                      }}>
 
                       + Add Contact
                     </button>
@@ -762,7 +765,7 @@ const SiteDetails = () => {
                   type="button"
                   className="site-empty-btn"
                   disabled
-                  title="Activation milestones are managed in the study Planning workspace."
+                  title="Activation milestones are managed in the study Planning workspace.">
 
                   + Add Activation
                 </button>
@@ -787,7 +790,7 @@ const SiteDetails = () => {
                       onClick={() => {
                         setEditingRegulatoryItem(null);
                         setRegulatoryFormOpen(true);
-                      }}
+                      }}>
 
                       + Add Regulatory Record
                     </button>
@@ -800,7 +803,7 @@ const SiteDetails = () => {
                       (item, index) => (
                         <div
                           className="site-regulatory-item"
-                          key={item.id || index}
+                          key={item.id || index}>
 
                           {Object.entries(item).map(
                             ([key, value]) => (
@@ -824,7 +827,7 @@ const SiteDetails = () => {
                                 onClick={() => {
                                   setEditingRegulatoryItem(item);
                                   setRegulatoryFormOpen(true);
-                                }}
+                                }}>
 
                                 Edit
                               </button>
@@ -833,7 +836,7 @@ const SiteDetails = () => {
                                 className="link-btn danger"
                                 onClick={() =>
                                   handleDeleteRegulatoryItem(item.id)
-                                }
+                                }>
 
                                 Remove
                               </button>
@@ -851,7 +854,7 @@ const SiteDetails = () => {
                       onClick={() => {
                         setEditingRegulatoryItem(null);
                         setRegulatoryFormOpen(true);
-                      }}
+                      }}>
 
                       + Add Regulatory Record
                     </button>
@@ -969,7 +972,7 @@ const SiteDetails = () => {
 
                 <ResponsiveContainer
                   width="100%"
-                  height={320}
+                  height={320}>
 
                   <BarChart data={subjectStatusAnalytics}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -1084,7 +1087,7 @@ const SiteDetails = () => {
                     (factor, index) => (
                       <div
                         className="site-regulatory-item"
-                        key={`${factor.label}-${index}`}
+                        key={`${factor.label}-${index}`}>
 
                         <p>
                           <span>Risk Indicator</span>
@@ -1112,7 +1115,7 @@ const SiteDetails = () => {
                         type="button"
                         className="site-empty-btn"
                         disabled
-                        title="Risk indicators are computed from study health signals."
+                        title="Risk indicators are computed from study health signals.">
 
                         + Add Risk Indicator
                       </button>
@@ -1130,7 +1133,7 @@ const SiteDetails = () => {
                     (metric, index) => (
                       <div
                         className="site-regulatory-item"
-                        key={index}
+                        key={index}>
 
                         <pre>
                           {JSON.stringify(
@@ -1157,7 +1160,7 @@ const SiteDetails = () => {
                       type="button"
                       className="site-empty-btn"
                       disabled
-                      title="Site KPIs are derived automatically from operational metrics."
+                      title="Site KPIs are derived automatically from operational metrics.">
 
                       + Add KPI
                     </button>
@@ -1173,7 +1176,7 @@ const SiteDetails = () => {
                   {studyLogs.map((log, index) => (
                     <div
                       className="site-regulatory-item"
-                      key={index}
+                      key={index}>
 
                       {Object.entries(log).map(
                         ([key, value]) => (
@@ -1205,7 +1208,7 @@ const SiteDetails = () => {
                       type="button"
                       className="site-empty-btn"
                       disabled
-                      title="Audit entries are written automatically by the system."
+                      title="Audit entries are written automatically by the system.">
 
                       + Add Audit Entry
                     </button>

@@ -47,7 +47,7 @@ const DashboardFilters = ({
               e.target.value
             )
           }
-
+        >
           <option>
             All Studies
           </option>
@@ -81,7 +81,7 @@ const DashboardFilters = ({
               e.target.value
             )
           }
-
+        >
           <option>
             All Regions
           </option>
@@ -125,14 +125,14 @@ const DashboardFilters = ({
         <button
           className="apply-btn"
           onClick={handleApplyFilters}
-
+        >
           Apply Filters
         </button>
 
         <button
           className="reset-btn"
           onClick={handleResetFilters}
-
+        >
           Reset
         </button>
 

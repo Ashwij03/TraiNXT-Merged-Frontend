@@ -6,7 +6,8 @@ import {  MdWorkspaces,
   MdGroups,
   MdBusiness,
 } from 'react-icons/md';
-import { syncQuickActionValues } from '../data/sponsorDataStore';
+import { syncQuickActionValues, getQuickActions, saveQuickActions } from '../data/sponsorDataStore';
+import EnterpriseModal from './EnterpriseModal';
 import '../styles/SponsorQuickActions.css';
 
 const iconMap = {
@@ -105,7 +106,7 @@ const SponsorQuickActions = () => {
               role="button"
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && handleCardClick(action)}
-
+            >
               <div className="qa-icon" style={{ backgroundColor: action.bg, color: action.color }}>
                 <Icon size={24} />
               </div>
@@ -125,7 +126,7 @@ const SponsorQuickActions = () => {
           onClose={() => setModalOpen(false)}
           onSave={handleSave}
           saveLabel={editingAction ? 'Update' : 'Create'}
-
+        >
           <input
             placeholder="Action Label"
             value={form.label}

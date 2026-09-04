@@ -5,7 +5,6 @@ import AdminComments from "../../Admin/pages/Comments";
 import AdminNotifications from "../../Admin/pages/Notifications";
 import AdminRecruitment from "../../Admin/pages/Recruitment";
 import AdminReferral from "../../Admin/pages/Referral";
-import AdminRegulatory from "../pages/EISF/Regulatory/Regulatory.css";
 import AdminReports from "../../Admin/pages/Reports";
 import AdminSettings from "../../Admin/pages/Settings";
 import AdminSitePerformance from "../../Admin/pages/SitePerformance";
@@ -17,11 +16,6 @@ import SharedProgressNotes from "../pages/operations/ProgressNotes";
 import SharedStudies from "../pages/studies/Studies";
 import SponsorEnrollment from "../../CRO/pages/Enrollment.js";
 import SponsorQueries from "../../Sponsor/pages/Queries.js";
-
-import SponsorEnrollment from "../../Sponsor/pages/Enrollment";
-import SponsorQueries from "../../Sponsor/pages/Queries";
-import CroEnrollment from "../../CRO/pages/CROEnrollment";
-import CroQueries from "../../CRO/pages/CROQueries";
 
 import SponsorSitePerformance from "../../Sponsor/pages/SitePerformance";
 import SponsorRecruitment from "../../Sponsor/pages/Recruitment";

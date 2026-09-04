@@ -18,7 +18,7 @@ function RecentSubjectsWidget({
 
       <table
         className="dashboard-table"
-
+      >
         <thead>
 
           <tr>
@@ -51,7 +51,7 @@ function RecentSubjectsWidget({
                   key={
                     subject.id
                   }
-
+                >
                   <td>
                     {
                       subject.id

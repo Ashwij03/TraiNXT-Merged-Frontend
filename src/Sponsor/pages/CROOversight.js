@@ -91,7 +91,7 @@ const CROOversight = () => {
       onClick={() =>
         navigate('/cro-details', { state: cro })
       }
-
+    >
       View
     </button>
 

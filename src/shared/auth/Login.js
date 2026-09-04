@@ -196,7 +196,7 @@ localStorage.removeItem("adminPreviewRole");
               cursor: "pointer",
               fontWeight: "500"
             }}
-            onClick={() => navigate("/register")}
+            onClick={() => navigate("/register")}>
 
             Sign Up
           </span>
@@ -263,7 +263,7 @@ localStorage.removeItem("adminPreviewRole");
                 setShowPassword(
                   !showPassword
                 )
-              }
+              }>
 
               {showPassword
                 ? "Hide"
@@ -276,7 +276,7 @@ localStorage.removeItem("adminPreviewRole");
             className="forgot-password"
             onClick={() =>
               navigate("/forgot-password")
-            }
+            }>
 
             Forgot Password?
           </p>
@@ -286,7 +286,7 @@ localStorage.removeItem("adminPreviewRole");
               style={{
                 color: "red",
                 fontSize: "0.75rem",
-              }}
+              }}>
 
               {passwordError}
             </p>
@@ -311,7 +311,7 @@ localStorage.removeItem("adminPreviewRole");
           className="google-btn"
           onClick={() => {
             // TODO: wire up Google OAuth once it's configured for this project
-          }}
+          }}>
 
           <svg className="google-icon" viewBox="0 0 48 48" aria-hidden="true">
             <path

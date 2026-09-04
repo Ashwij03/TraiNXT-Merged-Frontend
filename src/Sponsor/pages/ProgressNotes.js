@@ -47,42 +47,6 @@ function ProgressNotes() {
         })
       : "—";
 
-  const notesData = [
-    {
-      id: "NOTE-001",
-      subjectId: "SUB-001",
-      study: "TRIA-001",
-      site: "Hyderabad",
-      visit: "Visit 3",
-      category: "Safety",
-      createdBy: "Dr Rao",
-      date: "10-Jun-2026",
-      status: "Signed"
-    },
-    {
-      id: "NOTE-002",
-      subjectId: "SUB-002",
-      study: "TRIA-001",
-      site: "Hyderabad",
-      visit: "Baseline",
-      category: "Visit Assessment",
-      createdBy: "Dr Rao",
-      date: "12-Jun-2026",
-      status: "Pending"
-    },
-    {
-      id: "NOTE-003",
-      subjectId: "SUB-003",
-      study: "TRIA-002",
-      site: "Bangalore",
-      visit: "Month 1",
-      category: "Protocol Deviation",
-      createdBy: "Dr Kumar",
-      date: "15-Jun-2026",
-      status: "Signed"
-    }
-  ];
-
   const filteredNotes = notesData.filter((note) =>
     note.subjectId
       .toLowerCase()
@@ -139,7 +103,7 @@ function ProgressNotes() {
         <button
           className="search-btn"
           onClick={() => setSearchTerm(inputValue)}
-
+        >
           Search
         </button>
 
@@ -182,7 +146,7 @@ function ProgressNotes() {
                 <td>
                   <span
                     className={`status-badge ${note.status}`}
-
+                  >
                     {note.status}
                   </span>
                 </td>
@@ -193,7 +157,7 @@ function ProgressNotes() {
   onClick={() =>
     navigate(`/progress-note-details/${note.id}`)
   }
-
+                  >
   View
 </button>
                 </td>

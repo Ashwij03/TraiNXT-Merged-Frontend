@@ -41,7 +41,7 @@ function AlertsPanel({ title = "Alerts", alerts = [] }) {
     <section
       className="alerts-card alerts-card--enterprise"
       aria-label={title}
-
+    >
       <header className="alerts-header">
         <div className="alerts-header__titles">
           <h3>{title}</h3>
@@ -77,11 +77,11 @@ function AlertsPanel({ title = "Alerts", alerts = [] }) {
               <article
                 key={`${alert?.title || "alert"}-${index}`}
                 className={`alert-item alert-item--${meta.tone}`}
-
+              >
                 <div
                   className={`alert-icon alert-icon--${meta.tone}`}
                   aria-hidden="true"
-
+                >
                   {meta.icon}
                 </div>
 
