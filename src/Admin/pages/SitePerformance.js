@@ -87,7 +87,7 @@ function SitePerformance() {
             className="site-performance-select"
             value={siteFilter}
             onChange={(event) => setSiteFilter(event.target.value)}
-
+          >
             {siteOptions.map((site) => (
               <option key={site} value={site}>
                 {site}

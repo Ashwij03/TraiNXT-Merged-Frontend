@@ -35,7 +35,7 @@ export const PermissionProvider = ({
       value={{
         permissions,
         hasPermission,
-      }}
+      }}>
 
       {children}
     </PermissionContext.Provider>

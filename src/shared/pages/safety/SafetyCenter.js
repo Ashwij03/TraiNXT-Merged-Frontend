@@ -130,7 +130,7 @@ function SafetyCenter() {
               type="button"
               className="safety-action-btn"
               onClick={() => handleReconcile(row)}
-              title="Mark reconciled against the external PV system"
+              title="Mark reconciled against the external PV system">
 
               <FiRefreshCw size={14} /> Reconcile
             </button>

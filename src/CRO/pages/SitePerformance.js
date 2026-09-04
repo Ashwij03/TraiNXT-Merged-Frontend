@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import CROSidebar from "./CROSidebar";
 import CRONavbar from "./CRONavbar";
 import RequestPermissionButton from "../../shared/components/RequestPermissionButton";
-import { formatSiteLabel } from "../../shared/utils/siteDisplay.js";
 import { getSitePerformance } from "../../shared/services/adminService";
 import { resolveSiteDisplay } from "../../shared/utils/siteDisplay";
 
@@ -50,7 +49,7 @@ function SitePerformance() {
               alignItems: "center",
               marginBottom: "1.25rem",
             }}
-
+          >
             <h1>Site Performance</h1>
             <RequestPermissionButton
               action="Add Site"

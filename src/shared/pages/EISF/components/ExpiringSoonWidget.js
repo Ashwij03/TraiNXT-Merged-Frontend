@@ -34,7 +34,7 @@ export default function ExpiringSoonWidget({
               .map((document) => (
                 <li
                   key={document.id || document.name}
-                  className="expiring-item"
+                  className="expiring-item">
 
                   <div className="document-name">
                     {document.name || "Unnamed Document"}

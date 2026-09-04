@@ -89,7 +89,7 @@ export default function SiteRegulatoryForm({
               alignItems: "center",
               gap: "0.5rem",
               marginTop: "0.625rem",
-            }}
+            }}>
 
             <input
               type="checkbox"
@@ -105,14 +105,14 @@ export default function SiteRegulatoryForm({
             <button
               type="button"
               className="secondary-btn"
-              onClick={onCancel}
+              onClick={onCancel}>
 
               Cancel
             </button>
 
             <button
               type="submit"
-              className="primary-btn"
+              className="primary-btn">
 
               Save
             </button>

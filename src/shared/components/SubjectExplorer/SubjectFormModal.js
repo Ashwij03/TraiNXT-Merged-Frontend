@@ -142,13 +142,13 @@ function SubjectFormModal({
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose?.();
       }}
-
+    >
       <div
         className="sxm-modal"
         role="dialog"
         aria-modal="true"
         aria-label={isEdit ? "Edit Subject" : "Add Subject"}
-
+      >
         <div className="sxm-header">
           <div className="sxm-header-title">
             <span className="sxm-header-icon">
@@ -169,7 +169,7 @@ function SubjectFormModal({
             className="sxm-close"
             aria-label="Close"
             onClick={onClose}
-
+          >
             <MdClose size={17} />
           </button>
         </div>
@@ -264,7 +264,7 @@ function SubjectFormModal({
               <select
                 value={form.status}
                 onChange={(event) => setField("status", event.target.value)}
-
+              >
                 <option value="">Select status</option>
                 {[...SUBJECT_LIFECYCLE_STAGES, ...SUBJECT_TERMINAL_STATES].map(
                   (option) => (
@@ -307,7 +307,7 @@ function SubjectFormModal({
             <button
               type="submit"
               className="sxm-btn sxm-btn--primary"
-              disabled={!form.id.trim()}
+              disabled={!form.id.trim()}>
 
               {isEdit ? "Save Changes" : "Add Subject"}
             </button>

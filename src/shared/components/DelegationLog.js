@@ -119,19 +119,19 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
             <button
               type="button"
               onClick={() => setEditConfirmTarget(row._raw || row)}
-
+            >
               Edit
             </button>
             <button
               type="button"
               onClick={() => setDeleteConfirmTarget(row._raw || row)}
-
+            >
               Delete
             </button>
             <button
               type="button"
               onClick={() => setViewTarget(row._raw || row)}
-
+            >
               View
             </button>
           </div>
@@ -199,7 +199,7 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
               <span
                 className="close-btn"
                 onClick={() => setShowHistory(false)}
-
+              >
                 ✖
               </span>
             </div>
@@ -256,7 +256,7 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
               <span
                 className="close-btn"
                 onClick={() => setViewTarget(null)}
-
+              >
                 ✖
               </span>
             </div>
@@ -346,7 +346,7 @@ const DelegationLog = ({ staff = [], history = [], onEdit, onDelete }) => {
               <select
                 value={editForm.status}
                 onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-
+              >
                 <option>Active</option>
                 <option>Inactive</option>
               </select>

@@ -141,14 +141,14 @@ function FilePreviewModal({
       className="sf-details-panel"
       role="region"
       aria-label={`Details for ${file.name}`}
-
+    >
       {/* Fixed header: title + metadata - never scrolls with the preview. */}
       <div className="sf-details-panel-meta">
         <div className="sf-details-panel-title">
           <span
             className={`sf-file-icon sf-file-icon--${tone} sf-file-icon--lg`}
             aria-hidden="true"
-
+          >
             <Icon size={19} />
           </span>
 
@@ -177,7 +177,7 @@ function FilePreviewModal({
               type="button"
               className="sf-btn sf-btn--ghost"
               onClick={() => onDownload?.()}
-
+            >
               <MdDownload size={14} aria-hidden="true" />
               <span>Download</span>
             </button>
@@ -193,7 +193,7 @@ function FilePreviewModal({
                   type="button"
                   className="sf-btn sf-btn--ghost"
                   onClick={() => onRename?.()}
-
+                >
                   <MdDriveFileRenameOutline size={14} aria-hidden="true" />
                   <span>Rename</span>
                 </button>
@@ -202,7 +202,7 @@ function FilePreviewModal({
                   type="button"
                   className="sf-btn sf-btn--ghost sf-btn--danger"
                   onClick={() => onDelete?.()}
-
+                >
                   <MdDeleteOutline size={14} aria-hidden="true" />
                   <span>Delete</span>
                 </button>
@@ -216,7 +216,7 @@ function FilePreviewModal({
               onClick={onClose}
               aria-label="Close details panel"
               title="Close details panel"
-
+            >
               <MdClose size={15} />
             </button>
           </div>

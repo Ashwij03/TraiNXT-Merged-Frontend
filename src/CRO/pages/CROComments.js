@@ -160,7 +160,7 @@ function CROComments() {
             className="cro-btn-primary"
 
             onClick={() => setShowAddModal(true)}
-
+          >
             + Add Comment
 
           </button>
@@ -240,7 +240,7 @@ function CROComments() {
                           )
 
                         }
-
+                      >
                         View
 
                       </button>
@@ -288,7 +288,7 @@ function CROComments() {
           </>
 
         }
-
+      >
         <input
 
           className="cro-input"

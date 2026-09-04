@@ -43,7 +43,7 @@ export default function DocumentToolbar({
 
         <button
           className="upload-btn"
-          onClick={onUpload}
+          onClick={onUpload}>
 
           + Upload Document
         </button>

@@ -166,7 +166,7 @@ const Enrollment = () => {
     onClick={() => {
       navigate(`/study/${study.studyId}`);
     }}
-
+  >
     View
   </button>
 </td>

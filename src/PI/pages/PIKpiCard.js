@@ -27,7 +27,7 @@ function PIKpiCard({
             }
           : undefined
       }
-
+    >
       <div className="card-header">
         {Icon && (
           <div className={`icon-circle ${color}`}>

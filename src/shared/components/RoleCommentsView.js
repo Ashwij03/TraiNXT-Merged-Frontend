@@ -223,8 +223,8 @@ export default function RoleCommentsView({ embedded = false }) {
       className={`pi-page-content comments-content tnxt-compact${
         embedded ? " embedded" : ""
       }`}
-
-      <div className="comments-header">
+    >
+      <div className="comments-header page-section-highlight">
         <div>
           <h2>Comments</h2>
           <p className="comments-subtitle">
@@ -245,7 +245,7 @@ export default function RoleCommentsView({ embedded = false }) {
           <select
             value={selectedSite}
             onChange={(event) => setSelectedSite(event.target.value)}
-
+          >
             <option value={assignedSite}>{assignedSite}</option>
           </select>
         </div>
@@ -254,7 +254,7 @@ export default function RoleCommentsView({ embedded = false }) {
           <select
             value={selectedStudy}
             onChange={(event) => setSelectedStudy(event.target.value)}
-
+          >
             <option value="All Studies">All Studies</option>
             {availableStudies.map((study) => (
               <option key={study} value={study}>
@@ -280,7 +280,7 @@ export default function RoleCommentsView({ embedded = false }) {
                     onClick={() =>
                       setSearchQuery(suggestion.replace("…", ""))
                     }
-
+                  >
                     {suggestion}
                   </button>
                 </li>
@@ -327,7 +327,7 @@ export default function RoleCommentsView({ embedded = false }) {
         <select
           value={selectedSubject}
           onChange={(event) => setSelectedSubject(event.target.value)}
-
+        >
           <option value="All">All Subjects</option>
           {[...new Set(sourceComments.map((comment) => comment.subjectId))].map(
             (subject) => (
@@ -340,7 +340,7 @@ export default function RoleCommentsView({ embedded = false }) {
         <select
           value={selectedType}
           onChange={(event) => setSelectedType(event.target.value)}
-
+        >
           <option value="All">All Types</option>
           {[...new Set(sourceComments.map((comment) => comment.type))].map(
             (type) => (
@@ -353,7 +353,7 @@ export default function RoleCommentsView({ embedded = false }) {
         <select
           value={selectedVisit}
           onChange={(event) => setSelectedVisit(event.target.value)}
-
+        >
           <option value="All">All Visits</option>
           {[...new Set(sourceComments.map((comment) => comment.visit))].map(
             (visit) => (
@@ -374,7 +374,7 @@ export default function RoleCommentsView({ embedded = false }) {
               </th>
               <th
                 onClick={() => handleSort("subjectId")}
-                className="pi-sortable-th"
+                className="pi-sortable-th">
 
                 Subject ID{sortIndicator("subjectId")}
               </th>
@@ -391,7 +391,7 @@ export default function RoleCommentsView({ embedded = false }) {
               </th>
               <th
                 onClick={() => handleSort("status")}
-                className="pi-sortable-th"
+                className="pi-sortable-th">
 
                 Status{sortIndicator("status")}
               </th>
@@ -425,7 +425,7 @@ export default function RoleCommentsView({ embedded = false }) {
                           : comment.status === "pending-review"
                           ? "pending"
                           : "open"
-                      }`}
+                      }`}>
 
                       {toDisplayStatus(comment.status)}
                     </button>
@@ -434,7 +434,7 @@ export default function RoleCommentsView({ embedded = false }) {
                     <button
                       type="button"
                       className="view-btn"
-                      onClick={() => setSelectedComment(comment)}
+                      onClick={() => setSelectedComment(comment)}>
 
                       View
                     </button>
@@ -442,7 +442,7 @@ export default function RoleCommentsView({ embedded = false }) {
                       <button
                         type="button"
                         className="resolve-btn"
-                        onClick={() => toggleStatus(comment)}
+                        onClick={() => toggleStatus(comment)}>
 
                         {comment.status === "resolved" ? "Reopen" : "Resolve"}
                       </button>
@@ -506,7 +506,7 @@ export default function RoleCommentsView({ embedded = false }) {
             <button
               type="button"
               className="close-btn"
-              onClick={() => setSelectedComment(null)}
+              onClick={() => setSelectedComment(null)}>
 
               Close
             </button>

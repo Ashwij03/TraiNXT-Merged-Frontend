@@ -1,4 +1,4 @@
-import { useEnterpriseDashboardShell } from "../../../hooks/useEnterpriseDashboardShell";
+import { useEnterpriseDashboardShell } from "../../shared/hooks/useEnterpriseDashboardShell";
 
 import PINavbar from "../pages/PINavbar.js";
 
@@ -148,7 +148,7 @@ function PIDashboardLayout({ children }) {
           <div
             className="dashboard-content pi-dashboard-content"
             ref={contentRef}
-
+          >
             {children}
           </div>
         </div>

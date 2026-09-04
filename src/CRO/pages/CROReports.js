@@ -151,7 +151,7 @@ function CROReports() {
                         type="button"
                         className="cro-btn-sm"
                         onClick={() => handleViewReport(report)}
-
+                      >
                         View
                       </button>
                       <button
@@ -159,7 +159,7 @@ function CROReports() {
                         className="cro-btn-sm"
                         onClick={() => handleDownloadReport(report)}
                         style={{ marginLeft: "0.5rem" }}
-
+                      >
                         Download
                       </button>
                     </td>

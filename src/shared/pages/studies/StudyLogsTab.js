@@ -430,7 +430,7 @@ const RESPONSIBILITY_MAP = {
       <div className="studylogs-toolbar">
         <button
           className="add-delegation-btn"
-          onClick={() => setShowModal(true)}
+          onClick={() => setShowModal(true)}>
 
           + Add Delegation
         </button>
@@ -470,56 +470,56 @@ const RESPONSIBILITY_MAP = {
         <button
           type="button"
           className={activeLog === "delegation" ? "tab active" : "tab"}
-          onClick={() => setActiveLog("delegation")}
+          onClick={() => setActiveLog("delegation")}>
 
           Delegation Log
         </button>
         <button
           type="button"
           className={activeLog === "training" ? "tab active" : "tab"}
-          onClick={() => setActiveLog("training")}
+          onClick={() => setActiveLog("training")}>
 
           Training Log
         </button>
         <button
           type="button"
           className={activeLog === "siteVisit" ? "tab active" : "tab"}
-          onClick={() => setActiveLog("siteVisit")}
+          onClick={() => setActiveLog("siteVisit")}>
 
           Site Visit Log
         </button>
         <button
           type="button"
           className={activeLog === "ntf" ? "tab active" : "tab"}
-          onClick={() => setActiveLog("ntf")}
+          onClick={() => setActiveLog("ntf")}>
 
           NTF Log
         </button>
         <button
           type="button"
           className={activeLog === "miscellaneous" ? "tab active" : "tab"}
-          onClick={() => setActiveLog("miscellaneous")}
+          onClick={() => setActiveLog("miscellaneous")}>
 
           Miscellaneous Log
         </button>
         <button
           type="button"
           className={activeLog === "ae" ? "tab active" : "tab"}
-          onClick={() => setActiveLog("ae")}
+          onClick={() => setActiveLog("ae")}>
 
           AE/SE Log
         </button>
         <button
           type="button"
           className={activeLog === "pd" ? "tab active" : "tab"}
-          onClick={() => setActiveLog("pd")}
+          onClick={() => setActiveLog("pd")}>
 
           PD Log
         </button>
         <button
           type="button"
           className={activeLog === "temp" ? "tab active" : "tab"}
-          onClick={() => setActiveLog("temp")}
+          onClick={() => setActiveLog("temp")}>
 
           Temperature Log
         </button>
@@ -635,7 +635,7 @@ const RESPONSIBILITY_MAP = {
       role: e.target.value,
       responsibility: ""
     })
-  }
+  }>
 
   <option value="">Select Role</option>
 
@@ -654,7 +654,7 @@ const RESPONSIBILITY_MAP = {
       ...form,
       responsibility: e.target.value
     })
-  }
+  }>
 
   <option value="">
     Select Responsibility
@@ -674,7 +674,7 @@ const RESPONSIBILITY_MAP = {
                     ...form,
                     status: e.target.value,
                   })
-                }
+                }>
 
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
@@ -684,14 +684,14 @@ const RESPONSIBILITY_MAP = {
             <div className="modal-footer">
               <button
                 className="cancel-btn"
-                onClick={() => setShowModal(false)}
+                onClick={() => setShowModal(false)}>
 
                 Cancel
               </button>
 
               <button
                 className="save-btn"
-                onClick={handleSave}
+                onClick={handleSave}>
 
                 Save
               </button>

@@ -10,7 +10,7 @@ function EssentialDocumentsWidget({ stats, onNavigateToEisf }) {
       type="button"
       className="study-widget-card study-widget-clickable"
       onClick={onNavigateToEisf}
-
+    >
       <div className="study-widget-header">
         <FiFileText />
         <h3>Essential Documents</h3>

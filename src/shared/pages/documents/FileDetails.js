@@ -35,7 +35,7 @@ export default function FileDetails() {
           {/* 🔥 Annotation button (fix warning) */}
           <div
             className="annotation-btn"
-            onClick={() => setShowAnnotations(!showAnnotations)}
+            onClick={() => setShowAnnotations(!showAnnotations)}>
 
             A
           </div>

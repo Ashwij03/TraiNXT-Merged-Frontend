@@ -103,7 +103,7 @@ function CROSubjectManagement() {
         value={statusFilter}
         onChange={(e) => setStatusFilter(e.target.value)}
         className="cro-input"
-
+      >
         <option value="All">All</option>
         <option value="Active">Active</option>
         <option value="Completed">Completed</option>
@@ -145,7 +145,7 @@ function CROSubjectManagement() {
                         type="button"
                         className="cro-btn-primary-inline"
                         onClick={() => openDetail(item)}
-
+                      >
                         View
                       </button>
                     </td>
@@ -165,7 +165,7 @@ function CROSubjectManagement() {
         footer={
           <button type="button" className="cro-btn cro-btn-secondary" onClick={() => setShowDetailModal(false)}>Close</button>
         }
-
+      >
         {selectedSubject && (
           <div className="subject-detail">
             <p><strong>Subject ID:</strong> {selectedSubject.id}</p>

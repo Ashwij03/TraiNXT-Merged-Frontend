@@ -164,7 +164,7 @@ export default function CommentsPage({ embedded = false }) {
           <button
             type="button"
             onClick={handleAddComment}
-            disabled={!studyCode}
+            disabled={!studyCode}>
 
             Add Comment
           </button>
@@ -199,7 +199,7 @@ export default function CommentsPage({ embedded = false }) {
           gap: "0.75rem",
           flexWrap: "wrap",
           marginBottom: "1.25rem",
-        }}
+        }}>
 
         <input
           type="text"
@@ -219,7 +219,7 @@ export default function CommentsPage({ embedded = false }) {
           style={{
             minWidth: "11.25rem",
             padding: "10px 12px",
-          }}
+          }}>
 
           <option value="all">All Comments</option>
           <option value="unresolved">Open / Unresolved</option>
@@ -233,7 +233,7 @@ export default function CommentsPage({ embedded = false }) {
           border="1"
           cellPadding="10"
           width="100%"
-          style={{ borderCollapse: "collapse" }}
+          style={{ borderCollapse: "collapse" }}>
 
           <thead>
             <tr>
@@ -284,7 +284,7 @@ export default function CommentsPage({ embedded = false }) {
                         border: "1px solid #ccc",
                         padding: "5px 10px",
                         borderRadius: "0.3125rem",
-                      }}
+                      }}>
 
                       {comment.status === "Resolved"
                         ? "Resolved"
@@ -307,7 +307,7 @@ export default function CommentsPage({ embedded = false }) {
           marginTop: "1rem",
           flexWrap: "wrap",
           gap: "0.75rem",
-        }}
+        }}>
 
         <div>
           Showing {totalRows === 0 ? 0 : startIndex + 1}–
@@ -320,7 +320,7 @@ export default function CommentsPage({ embedded = false }) {
             onChange={(event) => {
               setRowsPerPage(Number(event.target.value));
               setCurrentPage(1);
-            }}
+            }}>
 
             <option value={5}>5 rows</option>
             <option value={10}>10 rows</option>
@@ -332,7 +332,7 @@ export default function CommentsPage({ embedded = false }) {
             onClick={() =>
               setCurrentPage((page) => Math.max(1, page - 1))
             }
-            disabled={currentPage === 1}
+            disabled={currentPage === 1}>
 
             Previous
           </button>
@@ -348,7 +348,7 @@ export default function CommentsPage({ embedded = false }) {
                 Math.min(totalPages, page + 1),
               )
             }
-            disabled={currentPage === totalPages}
+            disabled={currentPage === totalPages}>
 
             Next
           </button>

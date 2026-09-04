@@ -32,7 +32,7 @@ function CROModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="cro-modal-title"
-
+      >
         <div className="cro-modal-header">
           <h2 id="cro-modal-title">{title}</h2>
           <button
@@ -40,7 +40,7 @@ function CROModal({
             className="cro-modal-close"
             onClick={onClose}
             aria-label="Close"
-
+          >
             <FaTimes />
           </button>
         </div>
@@ -56,7 +56,7 @@ function CROModal({
                 type="button"
                 className="cro-modal-btn-primary"
                 onClick={handleConfirm}
-
+              >
                 {confirmLabel}
               </button>
             )}

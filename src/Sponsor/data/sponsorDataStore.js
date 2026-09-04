@@ -231,7 +231,6 @@ export function getSites(study) {
       matchingStudies.length > 0 ? matchingStudies : [study];
 
     return studiesToShow.map((matchedStudy, index) => {
-      const subjects = subjectsByStudy[matchedStudy.code] || [];
       const adminSite = resolveAdminSiteByStudySite(matchedStudy);
 
       const enrolled = getEnrolledCount(matchedStudy.code);
@@ -285,7 +284,6 @@ export function getSites(study) {
   const studies = getStudies();
 
   return studies.map((singleStudy, index) => {
-    const subjects = subjectsByStudy[singleStudy.code] || [];
     const adminSite = resolveAdminSiteByStudySite(singleStudy);
 
     const enrolled = getEnrolledCount(singleStudy.code);

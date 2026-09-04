@@ -683,7 +683,7 @@ function Register() {
                 setShowPassword(
                   !showPassword
                 )
-              }
+              }>
 
               {
                 showPassword
@@ -737,7 +737,7 @@ function Register() {
                 setShowConfirmPassword(
                   !showConfirmPassword
                 )
-              }
+              }>
 
               {
                 showConfirmPassword
@@ -811,7 +811,7 @@ function Register() {
             onChange={(e) =>
               handleRoleChange(e.target.value)
             }
-            required
+            required>
 
             <option value="">
               Select role
@@ -822,7 +822,7 @@ function Register() {
 
                 <option
                   key={option.value}
-                  value={option.value}
+                  value={option.value}>
 
                   {option.label}
                 </option>
@@ -922,7 +922,7 @@ function Register() {
               onClick={(e) => {
                 e.preventDefault();
                 setShowPolicy(true);
-              }}
+              }}>
 
               Privacy Policy
             </span>
@@ -949,7 +949,7 @@ function Register() {
             passwordError ||
             confirmError ||
             !acceptedPolicy
-          }
+          }>
 
           SIGN UP
         </button>
@@ -963,7 +963,7 @@ function Register() {
           <button
             type="button"
             className="login-link-btn"
-            onClick={() => navigate("/login")}
+            onClick={() => navigate("/login")}>
 
             Login
           </button>
@@ -1038,7 +1038,7 @@ function Register() {
               className="close-policy"
               onClick={() =>
                 setShowPolicy(false)
-              }
+              }>
 
               Close
             </button>

@@ -95,7 +95,7 @@ function Visits() {
             onClick={() =>
               navigate(`/visit-details/${encodeURIComponent(row.visitId)}`)
             }
-
+          >
             View
           </button>
         )

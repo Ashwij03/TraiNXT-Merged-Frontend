@@ -52,7 +52,7 @@ function RequestPermissionButton({
         type="button"
         className={`${className}${variant === "link" ? " request-permission-link" : ""}`}
         onClick={() => setOpen(true)}
-
+      >
         {label}
       </button>
 
@@ -61,13 +61,13 @@ function RequestPermissionButton({
           className="request-permission-overlay"
           onClick={() => setOpen(false)}
           role="presentation"
-
+        >
           <div
             className="request-permission-modal"
             onClick={(event) => event.stopPropagation()}
             role="dialog"
             aria-labelledby="request-permission-title"
-
+          >
             <h3 id="request-permission-title">Request Permission</h3>
             <p className="request-permission-subtitle">
               Submit a request for admin approval to perform this action.
@@ -119,14 +119,14 @@ function RequestPermissionButton({
                   type="button"
                   className="request-permission-cancel"
                   onClick={() => setOpen(false)}
-
+                >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   className="request-permission-submit"
                   disabled={submitting}
-
+                >
                   Submit Request
                 </button>
               </div>

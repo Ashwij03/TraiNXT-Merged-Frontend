@@ -4,8 +4,7 @@ import CalendarWidget from "./CalendarWidget";
 import DataTable from "./DataTable";
 import {
   compareScheduleDates,
-  isCompletedVisitSchedule
-
+  isCompletedVisitSchedule,
   isUpcomingVisitSchedule
 } from "../../../services/visitScheduleService";
 import useVisitSchedules from "../../../hooks/useVisitSchedules";
@@ -72,17 +71,6 @@ function VisitCalendarSection({
   );
 
   const calendarSchedules = useMemo(
-    () => schedules.filter((item) => !isCompletedVisitSchedule(item)),
-
-  // BUG-2 fix: the Calendar previously only excluded Completed visits,
-  // so past-dated visits and Cancelled/Missed visits kept rendering as
-  // markers even after they had disappeared from the Upcoming Visits
-  // list. Switching to the shared `isUpcomingVisitSchedule` predicate
-  // applies the exact same active-view rule the Upcoming Visits list
-  // uses: date >= today AND status not in (Completed/Cancelled/Missed).
-  // No hardcoded dates, no duplicated logic — the two views stay in
-  // lock-step through a single source of truth in visitScheduleService.
-  const calendarSchedules = useMemo(
     () => schedules.filter((item) => isUpcomingVisitSchedule(item)),
     [schedules]
   );
@@ -95,30 +83,6 @@ function VisitCalendarSection({
 
     return [...upcomingWindow].sort(compareScheduleDates);
   }, [selectedDaySchedules, selectedScheduleDate, upcomingWindow]);
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const isUpcoming = (item) => {
-    if (!item?.date) {
-      return false;
-    }
-
-    const visitDate = new Date(item.date);
-    visitDate.setHours(0, 0, 0, 0);
-
-    // only today and future visits
-    return visitDate >= today;
-  };
-
-  if (selectedScheduleDate) {
-    return selectedDaySchedules.filter(isUpcoming);
-  }
-
-  return [...upcomingWindow]
-    .filter(isUpcoming)
-    .sort(compareScheduleDates);
-}, [selectedDaySchedules, selectedScheduleDate, upcomingWindow]);
 
   // Item 17 — Site column renders resolved Site Number (not stored Site Name).
   // Authoritative schedule/site data is left untouched; this is display only.
@@ -148,7 +112,7 @@ function VisitCalendarSection({
   return (
     <DashboardCard
       title="Visit Calendar & Upcoming Visits"
-      className={cardClassName}
+      className={cardClassName}>
 
       <div className="calendar-table-unified">
         <div className="calendar-table-unified__calendar">

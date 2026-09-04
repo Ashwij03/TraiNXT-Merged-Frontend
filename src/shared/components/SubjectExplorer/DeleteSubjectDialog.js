@@ -46,12 +46,13 @@ function DeleteSubjectDialog({
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose?.();
       }}
-
+    >
       <div
         className="sxm-modal sxm-modal--sm"
         role="alertdialog"
         aria-modal="true"
         aria-label="Delete subject"
+      >
 
         <div className="sxm-header">
           <div className="sxm-header-title">
@@ -69,7 +70,7 @@ function DeleteSubjectDialog({
             className="sxm-close"
             aria-label="Close"
             onClick={onClose}
-
+          >
             <MdClose size={17} />
           </button>
         </div>
@@ -106,7 +107,7 @@ function DeleteSubjectDialog({
               ref={confirmRef}
               className="sxm-btn sxm-btn--danger"
               onClick={onConfirm}
-
+            >
               Delete {hasChildren ? "All" : "Subject"}
             </button>
           </div>

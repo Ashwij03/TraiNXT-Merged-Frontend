@@ -28,7 +28,7 @@ export default function CompletedVisit() {
           <button
             className="plus-btn"
             onClick={() => toggle("procedure")}
-
+          >
             +
           </button>
         </div>
@@ -70,7 +70,7 @@ export default function CompletedVisit() {
           <button
             className="plus-btn"
             onClick={() => toggle("question")}
-
+          >
             +
           </button>
         </div>
@@ -104,7 +104,7 @@ export default function CompletedVisit() {
           <button
             className="plus-btn"
             onClick={() => toggle("progress")}
-
+          >
             +
           </button>
         </div>
@@ -130,7 +130,7 @@ export default function CompletedVisit() {
           <button
             className="plus-btn"
             onClick={() => toggle("document")}
-
+          >
             +
           </button>
         </div>

@@ -83,7 +83,7 @@ function CROEnrollment() {
                         type="button"
                         className="cro-btn-sm"
                         onClick={() => navigate(`/cro-subject/${s.id}`)}
-
+                      >
                         View
                       </button>
                     </td>

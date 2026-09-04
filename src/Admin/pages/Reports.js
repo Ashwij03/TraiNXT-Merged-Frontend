@@ -153,7 +153,7 @@ function Reports() {
                       onChange={(event) =>
                         setForm({ ...form, reportType: event.target.value })
                       }
-
+                    >
                       {REPORT_TYPE_OPTIONS.map((option) => (
                         <option key={option} value={option}>
                           {option}
@@ -167,7 +167,7 @@ function Reports() {
                         setForm({ ...form, studyCode: event.target.value })
                       }
                       required
-
+                    >
                       <option value="" disabled>
                         Select study
                       </option>
@@ -183,7 +183,7 @@ function Reports() {
                       onChange={(event) =>
                         setForm({ ...form, status: event.target.value })
                       }
-
+                    >
                       {REPORT_STATUS_OPTIONS.map((option) => (
                         <option key={option} value={option}>
                           {option}

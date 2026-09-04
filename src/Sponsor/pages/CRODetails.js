@@ -25,7 +25,7 @@ const CRODetails = () => {
     <AppLayout>
 
       <div style={{ padding: "1.5rem" }}>
-button
+      <button
   onClick={() => navigate(-1)}
   style={{
     background: "#2563eb",
@@ -36,7 +36,7 @@ button
     cursor: "pointer",
     marginBottom: "1.25rem"
   }}
-
+      >
   Back
 </button>
         <h1>{croName} Details</h1>
@@ -48,7 +48,7 @@ button
             gap: "1.25rem",
             marginTop: "1.25rem"
           }}
-
+        >
           <div
             style={{
               background: "white",
@@ -56,7 +56,7 @@ button
               borderRadius: "0.625rem",
               textAlign: "center"
             }}
-
+          >
             <h3>Studies</h3>
             <h2>{studies}</h2>
           </div>
@@ -68,7 +68,7 @@ button
               borderRadius: "0.625rem",
               textAlign: "center"
             }}
-
+          >
             <h3>Sites</h3>
             <h2>{sites}</h2>
           </div>
@@ -80,7 +80,7 @@ button
               borderRadius: "0.625rem",
               textAlign: "center"
             }}
-
+          >
             <h3>Performance</h3>
             <h2>{performance}</h2>
           </div>

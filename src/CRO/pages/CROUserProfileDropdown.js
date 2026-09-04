@@ -182,7 +182,7 @@ function CROUserProfileDropdown() {
       <div
         className={`cro-user-dropdown${open ? " cro-user-dropdown--open" : ""}`}
         ref={containerRef}
-
+      >
         <button
           type="button"
           ref={triggerRef}
@@ -192,7 +192,7 @@ function CROUserProfileDropdown() {
           aria-haspopup="menu"
           aria-expanded={open}
           aria-label="User profile menu"
-
+        >
           {profile.profileImage ? (
             <img
               src={profile.profileImage}
@@ -228,7 +228,7 @@ function CROUserProfileDropdown() {
             role="menu"
             aria-label="User account menu"
             onKeyDown={handleMenuKeyDown}
-
+          >
             <div className="cro-user-dropdown-profile">
               {profile.profileImage ? (
                 <img
@@ -304,7 +304,7 @@ function CROUserProfileDropdown() {
                     onClick={() => handleMenuAction(item)}
                     onMouseEnter={() => setFocusedIndex(index)}
                     tabIndex={focusedIndex === index ? 0 : -1}
-
+                  >
                     <Icon className="cro-user-dropdown-action-icon" aria-hidden="true" />
                     <span>{item.label}</span>
                   </button>
@@ -325,11 +325,11 @@ function CROUserProfileDropdown() {
             type="button"
             className="cro-modal-btn-primary"
             onClick={() => setHelpOpen(false)}
-
+          >
             Close
           </button>
         }
-
+      >
         <div className="cro-user-help-content">
           <p>
             Need assistance with the CRO Portal? Our enterprise support team is

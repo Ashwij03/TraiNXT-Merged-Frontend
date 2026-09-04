@@ -85,7 +85,7 @@ const handleResolveRisk = () => {
         <button
           className="back-btn"
           onClick={() => navigate(-1)}
-
+        >
           ← Back
         </button>
 
@@ -335,7 +335,7 @@ const handleResolveRisk = () => {
             <button
   onClick={handleResolveRisk}
   disabled={riskStatus === "Resolved"}
-
+            >
   {riskStatus === "Resolved"
     ? "Risk Resolved"
     : "Resolve Risk"}

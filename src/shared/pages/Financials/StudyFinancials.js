@@ -4,6 +4,7 @@ import {
   getStudyFinancials,
   saveStudyFinancials,
 } from "../../services/financialService";
+import {
   formatSiteOption,
   resolveSiteRecord,
   MISSING_SITE_DISPLAY,
@@ -964,7 +965,7 @@ const handleDeleteSubjectCost = (id) => {
           <select
             id="financial-status-filter"
             value={selectedFilter}
-            onChange={(event) => setSelectedFilter(event.target.value)}
+            onChange={(event) => setSelectedFilter(event.target.value)}>
 
             <option value="All">All</option>
             <option value="Paid">Paid</option>
@@ -975,7 +976,7 @@ const handleDeleteSubjectCost = (id) => {
       </div>
  <h3 className="financial-section-title">
   Budget Overview
-/h3> 
+</h3> 
       <div className="financial-cards">
         <div className="financial-card">
           <h4>Total Budget</h4>
@@ -984,7 +985,7 @@ const handleDeleteSubjectCost = (id) => {
    totalBudget,
    budgets[0]?.currency
 )}
-/h2>
+</h2>
         </div>
 
         <div className="financial-card">
@@ -1005,7 +1006,7 @@ const handleDeleteSubjectCost = (id) => {
               remainingBudget >= 0
                 ? "financial-status-active"
                 : "financial-status-pending"
-            }`}
+            }`}>
 
             {remainingBudget >= 0 ? "Healthy" : "Exceeded"}
           </span>
@@ -1081,14 +1082,14 @@ const handleDeleteSubjectCost = (id) => {
   onClick={() => {
     setSubjectCostForm(INITIAL_SUBJECT_COST_FORM);
     setShowSubjectCostModal(true);
-  }}
+  }}>
 
   + New Subject Cost
 </button>
 
         <button
           type="button"
-          onClick={() => setShowAllData((currentValue) => !currentValue)}
+          onClick={() => setShowAllData((currentValue) => !currentValue)}>
 
           {showAllData ? "Hide Summary" : "View Summary"}
         </button>
@@ -1099,29 +1100,22 @@ const handleDeleteSubjectCost = (id) => {
       </div>
      <div className="financial-tabs">
 
-button
-onClick={()=>setActiveTab("budget")}
+<button onClick={() => setActiveTab("budget")}>
+          Budget Info
+        </button>
 
-Budget Info
-</button>
-
-button
-onClick={()=>setActiveTab("grants")}
+<button onClick={() => setActiveTab("grants")}>
 
 Investigator Grants
 </button>
 
-button
-onClick={()=>setActiveTab("site")}
+<button onClick={() => setActiveTab("site")}>
+          Site Management
+        </button>
 
-Site Management
-</button>
-
-button
-onClick={()=>setActiveTab("subjects")}
-
-Subject Costs
-</button>
+<button onClick={() => setActiveTab("subjects")}>
+          Subject Costs
+        </button>
 
 </div>
 
@@ -1256,7 +1250,7 @@ Subject Costs
               return budgetByCategory.map((row) => (
                 <div
                   key={row.category}
-                  className="financial-chart-row"
+                  className="financial-chart-row">
 
                   <span className="financial-chart-label">
                     {row.category}
@@ -1368,7 +1362,7 @@ Subject Costs
                     <span
                       className={`financial-status ${getStatusClassName(
                         budget.status,
-                      )}`}
+                      )}`}>
 
                       {budget.status}
                     </span>
@@ -1380,7 +1374,7 @@ Subject Costs
   <button
     type="button"
     className="financial-action-btn"
-    onClick={() => handleEditBudget(budget)}
+    onClick={() => handleEditBudget(budget)}>
 
     Edit
   </button>
@@ -1388,7 +1382,7 @@ Subject Costs
   <button
     type="button"
     className="financial-action-btn"
-    onClick={() => handleBudgetPreview(budget)}
+    onClick={() => handleBudgetPreview(budget)}>
 
     Preview
   </button>
@@ -1396,7 +1390,7 @@ Subject Costs
   <button
   type="button"
   className="financial-delete-btn"
-  onClick={() => openDeleteModal("budget", budget.id)}
+  onClick={() => openDeleteModal("budget", budget.id)}>
 
   Delete
 </button>
@@ -1420,7 +1414,7 @@ Subject Costs
               setRowsPerPage(Number(event.target.value));
               setCurrentPage(1);
             }}
-            aria-label="Rows per page"
+            aria-label="Rows per page">
 
             {FINANCIALS_PAGE_SIZE_OPTIONS.map((option) => (
               <option key={option} value={option}>
@@ -1433,7 +1427,7 @@ Subject Costs
         <button
           type="button"
           disabled={safeCurrentPage === 1}
-          onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
+          onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}>
 
           Previous
         </button>
@@ -1447,7 +1441,7 @@ Subject Costs
           disabled={safeCurrentPage === totalPages}
           onClick={() =>
             setCurrentPage((page) => Math.min(page + 1, totalPages))
-          }
+          }>
 
           Next
         </button>
@@ -1457,7 +1451,7 @@ Subject Costs
       {activeTab==="grants" && (
 <section className="payment-table">
 
-h3>Investigator Grants</h3>
+<h3>Investigator Grants</h3>
 
 <table className="ctms-standard-table">
 
@@ -1564,14 +1558,14 @@ h3>Investigator Grants</h3>
               <td>
                 <button
                   className="financial-action-btn"
-                  onClick={() => handleEditSubjectCost(item)}
+                  onClick={() => handleEditSubjectCost(item)}>
 
                   Edit
                 </button>
 
                 <button
                   className="financial-delete-btn"
-                  onClick={() => handleDeleteSubjectCost(item.id)}
+                  onClick={() => handleDeleteSubjectCost(item.id)}>
 
                   Delete
                 </button>
@@ -1616,7 +1610,7 @@ h3>Investigator Grants</h3>
                     <span
                       className={`financial-status ${getStatusClassName(
                         payment.status,
-                      )}`}
+                      )}`}>
 
                       {payment.status}
                     </span>
@@ -1625,7 +1619,7 @@ h3>Investigator Grants</h3>
                     <button
                       type="button"
                       className="financial-action-btn"
-                      onClick={() => handleEditPayment(payment)}
+                      onClick={() => handleEditPayment(payment)}>
 
                       Edit
                     </button>
@@ -1633,7 +1627,7 @@ h3>Investigator Grants</h3>
                     <button
                       type="button"
                       className="financial-delete-btn"
-                      onClick={() => openDeleteModal("payment", payment.id)}
+                      onClick={() => openDeleteModal("payment", payment.id)}>
 
                       Delete
                     </button>
@@ -1677,7 +1671,7 @@ h3>Investigator Grants</h3>
                     <span
                       className={`financial-status ${getStatusClassName(
                         receivable.status,
-                      )}`}
+                      )}`}>
 
                       {receivable.status}
                     </span>
@@ -1687,7 +1681,7 @@ h3>Investigator Grants</h3>
                       <button
                         type="button"
                         className="financial-receivable-edit-btn"
-                        onClick={() => handleEditReceivable(receivable)}
+                        onClick={() => handleEditReceivable(receivable)}>
 
                         Edit
                       </button>
@@ -1697,7 +1691,7 @@ h3>Investigator Grants</h3>
                         className="financial-receivable-delete-btn"
                         onClick={() =>
                           openDeleteModal("receivable", receivable.id)
-                        }
+                        }>
 
                         Delete
                       </button>
@@ -1746,7 +1740,7 @@ h3>Investigator Grants</h3>
                     <span
                       className={`financial-status ${getStatusClassName(
                         invoice.status,
-                      )}`}
+                      )}`}>
 
                       {invoice.status}
                     </span>
@@ -1756,7 +1750,7 @@ h3>Investigator Grants</h3>
                       <button
                         type="button"
                         className="financial-receivable-edit-btn"
-                        onClick={() => handleEditInvoice(invoice)}
+                        onClick={() => handleEditInvoice(invoice)}>
 
                         Edit
                       </button>
@@ -1764,7 +1758,7 @@ h3>Investigator Grants</h3>
                       <button
                         type="button"
                         className="financial-receivable-delete-btn"
-                        onClick={() => openDeleteModal("invoice", invoice.id)}
+                        onClick={() => openDeleteModal("invoice", invoice.id)}>
 
                         Delete
                       </button>
@@ -1813,7 +1807,7 @@ h3>Investigator Grants</h3>
                 value={budgetForm.category}
                 onChange={(event) =>
                   updateBudgetField("category", event.target.value)
-                }
+                }>
 
                 <option value="">Select Category</option>
                 {BUDGET_CATEGORY_OPTIONS.map((option) => (
@@ -1831,7 +1825,7 @@ h3>Investigator Grants</h3>
 
              <label className="financial-form-label">Cost Per Unit</label>
 
-input
+<input
   type="number"
   min="0"
   value={budgetForm.costPerUnit}
@@ -1848,7 +1842,7 @@ input
 
 <label className="financial-form-label">Units</label>
 
-input
+<input
   type="number"
   min="1"
   value={budgetForm.units}
@@ -1865,14 +1859,14 @@ input
 
 <label className="financial-form-label">Unit Type</label>
 
-select
+<select
   value={budgetForm.unitType}
   onChange={(event) =>
     setBudgetForm((currentForm) => ({
       ...currentForm,
       unitType: event.target.value,
     }))
-  }
+  }>
 
   <option value="Subjects">Subjects</option>
   <option value="Visits">Visits</option>
@@ -1884,7 +1878,7 @@ select
 Total Cost
 </label>
 
-input
+<input
    type="number"
    value={budgetForm.totalCost}
    readOnly
@@ -1893,14 +1887,14 @@ input
 Currency
 </label>
 
-select
+<select
    value={budgetForm.currency}
    onChange={(event)=>
       updateBudgetField(
          "currency",
          event.target.value
       )
-   }
+   }>
 
 <option>USD</option>
 
@@ -1914,7 +1908,7 @@ select
 Version
 </label>
 
-input
+<input
    type="text"
    value={budgetForm.version}
    readOnly
@@ -1951,7 +1945,7 @@ input
          "status",
          event.target.value
       )
-   }
+   }>
 
                 <option value="Active">Active</option>
                 <option value="Draft">Draft</option>
@@ -2039,7 +2033,7 @@ input
                     ...currentForm,
                     status: event.target.value,
                   }))
-                }
+                }>
 
                 <option value="Paid">Paid</option>
                 <option value="Pending">Pending</option>
@@ -2129,7 +2123,7 @@ input
                     ...currentForm,
                     status: event.target.value,
                   }))
-                }
+                }>
 
                 <option value="Pending">Pending</option>
                 <option value="Received">Received</option>
@@ -2227,7 +2221,7 @@ input
                     ...currentForm,
                     status: event.target.value,
                   }))
-                }
+                }>
 
                 <option value="Pending">Pending</option>
                 <option value="Paid">Paid</option>
@@ -2318,7 +2312,7 @@ input
 
         <label>Total</label>
 
-input
+<input
   readOnly
   value={
     Number(subjectCostForm.cost || 0) *
@@ -2334,7 +2328,7 @@ input
               ...subjectCostForm,
               status:e.target.value
             })
-          }
+          }>
 
           <option>Pending</option>
           <option>Completed</option>
@@ -2345,13 +2339,13 @@ input
       <div className="financial-modal-actions">
 
         <button
-          onClick={resetSubjectCostModal}
+          onClick={resetSubjectCostModal}>
 
           Cancel
         </button>
 
        <button
-  onClick={handleSaveSubjectCost}
+  onClick={handleSaveSubjectCost}>
 
   Save
 </button>
@@ -2390,7 +2384,7 @@ input
               <button
                 type="button"
                 className="financial-receivable-delete-btn"
-                onClick={confirmDelete}
+                onClick={confirmDelete}>
 
                 Delete
               </button>
@@ -2427,7 +2421,7 @@ input
       <div className="financial-modal-actions">
         <button
           type="button"
-          onClick={() => setShowBudgetPreview(false)}
+          onClick={() => setShowBudgetPreview(false)}>
 
           Close
         </button>

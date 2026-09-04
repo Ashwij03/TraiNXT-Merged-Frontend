@@ -62,7 +62,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
         {/* LOGO */}
         <div
           className="logo"
-          onClick={handleHomeClick}
+          onClick={handleHomeClick}>
 
           TriaNXT
         </div>
@@ -94,7 +94,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
                       onClick={() => {
                         setSearchTerm(item);
                         setShowDropdown(false);
-                      }}
+                      }}>
 
                       {item}
                     </div>
@@ -181,7 +181,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
               <span
                 onClick={() =>
                   navigate("/site-staff-dashboard")
-                }
+                }>
 
                 Dashboard
               </span>
@@ -189,7 +189,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
               <span
                 onClick={() =>
                   navigate("/subjects")
-                }
+                }>
 
                 Subjects
               </span>
@@ -197,7 +197,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
               <span
                 onClick={() =>
                   navigate("/visits")
-                }
+                }>
 
                 Visits
               </span>
@@ -205,7 +205,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
               <span
                 onClick={() =>
                   navigate("/screening")
-                }
+                }>
 
                 Screening
               </span>
@@ -213,7 +213,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
               <span
                 onClick={() =>
                   navigate("/enrollment")
-                }
+                }>
 
                 Enrollment
               </span>
@@ -221,7 +221,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
               <span
                 onClick={() =>
                   navigate("/comments")
-                }
+                }>
 
                 Comments
               </span>
@@ -229,7 +229,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
               <span
                 onClick={() =>
                   navigate("/site-activities")
-                }
+                }>
 
                 Site Activities
               </span>
@@ -237,7 +237,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
               <span
                 onClick={() =>
                   navigate("/access-request")
-                }
+                }>
 
                 Access Request
               </span>
@@ -254,7 +254,7 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
                   navigate(
                     "/pi-dashboard"
                   )
-                }
+                }>
 
                 PI Dashboard
               </span>
@@ -273,12 +273,12 @@ function Navbar({ name, setSelectedPage, searchText, setSearchText }) {
   Progress Notes
 </span>
 
-span
+<span
   onClick={() => {
     if (setSelectedPage) {
       setSelectedPage("comments");
     }
-  }}
+  }}>
 
   Comments
 </span>
@@ -298,7 +298,7 @@ span
 
           <span
             className="welcome"
-            onClick={() => setOpen(!open)}
+            onClick={() => setOpen(!open)}>
 
             Welcome {name || "User"} ▾
           </span>

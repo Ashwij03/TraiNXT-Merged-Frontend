@@ -14,6 +14,7 @@ import {
   FiMail
 } from "react-icons/fi";
 
+import {
   ResponsiveContainer,
   LineChart,
   Line,
@@ -82,7 +83,7 @@ const complianceData = [
         cursor: "pointer",
         marginBottom: "1.25rem"
       }}
-
+    >
        Back
     </button>
 
@@ -200,10 +201,10 @@ const complianceData = [
   />
 
 </div>
-div
+<div
   className="sponsor-chart-card"
   style={{ marginTop: "1.5rem" }}
-
+>
   <h3>Enrollment Performance by CRO</h3>
 
   <ResponsiveContainer width="100%" height={300}>
@@ -220,10 +221,10 @@ div
   </ResponsiveContainer>
 </div>
 
-div
+<div
   className="action-btn-group"
   style={{ marginTop: "1.25rem" }}
-
+>
   <button className="view-btn">
     <FiDownload /> Export PDF
   </button>

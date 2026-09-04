@@ -102,13 +102,13 @@ export default function FolderOptionsMenu({
       className={`folder-options-menu ${className}`}
       onContextMenu={handleContextMenu}
       ref={menuRef}
-
+    >
       <button
         type="button"
         className="folder-options-trigger"
         aria-label={`Folder options for ${folderName || "folder"}`}
         onClick={handleToggleMenu}
-
+      >
         <FiMoreVertical />
       </button>
 
@@ -117,7 +117,7 @@ export default function FolderOptionsMenu({
           className="folder-options-dropdown"
           style={{ top: menuPosition.top, left: menuPosition.left }}
           role="menu"
-
+        >
           {MENU_ITEMS.map((item) => (
             <button
               key={item.key}
@@ -127,7 +127,7 @@ export default function FolderOptionsMenu({
                 event.stopPropagation();
                 runAction(item.key);
               }}
-
+            >
               {item.label}
             </button>
           ))}

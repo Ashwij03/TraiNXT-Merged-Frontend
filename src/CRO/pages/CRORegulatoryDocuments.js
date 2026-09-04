@@ -94,7 +94,7 @@ function CRORegulatoryDocuments() {
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
               className="cro-input"
-
+            >
               <option value="All">All</option>
               <option value="Approved">Approved</option>
               <option value="Pending">Pending</option>
@@ -107,7 +107,7 @@ function CRORegulatoryDocuments() {
               onChange={(event) => setUploadStudyCode(event.target.value)}
               className="cro-input"
               aria-label="Select study for new document"
-
+            >
               <option value="">Select study…</option>
               {studies.map((study) => (
                 <option key={study.code} value={study.code}>
@@ -159,7 +159,7 @@ function CRORegulatoryDocuments() {
                         type="button"
                         className="cro-btn-primary-inline"
                         onClick={() => handleView(doc)}
-
+                      >
                         View
                       </button>
                     </td>
@@ -188,7 +188,7 @@ function CRORegulatoryDocuments() {
             />
           ) : null
         }
-
+      >
         {selectedDoc && (
           <div>
             <p>

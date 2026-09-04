@@ -236,7 +236,7 @@ function ProfileSettingsSection({ showTitle = false }) {
                 value={profile.timezone || "Asia/Kolkata"}
                 onChange={(event) =>
                   handleChange("timezone", event.target.value)
-                }
+                }>
 
                 <option value="Asia/Kolkata">Asia/Kolkata</option>
                 <option value="UTC">UTC</option>
@@ -251,7 +251,7 @@ function ProfileSettingsSection({ showTitle = false }) {
                 value={profile.preferredLanguage || "English"}
                 onChange={(event) =>
                   handleChange("preferredLanguage", event.target.value)
-                }
+                }>
 
                 <option value="English">English</option>
                 <option value="Hindi">Hindi</option>
@@ -278,7 +278,7 @@ function ProfileSettingsSection({ showTitle = false }) {
                 className="profile-save-message full-width"
                 data-span="2"
                 role="status"
-                style={{ color: saveError ? "#dc2626" : "#059669" }}
+                style={{ color: saveError ? "#dc2626" : "#059669" }}>
 
                 {savedMessage}
               </p>

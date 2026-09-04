@@ -27,10 +27,13 @@ import UserManagement from "./shared/pages/UserManagement";
 import CROOverview from "./CRO/pages/CROOverview";
 
 import AuditLogsPage from "./shared/pages/audit/AuditLogsPage";
-import DelegationLogPage from "./pages/shared/logs/DelegationLogPage";
-import LogsPage from "./pages/shared/logs/LogsPage";
+// TODO(fix-needed): DelegationLogPage module not found - route disabled pending file restoration
+// import DelegationLogPage from "./pages/shared/logs/DelegationLogPage";
+// TODO(fix-needed): LogsPage module not found - route disabled pending file restoration
+// import LogsPage from "./pages/shared/logs/LogsPage";
 import Sites from "./Admin/pages/Sites";
-import TrainingLogPage from "./pages/shared/logs/TrainingLogPage";
+// TODO(fix-needed): TrainingLogPage module not found - route disabled pending file restoration
+// import TrainingLogPage from "./pages/shared/logs/TrainingLogPage";
 import {
   getDashboardPath,
   getCurrentUser,
@@ -38,6 +41,7 @@ import {
 } from "./shared/services/roleService";
 import { cleanupCrossStudySubjectData } from "./shared/services/studyService";
 import EISFDashboard from "./shared/pages/EISF/EDashboard/EISFDashboard";
+import {
   RoleAwareComments,
   RoleAwareNotifications,
   RoleAwareProgressNotes,
@@ -273,6 +277,7 @@ function App() {
         }
       />
 
+      {/* TODO(fix-needed): LogsPage module not found - route disabled pending file restoration
       <Route
         path="/logs"
         element={
@@ -281,7 +286,9 @@ function App() {
           </ProtectedRoute>
         }
       />
+      */}
 
+      {/* TODO(fix-needed): TrainingLogPage module not found - route disabled pending file restoration
       <Route
         path="/logs/training"
         element={
@@ -290,7 +297,9 @@ function App() {
           </ProtectedRoute>
         }
       />
+      */}
 
+      {/* TODO(fix-needed): DelegationLogPage module not found - route disabled pending file restoration
       <Route
         path="/logs/delegation"
         element={
@@ -299,6 +308,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+      */}
 
       <Route
         path="/audit-logs"

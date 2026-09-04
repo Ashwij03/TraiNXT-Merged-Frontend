@@ -18,7 +18,7 @@ function KPICard({
       <div
         className={`enterprise-kpi${variantClass}${layoutClass}`}
         onClick={onClick}
-
+      >
         <div className="enterprise-kpi-icon">{icon}</div>
 
         <div className="enterprise-kpi-title">{title}</div>
@@ -32,7 +32,7 @@ function KPICard({
     <div
       className={`enterprise-kpi${variantClass}`}
       onClick={onClick}
-
+    >
       <div className="enterprise-kpi-icon">
 
         {icon}

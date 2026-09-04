@@ -97,7 +97,7 @@ export default function SubjectsTab() {
                     className="subject-delete-btn"
                     onClick={(e) => handleDeleteClick(e, "B-B")}
                     title="Delete subject"
-                    aria-label="Delete subject"
+                    aria-label="Delete subject">
 
                     <FiTrash2 />
                   </button>
@@ -125,7 +125,7 @@ export default function SubjectsTab() {
                     className="subject-delete-btn"
                     onClick={(e) => handleDeleteClick(e, "A-T")}
                     title="Delete subject"
-                    aria-label="Delete subject"
+                    aria-label="Delete subject">
 
                     <FiTrash2 />
                   </button>
@@ -209,7 +209,7 @@ export default function SubjectsTab() {
                   className="visit-cell"
                   onClick={() =>
                     setOpenPopup(openPopup === "screening1" ? null : "screening1")
-                  }
+                  }>
 
                   ✔
 
@@ -227,7 +227,7 @@ export default function SubjectsTab() {
 					 <Link
   to="/visit/1"
   className="popup-link"
-  onClick={(e) => e.stopPropagation()}
+  onClick={(e) => e.stopPropagation()}>
 
   View Visit Details
 </Link>

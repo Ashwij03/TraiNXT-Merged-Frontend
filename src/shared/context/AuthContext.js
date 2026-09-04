@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         hasPermission,
       }}
-
+    >
       {children}
     </AuthContext.Provider>
   );

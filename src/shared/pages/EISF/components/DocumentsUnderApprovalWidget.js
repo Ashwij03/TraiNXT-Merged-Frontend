@@ -32,7 +32,7 @@ export default function DocumentsUnderApprovalWidget({
               .map((document) => (
                 <li
                   key={document.id || document.name}
-                  className="approval-item"
+                  className="approval-item">
 
                   {document.name || "Unnamed Document"}
                 </li>

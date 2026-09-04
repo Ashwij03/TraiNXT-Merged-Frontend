@@ -4,6 +4,7 @@ import {
   INSTITUTION_FILTER_EVENT
 } from "../constants/headerFilters";
 import { getCurrentUser } from "../services/roleService";
+import {
   getFilteredSchedules,
   getUpcomingVisitsForDate,
   getUpcomingVisitsWindow,

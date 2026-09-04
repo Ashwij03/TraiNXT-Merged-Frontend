@@ -109,7 +109,7 @@ function PISidebar({
         className={`sidebar pi-sidebar${isOpen ? " open" : ""}${
           collapsed ? " is-collapsed" : ""
         }`}
-
+      >
         {/* Kept in the DOM (just made invisible) while collapsed, so its
             exact same box/height keeps reserving space and the icons
             below don't jump up into the header row. The same brand is
@@ -128,7 +128,7 @@ function PISidebar({
           <div
             className={getMenuClass(dashboardSection.page)}
             onClick={() => handleMenuClick(dashboardSection.page)}
-
+          >
             <FaHome />
             {!collapsed && <span>{dashboardSection.label}</span>}
           </div>
@@ -142,7 +142,7 @@ function PISidebar({
               : ""
           }`}
           onClick={handleStudiesNav}
-
+        >
           <FaBookOpen />
           {!collapsed && <span>Studies ({studyCount})</span>}
         </div>
@@ -165,7 +165,7 @@ function PISidebar({
               key={section.id}
               className={getMenuClass(section.page)}
               onClick={() => handleMenuClick(section.page)}
-
+            >
               <Icon />
               {!collapsed && <span>{section.label}</span>}
             </div>
@@ -177,7 +177,7 @@ function PISidebar({
         <div
           className={getMenuClass("referral")}
           onClick={() => handleMenuClick("referral")}
-
+        >
           <FaGift />
           {!collapsed && <span>Referral Program</span>}
         </div>

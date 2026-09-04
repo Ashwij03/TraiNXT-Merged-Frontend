@@ -25,7 +25,7 @@ function VisitDetails({ setActiveTab }) {
           className="back-btn"
           onClick={() =>
             setActiveTab("Visits")
-          }
+          }>
 
           ← Back To Visits
         </button>
@@ -60,7 +60,7 @@ function VisitDetails({ setActiveTab }) {
             setActiveSection(
               "overview"
             )
-          }
+          }>
 
           Overview
         </button>
@@ -75,7 +75,7 @@ function VisitDetails({ setActiveTab }) {
             setActiveSection(
               "procedures"
             )
-          }
+          }>
 
           Procedures
         </button>
@@ -90,7 +90,7 @@ function VisitDetails({ setActiveTab }) {
             setActiveSection(
               "documents"
             )
-          }
+          }>
 
           Documents
         </button>
@@ -105,7 +105,7 @@ function VisitDetails({ setActiveTab }) {
             setActiveSection(
               "comments"
             )
-          }
+          }>
 
           Comments
         </button>
@@ -120,7 +120,7 @@ function VisitDetails({ setActiveTab }) {
             setActiveSection(
               "audit"
             )
-          }
+          }>
 
           Audit Trail
         </button>

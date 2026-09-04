@@ -35,7 +35,7 @@ function SubjectSidebarHeader({
           className="sx-header-title sx-header-title--link"
           onClick={onTitleClick}
           title="Back to All Subjects"
-
+        >
           <MdFolderOpen size={16} className="sx-header-icon" />
           <span>Subjects</span>
           <span className="sx-header-count">{subjectCount}</span>
@@ -54,7 +54,7 @@ function SubjectSidebarHeader({
         title={allExpanded ? "Collapse all" : "Expand all"}
         aria-label={allExpanded ? "Collapse all" : "Expand all"}
         onClick={allExpanded ? onCollapseAll : onExpandAll}
-
+      >
         {allExpanded ? <MdUnfoldLess size={16} /> : <MdUnfoldMore size={16} />}
       </button>
     </div>

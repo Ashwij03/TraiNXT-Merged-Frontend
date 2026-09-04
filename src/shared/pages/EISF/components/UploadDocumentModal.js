@@ -363,7 +363,7 @@ export default function UploadDocumentModal({
             onDragOver={onDragOver}
             onDragEnter={onDragOver}
             onDragLeave={onDragLeave}
-            onDrop={onDrop}
+            onDrop={onDrop}>
 
             <p className="upload-dropzone-text">
               Drag &amp; drop files or a folder here, or use the buttons below.
@@ -390,7 +390,7 @@ export default function UploadDocumentModal({
                   type="button"
                   className="cancel-btn"
                   onClick={clearQueue}
-                  disabled={isUploading}
+                  disabled={isUploading}>
 
                   Clear
                 </button>
@@ -471,7 +471,7 @@ export default function UploadDocumentModal({
                           type="button"
                           className="upload-queue-remove"
                           onClick={() => removeQueued(item.id)}
-                          aria-label={`Remove ${item.relativePath}`}
+                          aria-label={`Remove ${item.relativePath}`}>
 
                           ×
                         </button>
@@ -502,7 +502,7 @@ export default function UploadDocumentModal({
             type="button"
             className="cancel-btn"
             onClick={onClose}
-            disabled={isUploading}
+            disabled={isUploading}>
 
             Cancel
           </button>

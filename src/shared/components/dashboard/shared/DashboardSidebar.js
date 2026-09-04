@@ -1,5 +1,4 @@
 import "./DashboardSidebar.css";
-<import TriaNXTLogo from "../../common/TriaNXTLogo";
 
 import TriaNXTLogo from "../../TriaNXTLogo";
 import {
@@ -17,6 +16,7 @@ import { ADMIN_PREVIEW_ROLE_EVENT } from "../../../constants/headerFilters";
 import { FOLDER_TREE_EVENT } from "../../../services/folderService";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import {
   FiBell,
   FiFolder,
   FiGrid,
@@ -49,9 +49,6 @@ const STUDY_SECTIONS = [
   // { key: "regulatory", label: "Regulatory" },
 
   { key: "logs", label: "Logs" },
-  { key: "eisf", label: "eISF" },
-  { key: "visitPlan", label: "Visit Plan" },
-  { key: "clinicalSites", label: "Clinical Sites" },
   { key: "reports", label: "Reports" },
   { key: "studyFiles", label: "Study Files" },
   { key: "financials", label: "Financials" },
@@ -186,13 +183,6 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
   // ===== END: Monitoring Access role check =====
 
   const roleExtraMenuItems = getRoleExtraMenuItems(effectiveUser?.role);
-  const visibleStudySections = STUDY_SECTIONS.filter(
-    (section) =>
-      section.key !== "clinicalSites" ||
-      effectiveUser?.role === "Sponsor" ||
-      effectiveUser?.role === "Admin",
-  );
-
   const visibleStudySections = STUDY_SECTIONS.filter((section) => {
     if (section.key === "clinicalSites") {
       return (
@@ -526,13 +516,13 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
               minWidth: sidebarWidth,
               flexBasis: sidebarWidth,
             }
-      }
+      }>
 
       <TriaNXTLogo size="sidebar" onClick={() => handleNav(dashboardPath)} />
 
       <div
         className={getLinkClass(isDashboardActive)}
-        onClick={handleDashboardClick}
+        onClick={handleDashboardClick}>
 
         <FiGrid size={16} />
         <span>Dashboard</span>
@@ -544,7 +534,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         )} sidebar-folder sidebar-folder--no-indicator${
           studiesOpen ? " submenu-open" : ""
         }`}
-        onClick={handleStudiesClick}
+        onClick={handleStudiesClick}>
 
         <FiFolder size={16} />
         <span>Studies ({studyCount})</span>
@@ -561,14 +551,14 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                   ? "Collapse Study Binder"
                   : "Expand Study Binder"
               }
-              onClick={handleStudyBinderClick}
+              onClick={handleStudyBinderClick}>
 
               {studyBinderOpen ? "−" : "+"}
             </button>
 
             <span
               className="sidebar-tree-label sidebar-tree-label--strong"
-              onClick={handleStudyBinderClick}
+              onClick={handleStudyBinderClick}>
 
               Study Binder
             </span>
@@ -595,7 +585,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                             ? "Collapse study sections"
                             : "Expand study sections"
                         }
-                        onClick={(event) => toggleStudyNode(studyKey, event)}
+                        onClick={(event) => toggleStudyNode(studyKey, event)}>
 
                         {isStudyOpen ? "−" : "+"}
                       </button>
@@ -612,7 +602,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                             event.preventDefault();
                             handleStudyNameClick(studyKey, event);
                           }
-                        }}
+                        }}>
 
                         <span className="study-label-name">{studyName}</span>
 
@@ -656,7 +646,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                                         sectionKey,
                                         event,
                                       )
-                                    }
+                                    }>
 
                                     {isSectionOpen ? "−" : "+"}
                                   </button>
@@ -669,7 +659,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                                         sectionKey,
                                         event,
                                       )
-                                    }
+                                    }>
 
                                     {displayLabel}
                                   </span>
@@ -689,7 +679,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                                       return (
                                         <div
                                           key={`${studyKey}-${subjectKey}`}
-                                          className="sidebar-subject-group"
+                                          className="sidebar-subject-group">
 
                                           <div
                                             className="sidebar-tree-row sidebar-tree-row--section-leaf sidebar-subject-row"
@@ -698,7 +688,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                                                 studyKey,
                                                 subject,
                                               )
-                                            }
+                                            }>
 
                                             <span className="sidebar-tree-label">
                                               {subjectKey}
@@ -719,7 +709,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
                               className="sidebar-tree-row sidebar-tree-row--section-leaf"
                               onClick={() =>
                                 navigateToStudySection(studyKey, sectionKey)
-                              }
+                              }>
 
                               <span
                                 className="sidebar-tree-spacer"
@@ -744,7 +734,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
             className={`sidebar-tree-row sidebar-tree-row--comments${
               isCommentsRoute ? " active" : ""
             }`}
-            onClick={handleStudiesCommentsClick}
+            onClick={handleStudiesCommentsClick}>
 
             <span className="sidebar-tree-spacer" aria-hidden="true" />
             <span className="sidebar-tree-label">Comments</span>
@@ -755,7 +745,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       {sidebarItems.some((item) => item.key === "site-performance") && (
         <div
           className={getLinkClass(pathname.includes("site-performance"))}
-          onClick={() => handleNav("/site-performance")}
+          onClick={() => handleNav("/site-performance")}>
 
           <FiTrendingUp size={16} />
           <span>Site Performance</span>
@@ -765,7 +755,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       {sidebarItems.some((item) => item.key === "recruitment") && (
         <div
           className={getLinkClass(pathname.includes("recruitment"))}
-          onClick={() => handleNav("/recruitment")}
+          onClick={() => handleNav("/recruitment")}>
 
           <FiUsers size={16} />
           <span>Recruitment</span>
@@ -775,7 +765,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       {sidebarItems.some((item) => item.key === "reports") && (
         <div
           className={getLinkClass(pathname.includes("/reports"))}
-          onClick={() => handleNav("/reports")}
+          onClick={() => handleNav("/reports")}>
 
           <FiBarChart2 size={16} />
           <span>Reports</span>
@@ -786,7 +776,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       {canViewSafety && (
         <div
           className={getLinkClass(pathname.includes("/safety"))}
-          onClick={() => handleNav("/safety")}
+          onClick={() => handleNav("/safety")}>
 
           <FiShield size={16} />
           <span>Safety</span>
@@ -796,7 +786,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       {canViewAiReview && (
         <div
           className={getLinkClass(pathname.includes("/ai-review"))}
-          onClick={() => handleNav("/ai-review")}
+          onClick={() => handleNav("/ai-review")}>
 
           <FiCpu size={16} />
           <span>AI Review</span>
@@ -806,7 +796,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       {canViewEtmf && (
         <div
           className={getLinkClass(pathname.includes("/etmf"))}
-          onClick={() => handleNav("/etmf")}
+          onClick={() => handleNav("/etmf")}>
 
           <FiFolder size={16} />
           <span>eTMF</span>
@@ -829,7 +819,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       {canManageUsers && (
         <div
           className={getLinkClass(pathname.includes("user-management"))}
-          onClick={() => handleNav("/user-management")}
+          onClick={() => handleNav("/user-management")}>
 
           <FiUsers size={16} />
           <span>User Management</span>
@@ -842,7 +832,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
             pathname.includes("access-permission") ||
               pathname.includes("permission-approval"),
           )}
-          onClick={() => handleNav("/access-permission")}
+          onClick={() => handleNav("/access-permission")}>
 
           <FiShield size={16} />
           <span>Permission Approval</span>
@@ -852,7 +842,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       {canRequestAccess && (
         <div
           className={getLinkClass(pathname.includes("access-request"))}
-          onClick={() => handleNav("/access-request")}
+          onClick={() => handleNav("/access-request")}>
 
           <FiShield size={16} />
           <span>Request Access</span>
@@ -862,7 +852,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       {canViewCROOverview && (
         <div
           className={getLinkClass(pathname.includes("cro-overview"))}
-          onClick={() => handleNav("/cro-overview")}
+          onClick={() => handleNav("/cro-overview")}>
 
           <FiEye size={16} />
           <span>CRO Overview</span>
@@ -872,7 +862,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       {canViewAuditLogs && (
         <div
           className={getLinkClass(pathname === "/audit-logs")}
-          onClick={() => handleNav("/audit-logs")}
+          onClick={() => handleNav("/audit-logs")}>
 
           <FiFileText size={16} />
           <span>Audit Logs</span>
@@ -884,7 +874,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
           className={getLinkClass(
             pathname === "/logs" || pathname.startsWith("/logs/"),
           )}
-          onClick={() => handleNav("/logs")}
+          onClick={() => handleNav("/logs")}>
 
           <FiLayers size={16} />
           <span>Logs</span>
@@ -897,7 +887,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       {sidebarItems.some((item) => item.key === "notifications") && (
         <div
           className={getLinkClass(pathname.includes("notifications"))}
-          onClick={() => handleNav("/notifications")}
+          onClick={() => handleNav("/notifications")}>
 
           <FiBell size={16} />
           <span>Notifications</span>
@@ -907,7 +897,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       {!usesUnifiedSettings && (
         <div
           className={getLinkClass(pathname.includes("/profile"))}
-          onClick={() => handleNav("/profile")}
+          onClick={() => handleNav("/profile")}>
 
           <FiUser size={16} />
           <span>Profile</span>
@@ -921,7 +911,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
             usesUnifiedSettings
               ? handleSettingsNav("profile")
               : handleNav("/settings")
-          }
+          }>
 
           <FiSettings size={16} />
           <span>Settings</span>
@@ -931,7 +921,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
       {sidebarItems.some((item) => item.key === "settings") && (
         <div
           className={getLinkClass(pathname.includes("/referral"))}
-          onClick={() => handleNav("/referral")}
+          onClick={() => handleNav("/referral")}>
 
           <FiGift size={16} />
           <span>Referral Program</span>
@@ -962,7 +952,7 @@ function DashboardSidebar({ onNavigate, collapsed = false, compact = false }) {
         <div
           key={item.key}
           className={getLinkClass(pathname.includes(item.path))}
-          onClick={() => handleNav(item.path)}
+          onClick={() => handleNav(item.path)}>
 
           <FiLayers size={16} />
           <span>{item.label}</span>

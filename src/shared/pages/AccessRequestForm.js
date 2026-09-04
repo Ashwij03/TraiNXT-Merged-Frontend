@@ -66,7 +66,7 @@ function AccessRequestForm() {
             <select
               name="accessType"
               value={form.accessType}
-              onChange={handleChange}
+              onChange={handleChange}>
 
               {accessTypes.map((type) => (
                 <option key={type} value={type}>

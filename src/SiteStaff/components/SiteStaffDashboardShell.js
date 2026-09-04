@@ -1,26 +1,19 @@
-<import { useViewportMode } from "../../../hooks/useViewportMode";
+import { useViewportMode } from "../../shared/hooks/useViewportMode";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import DashboardSidebar from "../../shared/components/dashboard/shared/DashboardSidebar.css";
+import DashboardSidebar from "../../shared/components/dashboard/shared/DashboardSidebar";
 import SiteStaffNavbar from "./SiteStaffNavbar";
 import LiveChatFab from "../../shared/components/LiveChatFab.js";
 import ROLES from "../../shared/constants/roles.js";
-
-import { useViewportMode } from "../../shared/hooks/useViewportMode";
-import DashboardSidebar from "../../shared/components/dashboard/shared/DashboardSidebar";
-import LiveChatFab from "../../shared/components/LiveChatFab";
-import ROLES from "../../shared/constants/roles";
 import {
   getCurrentUser,
   isAdmin,
   setAdminPreviewRole,
   setPIPreviewRole
-} from "../../../services/roleService";
+} from "../../shared/services/roleService";
 
 import "../../shared/components/dashboard/shared/DashboardLayout.css";
 import "../../shared/components/dashboard/shared/dashboard.css";
-
-} from "../../shared/services/roleService";
 import { EISF_SIDEBAR_COLLAPSE_EVENT } from "../../shared/constants/headerFilters";
 
 const DASHBOARD_ROUTE_ROLES = {

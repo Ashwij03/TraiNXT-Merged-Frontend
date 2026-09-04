@@ -87,7 +87,7 @@ function SearchableDropdown({
     <div
       className={`searchable-dropdown ${className}`.trim()}
       ref={containerRef}
-
+    >
       {label ? <label>{label}</label> : null}
 
       <button
@@ -95,7 +95,7 @@ function SearchableDropdown({
         className="searchable-dropdown-trigger"
         onClick={() => setOpen((prev) => !prev)}
         aria-expanded={open}
-
+      >
         <span className="searchable-dropdown-value">{selectedLabel}</span>
         <span className="searchable-dropdown-chevron" aria-hidden="true">
           ▾
@@ -115,7 +115,7 @@ function SearchableDropdown({
                       : "searchable-dropdown-option"
                   }
                   onClick={() => handleSelect(option.value)}
-
+                >
                   {option.label}
                 </button>
               </li>

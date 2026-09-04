@@ -126,14 +126,14 @@ function StudyModal({
       className="study-modal-overlay"
       onMouseDown={handleOverlayMouseDown}
       role="presentation"
-
+    >
       <form
         className={`study-modal${compact ? " tnxt-compact-modal" : ""}`}
         onSubmit={handleSubmit}
         role="dialog"
         aria-modal="true"
         aria-label={resolvedTitle}
-
+      >
         <div className="study-modal-header tnxt-modal-header">
           <div>
             <h2>{resolvedTitle}</h2>
@@ -145,7 +145,7 @@ function StudyModal({
             onClick={handleCancel}
             aria-label={resolvedCloseAriaLabel}
             disabled={loading}
-
+          >
             ×
           </button>
         </div>
@@ -163,7 +163,7 @@ function StudyModal({
                 color: "#b91c1c",
                 fontSize: "0.8125rem",
                 fontWeight: 600,
-              }}
+              }}>
 
               {error}
             </div>
@@ -180,7 +180,7 @@ function StudyModal({
               type="button"
               className="secondary-btn"
               onClick={handleCancel}
-              disabled={loading}
+              disabled={loading}>
 
               {cancelLabel}
             </button>
@@ -188,7 +188,7 @@ function StudyModal({
             <button
               type="submit"
               className="add-study-btn"
-              disabled={loading || submitDisabled}
+              disabled={loading || submitDisabled}>
 
               {loading ? "Saving..." : resolvedSubmitLabel}
             </button>

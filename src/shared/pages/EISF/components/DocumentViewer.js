@@ -66,7 +66,7 @@ export default function DocumentViewer({
               <button
                 type="button"
                 className="secondary-btn"
-                onClick={() => onDownload?.(document)}
+                onClick={() => onDownload?.(document)}>
 
                 Download
               </button>
@@ -75,7 +75,7 @@ export default function DocumentViewer({
                 <button
                   type="button"
                   className="secondary-btn"
-                  onClick={() => onHistory(document)}
+                  onClick={() => onHistory(document)}>
 
                   Version History
                 </button>
@@ -85,7 +85,7 @@ export default function DocumentViewer({
                 <button
                   type="button"
                   className="secondary-btn"
-                  onClick={() => onAudit(document)}
+                  onClick={() => onAudit(document)}>
 
                   Audit Trail
                 </button>
@@ -97,7 +97,7 @@ export default function DocumentViewer({
                   className="viewer-panel-close"
                   onClick={onClose}
                   aria-label="Close preview"
-                  title="Close preview"
+                  title="Close preview">
 
                   ✕
                 </button>
@@ -185,7 +185,7 @@ export default function DocumentViewer({
           <button
             type="button"
             className="viewer-close"
-            onClick={onClose}
+            onClick={onClose}>
 
             ✕
           </button>
@@ -254,7 +254,7 @@ export default function DocumentViewer({
           <button
             type="button"
             className="secondary-btn"
-            onClick={() => onDownload?.(document)}
+            onClick={() => onDownload?.(document)}>
 
             Download
           </button>
@@ -262,7 +262,7 @@ export default function DocumentViewer({
           <button
             type="button"
             className="primary-btn"
-            onClick={onClose}
+            onClick={onClose}>
 
             Close
           </button>

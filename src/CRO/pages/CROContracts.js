@@ -68,7 +68,7 @@ function CROContracts({ onViewDetails }) {
                   type="button"
                   className="action-btn"
                   onClick={() => onViewDetails?.(contract)}
-
+                >
                   View
                 </button>
               </td>

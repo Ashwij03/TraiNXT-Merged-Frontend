@@ -18,7 +18,7 @@ function KpiCard({
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={onClick ? (e) => e.key === 'Enter' && onClick() : undefined}
-
+    >
       <div className="kpi-icon" style={{ backgroundColor: iconBg, color: iconColor }}>
         {icon}
       </div>

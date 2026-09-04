@@ -30,7 +30,7 @@ function UpcomingMonitoringVisits() {
           type="button"
           className="upcoming-visits-view-all"
           onClick={() => navigate("/cro-monitoring")}
-
+        >
           View All
         </button>
       </div>
@@ -68,7 +68,7 @@ function UpcomingMonitoringVisits() {
                       type="button"
                       className="upcoming-visits-action-btn"
                       onClick={() => navigate("/cro-monitoring")}
-
+                    >
                       View
                     </button>
                   </td>

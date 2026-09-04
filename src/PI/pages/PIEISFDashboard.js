@@ -45,32 +45,32 @@ function PIEISFDashboard() {
           marginTop: "1.25rem",
           marginBottom: "1.25rem"
         }}
-
+      >
         <button
           className={eisfTab === "delegation" ? "active-tab" : ""}
           onClick={() => setEisfTab("delegation")}
-
+        >
           Delegation Log
         </button>
 
         <button
           className={eisfTab === "training" ? "active-tab" : ""}
           onClick={() => setEisfTab("training")}
-
+        >
           Training Log
         </button>
 
         <button
           className={eisfTab === "cvs" ? "active-tab" : ""}
           onClick={() => setEisfTab("cvs")}
-
+        >
           CVs
         </button>
 
         <button
           className={eisfTab === "licenses" ? "active-tab" : ""}
           onClick={() => setEisfTab("licenses")}
-
+        >
           Licenses
         </button>
 

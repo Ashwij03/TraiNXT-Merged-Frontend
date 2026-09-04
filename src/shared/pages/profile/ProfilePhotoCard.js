@@ -142,7 +142,7 @@ function ProfilePhotoCard({
           <button
             type="button"
             className="secondary-btn"
-            onClick={handleRemovePhoto}
+            onClick={handleRemovePhoto}>
 
             Remove Photo
           </button>

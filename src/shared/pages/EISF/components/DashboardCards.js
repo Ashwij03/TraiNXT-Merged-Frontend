@@ -6,6 +6,7 @@ import {
   FiAlertTriangle,
   FiPieChart,
 } from "react-icons/fi";
+import {
   buildDashboardCards,
   getDashboardSummary,
 } from "../utils/dashboardUtils";
@@ -43,7 +44,7 @@ export default function DashboardCards({
         return (
         <div
           className="dashboard-card"
-          key={card.key}
+          key={card.key}>
 
           {variant !== "reference" && (
             <div
@@ -71,7 +72,7 @@ export default function DashboardCards({
                       style={{
                         "--completion": `${card.value || 0}%`,
                         "--card-color": card.color || "#2563eb",
-                      }}
+                      }}>
 
                       <span>{card.value}{card.suffix || ""}</span>
                     </div>
@@ -92,7 +93,7 @@ export default function DashboardCards({
                   className="dashboard-card-value"
                   style={{
                     color: variant === "reference" ? "#0f172a" : card.color || "#2563eb",
-                  }}
+                  }}>
 
                   {card.value}
                   {card.suffix || ""}

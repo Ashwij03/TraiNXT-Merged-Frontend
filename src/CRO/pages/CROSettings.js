@@ -95,7 +95,7 @@ function CROSettings() {
         className="cro-settings-tabs"
         role="tablist"
         aria-label="Settings sections"
-
+      >
         {SECTIONS.map((section) => (
           <button
             key={section.id}
@@ -106,7 +106,7 @@ function CROSettings() {
               activeSection === section.id ? " cro-settings-tab--active" : ""
             }`}
             onClick={() => handleSectionChange(section.id)}
-
+          >
             {section.label}
           </button>
         ))}
@@ -122,7 +122,7 @@ function CROSettings() {
               className="cro-btn-primary"
               style={{ marginBottom: "1.25rem" }}
               onClick={() => setShowProfileModal(true)}
-
+            >
               Edit Profile
             </button>
           </div>
@@ -191,7 +191,7 @@ function CROSettings() {
                   borderRadius: "0.5rem",
                   border: "1px solid #d1d5db",
                 }}
-
+              >
                 <option value="Asia/Kolkata">India (Asia/Kolkata)</option>
                 <option value="America/New_York">USA (New York)</option>
                 <option value="Europe/London">UK (London)</option>
@@ -244,7 +244,7 @@ function CROSettings() {
                 gap: "0.625rem",
                 marginBottom: "1.25rem",
               }}
-
+            >
               <input
                 type="checkbox"
                 name="twoFactorEnabled"
@@ -272,7 +272,7 @@ function CROSettings() {
                 gap: "0.625rem",
                 marginBottom: "1rem",
               }}
-
+            >
               <input
                 type="checkbox"
                 name="notifications"
@@ -288,7 +288,7 @@ function CROSettings() {
                 gap: "0.625rem",
                 marginBottom: "1rem",
               }}
-
+            >
               <input
                 type="checkbox"
                 name="emailAlerts"
@@ -304,7 +304,7 @@ function CROSettings() {
                 gap: "0.625rem",
                 marginBottom: "1.25rem",
               }}
-
+            >
               <input
                 type="checkbox"
                 name="smsAlerts"
@@ -330,7 +330,7 @@ function CROSettings() {
               type="button"
               className="cro-btn-secondary"
               onClick={() => setShowProfileModal(false)}
-
+            >
               Cancel
             </button>
 
@@ -338,29 +338,29 @@ function CROSettings() {
               type="button"
               className="cro-btn-primary"
               onClick={() => setShowProfileModal(false)}
-
+            >
               Save Changes
             </button>
           </>
         }
-
+      >
         <div className="cro-profile-form">
           <div
             style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              marginBottom: "1.5625rem",
-            }}
-
-            <div
-              style={{
-                position: "relative",
-                width: "7.5rem",
-                height: "7.5rem",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                marginBottom: "1.5625rem",
               }}
-
-              <img
+            >
+              <div
+                style={{
+                  position: "relative",
+                  width: "7.5rem",
+                  height: "7.5rem",
+                }}
+              >
+                <img
                 src={
                   profileImage ||
                   "https://ui-avatars.com/api/?name=CRO&background=0F3550&color=fff&size=200"
@@ -394,7 +394,7 @@ function CROSettings() {
                   fontSize: "1rem",
                   fontWeight: 700,
                 }}
-
+              >
                 📷
               </label>
 
@@ -414,7 +414,7 @@ function CROSettings() {
                 cursor: "pointer",
                 fontSize: "0.875rem",
               }}
-
+            >
               Change Profile Photo
             </p>
           </div>

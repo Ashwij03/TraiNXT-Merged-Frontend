@@ -83,7 +83,7 @@ function CROSitePerformance() {
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
               className="cro-input"
-
+            >
               <option value="All">All</option>
               <option value="Excellent">Excellent</option>
               <option value="Good">Good</option>
@@ -134,7 +134,7 @@ function CROSitePerformance() {
                         type="button"
                         className="cro-btn-sm"
                         onClick={() => setSelectedSite(site)}
-
+                      >
                         View
                       </button>
                     </td>
@@ -162,11 +162,11 @@ function CROSitePerformance() {
             type="button"
             className="cro-btn cro-btn-primary"
             onClick={() => setSelectedSite(null)}
-
+          >
             Close
           </button>
         }
-
+      >
         {selectedSite && (
           <div>
             <p>

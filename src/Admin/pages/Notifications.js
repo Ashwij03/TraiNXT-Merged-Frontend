@@ -9,6 +9,7 @@ import {
   markAllNotificationsRead,
   markNotificationRead
 } from "../../shared/services/adminService";
+import {
   getAssignedSite,
   getCurrentUser,
   isAdmin
@@ -130,7 +131,7 @@ function Notifications() {
                       : "notification-filter"
                   }
                   onClick={() => setFilter(option)}
-
+                >
                   {option.charAt(0).toUpperCase() + option.slice(1)}
                 </button>
               ))}
@@ -150,7 +151,7 @@ function Notifications() {
                 className={`notification-item${
                   notification.read ? "" : " unread"
                 }`}
-
+              >
                 <div>
                   <div className="notification-item-header">
                     <strong>{notification.title}</strong>
@@ -181,7 +182,7 @@ function Notifications() {
                     <button
                       type="button"
                       onClick={() => handleMarkRead(notification.id)}
-
+                    >
                       Mark read
                     </button>
                   )}

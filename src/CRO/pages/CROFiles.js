@@ -172,7 +172,7 @@ function CROFiles() {
                           )
 
                         }
-
+                      >
                         View
 
                       </button>

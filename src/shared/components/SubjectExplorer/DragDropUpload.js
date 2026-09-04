@@ -108,7 +108,7 @@ function DragDropUpload({
           openPicker();
         }
       }}
-
+    >
       <span className="sf-dropzone-icon" aria-hidden="true">
         <MdCloudUpload size={compact ? 20 : 26} />
       </span>

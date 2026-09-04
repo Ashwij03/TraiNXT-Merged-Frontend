@@ -79,13 +79,13 @@ function RenameFolderModal({
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose?.();
       }}
-
+    >
       <div
         className="sxm-modal"
         role="dialog"
         aria-modal="true"
         aria-label="Rename folder"
-
+      >
         <div className="sxm-header">
           <div className="sxm-header-title">
             <span className="sxm-header-icon">
@@ -102,7 +102,7 @@ function RenameFolderModal({
             className="sxm-close"
             aria-label="Close"
             onClick={onClose}
-
+          >
             <MdClose size={17} />
           </button>
         </div>
@@ -163,7 +163,7 @@ function RenameFolderModal({
               type="submit"
               className="sxm-btn sxm-btn--primary"
               disabled={!name.trim()}
-
+            >
               Save Changes
             </button>
           </div>

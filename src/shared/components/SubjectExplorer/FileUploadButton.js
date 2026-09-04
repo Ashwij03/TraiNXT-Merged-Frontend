@@ -51,7 +51,7 @@ function FileUploadButton({
             ? "Select a folder in the explorer to upload files"
             : "Upload one or more files into this folder"
         }
-
+      >
         <MdUploadFile size={16} aria-hidden="true" />
         <span>{busy ? "Uploading…" : label}</span>
       </button>
